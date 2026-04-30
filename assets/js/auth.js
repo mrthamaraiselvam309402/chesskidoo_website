@@ -18,7 +18,7 @@
     try {
       CK.showToast('Authenticating...', 'info');
       // DEMO BYPASS: Allows testing even if Supabase Auth is not set up
-      if ((email === 'admin@gmail.com' && password === 'admin') || (email === 'coach@gmail.com' && password === 'coach')) {
+      if ((email === 'admin@gmail.com' && (password === 'admin' || password === 'admin123')) || (email === 'coach@gmail.com' && password === 'coach')) {
         const role = email.split('@')[0];
         const demoProfile = {
           userid: 'demo-user-' + role,
