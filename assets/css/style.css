@@ -997,3 +997,16 @@ html {
 section {
   scroll-margin-top: 80px;
 }
+
+@media (max-width: 480px) {
+  .whatsapp-float { bottom: 80px !important; right: 20px !important; }
+  .ai-bot-float { bottom: 20px !important; right: 20px !important; }
+}
+
+@media (max-width: 480px) {
+  .whatsapp-float, .ai-bot-float {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 20px !important;
+  }
+}

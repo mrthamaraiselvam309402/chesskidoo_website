@@ -17,6 +17,26 @@
 
     try {
       CK.showToast('Authenticating...', 'info');
+      // DEMO BYPASS: Allows testing even if Supabase Auth is not set up
+      if ((email === 'admin@gmail.com' && password === 'admin') || (email === 'coach@gmail.com' && password === 'coach')) {
+        const role = email.split('@')[0];
+        const demoProfile = {
+          userid: 'demo-user-' + role,
+          full_name: role.charAt(0).toUpperCase() + role.slice(1) + ' Demo',
+          email: email,
+          role: role
+        };
+        CK.currentUser = demoProfile;
+        localStorage.setItem('ck_user', JSON.stringify(demoProfile));
+        CK.showToast('Welcome to Demo Mode! ♛', 'success');
+        setTimeout(() => {
+          CK.showPage(role + '-page');
+          if (role === 'admin') CK.loadAdminDashboard();
+          if (role === 'coach') CK.loadCoachDashboard();
+        }, 500);
+        return;
+      }
+
 
       const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
