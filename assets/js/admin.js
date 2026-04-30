@@ -42,6 +42,9 @@
         case 'achievements':
           await loadAchievementsTab(content);
           break;
+        case 'leads':
+          await loadLeadsTab(content);
+          break;
       }
     } catch (err) {
       console.error("Admin Tab Error:", err);
@@ -202,7 +205,39 @@
     `;
   }
 
-  /* ─── API Helpers ─── */
+  async function loadLeadsTab(el) {
+    const { data: leads } = await window.supabaseClient.from('leads').select('*').order('created_at', { ascending: false });
+    
+    el.innerHTML = `
+      <h3>Demo Class Requests</h3>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Date</th><th>Name</th><th>Phone</th><th>Age</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${leads.map(l => `
+              <tr>
+                <td>${new Date(l.created_at).toLocaleDateString()}</td>
+                <td style="font-weight:600;">${l.full_name}</td>
+                <td><a href="tel:${l.phone}">${l.phone}</a></td>
+                <td>${l.age}</td>
+                <td>
+                  <span class="hero-badge" style="background:${l.status === 'contacted' ? '#ECFDF5' : '#FEF3C7'}; color:${l.status === 'contacted' ? '#059669' : '#D97706'}; font-size:0.7rem;">
+                    ${l.status.toUpperCase()}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-ghost btn-sm" onclick="CK.updateLeadStatus(${l.id}, 'contacted')">✅ Mark Contacted</button>
+                  <button class="btn btn-ghost btn-sm" style="color:red;" onclick="CK.deleteLead(${l.id})">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
   CK.downloadFile = (path) => {
     const url = `${window.APP_CONFIG.SUPABASE_URL}/storage/v1/object/public/pdfs/${path}`;
     window.open(url, '_blank');
@@ -235,6 +270,23 @@
       await window.supabaseClient.from('achievements').delete().eq('id', id);
       CK.showToast("Achievement deleted", "success");
       CK.loadAdminTab('achievements');
+    } catch (err) { CK.showToast("Delete failed", "error"); }
+  };
+
+  CK.updateLeadStatus = async (id, status) => {
+    try {
+      await window.supabaseClient.from('leads').update({ status }).eq('id', id);
+      CK.showToast("Lead updated", "success");
+      CK.loadAdminTab('leads');
+    } catch (err) { CK.showToast("Update failed", "error"); }
+  };
+
+  CK.deleteLead = async (id) => {
+    if (!confirm("Delete this lead?")) return;
+    try {
+      await window.supabaseClient.from('leads').delete().eq('id', id);
+      CK.showToast("Lead deleted", "success");
+      CK.loadAdminTab('leads');
     } catch (err) { CK.showToast("Delete failed", "error"); }
   };
 
