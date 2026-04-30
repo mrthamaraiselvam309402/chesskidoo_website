@@ -70,12 +70,12 @@
           ${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option value="${n}">Batch ${n}</option>`).join('')}
         </select>
         <div style="flex:1"></div>
-        <button class="ck-btn ck-btn-green" onclick="CK.exportFilesExcel()">📊 Export To Excel</button>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Files</button>
+        <button class="dash-btn dash-btn-green" onclick="CK.exportFilesExcel()">📊 Export To Excel</button>
+        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Files</button>
       </div>
 
-      <div class="ck-table-wrap">
-        <table class="ck-table" id="files-table">
+      <div class="portal-table-wrap">
+        <table class="portal-table" id="files-table">
           <thead><tr>
             <th>Date Uploaded</th><th>Document</th><th>Notes</th><th>Reference URL</th><th>Coach</th><th>Actions</th>
           </tr></thead>
@@ -96,7 +96,7 @@
         <td>${f.link ? `<a href="${f.link}" target="_blank" style="color:#D97706;">🔗 Link</a>` : '-'}</td>
         <td>${f.coach || '-'}</td>
         <td>
-          <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.deleteFile('${f.file_name}')">🗑 Delete</button>
+          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteFile('${f.file_name}')">🗑 Delete</button>
         </td>
       </tr>
     `).join('');
@@ -135,13 +135,13 @@
   function tabMeetings(el) {
     el.innerHTML = `
       <div style="display:flex; justify-content:center; align-items:flex-start; padding:40px 0;">
-        <div class="ck-card" style="width:100%; max-width:540px; padding:40px;">
+        <div class="dash-card" style="width:100%; max-width:540px; padding:40px;">
           <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">📅 Schedule a Session</h3>
           <form onsubmit="CK.scheduleMeeting(event)">
             <input class="ck-input" type="url" id="meet-url" placeholder="Meeting URL" required style="margin-bottom:16px;">
             <input class="ck-input" type="datetime-local" id="meet-dt" required style="margin-bottom:16px;">
             <input class="ck-input" type="text" id="meet-batch" placeholder="Batch (e.g. 1)" required style="margin-bottom:24px;">
-            <button type="submit" class="ck-btn ck-btn-primary" style="width:100%; padding:14px; font-size:0.9rem; letter-spacing:0.1em;">
+            <button type="submit" class="dash-btn dash-btn-primary" style="width:100%; padding:14px; font-size:0.9rem; letter-spacing:0.1em;">
               SCHEDULE REMINDER
             </button>
           </form>
@@ -275,9 +275,9 @@
 
     box.innerHTML = `
       <div class="ck-cal-nav">
-        <button class="ck-btn ck-btn-sm" onclick="CK.prevMonth()">← Prev</button>
+        <button class="dash-btn dash-btn-sm" onclick="CK.prevMonth()">← Prev</button>
         <h3>${monthName} ${y}</h3>
-        <button class="ck-btn ck-btn-sm" onclick="CK.nextMonth()">Next →</button>
+        <button class="dash-btn dash-btn-sm" onclick="CK.nextMonth()">Next →</button>
       </div>
       <div class="ck-cal-grid">
         ${days.map(d=>`<div class="ck-cal-header">${d}</div>`).join('')}
@@ -306,12 +306,12 @@
           ${COACHES.map(c=>`<option value="${c}">${c}</option>`).join('')}
         </select>
         <div style="flex:1"></div>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('addUserModal')">
+        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('addUserModal')">
           👤 Add Student
         </button>
       </div>
-      <div class="ck-table-wrap">
-        <table class="ck-table" id="users-table">
+      <div class="portal-table-wrap">
+        <table class="portal-table" id="users-table">
           <thead><tr>
             <th>UserId</th><th>Full Name</th><th>Email ID</th><th>Level</th><th>Coach</th><th>Fee</th><th>Status</th><th>Actions</th>
           </tr></thead>
@@ -333,8 +333,8 @@
         <td style="font-weight:600;">${u.fee || '-'}</td>
         <td><span class="status-pill ${(u.payment_status||'').toLowerCase()}">${u.payment_status||'Pending'}</span></td>
         <td style="display:flex; gap:6px;">
-          <button class="ck-btn ck-btn-sm ck-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
-          <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
+          <button class="dash-btn dash-btn-sm dash-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
+          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
         </td>
       </tr>
     `).join('');
@@ -373,7 +373,7 @@
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🏆 Tournament Results</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
+        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
       </div>
       <div class="ck-empty-state">🏆<p>No tournament data yet. Add your first result!</p></div>
     `;
@@ -383,7 +383,7 @@
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🎖 Student Achievements</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
+        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
       </div>
       <div class="ck-empty-state">🥇<p>No achievements posted yet. Celebrate your champions!</p></div>
     `;

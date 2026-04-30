@@ -1,53 +1,9 @@
-/* assets/js/student.js -------------------------------------------------------
-   Student Dashboard logic for ChessKidoo - Resilient Version
-   --------------------------------------------------------------- */
+import re
+with open('assets/js/student.js', 'r', encoding='utf-8') as f:
+    js = f.read()
 
-(() => {
-  const CK = window.CK = window.CK || {};
-
-  CK.loadStudentDashboard = async () => {
-    const user = CK.currentUser || {};
-    const container = document.getElementById('student-dashboard-content');
-    if (!container) return;
-
-    container.innerHTML = '<div class="loading-wrap">♛ Loading Student Portal...</div>';
-
-    try {
-      // 1. Fetch Stats with safe defaults
-      let presentCount = 0;
-      try {
-        const { count } = await window.supabaseClient
-          .from('attendance')
-          .select('*', { count: 'exact' })
-          .eq('userid', user.userid)
-          .eq('status', 'present');
-        presentCount = count || 0;
-      } catch (e) { console.warn("Attendance table not found or empty."); }
-
-      // 2. Fetch Ratings
-      let ratings = [];
-      try {
-        const { data } = await window.supabaseClient
-          .from('ratings')
-          .select('*')
-          .eq('user_id', user.userid)
-          .order('date', { ascending: true });
-        ratings = data || [];
-      } catch (e) { console.warn("Ratings table not found or empty."); }
-
-      // 3. Fetch Resources (Refactored to be more resilient)
-      let files = [];
-      try {
-        const userLevel = user.level || 'Beginner';
-        const { data } = await window.supabaseClient
-          .from('document')
-          .select('*')
-          .or(`level.eq.${userLevel}`)
-          .order('created_at', { ascending: false });
-        files = data || [];
-      } catch (e) { console.warn("Document table error, checking structure."); }
-
-      
+# Completely upgrade the student dashboard HTML generation
+new_student_html = """
     const fullName = user.full_name || 'Chess Student';
     const level = user.level || 'Beginner';
     const isBeginner = level === 'Beginner';
@@ -145,28 +101,10 @@
         </div>
       </div>
     `;
+"""
 
+# Replace the innerHTML block in student.js
+js = re.sub(r'const fullName = user\.full_name \|\| [\s\S]*?container\.innerHTML = `[\s\S]*?`;', new_student_html, js)
 
-      if (ratings.length > 0) {
-        const ctx = document.getElementById('studentRatingChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ratings.map(r => new Date(r.date).toLocaleDateString()),
-            datasets: [{ label: 'Rating', data: ratings.map(r => r.online), borderColor: '#D97706', tension: 0.4, fill: true, backgroundColor: 'rgba(217,119,6,0.1)' }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { beginAtZero: false } } }
-        });
-      }
-
-    } catch (err) {
-      console.error("Dashboard Error:", err);
-      container.innerHTML = `<div class="error-wrap" style="padding:60px; text-align:center;">
-        <h2 style="font-family:var(--font-display); margin-bottom:15px;">Welcome to your Portal</h2>
-        <p style="opacity:0.6; margin-bottom:25px;">Your dashboard is being initialized. Check back in a few moments!</p>
-        <button class="btn btn-primary" onclick="CK.loadStudentDashboard()">🔄 Retry Loading</button>
-      </div>`;
-    }
-  };
-
-})();
+with open('assets/js/student.js', 'w', encoding='utf-8') as f:
+    f.write(js)
