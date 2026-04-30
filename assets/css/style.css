@@ -1239,3 +1239,115 @@ section {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- HIGH-END DASHBOARD UI DETAILS --- */
+.ck-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: #f1f5f9;
+  color: #475569;
+}
+.ck-badge-amber { background: #fffbeb; color: #b45309; }
+
+.student-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.student-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--amber-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--amber);
+}
+
+/* Beautiful Calendar */
+.ck-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+}
+.ck-cal-header {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  padding-bottom: 10px;
+  text-transform: uppercase;
+}
+.ck-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #f8fafc;
+  transition: all 0.2s;
+  position: relative;
+}
+.ck-cal-cell:hover { background: #f1f5f9; transform: scale(1.05); }
+.ck-cal-num { font-size: 0.85rem; font-weight: 600; opacity: 0.5; }
+.ck-cal-present { background: #dcfce7 !important; color: #166534; }
+.ck-cal-absent { background: #fee2e2 !important; color: #991b1b; }
+
+.ck-cal-check { font-size: 1.2rem; line-height: 1; }
+.ck-cal-cross { font-size: 1.2rem; line-height: 1; opacity: 0.4; }
+
+/* Filter Chips */
+.ck-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+.ck-select {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.ck-select:focus { border-color: var(--amber); }
+
+/* Form Beauty */
+.ck-input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+.ck-input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+}
+.ck-input-pretty {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px 0 45px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+.ck-input-pretty:focus { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.1); }
