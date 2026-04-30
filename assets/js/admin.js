@@ -37,10 +37,10 @@
           await loadUsersTab(content);
           break;
         case 'tournaments':
-          content.innerHTML = '<h3>Tournaments</h3><p>Tournament management module coming soon.</p>';
+          await loadTournamentsTab(content);
           break;
         case 'achievements':
-          content.innerHTML = '<h3>Achievements</h3><p>Manage academy achievements here.</p>';
+          await loadAchievementsTab(content);
           break;
       }
     } catch (err) {
@@ -154,7 +154,89 @@
     `;
   }
 
-  /* ─── Handlers ─── */
+  async function loadTournamentsTab(el) {
+    const { data: tourns } = await window.supabaseClient.from('tourns').select('*').order('created_at', { ascending: false });
+    
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3>Tournament Archive</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('uploadTournModal')">+ Upload Tournament</button>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
+        ${tourns.map(t => `
+          <div class="feat-card" style="padding:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <h5 style="margin:0;">${t.name}</h5>
+                <p style="font-size:0.8rem; opacity:0.6; margin-top:5px;">${new Date(t.created_at).toLocaleDateString()}</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="color:red;" onclick="CK.deleteTourn('${t.id}', '${t.file_name}')">🗑️</button>
+            </div>
+            <button class="btn btn-outline btn-sm" style="width:100%; margin-top:15px;" onclick="CK.downloadFile('${t.file_name}')">Download 📥</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  async function loadAchievementsTab(el) {
+    const { data: achs } = await window.supabaseClient.from('achievements').select('*').order('created_at', { ascending: false });
+    
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3>Academy Achievements</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+        ${achs.map(a => `
+          <div class="feat-card" style="padding:0; overflow:hidden;">
+            <img src="${window.APP_CONFIG.SUPABASE_URL}/storage/v1/object/public/pdfs/${a.image_path}" style="width:100%; height:180px; object-fit:cover;">
+            <div style="padding:20px;">
+              <h5 style="margin:0;">${a.title}</h5>
+              <p style="font-size:0.85rem; opacity:0.7; margin-top:8px;">${a.description || '-'}</p>
+              <button class="btn btn-ghost btn-sm" style="color:red; margin-top:15px;" onclick="CK.deleteAch('${a.id}', '${a.image_path}')">Delete 🗑️</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  /* ─── API Helpers ─── */
+  CK.downloadFile = (path) => {
+    const url = `${window.APP_CONFIG.SUPABASE_URL}/storage/v1/object/public/pdfs/${path}`;
+    window.open(url, '_blank');
+  };
+
+  CK.deleteFile = async (path) => {
+    if (!confirm("Delete this file?")) return;
+    try {
+      await window.supabaseClient.storage.from('pdfs').remove([path]);
+      await window.supabaseClient.from('document').delete().eq('file_name', path);
+      CK.showToast("File deleted", "success");
+      CK.loadAdminTab('files');
+    } catch (err) { CK.showToast("Delete failed", "error"); }
+  };
+
+  CK.deleteTourn = async (id, path) => {
+    if (!confirm("Delete this tournament?")) return;
+    try {
+      await window.supabaseClient.storage.from('pdfs').remove([path]);
+      await window.supabaseClient.from('tourns').delete().eq('id', id);
+      CK.showToast("Tournament deleted", "success");
+      CK.loadAdminTab('tournaments');
+    } catch (err) { CK.showToast("Delete failed", "error"); }
+  };
+
+  CK.deleteAch = async (id, path) => {
+    if (!confirm("Delete this achievement?")) return;
+    try {
+      await window.supabaseClient.storage.from('pdfs').remove([path]);
+      await window.supabaseClient.from('achievements').delete().eq('id', id);
+      CK.showToast("Achievement deleted", "success");
+      CK.loadAdminTab('achievements');
+    } catch (err) { CK.showToast("Delete failed", "error"); }
+  };
 
   CK.handleMeetingSubmit = async (e) => {
     e.preventDefault();

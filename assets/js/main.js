@@ -66,6 +66,31 @@
 
   CK.openDemoModal = () => CK.openModal('contactModal');
 
+  CK.handleDemoSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      full_name: form.fullName.value,
+      phone: form.phone.value,
+      age: form.age.value,
+      status: 'new',
+      created_at: new Date()
+    };
+
+    try {
+      CK.showToast("Submitting request...", "info");
+      const { error } = await window.supabaseClient.from('leads').insert([data]);
+      if (error) throw error;
+      
+      CK.showToast("Request sent! We will contact you soon. ✅", "success");
+      CK.closeModal();
+      form.reset();
+    } catch (err) {
+      console.error("Lead Error:", err);
+      CK.showToast("Failed to submit. Please try again or WhatsApp us.", "error");
+    }
+  };
+
   // Close modal on overlay click
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-overlay')) {

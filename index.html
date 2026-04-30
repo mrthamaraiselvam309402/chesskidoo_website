@@ -376,7 +376,7 @@
               </div>
               <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" value="Admin123$" required />
+                <input type="password" name="password" placeholder="••••••••" value="Admin123$" required autocomplete="current-password" />
               </div>
               <button type="submit" class="btn btn-primary btn-block" style="width: 100%; margin-top: 20px;">Log In →</button>
             </form>
@@ -537,18 +537,18 @@
         <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Book a Free Demo</h3>
         <p style="font-size: 0.9rem; opacity: 0.7;">Our FIDE experts will reach out to you shortly.</p>
       </div>
-      <form class="modal-body" onsubmit="event.preventDefault(); alert('Request sent! We will contact you soon.'); CK.closeModal();">
+      <form class="modal-body" onsubmit="CK.handleDemoSubmit(event)">
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" required placeholder="Parent's Name">
+          <input type="text" name="fullName" required placeholder="Parent's Name">
         </div>
         <div class="form-group">
           <label>Phone Number</label>
-          <input type="tel" required placeholder="WhatsApp Number">
+          <input type="tel" name="phone" required placeholder="WhatsApp Number">
         </div>
         <div class="form-group">
           <label>Child's Age</label>
-          <input type="number" required placeholder="e.g. 8">
+          <input type="number" name="age" required placeholder="e.g. 8">
         </div>
         <div style="display:flex; gap:12px; margin-top:20px;">
           <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
