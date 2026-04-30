@@ -3,353 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="ChessKidoo — India's Premier Chess Academy for Kids. FIDE-certified chess coaching for students aged 6–18. Join 500+ students mastering the royal game." />
+  <meta name="description" content="ChessKidoo — India's Premier Chess Academy for Kids. FIDE-certified chess coaching for students aged 6–18." />
   <meta name="theme-color" content="#D97706" />
   <title>ChessKidoo — India's Premier Chess Academy for Kids</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/dashboard.css" />
-  
-  <!-- Chart.js for data visualization -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- Scroll Progress -->
-  <div id="scrollProgress"></div>
-
   <!-- Preloader -->
-  <div id="preloader">
-    <div class="preloader-chess">♛</div>
-    <div class="preloader-spinner"></div>
-    <div class="preloader-text">CHESS KIDOO</div>
+  <div id="preloader" style="position:fixed;inset:0;background:#FDF8F0;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s;">
+    <div style="font-size:3rem;animation:bounce 1s infinite;">♛</div>
   </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo" onclick="CK.showHome(); return false;">
+        <div class="logo-box">♛</div>
+        <span class="logo-text">Chess<span>Kidoo</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#home" class="nav-link" onclick="CK.scrollToSection('home'); return false;">Home</a>
+        <a href="#features" class="nav-link" onclick="CK.scrollToSection('features'); return false;">Features</a>
+        <a href="#levels" class="nav-link" onclick="CK.scrollToSection('levels'); return false;">Curriculum</a>
+        <a href="#coaches" class="nav-link" onclick="CK.scrollToSection('coaches'); return false;">Coaches</a>
+        <a href="#pricing" class="nav-link" onclick="CK.scrollToSection('pricing'); return false;">Pricing</a>
+        <a href="#faq" class="nav-link" onclick="CK.scrollToSection('faq'); return false;">FAQ</a>
+      </nav>
+      <div class="header-actions">
+        <button class="nav-link" style="color:var(--amber);font-weight:700;" onclick="CK.showLogin()">Login</button>
+        <button class="btn btn-primary" style="padding:10px 24px;" onclick="CK.openDemoModal()">Book Demo</button>
+      </div>
+    </div>
+  </header>
 
   <!-- App Container -->
   <div id="app">
 
     <!-- ======================== LANDING PAGE ======================== -->
     <div id="landing-page" class="page active">
-      <!-- Header -->
-      <header class="site-header" id="header">
-        <div class="header-inner">
-          <a href="#" class="logo" onclick="CK.showHome(); return false;">
-            <div class="logo-icon">♛</div>
-            <span class="logo-text">Chess<span>Kidoo</span></span>
-          </a>
-          <nav class="nav-links" id="desktopNav">
-            <button class="nav-link" onclick="CK.scrollToSection('home')">Home</button>
-            <button class="nav-link" onclick="CK.scrollToSection('features')">Features</button>
-            <button class="nav-link" onclick="CK.scrollToSection('levels')">Curriculum</button>
-            <button class="nav-link" onclick="CK.scrollToSection('coaches')">Coaches</button>
-            <button class="nav-link" onclick="CK.scrollToSection('pricing')">Pricing</button>
-            <button class="nav-link" onclick="CK.scrollToSection('faq')">FAQ</button>
-            <button class="btn btn-primary btn-sm" onclick="CK.openDemoModal()">Book Demo</button>
-            <button class="btn btn-login" onclick="CK.showLogin()">Log In</button>
-          </nav>
-          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu" onclick="CK.toggleMobileMenu()">☰</button>
-        </div>
-      </header>
-
-      <!-- Mobile Nav -->
-      <nav class="mobile-nav" id="mobileNav">
-        <button class="nav-link" onclick="CK.scrollToSection('home'); CK.closeMobileMenu()">Home</button>
-        <button class="nav-link" onclick="CK.scrollToSection('features'); CK.closeMobileMenu()">Features</button>
-        <button class="nav-link" onclick="CK.scrollToSection('levels'); CK.closeMobileMenu()">Curriculum</button>
-        <button class="nav-link" onclick="CK.scrollToSection('coaches'); CK.closeMobileMenu()">Coaches</button>
-        <button class="nav-link" onclick="CK.scrollToSection('pricing'); CK.closeMobileMenu()">Pricing</button>
-        <button class="nav-link" onclick="CK.scrollToSection('faq'); CK.closeMobileMenu()">FAQ</button>
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="CK.closeMobileMenu(); CK.openDemoModal()">📅 Book Free Demo</button>
-        <button class="btn btn-login" style="margin-top:8px;" onclick="CK.closeMobileMenu(); CK.showLogin()">Log In</button>
-      </nav>
-
+      
       <!-- Hero -->
       <section class="hero" id="home">
-        <div class="hero-bg"></div>
-        <div class="hero-pattern"></div>
-        <div class="hero-content-wrap">
+        <div class="container">
           <div class="hero-grid">
             <div class="hero-content">
-              <div class="hero-badge reveal">🇮🇳 India's #1 Chess Academy for Kids</div>
-              <h1 class="hero-title reveal">
-                Master Chess.<br>Master <span class="line-accent">Life</span>.
-              </h1>
-              <p class="hero-sub reveal">FIDE‑certified coaching for students aged 6–18. Expert coaches, structured curriculum, and real‑time progress tracking — designed for students at every level.</p>
-              <div class="hero-btns reveal">
+              <div class="hero-badge">IN India's #1 Chess Academy for Kids</div>
+              <h1 class="hero-title">Master Chess.<br>Master <span>Life</span>.</h1>
+              <p class="hero-sub">FIDE‑certified coaching for students aged 6–18. Expert coaches, structured curriculum, and real‑time progress tracking — all on one platform.</p>
+              <div class="hero-btns">
                 <button class="btn btn-primary" onclick="CK.openDemoModal()">📅 Book Free Demo Class</button>
-                <a href="https://wa.me/919025846663" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">💬 WhatsApp Us</a>
+                <a href="https://wa.me/919025846663" target="_blank" class="btn btn-outline">💬 WhatsApp Us</a>
               </div>
-              <div class="hero-stats reveal">
-                <div>
-                  <div class="hero-stat-num"><span class="counter" data-target="500">0</span>+</div>
-                  <div class="hero-stat-label">Active students</div>
-                </div>
-                <div>
-                  <div class="hero-stat-num"><span class="counter" data-target="7">0</span></div>
-                  <div class="hero-stat-label">FIDE coaches</div>
-                </div>
-                <div>
-                  <div class="hero-stat-num">4.9★</div>
-                  <div class="hero-stat-label">Parent rating</div>
-                </div>
-                <div>
-                  <div class="hero-stat-num"><span class="counter" data-target="12">0</span>+</div>
-                  <div class="hero-stat-label">Championships</div>
-                </div>
+              <div class="hero-stats">
+                <div class="stat-item"><h4>500+</h4><p>Active students</p></div>
+                <div class="stat-item"><h4>7</h4><p>FIDE coaches</p></div>
+                <div class="stat-item"><h4>4.9★</h4><p>Parent rating</p></div>
+                <div class="stat-item"><h4>12+</h4><p>Championships</p></div>
               </div>
             </div>
-            <div class="hero-visual reveal">
-              <div class="hero-board-wrap">
-                <div class="board-glow"></div>
-                <div class="chessboard-container"><div class="board" id="chessboard"></div></div>
-                <div class="floating-badge badge-top">🏆 FIDE Certified</div>
-                <div class="floating-badge badge-bot">📈 Live Tracking</div>
+            <div class="hero-visual">
+              <div class="board-container">
+                <div class="board" id="chessboard"></div>
+              </div>
+              <div class="floating-badge badge-fide">🏆 FIDE Certified</div>
+              <div class="floating-badge badge-live">📊 Live Tracking</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why ChessKidoo -->
+      <section class="section" id="features">
+        <div class="container">
+          <span class="eyebrow">WHY CHESSKIDOO</span>
+          <h2 class="section-title">Everything your child needs to excel</h2>
+          <p class="section-desc">Structured learning, expert coaching, and real-time progress tracking — designed for students at every level.</p>
+          
+          <div class="features-grid">
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#F0FDF4;color:#16A34A;">📊</div>
+              <h3>Smart Progress Tracking</h3>
+              <p>Real-time dashboards for parents and students. Track every game, every lesson, and every improvement milestone.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#FEF3C7;color:#D97706;">🏅</div>
+              <h3>FIDE-Certified Coaches</h3>
+              <p>Learn from 7 coaches who hold international FIDE ratings. Our faculty includes state champions and certified instructors.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#EEF2FF;color:#4F46E5;">🎯</div>
+              <h3>Structured Curriculum</h3>
+              <p>A proven 3-tier progression system from beginner to tournament-ready. Each level has clear milestones and assessments.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#FDF2F8;color:#DB2777;">🧠</div>
+              <h3>Cognitive Development</h3>
+              <p>Chess boosts memory, concentration, and logical thinking. Our students consistently show measurable academic improvement.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#FFF7ED;color:#C2410C;">🏆</div>
+              <h3>Tournament Preparation</h3>
+              <p>Dedicated coaching for district, state, and national competitions. We prepare students for greatness on every stage.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon" style="background:#F0F9FF;color:#0284C7;">🧑‍🤝‍🧑</div>
+              <h3>Parent Portal</h3>
+              <p>Full visibility into your child's journey. Attendance, game analysis, coach notes, and direct messaging — all in one place.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Curriculum -->
+      <section class="section curriculum" id="levels">
+        <div class="container">
+          <span class="eyebrow">CURRICULUM</span>
+          <h2 class="section-title">Three levels. One journey.</h2>
+          <p class="section-desc">A structured progression from first moves to international competition.</p>
+          
+          <div class="curr-grid">
+            <div class="curr-card">
+              <span class="curr-level">LEVEL 01</span>
+              <h4>Pawn to Player</h4>
+              <p>For absolute beginners (ages 6–10). Master piece movements and basic tactics in a fun, encouraging environment.</p>
+              <ul class="curr-list">
+                <li>Piece movements</li>
+                <li>Basic tactics: forks & pins</li>
+                <li>Checkmate patterns</li>
+              </ul>
+            </div>
+            <div class="curr-card popular">
+              <div class="popular-label">Most Popular</div>
+              <span class="curr-level">LEVEL 02</span>
+              <h4>Strategic Thinker</h4>
+              <p>Deep strategy, tournament preparation, and building your personal opening repertoire for ages 10–14.</p>
+              <ul class="curr-list">
+                <li>Advanced combinations</li>
+                <li>Opening repertoire</li>
+                <li>Game analysis</li>
+              </ul>
+            </div>
+            <div class="curr-card">
+              <span class="curr-level">LEVEL 03</span>
+              <h4>Tournament Ready</h4>
+              <p>Elite-level preparation and psychological training for national and international competitions (ages 14–18).</p>
+              <ul class="curr-list">
+                <li>Opening theory</li>
+                <li>Endgame mastery</li>
+                <li>Chess psychology</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Faculty -->
+      <section class="section" id="coaches">
+        <div class="container">
+          <span class="eyebrow">EXPERT FACULTY</span>
+          <h2 class="section-title">Meet the minds behind the moves</h2>
+          <p class="section-desc">7 FIDE-certified coaches with international ratings and state championship experience.</p>
+          
+          <div class="faculty-grid">
+            <div class="coach-card">
+              <div class="coach-visual">♔</div>
+              <div class="coach-info">
+                <span class="coach-badge">ADVANCED</span>
+                <h4>Ranjith</h4>
+                <p>FIDE-certified coach with 2+ years of experience training young talents.</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Philosophy / Stats Section -->
-      <section style="padding: 80px 0; background: var(--ink); color: #fff; text-align: center;">
-        <div class="hero-content-wrap">
-          <div class="reveal">
-            <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 20px;">The ChessKidoo Philosophy</h2>
-            <p style="opacity: 0.8; max-width: 800px; margin: 0 auto 40px; font-size: 1.1rem; line-height: 1.8;">"Chess is life in miniature." — Garry Kasparov. Building champions through data-driven coaching and world-class expertise.</p>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px;">
-            <div class="reveal">
-              <h3 style="color: var(--amber); font-size: 1.5rem; margin-bottom: 10px;">Data-Driven Progress</h3>
-              <p style="font-size: 0.9rem; opacity: 0.7;">We track over 50 data points per student to ensure no skill gap is left unaddressed.</p>
+            <div class="coach-card">
+              <div class="coach-visual">♕</div>
+              <div class="coach-info">
+                <span class="coach-badge">INTERMEDIATE</span>
+                <h4>Vishnu</h4>
+                <p>2 years of experience at HICC, specialising in middlegame strategy.</p>
+              </div>
             </div>
-            <div class="reveal">
-              <h3 style="color: var(--amber); font-size: 1.5rem; margin-bottom: 10px;">FIDE Standard Coaching</h3>
-              <p style="font-size: 0.9rem; opacity: 0.7;">Our curriculum aligns with global standards, preparing students for international stages.</p>
+            <div class="coach-card">
+              <div class="coach-visual">♖</div>
+              <div class="coach-info">
+                <span class="coach-badge">INTERMEDIATE</span>
+                <h4>Rohith Selvaraj</h4>
+                <p>FIDE coach specialising in tactical patterns and prep.</p>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Features Section -->
-      <section id="features" class="reveal" style="padding: 100px 0;">
-        <div class="section-head">
-          <span class="eyebrow">Why ChessKidoo?</span>
-          <h2>Everything Your Child Needs to Excel</h2>
-          <p class="lead">Structured learning, expert coaching, and real-time progress tracking — designed for students at every level.</p>
-        </div>
-        <div class="feat-grid">
-          <div class="feat-card">
-            <div class="feat-icon-wrap">📊</div>
-            <h3>Smart Progress Tracking</h3>
-            <p>Real-time dashboards for parents and students. Track every game, lesson, and improvement milestone.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon-wrap">🌍</div>
-            <h3>FIDE-Certified Coaches</h3>
-            <p>Learn from 7 coaches who hold international FIDE ratings. Our faculty includes state champions.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon-wrap">📚</div>
-            <h3>Structured Curriculum</h3>
-            <p>A proven 3-tier progression system from beginner to tournament-ready with clear milestones.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon-wrap">🧠</div>
-            <h3>Cognitive Development</h3>
-            <p>Chess boosts memory and logical thinking. Our students show measurable academic improvement.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon-wrap">🏆</div>
-            <h3>Tournament Preparation</h3>
-            <p>Dedicated coaching for district, state, and national competitions. We prepare students for greatness.</p>
-          </div>
-          <div class="feat-card">
-            <div class="feat-icon-wrap">🔐</div>
-            <h3>Parent Portal</h3>
-            <p>Full visibility into your child's journey. Attendance, game analysis, and coach notes in one place.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Levels Section -->
-      <section id="levels" class="reveal" style="padding: 100px 0; background: var(--cream-dark);">
-        <div class="section-head">
-          <span class="eyebrow">Student Levels</span>
-          <h2>Three Levels – One Journey</h2>
-          <p class="lead">A structured progression from first moves to international competition.</p>
-        </div>
-        <div class="feat-grid">
-          <div class="feat-card" style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">♟</div>
-            <h3>Pawn to Player</h3>
-            <p style="font-size: 0.8rem; font-weight: 700; color: var(--amber); margin-bottom: 15px;">AGES 6–10</p>
-            <p>Master absolute piece movements and basic tactics in a fun, encouraging environment.</p>
-            <button class="btn btn-ghost" style="margin-top: 20px;" onclick="CK.openDemoModal()">Start Journey</button>
-          </div>
-          <div class="feat-card" style="text-align: center; border: 2px solid var(--amber);">
-            <div style="font-size: 3rem; margin-bottom: 20px;">♗</div>
-            <h3>Strategic Thinker</h3>
-            <p style="font-size: 0.8rem; font-weight: 700; color: var(--amber); margin-bottom: 15px;">AGES 10–14</p>
-            <p>Deep strategy, tournament preparation, and building your personal opening repertoire.</p>
-            <button class="btn btn-primary" style="margin-top: 20px;" onclick="CK.openDemoModal()">Advance Skills</button>
-          </div>
-          <div class="feat-card" style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">♛</div>
-            <h3>Tournament Ready</h3>
-            <p style="font-size: 0.8rem; font-weight: 700; color: var(--amber); margin-bottom: 15px;">AGES 14–18</p>
-            <p>Elite-level preparation and psychological training for national and international competitions.</p>
-            <button class="btn btn-ghost" style="margin-top: 20px;" onclick="CK.openDemoModal()">Go Elite</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Coaches Section -->
-      <section id="coaches" class="reveal" style="padding: 100px 0;">
-        <div class="section-head">
-          <span class="eyebrow">Expert Faculty</span>
-          <h2>Meet the Minds Behind the Moves</h2>
-          <p class="lead">7 FIDE-certified coaches with international ratings and state championship experience.</p>
-        </div>
-        <div class="feat-grid">
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♔ Ranjith</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">FIDE 2200+ · 2+ Years Exp</p>
-            <p style="margin-top: 10px;">Expert in training young talents to achieve international ratings.</p>
-          </div>
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♕ Vishnu</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">Middlegame Strategy Expert</p>
-            <p style="margin-top: 10px;">2 years of experience at Hindustan Incubation Chess Club.</p>
-          </div>
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♖ Rohith Selvaraj</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">Tactical Patterns Specialist</p>
-            <p style="margin-top: 10px;">FIDE-certified coach specializing in competitive preparation.</p>
-          </div>
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♗ Gyansurya</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">Child Specialist · AFM Title</p>
-            <p style="margin-top: 10px;">Making chess approachable and enjoyable for younger students.</p>
-          </div>
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♘ Saran</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">Beginner Engagement Expert</p>
-            <p style="margin-top: 10px;">Dedicated specialist with a talent for keeping students motivated.</p>
-          </div>
-          <div class="feat-card">
-            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); margin-bottom: 10px;">♚ Haris</div>
-            <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ink); opacity: 0.5;">Chess Psychology Specialist</p>
-            <p style="margin-top: 10px;">Building mental strength alongside competitive chess skills.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Testimonials Section -->
-      <section id="testimonials" class="reveal" style="padding: 100px 0; background: var(--bg-dark); color: #fff;">
-        <div class="section-head">
-          <span class="eyebrow" style="color: var(--amber-light);">Parent Reviews</span>
-          <h2 style="color: #fff;">What parents say about us</h2>
-          <p class="lead" style="color: rgba(255,255,255,0.7);">Real stories from families who chose ChessKidoo for their children.</p>
-        </div>
-        <div class="feat-grid">
-          <div class="feat-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-            <p style="font-style: italic; margin-bottom: 20px;">"My daughter joined ChessKidoo at age 7 knowing nothing. Within 6 months she was winning at her school tournament. The coaches are incredibly patient and the progress dashboard keeps us fully informed."</p>
-            <p style="font-weight: 700; color: var(--amber-light);">Parent of Student (Age 7)</p>
-          </div>
-          <div class="feat-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-            <p style="font-style: italic; margin-bottom: 20px;">"Ranjith sir is outstanding. My son Arjun has improved so much in concentration and academic performance since he started here. The structured curriculum is what sets ChessKidoo apart."</p>
-            <p style="font-weight: 700; color: var(--amber-light);">Arjun's Mother</p>
-          </div>
-          <div class="feat-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-            <p style="font-style: italic; margin-bottom: 20px;">"Best investment we've made for our child. Kavya won the district championship in her first year! The tournament preparation sessions are absolutely world-class."</p>
-            <p style="font-weight: 700; color: var(--amber-light);">Kavya's Father</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Pricing Section -->
-      <section id="pricing" class="reveal" style="padding: 100px 0;">
-        <div class="section-head">
-          <span class="eyebrow">Simple, Affordable Plans</span>
-          <h2>No hidden fees</h2>
-          <p class="lead">Choose the plan that fits your child's goals. All plans include a free demo class.</p>
-        </div>
-        <div class="feat-grid">
-          <div class="feat-card">
-            <h3>Pawn Plan</h3>
-            <p style="font-size: 2rem; color: var(--amber); margin: 10px 0;">₹999<span style="font-size: 0.9rem; color: var(--ink); opacity: 0.5;">/mo</span></p>
-            <ul style="list-style: none; padding: 0; font-size: 0.9rem; opacity: 0.8;">
-              <li style="margin-bottom: 8px;">✓ 8 live sessions/month</li>
-              <li style="margin-bottom: 8px;">✓ Beginner curriculum (Level 1)</li>
-              <li style="margin-bottom: 8px;">✓ Parent progress dashboard</li>
-              <li style="margin-bottom: 8px;">✓ WhatsApp support</li>
-            </ul>
-            <button class="btn btn-ghost" style="width: 100%; margin-top: 20px;" onclick="CK.openDemoModal()">Book Demo</button>
-          </div>
-          <div class="feat-card" style="border: 2px solid var(--amber);">
-            <div style="position: absolute; top: -15px; right: 20px; background: var(--amber); color: #fff; padding: 5px 15px; border-radius: 99px; font-size: 0.7rem; font-weight: 900;">MOST POPULAR</div>
-            <h3>Bishop Plan</h3>
-            <p style="font-size: 2rem; color: var(--amber); margin: 10px 0;">₹1,799<span style="font-size: 0.9rem; color: var(--ink); opacity: 0.5;">/mo</span></p>
-            <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
-              <li style="margin-bottom: 8px;">✓ 12 live sessions/month</li>
-              <li style="margin-bottom: 8px;">✓ Levels 1 & 2 access</li>
-              <li style="margin-bottom: 8px;">✓ Full parent & student portal</li>
-              <li style="margin-bottom: 8px;">✓ Game analysis reports</li>
-            </ul>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="CK.openDemoModal()">Book Demo</button>
-          </div>
-          <div class="feat-card">
-            <h3>Queen Plan</h3>
-            <p style="font-size: 2rem; color: var(--amber); margin: 10px 0;">₹2,999<span style="font-size: 0.9rem; color: var(--ink); opacity: 0.5;">/mo</span></p>
-            <ul style="list-style: none; padding: 0; font-size: 0.9rem; opacity: 0.8;">
-              <li style="margin-bottom: 8px;">✓ 16 live sessions/month</li>
-              <li style="margin-bottom: 8px;">✓ All 3 levels + advanced content</li>
-              <li style="margin-bottom: 8px;">✓ 1-on-1 coaching sessions</li>
-              <li style="margin-bottom: 8px;">✓ FIDE rating preparation</li>
-            </ul>
-            <button class="btn btn-ghost" style="width: 100%; margin-top: 20px;" onclick="CK.openDemoModal()">Book Demo</button>
+            <div class="coach-card">
+              <div class="coach-visual">♗</div>
+              <div class="coach-info">
+                <span class="coach-badge">BEGINNER, INTERMEDIATE</span>
+                <h4>Gyansurya</h4>
+                <p>Child specialist and AFM title holder, making chess enjoyable.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- Footer -->
-      <footer class="site-footer" style="background: var(--bg-dark); color: #fff; padding: 80px 0 20px;">
-        <div class="header-inner" style="flex-direction: column; gap: 40px; text-align: center;">
-          <div class="logo">
-            <div class="logo-icon">♛</div>
-            <span class="logo-text" style="color: #fff;">Chess<span>Kidoo</span></span>
+      <footer class="section" style="background:#1F2937;color:#fff;padding:60px 0;">
+        <div class="container" style="text-align:center;">
+          <div class="logo" style="justify-content:center;margin-bottom:24px;">
+            <div class="logo-box">♛</div>
+            <span class="logo-text" style="color:#fff;">Chess<span>Kidoo</span></span>
           </div>
-          <p style="opacity: 0.7; max-width: 600px; margin: 0 auto;">India's #1 FIDE-certified chess academy for students aged 6–18. Building champions through data-driven coaching.</p>
-          <div style="display: flex; gap: 40px; justify-content: center; margin-top: 20px;">
-            <a href="tel:+919025846663" style="color: #fff; text-decoration: none;">📞 +91 90258 46663</a>
-            <a href="mailto:chesskidoo@gmail.com" style="color: #fff; text-decoration: none;">📧 chesskidoo@gmail.com</a>
-          </div>
-          <div style="display: flex; gap: 20px; font-size: 0.8rem; opacity: 0.5; justify-content: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; width: 100%;">
-            <span>© 2026 ChessKidoo, Inc.</span>
-            <span>Recognized by FIDE</span>
+          <p style="opacity:0.6;margin-bottom:24px;">India's #1 FIDE-certified chess academy for kids.</p>
+          <div style="display:flex;gap:20px;justify-content:center;">
+            <span>© 2026 ChessKidoo</span>
+            <span>FIDE Certified</span>
             <span>ISO 9001:2015</span>
-            <span>AICF Affiliate</span>
           </div>
         </div>
       </footer>
+
     </div>
 
-    <!-- Dashboards and Modals (Remain same as previous step for functionality) -->
-    <!-- (Included in final build but omitted here for focus on landing content) -->
+    <!-- ======================== DASHBOARDS ======================== -->
+    <!-- (Hidden by default, shown by router.js) -->
     <div id="login-page" class="page">...</div>
     <div id="admin-page" class="page">...</div>
     <div id="student-page" class="page">...</div>
     <div id="coach-page" class="page">...</div>
 
-    <div class="modal-overlay" id="contactModal">...</div>
-    <div class="snackbar" id="snackbar"></div>
-
   </div>
 
+  <!-- Modals -->
+  <div class="modal-overlay" id="contactModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:24px;font-size:2rem;text-align:center;">Book a Free Demo</h3>
+      <form id="contactForm">
+        <input type="text" placeholder="Name" style="width:100%;padding:14px;margin-bottom:12px;border:1px solid #ddd;border-radius:12px;">
+        <input type="tel" placeholder="Phone" style="width:100%;padding:14px;margin-bottom:12px;border:1px solid #ddd;border-radius:12px;">
+        <button class="btn btn-primary" style="width:100%;">Submit Request</button>
+      </form>
+      <button class="btn btn-outline" style="width:100%;margin-top:12px;" onclick="CK.closeModal('contactModal')">Close</button>
+    </div>
+  </div>
+
+  <div class="snackbar" id="snackbar"></div>
+
+  <!-- Scripts -->
   <script src="assets/js/main.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/router.js"></script>
@@ -358,31 +259,26 @@
   <script src="assets/js/coach.js"></script>
 
   <script>
-    // Initial animations
     document.addEventListener('DOMContentLoaded', () => {
-      // Chessboard simulation
-      const board = document.getElementById('chessboard');
-      if (board) {
-        const blackPieces = ['♜','♞','♝','♛','♚','♝','♞','♜'];
-        const whitePieces = ['♖','♘','♗','♕','♔','♗','♘','♖'];
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const sq = document.createElement('div');
-            sq.className = 'board-square ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
-            if (r === 0) sq.textContent = blackPieces[c];
-            else if (r === 1) sq.textContent = '♟';
-            else if (r === 6) sq.textContent = '♙';
-            else if (r === 7) sq.textContent = whitePieces[c];
-            board.appendChild(sq);
+      // Chessboard
+      const b = document.getElementById('chessboard');
+      if (b) {
+        for (let r=0;r<8;r++) {
+          for (let c=0;c<8;c++) {
+            const s = document.createElement('div');
+            s.className = 'sq ' + ((r+c)%2===0?'l':'d');
+            // Add some pieces for visual
+            if (r===0) s.textContent = ['♜','♞','♝','♛','♚','♝','♞','♜'][c];
+            if (r===1) s.textContent = '♟';
+            if (r===6) s.textContent = '♙';
+            if (r===7) s.textContent = ['♖','♘','♗','♕','♔','♗','♘','♖'][c];
+            b.appendChild(s);
           }
         }
       }
-      setTimeout(() => {
-        const pre = document.getElementById('preloader');
-        if (pre) pre.classList.add('hidden');
-      }, 800);
+      setTimeout(() => document.getElementById('preloader').style.opacity = '0', 800);
+      setTimeout(() => document.getElementById('preloader').style.display = 'none', 1600);
     });
   </script>
-
 </body>
 </html>
