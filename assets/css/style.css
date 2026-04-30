@@ -409,3 +409,74 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 .hero-board-wrap:hover .chessboard-container {
   transform: rotateX(12deg) rotateY(0deg) rotateZ(0deg);
 }
+
+/* ---------------------------------------------
+   COACH CARD — Image display fix
+--------------------------------------------- */
+.coach-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.coach-card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-light, #e5e7eb);
+}
+.coach-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+}
+.coach-info { padding: 20px; }
+.coach-role { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber, #D97706); margin-bottom: 6px; }
+.coach-name { font-size: 1.15rem; font-weight: 800; color: var(--ink, #1a1512); margin: 0 0 8px; }
+.coach-bio  { font-size: 0.83rem; opacity: 0.65; line-height: 1.5; margin: 0; }
+.coach-rating-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,0,0,0.65); color: #fff;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700; backdrop-filter: blur(4px);
+}
+.coach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+/* ---------------------------------------------
+   LOADING & ERROR STATES
+--------------------------------------------- */
+.loading-wrap {
+  text-align: center; padding: 80px; font-size: 1.2rem;
+  opacity: 0.6; font-family: var(--font-display, serif);
+  animation: preloaderPulse 1.5s ease infinite;
+}
+.error-wrap {
+  text-align: center; padding: 60px; color: #991b1b;
+  background: #fee2e2; border-radius: 12px; margin: 20px 0;
+}
+
+/* ---------------------------------------------
+   SCROLL PROGRESS BAR
+--------------------------------------------- */
+#scrollProgress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+  background: var(--amber, #D97706); z-index: 99998;
+  transition: width 0.1s linear;
+}
+
+/* ---------------------------------------------
+   HEADER SCROLLED STATE
+--------------------------------------------- */
+.site-header.scrolled {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  backdrop-filter: blur(12px);
+}

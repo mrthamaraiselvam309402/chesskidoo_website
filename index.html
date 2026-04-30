@@ -55,7 +55,7 @@
         <button class="nav-link" onclick="CK.navigate('coaches')">Coaches</button>
         <button class="nav-link" onclick="CK.navigate('about')">About</button>
         <button class="nav-link btn btn-primary" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.openModal('contactModal')">Book Demo</button>
-        <button id="loginNavBtn" class="nav-link btn btn-ghost" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.navigate('login')">Log In</button>
+        <button id="loginNavBtn" class="nav-link btn btn-ghost" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.showPage('login-page')">Log In</button>
       </nav>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
     </div>
@@ -241,8 +241,9 @@
               <p class="coach-bio">Represented Anna University; expert in tactical pattern recognition.</p>
             </div>
           </div>
+          <!-- Coach 7: Haris -->
           <div class="coach-card reveal" style="transition-delay:0.6s;">
-            <div class="coach-img-wrap" style="background-image: url('https://hcjuyqicftkgpiyrkscr.supabase.co/storage/v1/object/public/Images/haris.jpg');">
+            <div class="coach-img-wrap" style="background-image: url('https://hcjuyqicftkgpiyrkscr.supabase.co/storage/v1/object/public/Images/haris.jpg'); background-size:cover; background-position:center top;">
               <div class="coach-rating-badge">Beginner</div>
             </div>
             <div class="coach-info">
@@ -343,13 +344,13 @@
       </header>
       <div class="container" style="margin-top: 20px;">
         <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('leads', this)">Demo Leads</button>
+          <button class="admin-tab active" onclick="CK.switchAdminTab('users', this)">🧑‍🎓 Roster</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('leads', this)">📋 Demo Leads</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">📅 Attendance</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('files', this)">📁 Resources</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">🏆 Tournaments</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">🥇 Achievements</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">🗓 Meetings</button>
         </nav>
         <div id="admin-tab-content" style="padding: 40px 0;">
           <div class="loading-wrap">♛ Loading Dashboard...</div>
@@ -539,14 +540,17 @@
   </div>
 
   <!-- AI Chat Window -->
-  <div id="bot-window" class="bot-window">
+  <div id="bot-window" class="bot-window" style="display:none;">
     <div class="bot-header">
-      <h4>ChessKidoo AI Assistant</h4>
-      <button onclick="CK.toggleBot()">×</button>
+      <h4>♟ ChessKidoo AI</h4>
+      <button onclick="CK.toggleBot()" style="font-size:1.4rem; line-height:1;">×</button>
     </div>
-    <div id="bot-messages" class="bot-messages"></div>
+    <div id="bot-messages" class="bot-messages">
+      <div class="bot-msg bot-msg--bot">👋 Hi! Ask me about chess lessons, fees, schedules, or coaches!</div>
+    </div>
     <div class="bot-input">
-      <input type="text" id="bot-input-field" placeholder="Ask about chess..." onkeypress="if(event.key==='Enter') CK.sendBotMessage()">
+      <input type="text" id="bot-input-field" placeholder="Ask about chess..." autocomplete="off"
+        onkeydown="if(event.key==='Enter') CK.sendBotMessage()">
       <button onclick="CK.sendBotMessage()">➤</button>
     </div>
   </div>
