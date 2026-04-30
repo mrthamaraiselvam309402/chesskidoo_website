@@ -47,6 +47,9 @@
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Document Library</h3>
+      </div>
       <div class="ck-filter-bar">
         <select id="f-level" class="ck-select" onchange="CK.filterFiles()">
           <option value="">All Levels</option>
@@ -132,8 +135,8 @@
   function tabMeetings(el) {
     el.innerHTML = `
       <div style="display:flex; justify-content:center; align-items:flex-start; padding:40px 0;">
-        <div class="ck-card" style="width:100%; max-width:480px; padding:40px;">
-          <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">Schedule Meeting Reminder</h3>
+        <div class="ck-card" style="width:100%; max-width:540px; padding:40px;">
+          <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">📅 Schedule a Session</h3>
           <form onsubmit="CK.scheduleMeeting(event)">
             <input class="ck-input" type="url" id="meet-url" placeholder="Meeting URL" required style="margin-bottom:16px;">
             <input class="ck-input" type="datetime-local" id="meet-dt" required style="margin-bottom:16px;">
@@ -190,7 +193,7 @@
 
   async function tabAttendance(el) {
     el.innerHTML = `
-      <h2 style="text-align:center; font-family:var(--font-display); margin-bottom:24px;">User Attendance</h2>
+      <h2 style="text-align:center; font-family:var(--font-display); font-size:2.5rem; margin-bottom:24px; color:var(--ink);">Attendance Tracker</h2>
       <div class="ck-coach-tabs" id="att-coach-tabs">
         ${COACHES.map((c,i) => `
           <button class="ck-coach-tab ${i===0?'active':''}" onclick="CK.switchAttCoach('${c}', this)">${c}</button>
@@ -290,6 +293,9 @@
     window._ckUsers = users || [];
 
     el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Student Roster</h3>
+      </div>
       <div class="ck-filter-bar" style="margin-bottom:24px;">
         <select class="ck-select" onchange="CK.filterByCoach(this.value)">
           <option value="">Select Coach</option>
@@ -362,7 +368,7 @@
   function tabTournaments(el) {
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0;">Tournament Results</h3>
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🏆 Tournament Results</h3>
         <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
       </div>
       <div class="ck-empty-state">🏆<p>No tournament data yet. Add your first result!</p></div>
@@ -372,7 +378,7 @@
   function tabAchievements(el) {
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0;">Student Achievements</h3>
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🎖 Student Achievements</h3>
         <button class="ck-btn ck-btn-dark" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
       </div>
       <div class="ck-empty-state">🥇<p>No achievements posted yet. Celebrate your champions!</p></div>

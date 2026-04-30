@@ -46,7 +46,7 @@
 
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0;">My Roster (${list.length})</h3>
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2rem; color:var(--ink);">My Roster (${list.length})</h3>
         <button class="ck-btn ck-btn-dark" onclick="CK.exportCoachCSV()">📥 Export Roster</button>
       </div>
       <div class="ck-table-wrap">
@@ -101,7 +101,7 @@
 
     el.innerHTML = `
       <div style="margin-bottom:24px;">
-        <h3 style="margin:0;">Mark Attendance</h3>
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Attendance Tracker</h3>
         <p style="opacity:0.6; font-size:0.9rem;">Date: <strong style="color:var(--ink);">${new Date().toLocaleDateString('en-GB')}</strong></p>
       </div>
       <div class="ck-table-wrap">
@@ -161,7 +161,7 @@
 
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0;">My Shared Resources</h3>
+        <h3 style="margin:0; font-family:var(--font-display); font-size:2rem; color:var(--ink);">My Shared Resources</h3>
         <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Resource</button>
       </div>
       <div class="ck-table-wrap">

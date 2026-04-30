@@ -411,7 +411,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 
 /* ---------------------------------------------
-   COACH CARD — Image display fix
+   COACH CARD  Image display fix
 --------------------------------------------- */
 .coach-img-wrap {
   width: 100%;
@@ -482,7 +482,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 
 /* ---------------------------------------------
-   LOGIN PAGE — Matches chesskidoo.com reference
+   LOGIN PAGE  Matches chesskidoo.com reference
 --------------------------------------------- */
 .login-bg-section {
   min-height: 100vh;
@@ -522,7 +522,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 .login-logo { display: flex; flex-direction: column; align-items: center; }
 
 /* ---------------------------------------------
-   ADMIN PORTAL — Matches chesskidoo.com/admin
+   ADMIN PORTAL  Matches chesskidoo.com/admin
 --------------------------------------------- */
 .admin-tabs {
   display: flex;
@@ -682,7 +682,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 .ck-empty-state p { font-size: 1rem; margin-top: 12px; opacity: 0.8; }
 
 /* ---------------------------------------------
-   PRICING CARDS — Match Screenshots
+   PRICING CARDS  Match Screenshots
 --------------------------------------------- */
 .pricing-grid {
   display: grid;
@@ -737,7 +737,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 .price-note { text-align: center; font-size: 0.8rem; opacity: 0.6; margin-top: 16px; margin-bottom: 0; }
 
 /* ---------------------------------------------
-   FOOTER CONTACT BUTTON — Match Screenshot
+   FOOTER CONTACT BUTTON  Match Screenshot
 --------------------------------------------- */
 .demo-btn-gray {
   background: rgba(255,255,255,0.4);
