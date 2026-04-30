@@ -1,206 +1,208 @@
-/* assets/js/admin.js ----------------------------------------------------
-   Handles the admin dashboard: fetches data, fills tables, shows stats.
+/* assets/js/admin.js -------------------------------------------------------
+   Dynamic Admin Dashboard for ChessKidoo
    --------------------------------------------------------------- */
+
 (() => {
-  const token = `Bearer ${localStorage.getItem('ck_token')}`;
-  const headers = { Authorization: token, 'Content-Type': 'application/json' };
+  const CK = window.CK = window.CK || {};
 
-  // Helper – generic fetch with auth
-  const _fetch = (url, opts = {}) => fetch(url, { headers, ...opts })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    }).catch(err => {
-      console.log('API not available, using mock data');
-      // Return mock data for demo
-      if (url.includes('/students')) {
-        return Promise.resolve([
-          { id: 1, name: "Riya", age: 10, level: "Beginner", coach_name: "Vishnu" },
-          { id: 2, name: "Adhavan", age: 13, level: "Intermediate", coach_name: "Ranjith" },
-          { id: 3, name: "Saran", age: 16, level: "Advanced", coach_name: "Gyansurya" }
-        ]);
-      } else if (url.includes('/coaches')) {
-        return Promise.resolve([
-          { id: 1, name: "Ranjith", fide_rating: "2200+", email: "ranjith@chesskidoo.com" },
-          { id: 2, name: "Vishnu", fide_rating: "1800", email: "vishnu@chesskidoo.com" },
-          { id: 3, name: "Gyansurya", fide_rating: "1600", email: "gyan@chesskidoo.com" }
-        ]);
-      } else if (url.includes('/classes')) {
-        return Promise.resolve([
-          { id: 1, title: "Beginner Basics", level: "Beginner", day: "Mon", time: "17:00", coach: "Vishnu" },
-          { id: 2, title: "Intermediate Strategies", level: "Intermediate", day: "Tue", time: "16:00", coach: "Ranjith" },
-          { id: 3, title: "Advanced Tactics", level: "Advanced", day: "Fri", time: "18:00", coach: "Gyansurya" }
-        ]);
+  CK.switchAdminTab = (tab, btn) => {
+    // Update UI
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Load content
+    CK.loadAdminTab(tab);
+  };
+
+  CK.loadAdminDashboard = () => {
+    CK.loadAdminTab('files');
+  };
+
+  CK.loadAdminTab = async (tab) => {
+    const content = document.getElementById('admin-tab-content');
+    content.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
+
+    try {
+      switch (tab) {
+        case 'files':
+          await loadFilesTab(content);
+          break;
+        case 'meetings':
+          await loadMeetingsTab(content);
+          break;
+        case 'attendance':
+          await loadAttendanceTab(content);
+          break;
+        case 'users':
+          await loadUsersTab(content);
+          break;
+        case 'tournaments':
+          content.innerHTML = '<h3>Tournaments</h3><p>Tournament management module coming soon.</p>';
+          break;
+        case 'achievements':
+          content.innerHTML = '<h3>Achievements</h3><p>Manage academy achievements here.</p>';
+          break;
       }
-      return Promise.resolve([]);
-    });
-
-  /* -----------------------------------------------------------------
-     1️⃣ STATISTICS
-     ----------------------------------------------------------------- */
-  async function loadStats() {
-    const [students, coaches, classes] = await Promise.all([
-      _fetch('/api/students'),
-      _fetch('/api/coaches'),
-      _fetch('/api/classes')
-    ]);
-    document.getElementById('statStudents').textContent = students.length;
-    document.getElementById('statCoaches').textContent = coaches.length;
-    document.getElementById('statClasses').textContent = classes.length;
-    // Demo requests = random small number
-    document.getElementById('statDemos').textContent = Math.floor(Math.random() * 5) + 1;
-  }
-
-  /* -----------------------------------------------------------------
-     2️⃣ STUDENTS TABLE
-     ----------------------------------------------------------------- */
-  async function renderStudents() {
-    const students = await _fetch('/api/students');
-    const tbody = document.querySelector('#adminStudentsTable tbody');
-    tbody.innerHTML = '';
-    students.forEach(s => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${s.id}</td>
-        <td>${s.name}</td>
-        <td>${s.age}</td>
-        <td>${s.level}</td>
-        <td>${s.coach_name || s.coach || 'N/A'}</td>
-        <td>
-          <button class="btn btn-outline btn-sm edit-student" data-id="${s.id}">✏️ Edit</button>
-          <button class="btn btn-outline btn-sm delete-student" data-id="${s.id}">🗑️</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('.edit-student').forEach(btn => {
-      btn.addEventListener('click', () => editStudent(btn.dataset.id));
-    });
-    tbody.querySelectorAll('.delete-student').forEach(btn => {
-      btn.addEventListener('click', () => deleteStudent(btn.dataset.id));
-    });
-  }
-
-  function editStudent(id) {
-    CK.showToast(`Edit student ${id} (demo)`, 'info');
-  }
-  function deleteStudent(id) {
-    if (!confirm('Delete this student?')) return;
-    CK.showToast(`Student ${id} deleted (demo)`, 'success');
-    renderStudents();
-  }
-
-  /* -----------------------------------------------------------------
-     3️⃣ COACHES TABLE
-     ----------------------------------------------------------------- */
-  async function renderCoaches() {
-    const coaches = await _fetch('/api/coaches');
-    const tbody = document.querySelector('#adminCoachesTable tbody');
-    tbody.innerHTML = '';
-    coaches.forEach(c => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${c.id}</td>
-        <td>${c.name}</td>
-        <td>${c.fide_rating}</td>
-        <td>${c.email}</td>
-        <td>
-          <button class="btn btn-outline btn-sm edit-coach" data-id="${c.id}">✏️ Edit</button>
-          <button class="btn btn-outline btn-sm delete-coach" data-id="${c.id}">🗑️</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('.edit-coach').forEach(btn => {
-      btn.addEventListener('click', () => editCoach(btn.dataset.id));
-    });
-    tbody.querySelectorAll('.delete-coach').forEach(btn => {
-      btn.addEventListener('click', () => deleteCoach(btn.dataset.id));
-    });
-  }
-
-  function editCoach(id) {
-    CK.showToast(`Edit coach ${id} (demo)`, 'info');
-  }
-  function deleteCoach(id) {
-    if (!confirm('Delete this coach?')) return;
-    CK.showToast(`Coach ${id} deleted (demo)`, 'success');
-    renderCoaches();
-  }
-
-  /* -----------------------------------------------------------------
-     4️⃣ CLASSES TABLE
-     ----------------------------------------------------------------- */
-  async function renderClasses() {
-    const classes = await _fetch('/api/classes');
-    const tbody = document.querySelector('#adminClassesTable tbody');
-    tbody.innerHTML = '';
-    classes.forEach(cls => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${cls.id}</td>
-        <td>${cls.title}</td>
-        <td>${cls.level}</td>
-        <td>${cls.day} ${cls.time}</td>
-        <td>${cls.coach || cls.coach_id}</td>
-        <td>
-          <button class="btn btn-outline btn-sm edit-class" data-id="${cls.id}">✏️ Edit</button>
-          <button class="btn btn-outline btn-sm delete-class" data-id="${cls.id}">🗑️</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('.edit-class').forEach(btn => {
-      btn.addEventListener('click', () => editClass(btn.dataset.id));
-    });
-    tbody.querySelectorAll('.delete-class').forEach(btn => {
-      btn.addEventListener('click', () => deleteClass(btn.dataset.id));
-    });
-  }
-
-  function editClass(id) {
-    CK.showToast(`Edit class ${id} (demo)`, 'info');
-  }
-  function deleteClass(id) {
-    if (!confirm('Delete this class?')) return;
-    CK.showToast(`Class ${id} deleted (demo)`, 'success');
-    renderClasses();
-  }
-
-  /* -----------------------------------------------------------------
-     5️⃣ QUICK "Add" simulators (just toast)
-     ----------------------------------------------------------------- */
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('add-student-btn')) {
-      CK.showToast('Add Student – open modal (demo)', 'info');
-    } else if (e.target.classList.contains('add-coach-btn')) {
-      CK.showToast('Add Coach – open modal (demo)', 'info');
-    } else if (e.target.classList.contains('add-class-btn')) {
-      CK.showToast('Add Class – open modal (demo)', 'info');
-    }
-  });
-
-  /* -----------------------------------------------------------------
-     6️⃣ Load Data Function (called by router)
-     ----------------------------------------------------------------- */
-  window.loadAdminData = () => {
-    const user = Auth.currentUser();
-    if (user && user.role === 'admin') {
-      document.getElementById('adminName').textContent = user.name;
-      loadStats();
-      renderStudents();
-      renderCoaches();
-      renderClasses();
+    } catch (err) {
+      console.error("Admin Tab Error:", err);
+      content.innerHTML = `<div class="error-wrap">❌ Error: ${err.message}</div>`;
     }
   };
 
-  /* -----------------------------------------------------------------
-     7️⃣ Init (only load if on admin page)
-     ----------------------------------------------------------------- */
-  window.addEventListener('DOMContentLoaded', () => {
-    // Router will call loadAdminData when needed
-  });
+  /* ─── Tab Loaders ─── */
+
+  async function loadFilesTab(el) {
+    const { data: files } = await window.supabaseClient.from('document').select('*').order('created_at', { ascending: false });
+    
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3>File Management</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('uploadModal')">+ Upload Files</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Date</th><th>Document</th><th>Notes</th><th>Coach</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${files.map(f => `
+              <tr>
+                <td>${new Date(f.created_at).toLocaleDateString()}</td>
+                <td style="font-weight:600;">${f.file_name.split('/').pop()}</td>
+                <td>${f.name || '-'}</td>
+                <td>${f.coach}</td>
+                <td>
+                  <button class="btn btn-ghost btn-sm" onclick="CK.deleteFile('${f.file_name}')">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function loadMeetingsTab(el) {
+    el.innerHTML = `
+      <div style="max-width: 500px; margin: 0 auto;" class="feat-card">
+        <h3 style="text-align:center; margin-bottom:24px;">Schedule Meeting Reminder</h3>
+        <form onsubmit="CK.handleMeetingSubmit(event)">
+          <div class="form-group">
+            <label>Meeting URL</label>
+            <input type="url" name="meetingUrl" required placeholder="https://zoom.us/j/...">
+          </div>
+          <div class="form-group">
+            <label>Date & Time</label>
+            <input type="datetime-local" name="meetingTime" required>
+          </div>
+          <div class="form-group">
+            <label>Batch</label>
+            <input type="text" name="batch" required placeholder="e.g. Batch 1">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Schedule Reminder</button>
+        </form>
+      </div>
+    `;
+  }
+
+  async function loadAttendanceTab(el) {
+    const { data: users } = await window.supabaseClient.from('users').select('*').eq('role', 'student');
+    
+    el.innerHTML = `
+      <h3>User Attendance</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+        ${users.map(u => `
+          <button class="btn btn-ghost btn-sm" onclick="CK.loadUserAttendance('${u.id}', '${u.full_name}')">${u.full_name}</button>
+        `).join('')}
+      </div>
+      <div id="attendanceCalendar" class="feat-card" style="min-height: 300px; display:flex; align-items:center; justify-content:center; opacity:0.5;">
+        Select a student to view attendance calendar
+      </div>
+    `;
+  }
+
+  async function loadUsersTab(el) {
+    const { data: users } = await window.supabaseClient.from('users').select('*').order('userid', { ascending: true });
+    
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3>User Management</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('addUserModal')">+ Add Student</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>ID</th><th>Full Name</th><th>Email</th><th>Level</th><th>Role</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td>${u.userid || '-'}</td>
+                <td style="font-weight:600;">${u.full_name}</td>
+                <td>${u.email}</td>
+                <td><span class="hero-badge" style="font-size:0.7rem;">${u.level}</span></td>
+                <td>${u.role}</td>
+                <td>
+                  <button class="btn btn-ghost btn-sm">Edit</button>
+                  <button class="btn btn-ghost btn-sm" style="color:red;" onclick="CK.deleteUser('${u.id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  /* ─── Handlers ─── */
+
+  CK.handleMeetingSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      meetingLink: form.meetingUrl.value,
+      meetingTime: new Date(form.meetingTime.value).toISOString(),
+      batch: form.batch.value
+    };
+
+    try {
+      CK.showToast("Scheduling reminder...", "info");
+      await fetch("https://xttxauuiucmoqedkxdoa.supabase.co/functions/v1/create-reminder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      CK.showToast("Reminder scheduled successfully!", "success");
+      form.reset();
+    } catch (err) {
+      CK.showToast("Failed to schedule reminder", "error");
+    }
+  };
+
+  CK.loadUserAttendance = async (id, name) => {
+    const calendarEl = document.getElementById('attendanceCalendar');
+    calendarEl.innerHTML = '♛ Loading Calendar...';
+    calendarEl.style.opacity = '1';
+
+    const { data: attendance } = await window.supabaseClient.from('attendance').select('*').eq('userid', id);
+    
+    // Simple calendar render (simplified for Vanilla)
+    calendarEl.innerHTML = `
+      <div style="width:100%;">
+        <h4 style="text-align:center; margin-bottom:20px;">Attendance: ${name}</h4>
+        <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; text-align:center;">
+          ${['S','M','T','W','T','F','S'].map(d => `<div style="font-weight:bold; opacity:0.5;">${d}</div>`).join('')}
+          ${Array.from({length: 30}, (_, i) => {
+            const date = `2026-04-${String(i+1).padStart(2, '0')}`;
+            const record = attendance.find(a => a.date === date);
+            const status = record ? (record.status === 'present' ? '✅' : '❌') : '';
+            return `<div style="padding:15px; background:var(--cream); border-radius:8px; position:relative;">
+              ${i+1} <span style="position:absolute; bottom:5px; right:5px; font-size:0.8rem;">${status}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  };
+
 })();

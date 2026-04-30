@@ -387,79 +387,34 @@
 
     <!-- Dashboards (remain in DOM for SPA functionality) -->
     <!-- Admin Dashboard -->
+    <!-- ======================== ADMIN PAGE ======================== -->
     <div id="admin-page" class="page">
-      <div class="dashboard-layout">
-        <nav class="sidebar">
-          <div class="sidebar-brand">
-            <div class="logo-icon">♛</div>
-            <span>ChessKidoo</span>
+      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="eyebrow" style="color: var(--amber-pale)">Control Center</span>
+            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Admin Dashboard</h1>
           </div>
-          <div class="sidebar-nav">
-            <a href="#" class="active" onclick="CK.showAdmin(); return false;">🏠 Dashboard</a>
-            <a href="#admin-students">🧑‍🤝‍🧑 Students</a>
-            <a href="#admin-coaches">👩‍🏫 Coaches</a>
-            <a href="#admin-classes">📅 Classes</a>
-            <a href="#" onclick="Auth.logout(); return false;">🚪 Log out</a>
-          </div>
+          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+        </div>
+      </header>
+
+      <div class="container" style="margin-top: 20px;">
+        <!-- Tab Navigation -->
+        <nav class="admin-tabs">
+          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
         </nav>
-        <main class="dashboard-main">
-          <header class="dashboard-header">
-            <h2>Admin Dashboard</h2>
-            <div class="user-meta">Welcome, <span id="adminName">Admin</span></div>
-          </header>
 
-          <div class="stats-grid">
-            <div class="stat-card"><h4>Students</h4><p id="statStudents">0</p></div>
-            <div class="stat-card"><h4>Coaches</h4><p id="statCoaches">0</p></div>
-            <div class="stat-card"><h4>Classes</h4><p id="statClasses">0</p></div>
-            <div class="stat-card"><h4>Demo Requests</h4><p id="statDemos">0</p></div>
-          </div>
-
-          <section id="admin-students" class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-              <h3>Student List</h3>
-              <button class="btn btn-primary add-student-btn" style="padding: 8px 16px; font-size: 0.8rem;">+ Add Student</button>
-            </div>
-            <div class="table-wrapper" style="overflow-x:auto;">
-              <table class="table" id="adminStudentsTable">
-                <thead>
-                  <tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Actions</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="admin-coaches" class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-              <h3>Coach List</h3>
-              <button class="btn btn-primary add-coach-btn" style="padding: 8px 16px; font-size: 0.8rem;">+ Add Coach</button>
-            </div>
-            <div class="table-wrapper" style="overflow-x:auto;">
-              <table class="table" id="adminCoachesTable">
-                <thead>
-                  <tr><th>#</th><th>Name</th><th>FIDE Rating</th><th>Email</th><th>Actions</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="admin-classes" class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-              <h3>Class Schedule</h3>
-              <button class="btn btn-primary add-class-btn" style="padding: 8px 16px; font-size: 0.8rem;">+ Add Class</button>
-            </div>
-            <div class="table-wrapper" style="overflow-x:auto;">
-              <table class="table" id="adminClassesTable">
-                <thead>
-                  <tr><th>#</th><th>Title</th><th>Level</th><th>Day / Time</th><th>Coach</th><th>Actions</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </section>
-        </main>
+        <!-- Tab Contents -->
+        <div id="admin-tab-content" style="padding: 40px 0;">
+          <!-- Content will be injected here by admin.js -->
+          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        </div>
       </div>
     </div>
     <!-- Student Dashboard -->
