@@ -1,21 +1,17 @@
 {
-  "name": "chesskidoo-fullstack",
-  "version": "1.0.0",
-  "description": "Fullstack ChessKidoo Application",
-  "main": "server.js",
+  "name": "chesskidoo-website",
+  "version": "2.0.0",
+  "description": "ChessKidoo — India's Premier Chess Academy. Static SPA with Supabase backend.",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "npx serve . -p 3000",
+    "lint": "echo 'No build step required — pure static SPA'"
   },
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.12.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "serve": "^14.2.3"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
