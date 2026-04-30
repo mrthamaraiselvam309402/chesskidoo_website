@@ -93,6 +93,49 @@
     });
   }, { threshold: 0.1 });
 
+  // ---- Gemini Chatbot ----
+  CK.toggleChat = () => {
+    const drawer = document.getElementById('chatDrawer');
+    if (drawer) drawer.classList.toggle('active');
+  };
+
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+
+  if (chatForm) {
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      // Add user message
+      addMessage(text, 'user');
+      chatInput.value = '';
+
+      try {
+        const { GoogleGenerativeAI } = await import("@google/generative-ai");
+        const genAI = new GoogleGenerativeAI(window.APP_CONFIG.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+        const result = await model.generateContent(text);
+        const responseText = result.response.text();
+        addMessage(responseText, 'bot');
+      } catch (err) {
+        console.error("Gemini Error:", err);
+        addMessage("Sorry, I'm having trouble connecting right now. Please try again later.", 'bot');
+      }
+    });
+  }
+
+  function addMessage(text, sender) {
+    const div = document.createElement('div');
+    div.className = `msg ${sender}`;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     
@@ -111,6 +154,23 @@
         if (row === 7) sq.textContent = pieces[col].replace(/[♜♞♝♛♚]/g, m => ({'♜':'♖','♞':'♘','♝':'♗','♛':'♕','♚':'♔'}[m]));
         board.appendChild(sq);
       }
+    }
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.querySelector('.nav-links');
+    if (menuToggle && navLinks) {
+      menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+
+      // Close menu on link click
+      navLinks.querySelectorAll('button, a').forEach(link => {
+        link.addEventListener('click', () => {
+          menuToggle.classList.remove('active');
+          navLinks.classList.remove('active');
+        });
+      });
     }
   });
 
