@@ -752,3 +752,117 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 .demo-btn-gray:hover { background: rgba(255,255,255,0.6); color: #fff; }
 
+
+/* --- Pricing Section --- */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.price-card {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.price-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-lg);
+}
+
+.dark-card {
+  background: var(--ink);
+  color: white;
+}
+
+.gold-card {
+  background: linear-gradient(145deg, #2c251e, #1a1612);
+  color: white;
+  border: 2px solid var(--amber-light);
+}
+
+.price-rank {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  color: var(--amber-light);
+}
+
+.price-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.price-desc {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin-bottom: 25px;
+}
+
+.price-amount {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+  font-family: var(--font-display);
+}
+
+.price-amount span {
+  font-size: 1.2rem;
+  opacity: 0.6;
+}
+
+.price-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 40px 0;
+  flex-grow: 1;
+}
+
+.price-features li {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+}
+
+.check {
+  color: var(--amber-light);
+  font-weight: 800;
+}
+
+.price-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  background: white;
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gold-btn {
+  background: var(--amber-light);
+  color: var(--ink);
+}
+
+.price-note {
+  margin-top: 15px;
+  font-size: 0.85rem;
+  text-align: center;
+  opacity: 0.6;
+}
