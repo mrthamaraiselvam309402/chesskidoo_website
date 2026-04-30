@@ -676,71 +676,53 @@
     </div>
 
     <!-- Dashboards -->
+    
     <div id="admin-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Control Center</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Admin Dashboard</h1>
+      <div class="portal-container">
+        <aside class="portal-sidebar">
+          <div class="sidebar-brand">
+            <div class="brand-icon">♛</div>
+            <span>Admin Center</span>
           </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
-        </nav>
-        <div id="admin-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
-        </div>
+          <nav class="sidebar-nav">
+            <button class="nav-item active" onclick="CK.switchAdminTab('files', this)">
+              <span class="nav-icon">📁</span> Document Library
+            </button>
+            <button class="nav-item" onclick="CK.switchAdminTab('meetings', this)">
+              <span class="nav-icon">📅</span> Meetings
+            </button>
+            <button class="nav-item" onclick="CK.switchAdminTab('attendance', this)">
+              <span class="nav-icon">✅</span> Attendance
+            </button>
+            <button class="nav-item" onclick="CK.switchAdminTab('users', this)">
+              <span class="nav-icon">👥</span> Student Roster
+            </button>
+            <button class="nav-item" onclick="CK.switchAdminTab('tournaments', this)">
+              <span class="nav-icon">🏆</span> Tournaments
+            </button>
+            <button class="nav-item" onclick="CK.switchAdminTab('achievements', this)">
+              <span class="nav-icon">🎖</span> Achievements
+            </button>
+          </nav>
+          <div class="sidebar-footer">
+            <button class="btn btn-outline" style="width:100%; border-color:rgba(255,255,255,0.2); color:white;" onclick="CK.logout()">🚪 Logout</button>
+          </div>
+        </aside>
+        <main class="portal-main">
+          <header class="portal-header">
+            <div id="admin-tab-title">Document Library</div>
+            <div class="portal-user">
+              <span>Academy Admin</span>
+              <div class="user-avatar">AD</div>
+            </div>
+          </header>
+          <div class="portal-content" id="admin-tab-content">
+            <!-- Content injected here -->
+          </div>
+        </main>
       </div>
     </div>
 
-    <div id="student-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Student Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">My Dashboard</h1>
-          </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <div class="dashboard-shell">
-        <main class="dashboard-main" id="student-dashboard-content"></main>
-      </div>
-      </div>
-    </div>
-
-    <div id="coach-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Coach Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Instructor Dashboard</h1>
-          </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchCoachTab('students', this)">My Students</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('attendance', this)">Mark Attendance</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('resources', this)">Shared Resources</button>
-        </nav>
-        <div id="coach-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 
 
   <!-- Modals -->

@@ -9,6 +9,14 @@
     const user = CK.currentUser || {};
     const container = document.getElementById('student-dashboard-content');
     if (!container) return;
+    const fullName = user.full_name || 'Chess Student';
+    const initial = fullName.charAt(0).toUpperCase();
+    
+    const nameDisp = document.getElementById('student-name-display');
+    const avDisp = document.getElementById('student-avatar-display');
+    if (nameDisp) nameDisp.textContent = fullName;
+    if (avDisp) avDisp.textContent = initial;
+
 
     container.innerHTML = '<div class="loading-wrap">♛ Loading Student Portal...</div>';
 

@@ -9,11 +9,26 @@
   const COACHES = ['SARAN','HARIS','GYANASURYA','YOGESH','ARIVUSELVAM','VISHNU','ROHITH SELVARAJ','RANJITH','SUDHIN'];
 
   /* ─── Tab Switching ─── */
+  
   CK.switchAdminTab = (tab, btn) => {
-    document.querySelectorAll('#admin-page .admin-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#admin-page .nav-item').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
+    
+    // Update Header Title
+    const titleMap = {
+      'files': 'Document Library',
+      'meetings': 'Schedule Sessions',
+      'attendance': 'Attendance Tracker',
+      'users': 'Student Roster',
+      'tournaments': 'Tournaments',
+      'achievements': 'Achievements'
+    };
+    const titleEl = document.querySelector('#admin-page .portal-header div:first-child');
+    if (titleEl && titleMap[tab]) titleEl.textContent = titleMap[tab];
+
     CK.loadAdminTab(tab);
   };
+
 
   CK.loadAdminDashboard = () => {
     const first = document.querySelector('#admin-page .admin-tab');
