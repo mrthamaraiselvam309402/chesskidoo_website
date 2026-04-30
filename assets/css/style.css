@@ -680,3 +680,75 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   font-size: 3rem;
 }
 .ck-empty-state p { font-size: 1rem; margin-top: 12px; opacity: 0.8; }
+
+/* ---------------------------------------------
+   PRICING CARDS — Match Screenshots
+--------------------------------------------- */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+  margin-top: 40px;
+}
+.price-card {
+  border-radius: 24px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+.dark-card {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: 1px solid #333;
+}
+.gold-card {
+  background: linear-gradient(145deg, #a48259 0%, #c4a17a 100%);
+  color: #2b2b2b;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  transform: scale(1.02);
+  z-index: 2;
+}
+@media (max-width: 900px) {
+  .gold-card { transform: none; }
+}
+
+.price-rank { font-size: 0.8rem; opacity: 0.7; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.price-title { font-size: 2rem; margin: 0 0 10px; font-family: var(--font-display); }
+.gold-card .price-title { color: #d97706; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.dark-card .price-title { color: #fff; }
+
+.price-desc { opacity: 0.7; font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4; }
+.price-amount { font-size: 3rem; font-family: var(--font-display); font-weight: 900; margin-bottom: 30px; display: flex; align-items: baseline; }
+.price-amount span { font-size: 1.1rem; font-family: var(--font-sans); font-weight: 500; opacity: 0.6; margin-left: 4px; }
+
+.price-features { list-style: none; padding: 0; margin: 0 0 40px; font-size: 1rem; line-height: 1.8; flex-grow: 1; }
+.price-features li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.check { color: #d97706; font-weight: bold; font-size: 1.1rem; flex-shrink: 0; }
+
+.price-btn { width: 100%; border-radius: 50px; height: 54px; font-size: 1rem; font-weight: 700; transition: all 0.3s; }
+.dark-card .price-btn { background: #f3f4f6; color: #111; border: none; }
+.dark-card .price-btn:hover { background: #fff; transform: translateY(-2px); }
+.gold-card .price-btn { background: transparent; color: #111; border: 2px solid #222; }
+.gold-card .price-btn:hover { background: #111; color: #fff; transform: translateY(-2px); }
+
+.price-note { text-align: center; font-size: 0.8rem; opacity: 0.6; margin-top: 16px; margin-bottom: 0; }
+
+/* ---------------------------------------------
+   FOOTER CONTACT BUTTON — Match Screenshot
+--------------------------------------------- */
+.demo-btn-gray {
+  background: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.6);
+  border: none;
+  border-radius: 50px;
+  height: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0 30px;
+  transition: all 0.3s;
+}
+.demo-btn-gray:hover { background: rgba(255,255,255,0.6); color: #fff; }
+
