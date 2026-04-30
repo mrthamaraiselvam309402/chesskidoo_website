@@ -5,67 +5,73 @@
 (() => {
   const CK = window.CK = window.CK || {};
 
-  // ---- Login Logic ----
-  const loginForm = document.getElementById('loginFormSPA');
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = loginForm.username.value;
-      const password = loginForm.password.value;
+  CK.handleLogin = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value;
+    const password = form.password.value;
 
-      try {
-        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
+    try {
+      CK.showToast("Authenticating...", "info");
+      const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Fetch user profile from profiles table
-        const { data: profile, error: profError } = await window.supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('userid', data.user.id)
-          .maybeSingle();
+      // Fetch user profile from the 'users' table
+      const { data: profile, error: profError } = await window.supabaseClient
+        .from('users')
+        .select('*')
+        .eq('userid', data.user.id)
+        .maybeSingle();
 
-        if (profError) throw profError;
+      if (profError) throw profError;
 
-        if (profile) {
-          localStorage.setItem('ck_user', JSON.stringify(profile));
-          localStorage.setItem('ck_session', JSON.stringify(data.session));
-          
-          CK.showToast(`Welcome back, ${profile.full_name}!`, 'success');
-          
-          // Redirect based on role
-          const role = profile.role || 'student';
-          CK.showPage(`${role}-page`);
-        } else {
-          throw new Error("User profile not found.");
-        }
-
-      } catch (err) {
-        console.error("Login failed:", err);
-        CK.showToast(err.message || "Invalid credentials", 'error');
+      if (profile) {
+        CK.currentUser = profile;
+        localStorage.setItem('ck_user', JSON.stringify(profile));
+        localStorage.setItem('ck_session', JSON.stringify(data.session));
+        
+        CK.showToast(`Welcome back, ${profile.full_name}!`, 'success');
+        
+        // Redirect based on role
+        const role = profile.role || 'student';
+        CK.showPage(`${role}-page`);
+        
+        // Load specific dashboard data
+        if (role === 'admin') CK.loadAdminDashboard();
+        if (role === 'student') CK.loadStudentDashboard();
+        if (role === 'coach') CK.loadCoachDashboard();
+        
+      } else {
+        throw new Error("User profile not found. Please contact admin.");
       }
-    });
-  }
 
-  // ---- Logout Logic ----
+    } catch (err) {
+      console.error("Login failed:", err);
+      CK.showToast(err.message || "Invalid credentials", 'error');
+    }
+  };
+
   CK.logout = async () => {
     await window.supabaseClient.auth.signOut();
     localStorage.removeItem('ck_user');
     localStorage.removeItem('ck_session');
-    CK.showHome();
+    CK.currentUser = null;
+    CK.showPage('landing');
     CK.showToast("Logged out successfully", 'success');
+    window.location.reload(); // Refresh to clear all states
   };
 
-  // ---- Auth Guard ----
-  CK.checkAuth = () => {
-    const user = JSON.parse(localStorage.getItem('ck_user'));
-    const session = JSON.parse(localStorage.getItem('ck_session'));
-    return (user && session);
-  };
-
-  CK.getCurrentUser = () => JSON.parse(localStorage.getItem('ck_user'));
+  // Restore session on load
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('ck_user');
+    if (savedUser) {
+      CK.currentUser = JSON.parse(savedUser);
+      // Optional: Auto-login logic could go here
+    }
+  });
 
 })();
