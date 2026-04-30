@@ -369,20 +369,6 @@
       `;
     }).join('');
   }
-</td>
-        <td style="font-weight:600;">${u.full_name || '-'}</td>
-        <td style="opacity:0.7;">${u.email || '-'}</td>
-        <td><span class="status-pill ${(u.level||'').toLowerCase().includes('inter') ? 'enrolled' : 'new'}">${(u.level||'beginner').split(' ')[0]}</span></td>
-        <td>${u.coach || '-'}</td>
-        <td style="font-weight:600;">${u.fee || '-'}</td>
-        <td><span class="status-pill ${(u.payment_status||'').toLowerCase()}">${u.payment_status||'Pending'}</span></td>
-        <td style="display:flex; gap:6px;">
-          <button class="dash-btn dash-btn-sm dash-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
-          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
-        </td>
-      </tr>
-    `).join('');
-  }
 
   CK.filterByCoach = (coach) => {
     const filtered = coach ? (window._ckUsers||[]).filter(u=>u.coach===coach) : (window._ckUsers||[]);
