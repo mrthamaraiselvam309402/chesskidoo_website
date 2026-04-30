@@ -111,8 +111,8 @@
 
         <div style="margin-top:40px;">
           <h3 style="font-family:var(--font-display); margin-bottom:20px;">Study Materials</h3>
-          <div class="table-wrapper">
-            <table class="table">
+          <div class="ck-table-wrap">
+            <table class="ck-table">
               <thead><tr><th>Date</th><th>Material</th><th>Level</th><th>Action</th></tr></thead>
               <tbody>
                 ${files.length ? files.map(f => `
@@ -120,9 +120,9 @@
                     <td>${new Date(f.created_at).toLocaleDateString()}</td>
                     <td style="font-weight:600;">${f.name || 'Resource'}</td>
                     <td><span class="hero-badge" style="font-size:0.6rem;">${f.level}</span></td>
-                    <td><button class="btn btn-ghost btn-sm" onclick="CK.downloadFile('${f.file_name}')">📥 Get File</button></td>
+                    <td><button class="ck-btn ck-btn-sm ck-btn-outline" onclick="CK.downloadFile('${f.file_name}')">📥 Get File</button></td>
                   </tr>
-                `).join('') : '<tr><td colspan="4" style="text-align:center; opacity:0.5; padding:40px;">No materials assigned to your level yet. Check back soon!</td></tr>'}
+                `).join('') : '<tr><td colspan="4" class="ck-empty">No materials assigned to your level yet. Check back soon!</td></tr>'}
               </tbody>
             </table>
           </div>

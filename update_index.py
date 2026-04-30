@@ -1,70 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="ChessKiddo — India's 1st Chess Student Tracking System and Premier Academy. FIDE-certified coaching for students aged 6–18." />
-  <meta name="theme-color" content="#D97706" />
-  <title>ChessKidoo | India's Premier Chess Academy</title>
-  
-  <!-- Professional Chess Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♛</text></svg>">
+import re
 
-  <!-- Fonts & Styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  
-  <!-- Failsafe Reveal -->
-  <script>
-    window.addEventListener('load', () => {
-      document.body.classList.add('loaded');
-      setTimeout(() => {
-        document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-      }, 500);
-    });
-    // Force reveal after 3s if load event hangs
-  </script>
-</head>
-<body>
-  <!-- Scroll Progress -->
-  <div id="scrollProgress"></div>
+with open('index.html', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-  <!-- Preloader -->
-  <div id="preloader">
-    <div class="preloader-chess">♛</div>
-    <div class="preloader-spinner"></div>
-    <div class="preloader-text">CHESS KIDDO</div>
-  </div>
+# Define the start and end of the landing page
+start_marker = r'<!-- ======================== LANDING PAGE ======================== -->'
+end_marker = r'<!-- Dashboards -->'
+login_marker = r'<div id="login-page" class="page">'
 
-  <!-- Global Header -->
-  <header class="site-header" id="header">
-    <div class="header-inner">
-      <a href="/" class="logo">
-        <div class="logo-icon">♛</div>
-        <span class="logo-text">Chess<span>Kiddo</span></span>
-      </a>
-      <nav class="nav-links" id="navLinks">
-        <button class="nav-link" onclick="CK.navigate('home')">Home</button>
-        <button class="nav-link" onclick="CK.navigate('features')">Features</button>
-        <button class="nav-link" onclick="CK.navigate('levels')">Curriculum</button>
-        <button class="nav-link" onclick="CK.navigate('coaches')">Coaches</button>
-        <button class="nav-link" onclick="CK.navigate('about')">About</button>
-        <button class="nav-link btn btn-primary" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.openModal('contactModal')">Book Demo</button>
-        <button id="loginNavBtn" class="nav-link btn btn-ghost" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.showPage('login-page')">Log In</button>
-      </nav>
-      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
-    </div>
-  </header>
-
-  <!-- SPA Page Container -->
-  <div id="page-container">
-    
-    <!-- ======================== LANDING PAGE ======================== -->
+# We'll construct the entire landing page and footer
+new_landing_page = """<!-- ======================== LANDING PAGE ======================== -->
     <div id="landing-page" class="page active">
       <!-- Hero Section -->
       <section class="hero" id="home">
@@ -408,7 +353,7 @@
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('We welcome kids from age 5 and up.','info')">What is the minimum age to join ChessKidoo? <span>+</span></div>
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('We provide highly interactive online classes via Google Meet.','info')">Are the classes online or offline? <span>+</span></div>
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('No! Our Beginner level starts from absolute scratch.','info')">Does my child need prior chess knowledge? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('It is a 45-min live session with a coach to assess your child's level.','info')">How does the free demo class work? <span>+</span></div>
+          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('It is a 45-min live session with a coach to assess your child\'s level.','info')">How does the free demo class work? <span>+</span></div>
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Yes! Our Elite Queen plan focuses specifically on tournament preparation.','info')">Will my child be prepared for FIDE-rated tournaments? <span>+</span></div>
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Absolutely. Our Student Portal provides live analytics and attendance.','info')">Can I track my child's progress? <span>+</span></div>
           <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Yes, our plans are flexible. You can change anytime.','info')">Can I change or cancel my plan? <span>+</span></div>
@@ -471,301 +416,16 @@
           <div>Made with ♟ in India</div>
         </div>
       </footer>
-    </div>
+    </div>"""
 
-    <div id="login-page" class="page">
-      <section class="login-bg-section">
-        <!-- Chess piece bg pattern -->
-        <div class="login-bg-pattern">
-          <span class="login-piece login-piece-1">♞</span>
-          <span class="login-piece login-piece-2">♛</span>
-        </div>
-        <div class="login-card reveal">
-          <div style="text-align:center; margin-bottom:28px;">
-            <div class="login-logo">
-              <div class="logo-icon" style="width:48px; height:48px; font-size:22px; margin:0 auto 12px;">♛</div>
-              <span style="font-size:1.3rem; font-weight:800; color:var(--ink);">Chess<span style="color:var(--amber);">Kidoo</span></span>
-            </div>
-            <h2 style="font-family:var(--font-display); font-size:2rem; font-weight:900; color:var(--ink); margin:16px 0 8px;">Welcome Back</h2>
-            <p style="opacity:0.55; font-size:0.9rem;">Please enter your details to access your dashboard.</p>
-          </div>
-          <form id="loginForm" onsubmit="CK.handleLogin(event)">
-            <div class="form-group">
-              <label style="font-size:0.85rem; font-weight:600; color:var(--ink);">Email Address</label>
-              <input type="email" name="email" placeholder="name@example.com" required autocomplete="username"
-                style="height:52px; border-radius:10px; border:1.5px solid #ddd; font-size:0.95rem; padding:0 16px;">
-            </div>
-            <div class="form-group" style="margin-bottom:6px;">
-              <label style="font-size:0.85rem; font-weight:600; color:var(--ink);">Password</label>
-              <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"
-                style="height:52px; border-radius:10px; border:1.5px solid #ddd; font-size:0.95rem; padding:0 16px;">
-            </div>
-            <div style="text-align:right; margin-bottom:24px;">
-              <a href="#" style="font-size:0.82rem; color:var(--amber); text-decoration:none; font-weight:600;">Forgot Password?</a>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%; height:52px; border-radius:10px; font-size:1rem; font-weight:700; letter-spacing:0.03em;">Sign In</button>
-          </form>
-          <div style="display:flex; align-items:center; gap:12px; margin:20px 0;">
-            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
-            <span style="font-size:0.8rem; opacity:0.4; font-weight:600;">OR</span>
-            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
-          </div>
-          <button class="btn btn-ghost" style="width:100%; height:52px; border-radius:10px; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="CK.showToast('Google login coming soon!','info')">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px; height:20px;"> Continue with Google
-          </button>
-          <p style="text-align:center; margin-top:20px; font-size:0.82rem; opacity:0.5;">Don't have an account? <a href="#" style="color:var(--amber); font-weight:700;">Create Account</a></p>
-        </div>
-      </section>
-    </div>
-
-    <!-- Dashboards -->
-    <div id="admin-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Control Center</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Admin Dashboard</h1>
-          </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
-        </nav>
-        <div id="admin-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="student-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Student Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">My Dashboard</h1>
-          </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <div id="student-dashboard-content"></div>
-      </div>
-    </div>
-
-    <div id="coach-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Coach Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Instructor Dashboard</h1>
-          </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchCoachTab('students', this)">My Students</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('attendance', this)">Mark Attendance</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('resources', this)">Shared Resources</button>
-        </nav>
-        <div id="coach-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-
-  <!-- Modals -->
-  <!-- Demo/Contact Modal -->
-  <div id="contactModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Book a Free Demo</h3>
-        <p style="font-size: 0.9rem; opacity: 0.7;">Our FIDE experts will reach out to you shortly.</p>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleDemoSubmit(event)">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" name="fullName" required placeholder="Parent's Name">
-        </div>
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="tel" name="phone" required placeholder="WhatsApp Number">
-        </div>
-        <div class="form-group">
-          <label>Child's Age</label>
-          <input type="number" name="age" required placeholder="e.g. 8">
-        </div>
-        <div class="form-group">
-          <label>City</label>
-          <input type="text" name="city" placeholder="e.g. Chennai">
-        </div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm Booking</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Resource Upload Modal -->
-  <div id="uploadModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 600px;">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Resource</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleResourceUpload(event)">
-        <div class="form-group"><label>File Name</label><input type="text" name="fileName" required></div>
-        <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-          <div class="form-group"><label>Level</label><select name="level"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
-          <div class="form-group"><label>Batch</label><input type="text" name="batch" placeholder="e.g. 1"></div>
-        </div>
-        <div class="form-group"><label>Reference URL</label><input type="url" name="refUrl"></div>
-        <div class="form-group"><label>Class Recording Link</label><input type="url" name="classLink"></div>
-        <div class="form-group"><label>Target Students (CSV IDs - Optional)</label><input type="text" name="userIds" placeholder="e.g. 101, 102"></div>
-        <div class="form-group"><label>File</label><input type="file" name="file" required></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Upload</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Tournament Upload Modal -->
-  <div id="uploadTournModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Tournament</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleTournUpload(event)">
-        <div class="form-group"><label>Tournament Name</label><input type="text" name="name" required></div>
-        <div class="form-group"><label>File</label><input type="file" name="file" required></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Upload</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add User Modal -->
-  <div id="addUserModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 700px;">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Add New User</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleAddUser(event)">
-        <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-          <div class="form-group"><label>Full Name</label><input type="text" name="fullName" required></div>
-          <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
-          <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
-          <div class="form-group"><label>User ID</label><input type="text" name="userId" required placeholder="e.g. 101"></div>
-          <div class="form-group"><label>Phone</label><input type="tel" name="phone"></div>
-          <div class="form-group"><label>Age</label><input type="number" name="age"></div>
-          <div class="form-group"><label>City</label><input type="text" name="city"></div>
-          <div class="form-group"><label>Grade</label><input type="text" name="grade"></div>
-          <div class="form-group"><label>Role</label><select name="role" required onchange="CK.toggleUserFields(this.value)"><option value="student">Student</option><option value="coach">Coach</option></select></div>
-        </div>
-        
-        <div id="student-only-fields">
-          <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div class="form-group"><label>Level</label><select name="level"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
-            <div class="form-group"><label>Assigned Coach</label><input type="text" name="assignedCoach"></div>
-            <div class="form-group"><label>Batch</label><input type="text" name="batch"></div>
-            <div class="form-group"><label>Puzzles %</label><input type="text" name="puzzle"></div>
-            <div class="form-group"><label>Games Analyzed</label><input type="text" name="game"></div>
-            <div class="form-group"><label>Stars</label><input type="number" name="star" value="0"></div>
-            <div class="form-group"><label>Online Rating</label><input type="number" name="rating"></div>
-            <div class="form-group"><label>International Rating</label><input type="number" name="intRating"></div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create User</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Achievements Modal -->
-  <div id="addAchModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Add Achievement</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleAchUpload(event)">
-        <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
-        <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
-        <div class="form-group"><label>Image</label><input type="file" name="file" required></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Floating UI -->
-  <div class="floating-ui">
-    <a href="https://wa.me/919500448135" target="_blank" class="whatsapp-float" title="Chat with us">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA">
-    </a>
-    <div id="bot-launcher" class="bot-float" onclick="CK.toggleBot()" title="Ask ChessKidoo AI">
-      <span>🤖</span>
-    </div>
-  </div>
-
-  <!-- AI Chat Window -->
-  <div id="bot-window" class="bot-window" style="display:none;">
-    <div class="bot-header">
-      <h4>♟ ChessKidoo AI</h4>
-      <button onclick="CK.toggleBot()" style="font-size:1.4rem; line-height:1;">×</button>
-    </div>
-    <div id="bot-messages" class="bot-messages">
-      <div class="bot-msg bot-msg--bot">👋 Hi! Ask me about chess lessons, fees, schedules, or coaches!</div>
-    </div>
-    <div class="bot-input">
-      <input type="text" id="bot-input-field" placeholder="Ask about chess..." autocomplete="off"
-        onkeydown="if(event.key==='Enter') CK.sendBotMessage()">
-      <button onclick="CK.sendBotMessage()">➤</button>
-    </div>
-  </div>
-
-  <!-- Guess Grandmaster Game Modal -->
-  <div id="gameModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px;">
-      <div class="modal-header">
-        <h3>Guess the Grandmaster</h3>
-        <p>Analyze the clues and reveal the legend.</p>
-      </div>
-      <div class="modal-body" id="game-content">
-        <!-- Game logic will render here -->
-      </div>
-      <div class="modal-footer" style="padding: 20px; display:flex; gap:10px;">
-        <button class="btn btn-ghost" onclick="CK.closeModal()">Close</button>
-        <button class="btn btn-primary" onclick="CK.nextGMGame()">Next Game</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/router.js"></script>
-  <script src="assets/js/main.js"></script>
-  <script src="assets/js/admin.js"></script>
-  <script src="assets/js/student.js"></script>
-  <script src="assets/js/coach.js"></script>
-
-</body>
-</html>
+# Ensure we found the markers
+if start_marker in content and login_marker in content:
+    pre = content.split(start_marker)[0]
+    post = login_marker + content.split(login_marker)[1]
+    final_content = pre + new_landing_page + "\n\n    " + post
+    
+    with open('index.html', 'w', encoding='utf-8') as f:
+        f.write(final_content)
+    print("Replaced content successfully.")
+else:
+    print("Markers not found.")
