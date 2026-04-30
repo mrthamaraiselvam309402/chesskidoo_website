@@ -731,7 +731,7 @@
             <h3>Student List</h3>
             <button type="button" class="btn btn-primary btn-sm" id="addStudentBtn">+ Add Student</button>
             <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
-              <table class="table" id="studentsTable">
+              <table class="table" id="adminStudentsTable">
                 <thead>
                   <tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Actions</th></tr>
                 </thead>
@@ -745,7 +745,7 @@
             <h3>Coach List</h3>
             <button type="button" class="btn btn-primary btn-sm" id="addCoachBtn">+ Add Coach</button>
             <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
-              <table class="table" id="coachesTable">
+              <table class="table" id="adminCoachesTable">
                 <thead>
                   <tr><th>#</th><th>Name</th><th>FIDE rating</th><th>Email</th><th>Actions</th></tr>
                 </thead>
@@ -759,7 +759,7 @@
             <h3>Class Schedule</h3>
             <button type="button" class="btn btn-primary btn-sm" id="addClassBtn">+ Add Class</button>
             <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
-              <table class="table" id="classesTable">
+              <table class="table" id="adminClassesTable">
                 <thead>
                   <tr><th>#</th><th>Title</th><th>Level</th><th>Day / Time</th><th>Coach</th><th>Actions</th></tr>
                 </thead>
@@ -799,13 +799,13 @@
           <!-- Rating chart -->
           <section id="progress" class="card">
             <h3>Rating Progress</h3>
-            <div class="chart-wrapper"><canvas id="ratingChart"></canvas></div>
+            <div class="chart-wrapper"><canvas id="studentRatingChart"></canvas></div>
           </section>
 
           <!-- Schedule -->
           <section id="schedule" class="card">
             <h3>My Schedule</h3>
-            <table class="table" id="scheduleTable">
+            <table class="table" id="studentScheduleTable">
               <thead><tr><th>#</th><th>Title</th><th>Day / Time</th><th>Coach</th></tr></thead>
               <tbody></tbody>
             </table>
@@ -814,7 +814,7 @@
           <!-- Game review videos -->
           <section id="games" class="card">
             <h3>Game Review Videos</h3>
-            <ul id="gameList"></ul>
+            <ul id="studentGameList"></ul>
           </section>
         </main>
       </div>
@@ -854,7 +854,7 @@
           <!-- Schedule -->
           <section id="schedule" class="card">
             <h3>My Schedule</h3>
-            <table class="table" id="scheduleTable">
+            <table class="table" id="coachScheduleTable">
               <thead><tr><th>#</th><th>Title</th><th>Day / Time</th><th>Student Level</th></tr></thead>
               <tbody></tbody>
             </table>
@@ -863,7 +863,7 @@
           <!-- Game review videos -->
           <section id="games" class="card">
             <h3>Game Review Videos</h3>
-            <ul id="gameList"></ul>
+            <ul id="coachGameList"></ul>
           </section>
         </main>
       </div>

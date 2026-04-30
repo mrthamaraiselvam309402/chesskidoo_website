@@ -102,6 +102,45 @@
         CK.showLogin();
       };
     }
+
+    // Handle login form submissions
+    const loginForm = document.getElementById('loginForm');
+    const loginFormModal = document.getElementById('loginFormModal');
+
+    const handleLogin = async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const username = formData.get('username');
+      const password = formData.get('password');
+
+      if (!username || !password) {
+        CK.showToast('Please enter username and password', 'error');
+        return;
+      }
+
+      try {
+        const user = await Auth.login(username, password);
+        CK.showToast(`Welcome, ${user.name}!`, 'success');
+
+        // Route based on role
+        if (user.role === 'admin') {
+          CK.showAdmin();
+        } else if (user.role === 'student') {
+          CK.showStudent();
+        } else if (user.role === 'coach') {
+          CK.showCoach();
+        }
+
+        // Close modal if it was open
+        CK.closeModal('loginModal');
+      } catch (err) {
+        CK.showToast('Invalid credentials', 'error');
+      }
+    };
+
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (loginFormModal) loginFormModal.addEventListener('submit', handleLogin);
   });
 
   // Override Auth.logout to redirect to home
