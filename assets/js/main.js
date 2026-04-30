@@ -9,7 +9,7 @@
   const hidePreloader = () => {
     const preloader = document.getElementById('preloader');
     if (preloader) {
-      setTimeout(() => preloader.classList.add('hidden'), 800);
+      setTimeout(() => preloader.classList.add('hidden'), 600);
     }
   };
   window.addEventListener('load', hidePreloader);
@@ -17,7 +17,6 @@
   // ---- Scroll Effects ----
   const header = document.getElementById('header');
   const scrollProgress = document.getElementById('scrollProgress');
-  const backToTop = document.getElementById('backToTop');
 
   window.addEventListener('scroll', () => {
     const s = window.scrollY;
@@ -25,17 +24,15 @@
     
     if (scrollProgress) scrollProgress.style.width = (h > 0 ? (s / h) * 100 : 0) + '%';
     if (header) header.classList.toggle('scrolled', s > 50);
-    if (backToTop) backToTop.classList.toggle('visible', s > 400);
   }, { passive: true });
 
-  // ---- Navigation ----
+  // ---- Navigation & Scroll ----
   CK.scrollToSection = (id) => {
     // If not on landing page, switch to it first
     const landing = document.getElementById('landing-page');
     if (landing && !landing.classList.contains('active')) {
       if (typeof CK.showHome === 'function') {
         CK.showHome();
-        // Wait for page transition then scroll
         setTimeout(() => performScroll(id), 100);
         return;
       }
@@ -46,42 +43,13 @@
   function performScroll(id) {
     const el = document.getElementById(id);
     if (el) {
-      const offset = 80; // Header height
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = el.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      el.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
-  CK.toggleMobileMenu = () => {
-    const nav = document.getElementById('mobileNav');
-    const btn = document.getElementById('mobileMenuBtn');
-    if (nav && btn) {
-      const isOpen = nav.classList.toggle('open');
-      btn.textContent = isOpen ? '✕' : '☰';
-      document.body.style.overflow = isOpen ? 'hidden' : '';
-    }
-  };
-
-  CK.closeMobileMenu = () => {
-    const nav = document.getElementById('mobileNav');
-    const btn = document.getElementById('mobileMenuBtn');
-    if (nav && btn) {
-      nav.classList.remove('open');
-      btn.textContent = '☰';
-      document.body.style.overflow = '';
-    }
-  };
-
   // ---- Modals ----
   CK.openModal = (id) => {
-    const modal = document.getElementById(id);
+    const modal = document.getElementById(id || 'contactModal');
     if (modal) {
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -89,7 +57,7 @@
   };
 
   CK.closeModal = (id) => {
-    const modal = document.getElementById(id);
+    const modal = document.getElementById(id || 'contactModal');
     if (modal) {
       modal.classList.remove('active');
       document.body.style.overflow = '';
@@ -98,22 +66,12 @@
 
   CK.openDemoModal = () => CK.openModal('contactModal');
 
-  // Close modal on click outside
+  // Close modal on overlay click
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-overlay')) {
       CK.closeModal(e.target.id);
     }
   });
-
-  // ---- Password Toggle ----
-  CK.togglePwd = (id, trigger) => {
-    const inp = document.getElementById(id);
-    if (inp) {
-      const isPwd = inp.type === 'password';
-      inp.type = isPwd ? 'text' : 'password';
-      trigger.textContent = isPwd ? '🙈' : '👁';
-    }
-  };
 
   // ---- Snackbar / Toast ----
   CK.showToast = (msg, type = 'info') => {
@@ -131,36 +89,29 @@
     entries.forEach(e => {
       if (e.isIntersecting) {
         e.target.classList.add('visible');
-        revealObserver.unobserve(e.target);
       }
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-  // ---- Counters ----
-  const counterObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const target = parseInt(el.dataset.target, 10);
-        let count = 0;
-        const duration = 1500;
-        const step = target / (duration / 16);
-        const timer = setInterval(() => {
-          count += step;
-          if (count >= target) {
-            el.textContent = target;
-            clearInterval(timer);
-          } else {
-            el.textContent = Math.floor(count);
-          }
-        }, 16);
-        counterObserver.unobserve(el);
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    
+    // Chessboard Generation
+    const board = document.getElementById('chessboard');
+    if (board) {
+      const pieces = { 0: '♜', 1: '♞', 2: '♝', 3: '♛', 4: '♚', 5: '♝', 6: '♞', 7: '♜' };
+      for (let i = 0; i < 64; i++) {
+        const sq = document.createElement('div');
+        const row = Math.floor(i / 8);
+        const col = i % 8;
+        sq.className = `board-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+        if (row === 0) sq.textContent = pieces[col];
+        if (row === 1) sq.textContent = '♟';
+        if (row === 6) sq.textContent = '♙';
+        if (row === 7) sq.textContent = pieces[col].replace(/[♜♞♝♛♚]/g, m => ({'♜':'♖','♞':'♘','♝':'♗','♛':'♕','♚':'♔'}[m]));
+        board.appendChild(sq);
       }
-    });
-  }, { threshold: 0.5 });
-
-  document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+    }
+  });
 
 })();
