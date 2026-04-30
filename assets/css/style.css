@@ -238,3 +238,31 @@ body {
   .hero-grid { grid-template-columns: 1fr; }
   .chat-drawer { width: 90%; right: 5%; }
 }
+/* --- Floating UI & AI Bot --- */
+.floating-ui { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; }
+.whatsapp-float, .bot-float { width: 60px; height: 60px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; text-decoration: none; }
+.whatsapp-float:hover, .bot-float:hover { transform: scale(1.1) translateY(-5px); }
+.whatsapp-float img { width: 35px; }
+.bot-float span { font-size: 28px; }
+.bot-window { position: fixed; bottom: 100px; right: 30px; width: 350px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; z-index: 1001; border: 1px solid var(--border-light); animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.bot-window.active { display: flex; }
+.bot-header { padding: 20px; background: var(--amber); color: white; display: flex; justify-content: space-between; align-items: center; }
+.bot-header button { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+.bot-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.bot-msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; }
+.bot-msg.ai { background: var(--cream); align-self: flex-start; color: var(--ink); }
+.bot-msg.user { background: var(--amber); align-self: flex-end; color: white; }
+.bot-input { padding: 15px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; }
+.bot-input input { flex: 1; border: 1px solid var(--border-light); border-radius: 10px; padding: 8px 15px; outline: none; }
+.bot-input button { background: var(--amber); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Level Progression Steps --- */
+.level-steps { margin: 20px 0; }
+.step-item { position: relative; z-index: 2; opacity: 0.3; transition: all 0.5s ease; }
+.step-item.active { opacity: 1; }
+.step-icon { width: 50px; height: 50px; background: white; border: 2px solid var(--border-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 8px; }
+.step-item.active .step-icon { border-color: var(--amber); background: var(--amber-ultra); color: var(--amber); box-shadow: 0 0 15px rgba(217,119,6,0.2); }
+.step-label { font-size: 0.75rem; font-weight: 700; color: var(--ink); }
+.step-line { flex: 1; height: 2px; background: var(--border-light); margin: 0 10px; position: relative; top: -15px; }
+.step-line.active { background: var(--amber); }
