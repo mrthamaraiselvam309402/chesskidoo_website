@@ -1,387 +1,313 @@
 /* assets/js/admin.js -------------------------------------------------------
-   Admin Dashboard — Matches chesskidoo.com/admin reference
-   Tabs: File Management | Meetings | Attendance | User Management | Tournaments | Achievements
+   Full Admin Dashboard — ChessKidoo Academy
+   Handles: Users, Files, Leads, Attendance, Tournaments, Achievements
    --------------------------------------------------------------- */
 
 (() => {
   const CK = window.CK = window.CK || {};
-  const SB = () => window.supabaseClient;
-  const COACHES = ['SARAN','HARIS','GYANASURYA','YOGESH','ARIVUSELVAM','VISHNU','ROHITH SELVARAJ','RANJITH','SUDHIN'];
+
+  const SUPABASE_IMG = 'https://hcjuyqicftkgpiyrkscr.supabase.co/storage/v1/object/public/Images/';
 
   /* ─── Tab Switching ─── */
   CK.switchAdminTab = (tab, btn) => {
     document.querySelectorAll('#admin-page .admin-tab').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    btn.classList.add('active');
     CK.loadAdminTab(tab);
   };
 
   CK.loadAdminDashboard = () => {
-    const first = document.querySelector('#admin-page .admin-tab');
-    if (first) first.classList.add('active');
-    CK.loadAdminTab('files');
+    // Activate the first tab button
+    const firstTab = document.querySelector('#admin-page .admin-tab');
+    if (firstTab) firstTab.classList.add('active');
+    CK.loadAdminTab('users');
   };
 
   CK.loadAdminTab = async (tab) => {
-    const el = document.getElementById('admin-tab-content');
-    if (!el) return;
-    el.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
+    const content = document.getElementById('admin-tab-content');
+    if (!content) return;
+    content.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
     try {
-      if (tab === 'files')        await tabFiles(el);
-      else if (tab === 'meetings')     tabMeetings(el);
-      else if (tab === 'attendance')   await tabAttendance(el);
-      else if (tab === 'users')        await tabUsers(el);
-      else if (tab === 'tournaments')  tabTournaments(el);
-      else if (tab === 'achievements') tabAchievements(el);
+      switch (tab) {
+        case 'users':        await loadUsersTab(content);        break;
+        case 'files':        await loadFilesTab(content);        break;
+        case 'leads':        await loadLeadsTab(content);        break;
+        case 'attendance':   await loadAttendanceTab(content);   break;
+        case 'tournaments':  await loadTournamentsTab(content);  break;
+        case 'achievements': await loadAchievementsTab(content); break;
+        case 'meetings':     await loadMeetingsTab(content);     break;
+        default: content.innerHTML = '<p style="padding:40px">Section coming soon.</p>';
+      }
     } catch (err) {
       console.error('Admin tab error:', err);
-      el.innerHTML = `<div class="error-wrap">❌ ${err.message}</div>`;
+      content.innerHTML = `<div class="error-wrap">❌ Error loading data: ${err.message}</div>`;
     }
   };
 
-  /* ══════════════════════════════════════════
-     FILE MANAGEMENT
-  ══════════════════════════════════════════ */
-  async function tabFiles(el) {
-    const { data: docs } = await SB().from('document').select('*').order('created_at', { ascending: false });
-    const files = docs || [];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  /* ─── USERS / ROSTER ─── */
+  async function loadUsersTab(el) {
+    const { data: users, error } = await window.supabaseClient
+      .from('users')
+      .select('*')
+      .eq('role', 'student')
+      .order('full_name', { ascending: true });
+
+    if (error) throw error;
+    CK.allUsers = users || [];
+
+    const coaches = Array.from(new Set(CK.allUsers.map(u => u.coach).filter(Boolean)));
 
     el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Document Library</h3>
-      </div>
-      <div class="ck-filter-bar">
-        <select id="f-level" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Levels</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Advanced">Advanced</option>
-        </select>
-        <select id="f-month" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Months</option>
-          ${months.map((m,i)=>`<option value="${i+1}" ${i===3?'selected':''}>${m}</option>`).join('')}
-        </select>
-        <select id="f-coach" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Coaches</option>
-          ${COACHES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-        </select>
-        <select id="f-batch" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Batches</option>
-          ${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option value="${n}">Batch ${n}</option>`).join('')}
-        </select>
-        <div style="flex:1"></div>
-        <button class="ck-btn ck-btn-green" onclick="CK.exportFilesExcel()">📊 Export To Excel</button>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Files</button>
-      </div>
-
-      <div class="ck-table-wrap">
-        <table class="ck-table" id="files-table">
-          <thead><tr>
-            <th>Date Uploaded</th><th>Document</th><th>Notes</th><th>Reference URL</th><th>Coach</th><th>Actions</th>
-          </tr></thead>
-          <tbody id="files-tbody">${renderFileRows(files)}</tbody>
-        </table>
-      </div>
-    `;
-    window._ckFiles = files;
-  }
-
-  function renderFileRows(files) {
-    if (!files.length) return `<tr><td colspan="6" class="ck-empty">No files uploaded yet.</td></tr>`;
-    return files.map(f => `
-      <tr>
-        <td>${new Date(f.created_at).toLocaleDateString('en-GB')}</td>
-        <td><a href="#" onclick="CK.downloadFile('${f.file_name}')" style="color:#D97706; text-decoration:none; word-break:break-all;">${f.file_name?.split('/').pop() || f.name || '-'}</a></td>
-        <td>${f.name || '-'}</td>
-        <td>${f.link ? `<a href="${f.link}" target="_blank" style="color:#D97706;">🔗 Link</a>` : '-'}</td>
-        <td>${f.coach || '-'}</td>
-        <td>
-          <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.deleteFile('${f.file_name}')">🗑 Delete</button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  CK.filterFiles = () => {
-    const level  = document.getElementById('f-level')?.value;
-    const month  = document.getElementById('f-month')?.value;
-    const coach  = document.getElementById('f-coach')?.value;
-    const batch  = document.getElementById('f-batch')?.value;
-    let filtered = (window._ckFiles || []);
-    if (level) filtered = filtered.filter(f => f.level === level);
-    if (coach) filtered = filtered.filter(f => f.coach === coach);
-    if (batch) filtered = filtered.filter(f => String(f.batch) === batch);
-    if (month) filtered = filtered.filter(f => new Date(f.created_at).getMonth() + 1 === parseInt(month));
-    document.getElementById('files-tbody').innerHTML = renderFileRows(filtered);
-  };
-
-  CK.exportFilesExcel = () => {
-    const rows = (window._ckFiles || []).map(f => [
-      new Date(f.created_at).toLocaleDateString('en-GB'),
-      f.file_name?.split('/').pop() || '', f.name || '', f.link || '', f.coach || ''
-    ]);
-    let csv = 'Date,Document,Notes,Reference URL,Coach\n' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
-      download: 'files_export.csv', style:'display:none'
-    });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    CK.showToast('Exported!', 'success');
-  };
-
-  /* ══════════════════════════════════════════
-     MEETINGS
-  ══════════════════════════════════════════ */
-  function tabMeetings(el) {
-    el.innerHTML = `
-      <div style="display:flex; justify-content:center; align-items:flex-start; padding:40px 0;">
-        <div class="ck-card" style="width:100%; max-width:540px; padding:40px;">
-          <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">📅 Schedule a Session</h3>
-          <form onsubmit="CK.scheduleMeeting(event)">
-            <input class="ck-input" type="url" id="meet-url" placeholder="Meeting URL" required style="margin-bottom:16px;">
-            <input class="ck-input" type="datetime-local" id="meet-dt" required style="margin-bottom:16px;">
-            <input class="ck-input" type="text" id="meet-batch" placeholder="Batch (e.g. 1)" required style="margin-bottom:24px;">
-            <button type="submit" class="ck-btn ck-btn-primary" style="width:100%; padding:14px; font-size:0.9rem; letter-spacing:0.1em;">
-              SCHEDULE REMINDER
-            </button>
-          </form>
-          <div id="meetings-list" style="margin-top:30px;"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px;">
+        <div>
+          <h3 style="margin:0;">Academy Roster</h3>
+          <small style="opacity:0.6;">${CK.allUsers.length} students registered</small>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <select class="btn btn-ghost" style="cursor:pointer;" onchange="CK.filterUsers('coach', this.value)">
+            <option value="all">All Coaches</option>
+            ${coaches.map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>
+          <select class="btn btn-ghost" style="cursor:pointer;" onchange="CK.filterUsers('payment_status', this.value)">
+            <option value="all">All Status</option>
+            <option value="Paid">Paid</option>
+            <option value="Pending">Pending</option>
+          </select>
+          <button class="btn btn-ghost" onclick="CK.exportUsersCSV()">📥 Export CSV</button>
+          <button class="btn btn-primary" onclick="CK.openModal('addUserModal')">+ New Student</button>
         </div>
       </div>
-    `;
-    loadMeetingsList();
-  }
-
-  async function loadMeetingsList() {
-    const box = document.getElementById('meetings-list');
-    if (!box) return;
-    try {
-      const { data } = await SB().from('meetings').select('*').order('meeting_time', { ascending: true }).limit(10);
-      if (!data?.length) { box.innerHTML = '<p style="text-align:center;opacity:0.5;font-size:0.85rem;">No upcoming meetings.</p>'; return; }
-      box.innerHTML = `<h5 style="margin-bottom:12px; opacity:0.6;">Upcoming</h5>` + data.map(m => `
-        <div style="background:var(--cream); padding:12px 16px; border-radius:10px; margin-bottom:10px; font-size:0.85rem;">
-          <div style="font-weight:700;">${new Date(m.meeting_time).toLocaleString()}</div>
-          <div style="opacity:0.6;">Batch ${m.batch} — <a href="${m.url}" target="_blank" style="color:var(--amber);">Join Link</a></div>
-        </div>
-      `).join('');
-    } catch(e) {}
-  }
-
-  CK.scheduleMeeting = async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('[type="submit"]');
-    btn.textContent = 'Scheduling...'; btn.disabled = true;
-    try {
-      await SB().from('meetings').insert({
-        url: document.getElementById('meet-url').value,
-        meeting_time: document.getElementById('meet-dt').value,
-        batch: document.getElementById('meet-batch').value
-      });
-      CK.showToast('Meeting scheduled!', 'success');
-      e.target.reset();
-      loadMeetingsList();
-    } catch(err) {
-      CK.showToast('Failed: ' + err.message, 'error');
-    } finally { btn.textContent = 'SCHEDULE REMINDER'; btn.disabled = false; }
-  };
-
-  /* ══════════════════════════════════════════
-     ATTENDANCE — Calendar View per Coach
-  ══════════════════════════════════════════ */
-  let _attCoach = COACHES[0];
-  let _attDate  = new Date();
-
-  async function tabAttendance(el) {
-    el.innerHTML = `
-      <h2 style="text-align:center; font-family:var(--font-display); font-size:2.5rem; margin-bottom:24px; color:var(--ink);">Attendance Tracker</h2>
-      <div class="ck-coach-tabs" id="att-coach-tabs">
-        ${COACHES.map((c,i) => `
-          <button class="ck-coach-tab ${i===0?'active':''}" onclick="CK.switchAttCoach('${c}', this)">${c}</button>
-        `).join('')}
-      </div>
-      <div id="att-calendar" style="margin-top:30px;"></div>
-    `;
-    renderAttCalendar();
-  }
-
-  CK.switchAttCoach = (coach, btn) => {
-    document.querySelectorAll('.ck-coach-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    _attCoach = coach;
-    renderAttCalendar();
-  };
-
-  async function renderAttCalendar() {
-    const box = document.getElementById('att-calendar');
-    if (!box) return;
-    const y = _attDate.getFullYear(), m = _attDate.getMonth();
-    const monthName = _attDate.toLocaleString('default',{month:'long'});
-    const firstDay  = new Date(y, m, 1).getDay();
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-    const today = new Date();
-
-    // Fetch attendance records for this coach's students this month
-    const start = `${y}-${String(m+1).padStart(2,'0')}-01`;
-    const end   = `${y}-${String(m+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-
-    let attMap = {};
-    try {
-      // Get students under this coach
-      const { data: students } = await SB().from('users')
-        .select('id').eq('coach', _attCoach).eq('role','student');
-      const ids = (students||[]).map(s=>s.id);
-      if (ids.length) {
-        const { data: att } = await SB().from('attendance')
-          .select('userid, date, status')
-          .in('userid', ids)
-          .gte('date', start).lte('date', end);
-        // Aggregate: count present per day
-        (att||[]).forEach(a => {
-          const d = a.date; // yyyy-mm-dd
-          if (!attMap[d]) attMap[d] = { present:0, total:0 };
-          attMap[d].total++;
-          if (a.status === 'present') attMap[d].present++;
-        });
-      }
-    } catch(e) {}
-
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    let cells = '';
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) cells += `<div class="ck-cal-cell ck-cal-empty"></div>`;
-    // Day cells
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isPast  = new Date(y, m, d) <= today;
-      const rec = attMap[dateStr];
-      let icon = '';
-      if (isPast && rec) {
-        icon = rec.present > 0
-          ? `<div class="ck-cal-check">✓</div>`
-          : `<div class="ck-cal-cross">✗</div>`;
-      } else if (isPast) {
-        icon = `<div class="ck-cal-cross">✗</div>`;
-      }
-      cells += `
-        <div class="ck-cal-cell ${isPast && rec?.present ? 'ck-cal-present' : isPast ? 'ck-cal-absent' : ''}">
-          <div class="ck-cal-num">${d}</div>
-          ${icon}
-        </div>`;
-    }
-
-    box.innerHTML = `
-      <div class="ck-cal-nav">
-        <button class="ck-btn ck-btn-sm" onclick="CK.prevMonth()">← Prev</button>
-        <h3>${monthName} ${y}</h3>
-        <button class="ck-btn ck-btn-sm" onclick="CK.nextMonth()">Next →</button>
-      </div>
-      <div class="ck-cal-grid">
-        ${days.map(d=>`<div class="ck-cal-header">${d}</div>`).join('')}
-        ${cells}
-      </div>
-    `;
-  }
-
-  CK.prevMonth = () => { _attDate.setMonth(_attDate.getMonth()-1); renderAttCalendar(); };
-  CK.nextMonth = () => { _attDate.setMonth(_attDate.getMonth()+1); renderAttCalendar(); };
-
-  /* ══════════════════════════════════════════
-     USER MANAGEMENT
-  ══════════════════════════════════════════ */
-  async function tabUsers(el) {
-    const { data: users } = await SB().from('users').select('*').order('full_name');
-    window._ckUsers = users || [];
-
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Student Roster</h3>
-      </div>
-      <div class="ck-filter-bar" style="margin-bottom:24px;">
-        <select class="ck-select" onchange="CK.filterByCoach(this.value)">
-          <option value="">Select Coach</option>
-          ${COACHES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-        </select>
-        <div style="flex:1"></div>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('addUserModal')">
-          👤 Add Student
-        </button>
-      </div>
-      <div class="ck-table-wrap">
-        <table class="ck-table" id="users-table">
-          <thead><tr>
-            <th>UserId</th><th>Full Name</th><th>Email ID</th><th>Level</th><th>Coach</th><th>Fee</th><th>Status</th><th>Actions</th>
-          </tr></thead>
-          <tbody id="users-tbody">${renderUserRows(window._ckUsers)}</tbody>
+      <div class="table-wrapper">
+        <table class="table" id="users-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Student Name</th><th>Level / ELO</th><th>Coach</th>
+              <th>Schedule</th><th>Session</th><th>Fee</th><th>Payment</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>${renderUserRows(CK.allUsers)}</tbody>
         </table>
       </div>
     `;
   }
 
   function renderUserRows(users) {
-    if (!users?.length) return `<tr><td colspan="8" class="ck-empty">No students found.</td></tr>`;
-    return users.filter(u => u.role !== 'admin').map((u,i) => `
+    if (!users || users.length === 0) {
+      return '<tr><td colspan="9" style="text-align:center;padding:40px;opacity:0.5;">No students found.</td></tr>';
+    }
+    return users.map((u, i) => `
       <tr>
-        <td style="color:var(--amber); font-weight:700;">${1000 + i}</td>
-        <td style="font-weight:600;">${u.full_name || '-'}</td>
-        <td style="opacity:0.7;">${u.email || '-'}</td>
-        <td><span class="status-pill ${(u.level||'').toLowerCase().includes('inter') ? 'enrolled' : 'new'}">${(u.level||'beginner').split(' ')[0]}</span></td>
+        <td style="opacity:0.5;">${i + 1}</td>
+        <td style="font-weight:700; color:var(--ink);">${u.full_name || '-'}</td>
+        <td>
+          <span class="hero-badge" style="font-size:0.68rem; background:rgba(217,119,6,0.1); color:var(--amber);">
+            ${u.level || 'Beginner'}
+          </span>
+        </td>
         <td>${u.coach || '-'}</td>
+        <td><small>${u.schedule || '-'}</small></td>
+        <td><small>${u.session_type || '-'}</small></td>
         <td style="font-weight:600;">${u.fee || '-'}</td>
-        <td><span class="status-pill ${(u.payment_status||'').toLowerCase()}">${u.payment_status||'Pending'}</span></td>
-        <td style="display:flex; gap:6px;">
-          <button class="ck-btn ck-btn-sm ck-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
-          <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
+        <td>
+          <span class="status-pill ${(u.payment_status || 'Pending').toLowerCase()}">
+            ${u.payment_status || 'Pending'}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="CK.editUser('${u.id}')" title="Edit">✏️</button>
+          <button class="btn btn-ghost btn-sm" style="color:#dc2626;" onclick="CK.deleteUser('${u.id}')" title="Delete">🗑️</button>
         </td>
       </tr>
     `).join('');
   }
 
-  CK.filterByCoach = (coach) => {
-    const filtered = coach ? (window._ckUsers||[]).filter(u=>u.coach===coach) : (window._ckUsers||[]);
-    document.getElementById('users-tbody').innerHTML = renderUserRows(filtered);
+  CK.filterUsers = (col, val) => {
+    const filtered = val === 'all' ? CK.allUsers : CK.allUsers.filter(u => u[col] === val);
+    const tbody = document.querySelector('#users-table tbody');
+    if (tbody) tbody.innerHTML = renderUserRows(filtered);
+  };
+
+  CK.exportUsersCSV = () => {
+    const headers = ['#','Name','Level','Coach','Schedule','Session','Fee','Payment Status'];
+    const rows = (CK.allUsers || []).map((u, i) => [
+      i + 1, u.full_name, u.level, u.coach, u.schedule, u.session_type, u.fee, u.payment_status
+    ].map(v => `"${v || ''}"`));
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob), download: 'chesskidoo_roster.csv', style: 'display:none'
+    });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    CK.showToast('CSV exported!', 'success');
   };
 
   CK.deleteUser = async (id) => {
-    if (!confirm('Remove this student permanently?')) return;
-    await SB().from('users').delete().eq('id', id);
+    if (!confirm('Permanently remove this student?')) return;
+    const { error } = await window.supabaseClient.from('users').delete().eq('id', id);
+    if (error) return CK.showToast('Delete failed: ' + error.message, 'error');
     CK.showToast('Student removed.', 'success');
     CK.loadAdminTab('users');
   };
 
-  CK.editUser = (id) => {
-    const u = (window._ckUsers||[]).find(x=>x.id===id);
-    if (!u) return;
-    CK.showToast(`Edit for ${u.full_name} — form coming soon!`, 'info');
-  };
+  /* ─── FILES / RESOURCES ─── */
+  async function loadFilesTab(el) {
+    const { data: files, error } = await window.supabaseClient
+      .from('document').select('*').order('created_at', { ascending: false });
 
-  CK.exportUsersCSV = () => {
-    const headers = ['Name','Email','Level','Coach','Schedule','Fee','Payment'];
-    const rows = (window._ckUsers||[]).map(u=>[u.full_name,u.email,u.level,u.coach,u.schedule,u.fee,u.payment_status].map(v=>`"${v||''}"`));
-    const csv = [headers, ...rows].map(r=>r.join(',')).join('\n');
-    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'roster.csv',style:'display:none'});
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  };
+    if (error) throw error;
+    const items = files || [];
 
-  /* ══════════════════════════════════════════
-     TOURNAMENTS & ACHIEVEMENTS (stubs)
-  ══════════════════════════════════════════ */
-  function tabTournaments(el) {
     el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🏆 Tournament Results</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h3 style="margin:0;">Resource Library <small style="opacity:0.5; font-size:0.8rem;">(${items.length} files)</small></h3>
+        <button class="btn btn-primary" onclick="CK.openModal('uploadModal')">+ Upload Resource</button>
       </div>
-      <div class="ck-empty-state">🏆<p>No tournament data yet. Add your first result!</p></div>
+      <div class="table-wrapper"><table class="table">
+        <thead><tr><th>Date</th><th>Name</th><th>Level</th><th>Links</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${items.length ? items.map(f => `
+            <tr>
+              <td>${new Date(f.created_at).toLocaleDateString()}</td>
+              <td style="font-weight:600;">${f.name || f.file_name?.split('/').pop() || '-'}</td>
+              <td><span class="status-pill enrolled">${f.level || 'All'}</span></td>
+              <td>
+                ${f.class_link ? `<a href="${f.class_link}" target="_blank" style="color:var(--amber); margin-right:8px;">▶ Recording</a>` : ''}
+                ${f.link ? `<a href="${f.link}" target="_blank" style="color:var(--amber);">🔗 Ref</a>` : ''}
+              </td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick="CK.downloadFile('${f.file_name}')">📥</button>
+                <button class="btn btn-ghost btn-sm" style="color:#dc2626;" onclick="CK.deleteFile('${f.file_name}')">🗑️</button>
+              </td>
+            </tr>
+          `).join('') : '<tr><td colspan="5" style="text-align:center;padding:40px;opacity:0.5;">No resources uploaded yet.</td></tr>'}
+        </tbody>
+      </table></div>
     `;
   }
 
-  function tabAchievements(el) {
+  /* ─── LEADS ─── */
+  async function loadLeadsTab(el) {
+    const { data: leads, error } = await window.supabaseClient
+      .from('leads').select('*').order('created_at', { ascending: false });
+
+    if (error) throw error;
+    const items = leads || [];
+
     el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🎖 Student Achievements</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
+      <h3 style="margin-bottom:25px;">Demo Booking Inquiries <small style="opacity:0.5;">(${items.length})</small></h3>
+      <div class="table-wrapper"><table class="table">
+        <thead><tr><th>Date</th><th>Student/Parent</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${items.length ? items.map(l => `
+            <tr>
+              <td>${new Date(l.created_at).toLocaleDateString()}</td>
+              <td style="font-weight:600;">${l.name || '-'}</td>
+              <td>${l.phone || '-'}</td>
+              <td><span class="status-pill ${l.status || 'new'}">${l.status || 'new'}</span></td>
+              <td>
+                <button class="btn btn-ghost btn-sm" title="Mark Called" onclick="CK.updateLeadStatus('${l.id}', 'called')">📞</button>
+                <button class="btn btn-ghost btn-sm" title="Mark Enrolled" onclick="CK.updateLeadStatus('${l.id}', 'enrolled')">✅</button>
+                <a href="https://wa.me/${(l.phone||'').replace(/\D/g,'')}" target="_blank" class="btn btn-ghost btn-sm" title="WhatsApp">💬</a>
+              </td>
+            </tr>
+          `).join('') : '<tr><td colspan="5" style="text-align:center;padding:40px;opacity:0.5;">No inquiries yet.</td></tr>'}
+        </tbody>
+      </table></div>
+    `;
+  }
+
+  CK.updateLeadStatus = async (id, status) => {
+    const { error } = await window.supabaseClient.from('leads').update({ status }).eq('id', id);
+    if (error) return CK.showToast('Update failed.', 'error');
+    CK.showToast(`Lead marked as ${status}`, 'success');
+    CK.loadAdminTab('leads');
+  };
+
+  /* ─── ATTENDANCE ─── */
+  async function loadAttendanceTab(el) {
+    const { data: students } = await window.supabaseClient
+      .from('users').select('id, full_name, coach').eq('role', 'student').order('full_name');
+
+    el.innerHTML = `
+      <h3 style="margin-bottom:20px;">Attendance Tracker</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:25px;">
+        ${(students || []).map(s => `
+          <button class="btn btn-ghost btn-sm" onclick="CK.viewAttendance('${s.id}', '${s.full_name}')">
+            ${s.full_name}
+          </button>
+        `).join('')}
       </div>
-      <div class="ck-empty-state">🥇<p>No achievements posted yet. Celebrate your champions!</p></div>
+      <div id="attendance-detail" style="background:var(--cream); padding:40px; border-radius:16px; text-align:center; opacity:0.6;">
+        ♟ Select a student above to view their attendance history.
+      </div>
+    `;
+  }
+
+  CK.viewAttendance = async (id, name) => {
+    const box = document.getElementById('attendance-detail');
+    box.innerHTML = '♛ Loading...';
+    const { data: att } = await window.supabaseClient
+      .from('attendance').select('*').eq('userid', id).order('date', { ascending: false });
+
+    const records = att || [];
+    box.innerHTML = `
+      <h4 style="margin-bottom:20px;">${name} — Attendance Records (${records.length})</h4>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:12px; text-align:left;">
+        ${records.length ? records.map(a => `
+          <div style="background:#fff; padding:12px; border-radius:10px; border:1px solid var(--border-light);">
+            <div style="font-size:0.72rem; opacity:0.5;">${new Date(a.date).toLocaleDateString()}</div>
+            <div style="font-weight:700; color:${a.status==='present'?'#166534':'#991b1b'};">
+              ${a.status === 'present' ? '✅ Present' : '❌ Absent'}
+            </div>
+          </div>
+        `).join('') : '<p style="grid-column:1/-1; opacity:0.5;">No attendance records yet.</p>'}
+      </div>
+    `;
+  };
+
+  /* ─── TOURNAMENTS ─── */
+  async function loadTournamentsTab(el) {
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h3 style="margin:0;">Tournament Management</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
+      </div>
+      <div class="feat-grid" style="grid-template-columns:repeat(auto-fill, minmax(280px,1fr));">
+        <div class="feat-card" style="text-align:center; padding:40px; opacity:0.6;">
+          <div style="font-size:3rem; margin-bottom:16px;">🏆</div>
+          <h4>No tournaments yet</h4>
+          <p>Add your first tournament to track student performance.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ─── ACHIEVEMENTS ─── */
+  async function loadAchievementsTab(el) {
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <h3 style="margin:0;">Student Achievements</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
+      </div>
+      <div class="feat-grid" style="grid-template-columns:repeat(auto-fill, minmax(280px,1fr));">
+        <div class="feat-card" style="text-align:center; padding:40px; opacity:0.6;">
+          <div style="font-size:3rem; margin-bottom:16px;">🥇</div>
+          <h4>No achievements yet</h4>
+          <p>Add awards, medals, and tournament wins here.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ─── MEETINGS ─── */
+  async function loadMeetingsTab(el) {
+    el.innerHTML = `
+      <h3 style="margin-bottom:25px;">Meeting Schedules</h3>
+      <div class="table-wrapper"><table class="table">
+        <thead><tr><th>Date</th><th>Topic</th><th>Coach</th><th>Batch</th><th>Link</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:center;padding:40px;opacity:0.5;">No meetings scheduled yet.</td></tr>
+        </tbody>
+      </table></div>
     `;
   }
 
