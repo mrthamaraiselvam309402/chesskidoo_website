@@ -1,166 +1,144 @@
 /* assets/js/main.js -------------------------------------------------------
-   Shared UI logic for all pages: scroll, modal, toast, etc.
+   Shared UI logic for ChessKidoo: scroll, modals, animations, etc.
    --------------------------------------------------------------- */
 
 (() => {
-  const CK = window.CK = {};
+  const CK = window.CK = window.CK || {};
 
-  // ---- Scroll Progress ----
+  // ---- Preloader ----
+  const hidePreloader = () => {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+      setTimeout(() => preloader.classList.add('hidden'), 800);
+    }
+  };
+  window.addEventListener('load', hidePreloader);
+
+  // ---- Scroll Effects ----
+  const header = document.getElementById('header');
   const scrollProgress = document.getElementById('scrollProgress');
-  if (scrollProgress) {
-    window.addEventListener('scroll', () => {
-      const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-      scrollProgress.style.width = scrolled + '%';
-    });
-  }
+  const backToTop = document.getElementById('backToTop');
 
-  // ---- Header Scroll Effect ----
-  const header = document.querySelector('.site-header');
-  if (header) {
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    });
-  }
+  window.addEventListener('scroll', () => {
+    const s = window.scrollY;
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    
+    if (scrollProgress) scrollProgress.style.width = (h > 0 ? (s / h) * 100 : 0) + '%';
+    if (header) header.classList.toggle('scrolled', s > 50);
+    if (backToTop) backToTop.classList.toggle('visible', s > 400);
+  }, { passive: true });
 
-  // ---- Mobile Menu ----
-  const burger = document.getElementById('burgerBtn');
-  const mobileNav = document.getElementById('mobileNav');
-  if (burger && mobileNav) {
-    burger.addEventListener('click', () => {
-      burger.classList.toggle('open');
-      mobileNav.classList.toggle('open');
-    });
-  }
+  // ---- Navigation ----
+  CK.scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
 
-  // ---- Modal Functions ----
+  CK.toggleMobileMenu = () => {
+    const nav = document.getElementById('mobileNav');
+    const btn = document.getElementById('mobileMenuBtn');
+    if (nav && btn) {
+      const isOpen = nav.classList.toggle('open');
+      btn.textContent = isOpen ? '✕' : '☰';
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+  };
+
+  CK.closeMobileMenu = () => {
+    const nav = document.getElementById('mobileNav');
+    const btn = document.getElementById('mobileMenuBtn');
+    if (nav && btn) {
+      nav.classList.remove('open');
+      btn.textContent = '☰';
+      document.body.style.overflow = '';
+    }
+  };
+
+  // ---- Modals ----
   CK.openModal = (id) => {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.add('open');
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
   };
 
   CK.closeModal = (id) => {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
   };
 
-  // Close modal on overlay click
+  CK.openDemoModal = () => CK.openModal('contactModal');
+
+  // Close modal on click outside
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-overlay')) {
-      e.target.classList.remove('open');
+      CK.closeModal(e.target.id);
     }
   });
-
-  // ---- Demo Modal ----
-  CK.openDemoModal = () => CK.openModal('demoModal');
-  CK.openLoginModal = () => CK.openModal('loginModal');
 
   // ---- Password Toggle ----
-  CK.togglePwd = (inputId, btn) => {
-    const input = document.getElementById(inputId);
-    if (input) {
-      const isPwd = input.type === 'password';
-      input.type = isPwd ? 'text' : 'password';
-      if (btn) btn.textContent = isPwd ? '🙈' : '👁';
+  CK.togglePwd = (id, trigger) => {
+    const inp = document.getElementById(id);
+    if (inp) {
+      const isPwd = inp.type === 'password';
+      inp.type = isPwd ? 'text' : 'password';
+      trigger.textContent = isPwd ? '🙈' : '👁';
     }
   };
 
-  // ---- Scroll to Section ----
-  CK.scrollToSection = (sectionId) => {
-    const section = document.getElementById(sectionId);
-    if (section) section.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // ---- Form Validation ----
-  CK.validateForm = (form) => {
-    let isValid = true;
-    const fields = form.querySelectorAll('input[required], select[required], textarea[required]');
-    fields.forEach(field => {
-      const errorEl = document.getElementById(field.id + '-err');
-      field.classList.remove('invalid');
-      if (errorEl) errorEl.textContent = '';
-
-      if (!field.value.trim()) {
-        isValid = false;
-        field.classList.add('invalid');
-        if (errorEl) errorEl.textContent = field.name + ' is required';
-      }
-    });
-    return isValid;
-  };
-
-  // ---- Toast Notifications ----
-  CK.showToast = (message, type = 'info') => {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-
-    toast.className = 'toast ' + type;
-    toast.textContent = message;
-    toast.classList.add('show');
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3000);
-  };
-
-  // ---- FAQ Accordion ----
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('faq-q')) {
-      const item = e.target.parentElement;
-      const answer = item.querySelector('.faq-a');
-      answer.classList.toggle('open');
+  // ---- Snackbar / Toast ----
+  CK.showToast = (msg, type = 'info') => {
+    const snack = document.getElementById('snackbar');
+    if (snack) {
+      snack.textContent = (type === 'success' ? '✅ ' : type === 'error' ? '❌ ' : 'ℹ️ ') + msg;
+      snack.className = 'snackbar ' + type + ' show';
+      clearTimeout(snack._t);
+      snack._t = setTimeout(() => snack.classList.remove('show'), 4000);
     }
-  });
+  };
 
   // ---- Reveal Animations ----
-  const observerOptions = { threshold: 0.1 };
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('revealed');
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        revealObserver.unobserve(e.target);
       }
     });
-  }, observerOptions);
+  }, { threshold: 0.1 });
 
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
   // ---- Counters ----
-  const counterObserver = new IntersectionObserver((entries) => {
+  const counterObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const el = entry.target;
-        const target = +el.dataset.target;
+        const target = parseInt(el.dataset.target, 10);
         let count = 0;
-        const increment = target / 100;
+        const duration = 1500;
+        const step = target / (duration / 16);
         const timer = setInterval(() => {
-          count += increment;
+          count += step;
           if (count >= target) {
-            count = target;
+            el.textContent = target;
             clearInterval(timer);
+          } else {
+            el.textContent = Math.floor(count);
           }
-          el.textContent = Math.floor(count);
-        }, 20);
+        }, 16);
         counterObserver.unobserve(el);
       }
     });
-  });
+  }, { threshold: 0.5 });
 
   document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
-
-  // ---- Chessboard Animation (simple placeholder) ----
-  const chessboard = document.getElementById('chessboard');
-  if (chessboard) {
-    // Add some simple animation or interactivity if needed
-    chessboard.addEventListener('click', () => {
-      CK.showToast('Chessboard clicked! ♛', 'success');
-    });
-  }
-
-  // ---- Preloader ----
-  window.addEventListener('load', () => {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-      setTimeout(() => preloader.classList.add('hidden'), 500);
-    }
-  });
 
 })();

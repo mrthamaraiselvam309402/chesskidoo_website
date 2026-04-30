@@ -19,60 +19,41 @@
     const targetPage = document.getElementById(pageId);
     if (targetPage) {
       targetPage.classList.add('active');
-      // Update URL hash without triggering scroll
+      window.scrollTo(0, 0); // Reset scroll on page switch
+      
+      // Update URL hash
       if (pageId === 'landing-page') {
-        history.replaceState(null, null, '/');
+        history.replaceState(null, null, ' ');
       } else {
         history.replaceState(null, null, '#' + pageId.replace('-page', ''));
       }
     }
 
-    // Handle special cases
-    if (pageId === 'admin-page') {
-      // Load admin data
-      if (window.loadAdminData) window.loadAdminData();
-    } else if (pageId === 'student-page') {
-      // Load student data
-      if (window.loadStudentData) window.loadStudentData();
-    } else if (pageId === 'coach-page') {
-      // Load coach data
-      if (window.loadCoachData) window.loadCoachData();
-    }
+    // Load page-specific data
+    if (pageId === 'admin-page' && window.loadAdminData) window.loadAdminData();
+    if (pageId === 'student-page' && window.loadStudentData) window.loadStudentData();
+    if (pageId === 'coach-page' && window.loadCoachData) window.loadCoachData();
   };
 
-  // Convenience methods
   CK.showHome = () => CK.showPage('landing-page');
   CK.showLogin = () => CK.showPage('login-page');
   CK.showAdmin = () => CK.showPage('admin-page');
   CK.showStudent = () => CK.showPage('student-page');
   CK.showCoach = () => CK.showPage('coach-page');
 
-  // Handle URL hash changes
   const handleHashChange = () => {
-    const hash = window.location.hash.substring(1); // Remove #
-
-    // Check if user is authenticated
-    const user = Auth.currentUser();
+    const hash = window.location.hash.substring(1);
+    const user = typeof Auth !== 'undefined' ? Auth.currentUser() : null;
 
     if (!user) {
-      // Not logged in - only allow landing and login pages
-      if (hash === 'login' || hash === '') {
-        CK.showPage(hash === 'login' ? 'login-page' : 'landing-page');
-      } else {
-        CK.showPage('landing-page');
-      }
+      if (hash === 'login') CK.showLogin();
+      else CK.showHome();
     } else {
-      // Logged in - route based on role and hash
-      if (hash === 'admin' && user.role === 'admin') {
-        CK.showAdmin();
-      } else if (hash === 'student' && user.role === 'student') {
-        CK.showStudent();
-      } else if (hash === 'coach' && user.role === 'coach') {
-        CK.showCoach();
-      } else if (hash === '' || hash === 'home') {
-        CK.showHome();
-      } else {
-        // Default to role-appropriate page
+      if (hash === 'admin' && user.role === 'admin') CK.showAdmin();
+      else if (hash === 'student' && user.role === 'student') CK.showStudent();
+      else if (hash === 'coach' && user.role === 'coach') CK.showCoach();
+      else {
+        // Redirect to role-appropriate dashboard
         if (user.role === 'admin') CK.showAdmin();
         else if (user.role === 'student') CK.showStudent();
         else if (user.role === 'coach') CK.showCoach();
@@ -80,74 +61,45 @@
     }
   };
 
-  // Initialize routing on page load
   window.addEventListener('load', () => {
-    // Listen for hash changes
     window.addEventListener('hashchange', handleHashChange);
-
-    // Handle initial load
     handleHashChange();
 
-    // Update login button to use SPA routing
-    const loginBtn = document.querySelector('.nav-links .btn-outline');
-    if (loginBtn) {
-      loginBtn.onclick = () => CK.showLogin();
-    }
+    // Handle Login Form
+    const loginForm = document.getElementById('loginFormSPA');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const userVal = formData.get('username');
+        const passVal = formData.get('password');
 
-    // Update mobile login button
-    const mobileLoginBtn = document.querySelector('.mobile-nav-cta .btn-outline');
-    if (mobileLoginBtn) {
-      mobileLoginBtn.onclick = () => {
-        CK.closeMobileMenu();
-        CK.showLogin();
-      };
-    }
-
-    // Handle login form submissions
-    const loginForm = document.getElementById('loginForm');
-    const loginFormModal = document.getElementById('loginFormModal');
-
-    const handleLogin = async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(e.target);
-      const username = formData.get('username');
-      const password = formData.get('password');
-
-      if (!username || !password) {
-        CK.showToast('Please enter username and password', 'error');
-        return;
-      }
-
-      try {
-        const user = await Auth.login(username, password);
-        CK.showToast(`Welcome, ${user.name}!`, 'success');
-
-        // Route based on role
-        if (user.role === 'admin') {
-          CK.showAdmin();
-        } else if (user.role === 'student') {
-          CK.showStudent();
-        } else if (user.role === 'coach') {
-          CK.showCoach();
+        if (!userVal || !passVal) {
+          CK.showToast('Enter both username and password', 'error');
+          return;
         }
 
-        // Close modal if it was open
-        CK.closeModal('loginModal');
-      } catch (err) {
-        CK.showToast('Invalid credentials', 'error');
-      }
-    };
-
-    if (loginForm) loginForm.addEventListener('submit', handleLogin);
-    if (loginFormModal) loginFormModal.addEventListener('submit', handleLogin);
+        try {
+          const user = await Auth.login(userVal, passVal);
+          CK.showToast(`Welcome, ${user.name}!`, 'success');
+          
+          if (user.role === 'admin') CK.showAdmin();
+          else if (user.role === 'student') CK.showStudent();
+          else if (user.role === 'coach') CK.showCoach();
+        } catch (err) {
+          CK.showToast('Invalid credentials', 'error');
+        }
+      });
+    }
   });
 
   // Override Auth.logout to redirect to home
-  const originalLogout = Auth.logout;
-  Auth.logout = () => {
-    originalLogout();
-    CK.showHome();
-  };
+  if (typeof Auth !== 'undefined') {
+    const originalLogout = Auth.logout;
+    Auth.logout = () => {
+      originalLogout();
+      CK.showHome();
+    };
+  }
 
 })();
