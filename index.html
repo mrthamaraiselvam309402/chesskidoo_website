@@ -16,6 +16,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap"
         rel="stylesheet"/>
   <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="assets/css/dashboard.css"/>
+  <!-- Chart.js for the rating graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -31,737 +34,958 @@
     </div>
   </div>
 
-  <!-- ======================== HEADER ======================== -->
-  <header class="site-header" id="header">
-    <div class="header-inner">
-      <a href="#home" class="logo" aria-label="ChessKidoo home">
-        <div class="logo-icon">♛</div>
-        <span class="logo-text">Chess<span class="logo-accent">Kidoo</span></span>
-      </a>
+  <!-- ======================== PAGES CONTAINER ======================== -->
+  <div id="app">
 
-      <nav class="nav-links" id="desktopNav" aria-label="Primary navigation">
-        <button type="button" class="nav-link" data-section="home">Home</button>
-        <button type="button" class="nav-link" data-section="features">Features</button>
-        <button type="button" class="nav-link" data-section="curriculum">Curriculum</button>
-        <button type="button" class="nav-link" data-section="coaches">Coaches</button>
-        <button type="button" class="nav-link" data-section="pricing">Pricing</button>
-        <button type="button" class="nav-link" data-section="faq">FAQ</button>
-        <button type="button" class="btn btn-primary btn-sm" onclick="CK.openDemoModal()">Book Demo</button>
-        <button type="button" class="btn btn-outline btn-sm" onclick="CK.openLoginModal()">Log In</button>
+    <!-- ======================== LANDING PAGE ======================== -->
+    <div id="landing-page" class="page active">
+
+      <!-- HEADER -->
+      <header class="site-header" id="header">
+        <div class="header-inner">
+          <a href="#home" class="logo" aria-label="ChessKidoo home">
+            <div class="logo-icon">♛</div>
+            <span class="logo-text">Chess<span class="logo-accent">Kidoo</span></span>
+          </a>
+
+          <nav class="nav-links" id="desktopNav" aria-label="Primary navigation">
+            <button type="button" class="nav-link" data-section="home">Home</button>
+            <button type="button" class="nav-link" data-section="features">Features</button>
+            <button type="button" class="nav-link" data-section="curriculum">Curriculum</button>
+            <button type="button" class="nav-link" data-section="coaches">Coaches</button>
+            <button type="button" class="nav-link" data-section="pricing">Pricing</button>
+            <button type="button" class="nav-link" data-section="faq">FAQ</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="CK.openDemoModal()">Book Demo</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="CK.showLogin()">Log In</button>
+          </nav>
+
+          <button type="button" class="burger" id="burgerBtn"
+                  aria-label="Open navigation menu"
+                  aria-expanded="false"
+                  aria-controls="mobileNav">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Mobile navigation -->
+      <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation" aria-hidden="true">
+        <div class="mobile-nav-inner">
+          <button type="button" class="nav-link" data-section="home" onclick="CK.closeMobileMenu()">Home</button>
+          <button type="button" class="nav-link" data-section="features" onclick="CK.closeMobileMenu()">Features</button>
+          <button type="button" class="nav-link" data-section="curriculum" onclick="CK.closeMobileMenu()">Curriculum</button>
+          <button type="button" class="nav-link" data-section="coaches" onclick="CK.closeMobileMenu()">Coaches</button>
+          <button type="button" class="nav-link" data-section="pricing" onclick="CK.closeMobileMenu()">Pricing</button>
+          <button type="button" class="nav-link" data-section="faq" onclick="CK.closeMobileMenu()">FAQ</button>
+          <div class="mobile-nav-cta">
+            <button type="button" class="btn btn-primary btn-block" onclick="CK.closeMobileMenu(); CK.openDemoModal()">📅 Book Free Demo</button>
+            <button type="button" class="btn btn-outline btn-block" onclick="CK.closeMobileMenu(); CK.showLogin()">Log In</button>
+          </div>
+        </div>
       </nav>
 
-      <button type="button" class="burger" id="burgerBtn"
-              aria-label="Open navigation menu"
-              aria-expanded="false"
-              aria-controls="mobileNav">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </header>
+      <!-- HERO -->
+      <section class="hero" id="home">
+        <div class="hero-bg-mesh"></div>
+        <div class="hero-board-bg" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-eyebrow reveal">🇮🇳 India's #1 Chess Academy for Kids</div>
+            <h1 class="hero-title reveal">
+              Where Young Minds<br />
+              <em>Master the Board</em>
+            </h1>
+            <p class="hero-sub reveal">
+              Manage your chess students, track progress, and level up your coaching experience with FIDE-certified experts.
+            </p>
+            <div class="hero-actions reveal">
+              <button type="button" class="btn btn-primary btn-lg" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
+              <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">💬 WhatsApp Us</a>
+            </div>
 
-  <!-- Mobile navigation -->
-  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation" aria-hidden="true">
-    <div class="mobile-nav-inner">
-      <button type="button" class="nav-link" data-section="home" onclick="CK.closeMobileMenu()">Home</button>
-      <button type="button" class="nav-link" data-section="features" onclick="CK.closeMobileMenu()">Features</button>
-      <button type="button" class="nav-link" data-section="curriculum" onclick="CK.closeMobileMenu()">Curriculum</button>
-      <button type="button" class="nav-link" data-section="coaches" onclick="CK.closeMobileMenu()">Coaches</button>
-      <button type="button" class="nav-link" data-section="pricing" onclick="CK.closeMobileMenu()">Pricing</button>
-      <button type="button" class="nav-link" data-section="faq" onclick="CK.closeMobileMenu()">FAQ</button>
-      <div class="mobile-nav-cta">
-        <button type="button" class="btn btn-primary btn-block" onclick="CK.closeMobileMenu(); CK.openDemoModal()">📅 Book Free Demo</button>
-        <button type="button" class="btn btn-outline btn-block" onclick="CK.closeMobileMenu(); CK.openLoginModal()">Log In</button>
-      </div>
-    </div>
-  </nav>
+            <div class="hero-stats reveal">
+              <div class="stat-item">
+                <span class="stat-num counter" data-target="500">0</span><span class="stat-plus">+</span>
+                <span class="stat-label">Active Students</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-num counter" data-target="7">0</span>
+                <span class="stat-label">FIDE Coaches</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-num counter" data-target="12">0</span><span class="stat-plus">+</span>
+                <span class="stat-label">Championships</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-num">4.9</span>
+                <span class="stat-label">Parent Rating</span>
+              </div>
+            </div>
+          </div>
 
-  <!-- ======================== HERO ======================== -->
-  <section class="hero" id="home">
-    <div class="hero-bg-mesh"></div>
-    <div class="hero-board-bg" aria-hidden="true"></div>
-    <div class="hero-inner">
-      <div class="hero-content">
-        <div class="hero-eyebrow reveal">🇮🇳 India's #1 Chess Academy for Kids</div>
-        <h1 class="hero-title reveal">
-          Where Young Minds<br />
-          <em>Master the Board</em>
-        </h1>
-        <p class="hero-sub reveal">
-          Manage your chess students, track progress, and level up your coaching experience with FIDE-certified experts.
-        </p>
-        <div class="hero-actions reveal">
-          <button type="button" class="btn btn-primary btn-lg" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
-          <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">💬 WhatsApp Us</a>
-        </div>
-
-        <div class="hero-stats reveal">
-          <div class="stat-item">
-            <span class="stat-num counter" data-target="500">0</span><span class="stat-plus">+</span>
-            <span class="stat-label">Active Students</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num counter" data-target="7">0</span>
-            <span class="stat-label">FIDE Coaches</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num counter" data-target="12">0</span><span class="stat-plus">+</span>
-            <span class="stat-label">Championships</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num">4.9</span>
-            <span class="stat-label">Parent Rating</span>
+          <div class="hero-visual reveal" aria-hidden="true">
+            <div class="board-frame">
+              <div class="board-glow"></div>
+              <div class="board-wrapper">
+                <div class="board" id="chessboard"></div>
+              </div>
+              <div class="floating-pill pill-top">🏆 FIDE Certified</div>
+              <div class="floating-pill pill-bottom">📈 Live Progress Tracking</div>
+              <div class="floating-pill pill-left">🎓 7 Expert Coaches</div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="hero-visual reveal" aria-hidden="true">
-        <div class="board-frame">
-          <div class="board-glow"></div>
-          <div class="board-wrapper">
-            <div class="board" id="chessboard"></div>
+      <!-- TRUST BAR -->
+      <div class="trust-bar" aria-label="Certifications and accolades">
+        <div class="trust-track">
+          <div class="trust-items">
+            <span>♟ FIDE Certified Academy</span>
+            <span class="trust-dot">◆</span>
+            <span>🏅 ISO 9001:2015</span>
+            <span class="trust-dot">◆</span>
+            <span>👨‍🎓 500+ Active Students</span>
+            <span class="trust-dot">◆</span>
+            <span>⭐ 4.9/5 Parent Rating</span>
+            <span class="trust-dot">◆</span>
+            <span>🇮🇳 AICF Affiliate</span>
+            <span class="trust-dot">◆</span>
+            <span>🏆 12+ Championships Won</span>
+            <span class="trust-dot">◆</span>
+            <span>🎯 India's #1 Chess Tracking System</span>
+            <span class="trust-dot">◆</span>
           </div>
-          <div class="floating-pill pill-top">🏆 FIDE Certified</div>
-          <div class="floating-pill pill-bottom">📈 Live Progress Tracking</div>
-          <div class="floating-pill pill-left">🎓 7 Expert Coaches</div>
+          <!-- Duplicate for seamless scroll -->
+          <div class="trust-items" aria-hidden="true">
+            <span>♟ FIDE Certified Academy</span>
+            <span class="trust-dot">◆</span>
+            <span>🏅 ISO 9001:2015</span>
+            <span class="trust-dot">◆</span>
+            <span>👨‍🎓 500+ Active Students</span>
+            <span class="trust-dot">◆</span>
+            <span>⭐ 4.9/5 Parent Rating</span>
+            <span class="trust-dot">◆</span>
+            <span>🇮🇳 AICF Affiliate</span>
+            <span class="trust-dot">◆</span>
+            <span>🏆 12+ Championships Won</span>
+            <span class="trust-dot">◆</span>
+            <span>🎯 India's #1 Chess Tracking System</span>
+            <span class="trust-dot">◆</span>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ======================== TRUST BAR ======================== -->
-  <div class="trust-bar" aria-label="Certifications and accolades">
-    <div class="trust-track">
-      <div class="trust-items">
-        <span>♟ FIDE Certified Academy</span>
-        <span class="trust-dot">◆</span>
-        <span>🏅 ISO 9001:2015</span>
-        <span class="trust-dot">◆</span>
-        <span>👨‍🎓 500+ Active Students</span>
-        <span class="trust-dot">◆</span>
-        <span>⭐ 4.9/5 Parent Rating</span>
-        <span class="trust-dot">◆</span>
-        <span>🇮🇳 AICF Affiliate</span>
-        <span class="trust-dot">◆</span>
-        <span>🏆 12+ Championships Won</span>
-        <span class="trust-dot">◆</span>
-        <span>🎯 India's #1 Chess Tracking System</span>
-        <span class="trust-dot">◆</span>
-      </div>
-      <!-- Duplicate for seamless scroll -->
-      <div class="trust-items" aria-hidden="true">
-        <span>♟ FIDE Certified Academy</span>
-        <span class="trust-dot">◆</span>
-        <span>🏅 ISO 9001:2015</span>
-        <span class="trust-dot">◆</span>
-        <span>👨‍🎓 500+ Active Students</span>
-        <span class="trust-dot">◆</span>
-        <span>⭐ 4.9/5 Parent Rating</span>
-        <span class="trust-dot">◆</span>
-        <span>🇮🇳 AICF Affiliate</span>
-        <span class="trust-dot">◆</span>
-        <span>🏆 12+ Championships Won</span>
-        <span class="trust-dot">◆</span>
-        <span>🎯 India's #1 Chess Tracking System</span>
-        <span class="trust-dot">◆</span>
+      <!-- FEATURES -->
+      <section id="features" class="section-light">
+        <div class="section-head reveal">
+          <div class="eyebrow">Why ChessKidoo?</div>
+          <h2>Everything Your Child Needs to Excel</h2>
+          <p class="lead">One‑stop solution for kids learning chess – tracking, coaching, tournaments and more.</p>
+        </div>
+
+        <div class="feat-grid">
+          <div class="feat-card reveal">
+            <div class="feat-icon">📊</div>
+            <h3>Smart Student Tracking</h3>
+            <p>Manage profiles, game history, and ratings for every student in one clean dashboard.</p>
+          </div>
+          <div class="feat-card reveal reveal-d1">
+            <div class="feat-icon">📈</div>
+            <h3>Progress Analytics</h3>
+            <p>Visual insights into each student's performance trends and learning velocity over time.</p>
+          </div>
+          <div class="feat-card reveal reveal-d2">
+            <div class="feat-icon">🏆</div>
+            <h3>Tournament Ready</h3>
+            <p>Manage tournaments, match pairings, and leaderboards with professional efficiency.</p>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon">🌍</div>
+            <h3>Internationally Certified Coaches</h3>
+            <p>Learn from professionals trained under FIDE's rigorous global standards.</p>
+          </div>
+          <div class="feat-card reveal reveal-d1">
+            <div class="feat-icon">⭐</div>
+            <h3>FIDE‑Rated Experts (ELO 1600+)</h3>
+            <p>Coaches with real competitive success and proven tournament experience.</p>
+          </div>
+          <div class="feat-card reveal reveal-d2">
+            <div class="feat-icon">🧩</div>
+            <h3>India's 1st Chess Student Tracking System</h3>
+            <p>Monthly reports, rating growth and skill‑analytics for every child.</p>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon">📚</div>
+            <h3>Complete Training Program</h3>
+            <p>Openings, middlegame tactics, endgames, strategy and mental prep – all on one platform.</p>
+          </div>
+          <div class="feat-card reveal reveal-d1">
+            <div class="feat-icon">🗣️</div>
+            <h3>Personalized Feedback</h3>
+            <p>Every game is reviewed and discussed with the coach for continuous improvement.</p>
+          </div>
+          <div class="feat-card reveal reveal-d2">
+            <div class="feat-icon">🇮🇳</div>
+            <h3>Bilingual Support (English &amp; Tamil)</h3>
+            <p>Clear communication for students and parents in the language they're comfortable with.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CURRICULUM -->
+      <section id="curriculum" class="section-dark">
+        <div class="section-head reveal">
+          <div class="eyebrow light">Student Levels</div>
+          <h2 class="light">Three Levels – One Journey</h2>
+          <p class="lead light">Progress from total beginner to tournament‑ready competitor.</p>
+        </div>
+
+        <div class="level-grid">
+          <div class="level-card reveal">
+            <div class="level-badge">Beginner</div>
+            <div class="level-piece">♟</div>
+            <h3>Beginner Level</h3>
+            <p>Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
+            <ul class="skill-list">
+              <li>Piece movements &amp; rules</li>
+              <li>Basic tactics &amp; checkmates</li>
+              <li>Simple endgame principles</li>
+              <li>Board awareness training</li>
+            </ul>
+            <button type="button" class="btn btn-ghost-light" onclick="CK.openDemoModal()">Start Here →</button>
+          </div>
+
+          <div class="level-card featured reveal reveal-d1">
+            <div class="level-badge gold">Most Popular</div>
+            <div class="level-piece">♗</div>
+            <h3>Intermediate Level</h3>
+            <p>Designed for players with a solid foundation. Develops tactical awareness, middle‑game strategy, and endgame mastery.</p>
+            <ul class="skill-list">
+              <li>Advanced combinations</li>
+              <li>Opening repertoire building</li>
+              <li>Middlegame strategy</li>
+              <li>Endgame technique drills</li>
+            </ul>
+            <button type="button" class="btn btn-primary" onclick="CK.openDemoModal()">Level Up →</button>
+          </div>
+
+          <div class="level-card reveal reveal-d2">
+            <div class="level-badge">Elite</div>
+            <div class="level-piece">♛</div>
+            <h3>Advanced Level</h3>
+            <p>For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
+            <ul class="skill-list">
+              <li>Opening theory mastery</li>
+              <li>Endgame precision</li>
+              <li>Chess psychology training</li>
+              <li>FIDE rating preparation</li>
+            </ul>
+            <button type="button" class="btn btn-ghost-light" onclick="CK.openDemoModal()">Go Elite →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- COACHES -->
+      <section id="coaches" class="section-light">
+        <div class="section-head reveal">
+          <div class="eyebrow">Our Expert Faculty</div>
+          <h2>Meet the Minds Behind the Moves</h2>
+          <p class="lead">7 FIDE‑certified coaches with international ratings and state‑championship experience.</p>
+        </div>
+
+        <div class="coach-grid">
+          <div class="coach-card reveal">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♔</span>
+              <span class="coach-badge">FIDE 2200+</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Advanced</span>
+              <h4 class="coach-name">Ranjith</h4>
+              <p class="coach-bio">FIDE‑certified coach with 2 years training young talents to achieve international ratings.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal reveal-d1">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♕</span>
+              <span class="coach-badge">Senior Coach</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Intermediate</span>
+              <h4 class="coach-name">Vishnu</h4>
+              <p class="coach-bio">2 years at Hindustan Incubation Chess Club, specialising in middlegame strategy.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal reveal-d2">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♖</span>
+              <span class="coach-badge">Tactics Expert</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Intermediate</span>
+              <h4 class="coach-name">Rohith Selvaraj</h4>
+              <p class="coach-bio">FIDE‑certified specialist in tactical patterns and competitive preparation.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♗</span>
+              <span class="coach-badge">AFM Titled</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Beginner &amp; Intermediate</span>
+              <h4 class="coach-name">Gyansurya</h4>
+              <p class="coach-bio">Child specialist and AFM title holder – making chess approachable for younger students.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal reveal-d1">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♘</span>
+              <span class="coach-badge">Youth Expert</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Beginner &amp; Intermediate</span>
+              <h4 class="coach-name">Saran</h4>
+              <p class="coach-bio">Dedicated beginner specialist with a talent for keeping young students engaged and motivated.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal reveal-d2">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♙</span>
+              <span class="coach-badge">Head Coach</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Intermediate</span>
+              <h4 class="coach-name">Yogesh</h4>
+              <p class="coach-bio">Anna University South Zone representative and Sri Eshwar College of Engineering player.</p>
+            </div>
+          </div>
+
+          <div class="coach-card reveal">
+            <div class="coach-avatar-wrap">
+              <span class="coach-piece">♚</span>
+              <span class="coach-badge">Psychologist</span>
+            </div>
+            <div class="coach-body">
+              <span class="coach-level">Beginner</span>
+              <h4 class="coach-name">Haris</h4>
+              <p class="coach-bio">Chess psychology specialist – building mental strength and resilience alongside chess skills.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section id="testimonials" class="section-dark">
+        <div class="section-head reveal">
+          <div class="eyebrow light">Parent Reviews</div>
+          <h2 class="light">Real Stories, Real Results</h2>
+          <p class="lead light">From families across India who chose ChessKidoo for their children.</p>
+        </div>
+
+        <div class="testi-grid">
+          <div class="testi-card reveal">
+            <div class="testi-rating">★★★★★</div>
+            <p class="testi-text">"Chess‑Kidoo is not just about chess moves. My daughter has improved her concentration, discipline, and problem‑solving skills tremendously."</p>
+            <div class="testi-author">
+              <div class="testi-avatar">R</div>
+              <div class="testi-meta">
+                <strong>Parent of U‑15 Riyas</strong>
+                <span>Verified Enrolment</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testi-card reveal reveal-d1">
+            <div class="testi-rating">★★★★★</div>
+            <p class="testi-text">"My son's confidence has grown tremendously after joining Chess‑Kidoo. The coaches are patient, motivating and focus on both fundamentals and strategy."</p>
+            <div class="testi-author">
+              <div class="testi-avatar">A</div>
+              <div class="testi-meta">
+                <strong>Parent of U‑15 Adhavan</strong>
+                <span>Verified Enrolment</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testi-card reveal reveal-d2">
+            <div class="testi-rating">★★★★★</div>
+            <p class="testi-text">"The structured curriculum and regular feedback sessions really impressed us. Chess‑Kidoo helped our child develop logical thinking and patience."</p>
+            <div class="testi-author">
+              <div class="testi-avatar">S</div>
+              <div class="testi-meta">
+                <strong>Parent of U‑12 Saran</strong>
+                <span>Verified Enrolment</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section id="pricing" class="section-light">
+        <div class="section-head reveal">
+          <div class="eyebrow">Transparent Pricing</div>
+          <h2>Simple, Affordable Plans</h2>
+          <p class="lead">No hidden fees. Every plan includes a free demo class to start.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <div class="pricing-card reveal">
+            <div class="pricing-tier">Starter</div>
+            <div class="pricing-name">Pawn Plan</div>
+            <div class="pricing-desc">Perfect for beginners aged 6–10</div>
+            <div class="pricing-price">
+              <span class="currency">₹</span><span class="amount">999</span>
+            </div>
+            <div class="pricing-cycle">per month · billed monthly</div>
+            <ul class="pricing-perks">
+              <li><span class="check">✓</span> 8 live sessions/month (1 hr each)</li>
+              <li><span class="check">✓</span> Beginner curriculum (Level 1)</li>
+              <li><span class="check">✓</span> Parent progress dashboard</li>
+              <li><span class="check">✓</span> In‑class practice games</li>
+              <li><span class="check">✓</span> WhatsApp support</li>
+            </ul>
+            <button type="button" class="btn btn-outline btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
+            <p class="pricing-note">First demo class is always free</p>
+          </div>
+
+          <div class="pricing-card featured reveal reveal-d1">
+            <div class="pricing-badge">Most Popular</div>
+            <div class="pricing-tier gold">Best Value</div>
+            <div class="pricing-name">Bishop Plan</div>
+            <div class="pricing-desc">Ideal for intermediate learners aged 10–14</div>
+            <div class="pricing-price">
+              <span class="currency">₹</span><span class="amount">1,799</span>
+            </div>
+            <div class="pricing-cycle">per month · billed monthly</div>
+            <ul class="pricing-perks">
+              <li><span class="check">✓</span> 12 live sessions/month (1 hr each)</li>
+              <li><span class="check">✓</span> Levels 1 & 2 curriculum access</li>
+              <li><span class="check">✓</span> Full parent & student portal</li>
+              <li><span class="check">✓</span> Game analysis reports</li>
+              <li><span class="check">✓</span> Tournament preparation sessions</li>
+              <li><span class="check">✓</span> Priority WhatsApp support</li>
+            </ul>
+            <button type="button" class="btn btn-primary btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
+            <p class="pricing-note light">Save 15% with annual billing</p>
+          </div>
+
+          <div class="pricing-card reveal reveal-d2">
+            <div class="pricing-tier">Elite</div>
+            <div class="pricing-name">Queen Plan</div>
+            <div class="pricing-desc">Tournament‑track for serious players aged 14–18</div>
+            <div class="pricing-price">
+              <span class="currency">₹</span><span class="amount">2,999</span>
+            </div>
+            <div class="pricing-cycle">per month · billed monthly</div>
+            <ul class="pricing-perks">
+              <li><span class="check">✓</span> 16 live sessions/month (1 hr each)</li>
+              <li><span class="check">✓</span> All 3 levels + advanced content</li>
+              <li><span class="check">✓</span> 1‑on‑1 coaching sessions</li>
+              <li><span class="check">✓</span> FIDE rating preparation</li>
+              <li><span class="check">✓</span> Chess psychology sessions</li>
+              <li><span class="check">✓</span> Priority tournament entry support</li>
+            </ul>
+            <button type="button" class="btn btn-outline btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
+            <p class="pricing-note">First demo class is always free</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="section-alt">
+        <div class="section-head reveal">
+          <div class="eyebrow">FAQ</div>
+          <h2>Frequently Asked Questions</h2>
+          <p class="lead">Everything parents want to know before booking a demo class.</p>
+        </div>
+
+        <div class="faq-wrap">
+          <div class="faq-item reveal">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>What is the minimum age to join ChessKidoo?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">We welcome students from age 6 onwards. Our Level 1 curriculum is specially designed for young learners aged 6–10.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-d1">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>Are the classes online or offline?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">ChessKidoo offers live online classes via interactive video platforms with a shared digital chessboard. Offline classes are also available at our physical centres.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>Does my child need prior chess knowledge?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">Not at all! Level 1 starts from absolute scratch. The free demo class helps us assess the right starting level for your child.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-d1">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>How does the free demo class work?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">Fill the booking form and our team will call you within 24 hours to schedule a convenient time. The demo is a full 45‑minute live session with one of our FIDE coaches – completely free, no card required.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>Will my child be prepared for FIDE‑rated tournaments?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">Yes! Level 2 and Level 3 programs include dedicated tournament preparation. Many of our students have won district and state championships.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-d1">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>Can I track my child's progress?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">Absolutely. Every parent gets full access to our Parent Portal — attendance records, coach notes, game analysis reports, skill progression charts and direct messaging with the coach.</div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button type="button" class="faq-q" aria-expanded="false">
+              <span>Can I change or cancel my plan?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-a" role="region" aria-hidden="true">
+              <div class="faq-a-inner">Yes. Upgrade, downgrade or cancel anytime. We operate on transparent monthly billing with no long‑term lock‑in contracts.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section id="cta" class="section-cta">
+        <div class="cta-inner reveal">
+          <div class="cta-piece" aria-hidden="true">♛</div>
+          <h2>Your child's first move<br />starts with a free class.</h2>
+          <p>Join 500+ students and families who chose ChessKidoo. No experience needed – just curiosity.</p>
+          <div class="cta-actions">
+            <button type="button" class="btn btn-primary btn-lg" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
+            <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">💬 Chat on WhatsApp</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="footer-logo-icon">♛</span>
+              <span class="footer-logo-text">ChessKidoo</span>
+            </div>
+            <p>India's #1 FIDE‑certified chess academy for students aged 6–18. Building champions, one move at a time.</p>
+            <div class="footer-socials">
+              <a href="https://www.instagram.com/chesskidoo/" target="_blank" rel="noopener" aria-label="ChessKidoo on Instagram">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/></svg>
+              </a>
+              <a href="https://www.youtube.com/@chesskidoo" target="_blank" rel="noopener" aria-label="ChessKidoo on YouTube">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              </a>
+              <a href="https://wa.me/919025846663" target="_blank" rel="noopener" aria-label="Chat with ChessKidoo on WhatsApp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </a>
+              <a href="https://www.facebook.com/chesskidoo" target="_blank" rel="noopener" aria-label="ChessKidoo on Facebook">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <h5>Learn</h5>
+            <button type="button" onclick="CK.scrollToSection('features')">Features</button>
+            <button type="button" onclick="CK.scrollToSection('coaches')">Our Coaches</button>
+            <button type="button" onclick="CK.scrollToSection('curriculum')">Curriculum</button>
+            <button type="button" onclick="CK.scrollToSection('pricing')">Pricing</button>
+          </div>
+
+          <div class="footer-links">
+            <h5>Company</h5>
+            <button type="button" onclick="CK.scrollToSection('testimonials')">Reviews</button>
+            <button type="button" onclick="CK.scrollToSection('faq')">FAQ</button>
+            <a href="https://www.instagram.com/chesskidoo/" target="_blank" rel="noopener">Instagram</a>
+            <a href="https://www.youtube.com/@chesskidoo" target="_blank" rel="noopener">YouTube</a>
+          </div>
+
+          <div class="footer-contact">
+            <h5>Contact Us</h5>
+            <p>📞 <a href="tel:+919025846663">+91 90258 46663</a></p>
+            <p>📧 <a href="mailto:chesskidoo@gmail.com">chesskidoo@gmail.com</a></p>
+            <button type="button" class="btn btn-primary btn-block" onclick="CK.openDemoModal()" style="margin-top:16px;">Get Free Demo</button>
+            <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-whatsapp btn-block" style="margin-top:10px;display:flex;justify-content:center;">💬 WhatsApp</a>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span>© 2026 ChessKidoo, Inc. All rights reserved · FIDE Certified · ISO 9001:2015 · AICF Affiliate</span>
+          <span>Made with ♟ in India</span>
+        </div>
+      </footer>
+
+      <!-- Back to top -->
+      <button id="backToTop" class="back-to-top" aria-label="Scroll back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+    </div>
+
+    <!-- ======================== LOGIN PAGE ======================== -->
+    <div id="login-page" class="page">
+      <section class="section-light" style="padding:120px 0; min-height:100vh; display:flex; align-items:center;">
+        <div class="grid-wrap" style="max-width:460px; margin:auto;">
+          <button class="btn btn-ghost" onclick="CK.showHome()" style="margin-bottom:2rem;">← Back to Home</button>
+          <h2 class="eyebrow">Welcome back</h2>
+          <h1 style="font-size:2rem; margin-bottom:1rem;">ChessKidoo Sign In</h1>
+
+          <form id="loginForm" novalidate>
+            <div class="form-group">
+              <label for="login-user">Username <span class="req">*</span></label>
+              <input type="text" id="login-user" placeholder="e.g. admin@ck" autocomplete="username"/>
+              <span class="f-err" id="login-user-err"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="login-pass">Password <span class="req">*</span></label>
+              <div class="input-pwd-wrap">
+                <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+                <button type="button" class="pwd-toggle" aria-label="Show password">👁</button>
+              </div>
+              <span class="f-err" id="login-pass-err"></span>
+            </div>
+
+            <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+              <input type="checkbox" id="rememberMe"/>
+              <label for="rememberMe" style="margin:0;">Remember me</label>
+            </div>
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary btn-block">Log In →</button>
+            </div>
+
+            <div class="demo-hint">
+              <strong>Demo credentials:</strong><br>
+              <code>admin@ck / Admin123$</code> (admin)<br>
+              <code>student@ck / Student123</code> (student)<br>
+              <code>coach@ck / Coach123</code> (coach)
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================== ADMIN DASHBOARD ======================== -->
+    <div id="admin-page" class="page">
+      <div class="dashboard">
+        <nav class="sidebar">
+          <h3 style="margin-bottom:24px; color:#fff;">ChessKidoo</h3>
+          <a href="#" onclick="CK.showAdmin()">🏠 Dashboard</a>
+          <a href="#students">🧑‍🤝‍🧑 Students</a>
+          <a href="#coaches">👩‍🏫 Coaches</a>
+          <a href="#classes">📅 Classes</a>
+          <a href="#" onclick="Auth.logout()">🚪 Log out</a>
+        </nav>
+
+        <main class="main">
+          <!-- Summary cards -->
+          <section class="card">
+            <h3>Welcome, <span id="adminName"></span>!</h3>
+            <p>Quick overview of the platform.</p>
+            <div class="grid-wrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:24px; margin-top:24px;">
+              <div class="card"><h4>Students</h4><p id="statStudents">0</p></div>
+              <div class="card"><h4>Coaches</h4><p id="statCoaches">0</p></div>
+              <div class="card"><h4>Classes</h4><p id="statClasses">0</p></div>
+              <div class="card"><h4>Demo requests (24 h)</h4><p id="statDemos">0</p></div>
+            </div>
+          </section>
+
+          <!-- Students table -->
+          <section id="students" class="card">
+            <h3>Student List</h3>
+            <button type="button" class="btn btn-primary btn-sm" id="addStudentBtn">+ Add Student</button>
+            <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+              <table class="table" id="studentsTable">
+                <thead>
+                  <tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Actions</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Coaches table -->
+          <section id="coaches" class="card">
+            <h3>Coach List</h3>
+            <button type="button" class="btn btn-primary btn-sm" id="addCoachBtn">+ Add Coach</button>
+            <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+              <table class="table" id="coachesTable">
+                <thead>
+                  <tr><th>#</th><th>Name</th><th>FIDE rating</th><th>Email</th><th>Actions</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Classes table -->
+          <section id="classes" class="card">
+            <h3>Class Schedule</h3>
+            <button type="button" class="btn btn-primary btn-sm" id="addClassBtn">+ Add Class</button>
+            <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+              <table class="table" id="classesTable">
+                <thead>
+                  <tr><th>#</th><th>Title</th><th>Level</th><th>Day / Time</th><th>Coach</th><th>Actions</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
+
+    <!-- ======================== STUDENT DASHBOARD ======================== -->
+    <div id="student-page" class="page">
+      <div class="dashboard">
+        <nav class="sidebar">
+          <h3 style="margin-bottom:24px; color:#fff;">ChessKidoo</h3>
+          <a href="#" onclick="CK.showStudent()">🏠 Home</a>
+          <a href="#progress">📈 Progress</a>
+          <a href="#schedule">📅 Schedule</a>
+          <a href="#games">♟ Game Review</a>
+          <a href="#" onclick="Auth.logout()">🚪 Log out</a>
+        </nav>
+
+        <main class="main">
+          <section class="card">
+            <h3>Hello, <span id="studentName"></span>! 🎉</h3>
+            <p>Here’s a snapshot of your chess journey.</p>
+
+            <div class="grid-wrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:24px; margin-top:24px;">
+              <div class="card"><h4>Current Level</h4><p id="currLevel" class="stat-num"></p></div>
+              <div class="card"><h4>FIDE Rating</h4><p id="currRating" class="stat-num"></p></div>
+              <div class="card"><h4>Upcoming Lesson</h4><p id="nextLesson"></p></div>
+              <div class="card"><h4>Coach</h4><p id="coachName"></p></div>
+            </div>
+          </section>
+
+          <!-- Rating chart -->
+          <section id="progress" class="card">
+            <h3>Rating Progress</h3>
+            <div class="chart-wrapper"><canvas id="ratingChart"></canvas></div>
+          </section>
+
+          <!-- Schedule -->
+          <section id="schedule" class="card">
+            <h3>My Schedule</h3>
+            <table class="table" id="scheduleTable">
+              <thead><tr><th>#</th><th>Title</th><th>Day / Time</th><th>Coach</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <!-- Game review videos -->
+          <section id="games" class="card">
+            <h3>Game Review Videos</h3>
+            <ul id="gameList"></ul>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- ======================== COACH DASHBOARD ======================== -->
+    <div id="coach-page" class="page">
+      <div class="dashboard">
+        <nav class="sidebar">
+          <h3 style="margin-bottom:24px; color:#fff;">ChessKidoo</h3>
+          <a href="#" onclick="CK.showCoach()">🏠 Home</a>
+          <a href="#progress">📈 Progress</a>
+          <a href="#schedule">📅 Schedule</a>
+          <a href="#games">♟ Game Review</a>
+          <a href="#" onclick="Auth.logout()">🚪 Log out</a>
+        </nav>
+
+        <main class="main">
+          <section class="card">
+            <h3>Hello, <span id="coachName"></span>! 🎉</h3>
+            <p>Here’s a snapshot of your coaching journey.</p>
+
+            <div class="grid-wrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:24px; margin-top:24px;">
+              <div class="card"><h4>Specialty</h4><p id="currSpecialty" class="stat-num">Tactics & Strategy</p></div>
+              <div class="card"><h4>FIDE Rating</h4><p id="currRating" class="stat-num"></p></div>
+              <div class="card"><h4>Students Coached</h4><p id="studentCount">10</p></div>
+              <div class="card"><h4>Upcoming Classes</h4><p id="nextClass">Tue 16:00 – Intermediate</p></div>
+            </div>
+          </section>
+
+          <!-- Coach stats chart -->
+          <section id="progress" class="card">
+            <h3>Coaching Impact</h3>
+            <div class="chart-wrapper"><canvas id="coachChart"></canvas></div>
+          </section>
+
+          <!-- Schedule -->
+          <section id="schedule" class="card">
+            <h3>My Schedule</h3>
+            <table class="table" id="scheduleTable">
+              <thead><tr><th>#</th><th>Title</th><th>Day / Time</th><th>Student Level</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <!-- Game review videos -->
+          <section id="games" class="card">
+            <h3>Game Review Videos</h3>
+            <ul id="gameList"></ul>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- ======================== MODALS ======================== -->
+    <!-- Demo Modal -->
+    <div class="modal-overlay" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
+      <div class="modal-box">
+        <button type="button" class="modal-close" onclick="CK.closeModal('demoModal')" aria-label="Close modal">✕</button>
+        <div class="modal-head">
+          <div class="modal-piece">♛</div>
+          <h3 id="demoModalTitle">Book a Free Demo Class</h3>
+          <p>Fill the form – our team will call you within 24 hrs.</p>
+        </div>
+
+        <form id="demoForm" novalidate>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-name">Parent / Student Name <span class="req">*</span></label>
+                <input type="text" id="f-name" name="name" placeholder="Enter full name" autocomplete="name"/>
+                <span class="f-err" id="f-name-err" role="alert"></span>
+              </div>
+              <div class="form-group">
+                <label for="f-phone">Phone Number <span class="req">*</span></label>
+                <input type="tel" id="f-phone" name="phone" placeholder="10‑digit mobile" autocomplete="tel"/>
+                <span class="f-err" id="f-phone-err" role="alert"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="f-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="f-email" name="email" placeholder="name@example.com" autocomplete="email"/>
+              <span class="f-err" id="f-email-err" role="alert"></span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-city">City <span class="req">*</span></label>
+                <input type="text" id="f-city" name="city" placeholder="Your city"/>
+                <span class="f-err" id="f-city-err" role="alert"></span>
+              </div>
+              <div class="form-group">
+                <label for="f-age">Child's Age <span class="req">*</span></label>
+                <select id="f-age" name="age">
+                  <option value="">Select age group</option>
+                  <option value="6-8">6–8 years</option>
+                  <option value="9-11">9–11 years</option>
+                  <option value="12-14">12–14 years</option>
+                  <option value="15-18">15–18 years</option>
+                </select>
+                <span class="f-err" id="f-age-err" role="alert"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="f-msg">Message (Optional)</label>
+              <textarea id="f-msg" name="message" rows="2" placeholder="Prior experience, preferred timings, etc."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="CK.closeModal('demoModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="demoSubmitBtn">📅 Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Login Modal (for mobile) -->
+    <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+      <div class="modal-box" style="max-width:440px">
+        <button type="button" class="modal-close" onclick="CK.closeModal('loginModal')" aria-label="Close login modal">✕</button>
+        <div class="modal-head">
+          <div class="modal-piece">♛</div>
+          <h3 id="loginModalTitle">Welcome Back</h3>
+          <p>Log in to your ChessKidoo account</p>
+        </div>
+
+        <form id="loginFormModal" novalidate>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="l-user">Username <span class="req">*</span></label>
+              <input type="text" id="l-user" name="username" placeholder="user@123" value="user@123" autocomplete="username"/>
+              <span class="f-err" id="l-user-err" role="alert"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="l-pass">Password <span class="req">*</span></label>
+              <div class="input-pwd-wrap">
+                <input type="password" id="l-pass" name="password" placeholder="••••••••" value="Admin123$" autocomplete="current-password"/>
+                <button type="button" class="pwd-toggle" onclick="CK.togglePwd('l-pass', this)" aria-label="Toggle password visibility">👁</button>
+              </div>
+              <span class="f-err" id="l-pass-err" role="alert"></span>
+            </div>
+
+            <div class="demo-hint">
+              <strong>Demo credentials:</strong> user@123 / Admin123$
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="CK.closeModal('loginModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Log In →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
   </div>
 
-  <!-- ======================== FEATURES ======================== -->
-  <section id="features" class="section-light">
-    <div class="section-head reveal">
-      <div class="eyebrow">Why ChessKidoo?</div>
-      <h2>Everything Your Child Needs to Excel</h2>
-      <p class="lead">One‑stop solution for kids learning chess – tracking, coaching, tournaments and more.</p>
-    </div>
-
-    <div class="feat-grid">
-      <div class="feat-card reveal">
-        <div class="feat-icon">📊</div>
-        <h3>Smart Student Tracking</h3>
-        <p>Manage profiles, game history, and ratings for every student in one clean dashboard.</p>
-      </div>
-      <div class="feat-card reveal reveal-d1">
-        <div class="feat-icon">📈</div>
-        <h3>Progress Analytics</h3>
-        <p>Visual insights into each student's performance trends and learning velocity over time.</p>
-      </div>
-      <div class="feat-card reveal reveal-d2">
-        <div class="feat-icon">🏆</div>
-        <h3>Tournament Ready</h3>
-        <p>Manage tournaments, match pairings, and leaderboards with professional efficiency.</p>
-      </div>
-      <div class="feat-card reveal">
-        <div class="feat-icon">🌍</div>
-        <h3>Internationally Certified Coaches</h3>
-        <p>Learn from professionals trained under FIDE's rigorous global standards.</p>
-      </div>
-      <div class="feat-card reveal reveal-d1">
-        <div class="feat-icon">⭐</div>
-        <h3>FIDE‑Rated Experts (ELO 1600+)</h3>
-        <p>Coaches with real competitive success and proven tournament experience.</p>
-      </div>
-      <div class="feat-card reveal reveal-d2">
-        <div class="feat-icon">🧩</div>
-        <h3>India's 1st Chess Student Tracking System</h3>
-        <p>Monthly reports, rating growth and skill‑analytics for every child.</p>
-      </div>
-      <div class="feat-card reveal">
-        <div class="feat-icon">📚</div>
-        <h3>Complete Training Program</h3>
-        <p>Openings, middlegame tactics, endgames, strategy and mental prep – all on one platform.</p>
-      </div>
-      <div class="feat-card reveal reveal-d1">
-        <div class="feat-icon">🗣️</div>
-        <h3>Personalized Feedback</h3>
-        <p>Every game is reviewed and discussed with the coach for continuous improvement.</p>
-      </div>
-      <div class="feat-card reveal reveal-d2">
-        <div class="feat-icon">🇮🇳</div>
-        <h3>Bilingual Support (English &amp; Tamil)</h3>
-        <p>Clear communication for students and parents in the language they're comfortable with.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== CURRICULUM ======================== -->
-  <section id="curriculum" class="section-dark">
-    <div class="section-head reveal">
-      <div class="eyebrow light">Student Levels</div>
-      <h2 class="light">Three Levels – One Journey</h2>
-      <p class="lead light">Progress from total beginner to tournament‑ready competitor.</p>
-    </div>
-
-    <div class="level-grid">
-      <div class="level-card reveal">
-        <div class="level-badge">Beginner</div>
-        <div class="level-piece">♟</div>
-        <h3>Beginner Level</h3>
-        <p>Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
-        <ul class="skill-list">
-          <li>Piece movements &amp; rules</li>
-          <li>Basic tactics &amp; checkmates</li>
-          <li>Simple endgame principles</li>
-          <li>Board awareness training</li>
-        </ul>
-        <button type="button" class="btn btn-ghost-light" onclick="CK.openDemoModal()">Start Here →</button>
-      </div>
-
-      <div class="level-card featured reveal reveal-d1">
-        <div class="level-badge gold">Most Popular</div>
-        <div class="level-piece">♗</div>
-        <h3>Intermediate Level</h3>
-        <p>Designed for players with a solid foundation. Develops tactical awareness, middle‑game strategy, and endgame mastery.</p>
-        <ul class="skill-list">
-          <li>Advanced combinations</li>
-          <li>Opening repertoire building</li>
-          <li>Middlegame strategy</li>
-          <li>Endgame technique drills</li>
-        </ul>
-        <button type="button" class="btn btn-primary" onclick="CK.openDemoModal()">Level Up →</button>
-      </div>
-
-      <div class="level-card reveal reveal-d2">
-        <div class="level-badge">Elite</div>
-        <div class="level-piece">♛</div>
-        <h3>Advanced Level</h3>
-        <p>For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
-        <ul class="skill-list">
-          <li>Opening theory mastery</li>
-          <li>Endgame precision</li>
-          <li>Chess psychology training</li>
-          <li>FIDE rating preparation</li>
-        </ul>
-        <button type="button" class="btn btn-ghost-light" onclick="CK.openDemoModal()">Go Elite →</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== COACHES ======================== -->
-  <section id="coaches" class="section-light">
-    <div class="section-head reveal">
-      <div class="eyebrow">Our Expert Faculty</div>
-      <h2>Meet the Minds Behind the Moves</h2>
-      <p class="lead">7 FIDE‑certified coaches with international ratings and state‑championship experience.</p>
-    </div>
-
-    <div class="coach-grid">
-      <div class="coach-card reveal">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♔</span>
-          <span class="coach-badge">FIDE 2200+</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Advanced</span>
-          <h4 class="coach-name">Ranjith</h4>
-          <p class="coach-bio">FIDE‑certified coach with 2 years training young talents to achieve international ratings.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal reveal-d1">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♕</span>
-          <span class="coach-badge">Senior Coach</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Intermediate</span>
-          <h4 class="coach-name">Vishnu</h4>
-          <p class="coach-bio">2 years at Hindustan Incubation Chess Club, specialising in middlegame strategy.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal reveal-d2">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♖</span>
-          <span class="coach-badge">Tactics Expert</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Intermediate</span>
-          <h4 class="coach-name">Rohith Selvaraj</h4>
-          <p class="coach-bio">FIDE‑certified specialist in tactical patterns and competitive preparation.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♗</span>
-          <span class="coach-badge">AFM Titled</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Beginner &amp; Intermediate</span>
-          <h4 class="coach-name">Gyansurya</h4>
-          <p class="coach-bio">Child specialist and AFM title holder – making chess approachable for younger students.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal reveal-d1">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♘</span>
-          <span class="coach-badge">Youth Expert</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Beginner &amp; Intermediate</span>
-          <h4 class="coach-name">Saran</h4>
-          <p class="coach-bio">Dedicated beginner specialist with a talent for keeping young students engaged and motivated.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal reveal-d2">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♙</span>
-          <span class="coach-badge">Head Coach</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Intermediate</span>
-          <h4 class="coach-name">Yogesh</h4>
-          <p class="coach-bio">Anna University South Zone representative and Sri Eshwar College of Engineering player.</p>
-        </div>
-      </div>
-
-      <div class="coach-card reveal">
-        <div class="coach-avatar-wrap">
-          <span class="coach-piece">♚</span>
-          <span class="coach-badge">Psychologist</span>
-        </div>
-        <div class="coach-body">
-          <span class="coach-level">Beginner</span>
-          <h4 class="coach-name">Haris</h4>
-          <p class="coach-bio">Chess psychology specialist – building mental strength and resilience alongside chess skills.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== TESTIMONIALS ======================== -->
-  <section id="testimonials" class="section-dark">
-    <div class="section-head reveal">
-      <div class="eyebrow light">Parent Reviews</div>
-      <h2 class="light">Real Stories, Real Results</h2>
-      <p class="lead light">From families across India who chose ChessKidoo for their children.</p>
-    </div>
-
-    <div class="testi-grid">
-      <div class="testi-card reveal">
-        <div class="testi-rating">★★★★★</div>
-        <p class="testi-text">"Chess‑Kidoo is not just about chess moves. My daughter has improved her concentration, discipline, and problem‑solving skills tremendously."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">R</div>
-          <div class="testi-meta">
-            <strong>Parent of U‑15 Riyas</strong>
-            <span>Verified Enrolment</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="testi-card reveal reveal-d1">
-        <div class="testi-rating">★★★★★</div>
-        <p class="testi-text">"My son's confidence has grown tremendously after joining Chess‑Kidoo. The coaches are patient, motivating and focus on both fundamentals and strategy."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">A</div>
-          <div class="testi-meta">
-            <strong>Parent of U‑15 Adhavan</strong>
-            <span>Verified Enrolment</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="testi-card reveal reveal-d2">
-        <div class="testi-rating">★★★★★</div>
-        <p class="testi-text">"The structured curriculum and regular feedback sessions really impressed us. Chess‑Kidoo helped our child develop logical thinking and patience."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">S</div>
-          <div class="testi-meta">
-            <strong>Parent of U‑12 Saran</strong>
-            <span>Verified Enrolment</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== PRICING ======================== -->
-  <section id="pricing" class="section-light">
-    <div class="section-head reveal">
-      <div class="eyebrow">Transparent Pricing</div>
-      <h2>Simple, Affordable Plans</h2>
-      <p class="lead">No hidden fees. Every plan includes a free demo class to start.</p>
-    </div>
-
-    <div class="pricing-grid">
-      <div class="pricing-card reveal">
-        <div class="pricing-tier">Starter</div>
-        <div class="pricing-name">Pawn Plan</div>
-        <div class="pricing-desc">Perfect for beginners aged 6–10</div>
-        <div class="pricing-price">
-          <span class="currency">₹</span><span class="amount">999</span>
-        </div>
-        <div class="pricing-cycle">per month · billed monthly</div>
-        <ul class="pricing-perks">
-          <li><span class="check">✓</span> 8 live sessions/month (1 hr each)</li>
-          <li><span class="check">✓</span> Beginner curriculum (Level 1)</li>
-          <li><span class="check">✓</span> Parent progress dashboard</li>
-          <li><span class="check">✓</span> In‑class practice games</li>
-          <li><span class="check">✓</span> WhatsApp support</li>
-        </ul>
-        <button type="button" class="btn btn-outline btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
-        <p class="pricing-note">First demo class is always free</p>
-      </div>
-
-      <div class="pricing-card featured reveal reveal-d1">
-        <div class="pricing-badge">Most Popular</div>
-        <div class="pricing-tier gold">Best Value</div>
-        <div class="pricing-name">Bishop Plan</div>
-        <div class="pricing-desc">Ideal for intermediate learners aged 10–14</div>
-        <div class="pricing-price">
-          <span class="currency">₹</span><span class="amount">1,799</span>
-        </div>
-        <div class="pricing-cycle">per month · billed monthly</div>
-        <ul class="pricing-perks">
-          <li><span class="check">✓</span> 12 live sessions/month (1 hr each)</li>
-          <li><span class="check">✓</span> Levels 1 & 2 curriculum access</li>
-          <li><span class="check">✓</span> Full parent & student portal</li>
-          <li><span class="check">✓</span> Game analysis reports</li>
-          <li><span class="check">✓</span> Tournament preparation sessions</li>
-          <li><span class="check">✓</span> Priority WhatsApp support</li>
-        </ul>
-        <button type="button" class="btn btn-primary btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
-        <p class="pricing-note light">Save 15% with annual billing</p>
-      </div>
-
-      <div class="pricing-card reveal reveal-d2">
-        <div class="pricing-tier">Elite</div>
-        <div class="pricing-name">Queen Plan</div>
-        <div class="pricing-desc">Tournament‑track for serious players aged 14–18</div>
-        <div class="pricing-price">
-          <span class="currency">₹</span><span class="amount">2,999</span>
-        </div>
-        <div class="pricing-cycle">per month · billed monthly</div>
-        <ul class="pricing-perks">
-          <li><span class="check">✓</span> 16 live sessions/month (1 hr each)</li>
-          <li><span class="check">✓</span> All 3 levels + advanced content</li>
-          <li><span class="check">✓</span> 1‑on‑1 coaching sessions</li>
-          <li><span class="check">✓</span> FIDE rating preparation</li>
-          <li><span class="check">✓</span> Chess psychology sessions</li>
-          <li><span class="check">✓</span> Priority tournament entry support</li>
-        </ul>
-        <button type="button" class="btn btn-outline btn-block" onclick="CK.openDemoModal()">Start Free Demo</button>
-        <p class="pricing-note">First demo class is always free</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== FAQ ======================== -->
-  <section id="faq" class="section-alt">
-    <div class="section-head reveal">
-      <div class="eyebrow">FAQ</div>
-      <h2>Frequently Asked Questions</h2>
-      <p class="lead">Everything parents want to know before booking a demo class.</p>
-    </div>
-
-    <div class="faq-wrap">
-      <div class="faq-item reveal">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>What is the minimum age to join ChessKidoo?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">We welcome students from age 6 onwards. Our Level 1 curriculum is specially designed for young learners aged 6–10.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal reveal-d1">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>Are the classes online or offline?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">ChessKidoo offers live online classes via interactive video platforms with a shared digital chessboard. Offline classes are also available at our physical centres.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>Does my child need prior chess knowledge?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">Not at all! Level 1 starts from absolute scratch. The free demo class helps us assess the right starting level for your child.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal reveal-d1">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>How does the free demo class work?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">Fill the booking form and our team will call you within 24 hours to schedule a convenient time. The demo is a full 45‑minute live session with one of our FIDE coaches – completely free, no card required.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>Will my child be prepared for FIDE‑rated tournaments?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">Yes! Level 2 and Level 3 programs include dedicated tournament preparation. Many of our students have won district and state championships.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal reveal-d1">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>Can I track my child's progress?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">Absolutely. Every parent gets full access to our Parent Portal — attendance records, coach notes, game analysis reports, skill progression charts and direct messaging with the coach.</div>
-        </div>
-      </div>
-
-      <div class="faq-item reveal">
-        <button type="button" class="faq-q" aria-expanded="false">
-          <span>Can I change or cancel my plan?</span>
-          <span class="faq-icon" aria-hidden="true">+</span>
-        </button>
-        <div class="faq-a" role="region" aria-hidden="true">
-          <div class="faq-a-inner">Yes. Upgrade, downgrade or cancel anytime. We operate on transparent monthly billing with no long‑term lock‑in contracts.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== CTA ======================== -->
-  <section id="cta" class="section-cta">
-    <div class="cta-inner reveal">
-      <div class="cta-piece" aria-hidden="true">♛</div>
-      <h2>Your child's first move<br />starts with a free class.</h2>
-      <p>Join 500+ students and families who chose ChessKidoo. No experience needed – just curiosity.</p>
-      <div class="cta-actions">
-        <button type="button" class="btn btn-primary btn-lg" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
-        <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">💬 Chat on WhatsApp</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== FOOTER ======================== -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <div class="footer-logo">
-          <span class="footer-logo-icon">♛</span>
-          <span class="footer-logo-text">ChessKidoo</span>
-        </div>
-        <p>India's #1 FIDE‑certified chess academy for students aged 6–18. Building champions, one move at a time.</p>
-        <div class="footer-socials">
-          <a href="https://www.instagram.com/chesskidoo/" target="_blank" rel="noopener" aria-label="ChessKidoo on Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/></svg>
-          </a>
-          <a href="https://www.youtube.com/@chesskidoo" target="_blank" rel="noopener" aria-label="ChessKidoo on YouTube">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          </a>
-          <a href="https://wa.me/919025846663" target="_blank" rel="noopener" aria-label="Chat with ChessKidoo on WhatsApp">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          </a>
-          <a href="https://www.facebook.com/chesskidoo" target="_blank" rel="noopener" aria-label="ChessKidoo on Facebook">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <div class="footer-links">
-        <h5>Learn</h5>
-        <button type="button" onclick="CK.scrollToSection('features')">Features</button>
-        <button type="button" onclick="CK.scrollToSection('coaches')">Our Coaches</button>
-        <button type="button" onclick="CK.scrollToSection('curriculum')">Curriculum</button>
-        <button type="button" onclick="CK.scrollToSection('pricing')">Pricing</button>
-      </div>
-
-      <div class="footer-links">
-        <h5>Company</h5>
-        <button type="button" onclick="CK.scrollToSection('testimonials')">Reviews</button>
-        <button type="button" onclick="CK.scrollToSection('faq')">FAQ</button>
-        <a href="https://www.instagram.com/chesskidoo/" target="_blank" rel="noopener">Instagram</a>
-        <a href="https://www.youtube.com/@chesskidoo" target="_blank" rel="noopener">YouTube</a>
-      </div>
-
-      <div class="footer-contact">
-        <h5>Contact Us</h5>
-        <p>📞 <a href="tel:+919025846663">+91 90258 46663</a></p>
-        <p>📧 <a href="mailto:chesskidoo@gmail.com">chesskidoo@gmail.com</a></p>
-        <button type="button" class="btn btn-primary btn-block" onclick="CK.openDemoModal()" style="margin-top:16px;">Get Free Demo</button>
-        <a href="https://wa.me/919025846663" target="_blank" rel="noopener" class="btn btn-whatsapp btn-block" style="margin-top:10px;display:flex;justify-content:center;">💬 WhatsApp</a>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <span>© 2026 ChessKidoo, Inc. All rights reserved · FIDE Certified · ISO 9001:2015 · AICF Affiliate</span>
-      <span>Made with ♟ in India</span>
-    </div>
-  </footer>
-
-  <!-- ======================== DEMO MODAL ======================== -->
-  <div class="modal-overlay" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
-    <div class="modal-box">
-      <button type="button" class="modal-close" onclick="CK.closeModal('demoModal')" aria-label="Close modal">✕</button>
-      <div class="modal-head">
-        <div class="modal-piece">♛</div>
-        <h3 id="demoModalTitle">Book a Free Demo Class</h3>
-        <p>Fill the form – our team will call you within 24 hrs.</p>
-      </div>
-
-      <form id="demoForm" novalidate>
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="f-name">Parent / Student Name <span class="req">*</span></label>
-              <input type="text" id="f-name" name="name" placeholder="Enter full name" autocomplete="name"/>
-              <span class="f-err" id="f-name-err" role="alert"></span>
-            </div>
-            <div class="form-group">
-              <label for="f-phone">Phone Number <span class="req">*</span></label>
-              <input type="tel" id="f-phone" name="phone" placeholder="10‑digit mobile" autocomplete="tel"/>
-              <span class="f-err" id="f-phone-err" role="alert"></span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="f-email">Email Address <span class="req">*</span></label>
-            <input type="email" id="f-email" name="email" placeholder="name@example.com" autocomplete="email"/>
-            <span class="f-err" id="f-email-err" role="alert"></span>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="f-city">City <span class="req">*</span></label>
-              <input type="text" id="f-city" name="city" placeholder="Your city"/>
-              <span class="f-err" id="f-city-err" role="alert"></span>
-            </div>
-            <div class="form-group">
-              <label for="f-age">Child's Age <span class="req">*</span></label>
-              <select id="f-age" name="age">
-                <option value="">Select age group</option>
-                <option value="6-8">6–8 years</option>
-                <option value="9-11">9–11 years</option>
-                <option value="12-14">12–14 years</option>
-                <option value="15-18">15–18 years</option>
-              </select>
-              <span class="f-err" id="f-age-err" role="alert"></span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="f-msg">Message (Optional)</label>
-            <textarea id="f-msg" name="message" rows="2" placeholder="Prior experience, preferred timings, etc."></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="CK.closeModal('demoModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="demoSubmitBtn">📅 Confirm Booking</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================== LOGIN MODAL ======================== -->
-  <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
-    <div class="modal-box" style="max-width:440px">
-      <button type="button" class="modal-close" onclick="CK.closeModal('loginModal')" aria-label="Close login modal">✕</button>
-      <div class="modal-head">
-        <div class="modal-piece">♛</div>
-        <h3 id="loginModalTitle">Welcome Back</h3>
-        <p>Log in to your ChessKidoo account</p>
-      </div>
-
-      <form id="loginForm" novalidate>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="l-user">Username <span class="req">*</span></label>
-            <input type="text" id="l-user" name="username" placeholder="user@123" value="user@123" autocomplete="username"/>
-            <span class="f-err" id="l-user-err" role="alert"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="l-pass">Password <span class="req">*</span></label>
-            <div class="input-pwd-wrap">
-              <input type="password" id="l-pass" name="password" placeholder="••••••••" value="Admin123$" autocomplete="current-password"/>
-              <button type="button" class="pwd-toggle" onclick="CK.togglePwd('l-pass', this)" aria-label="Toggle password visibility">👁</button>
-            </div>
-            <span class="f-err" id="l-pass-err" role="alert"></span>
-          </div>
-
-          <div class="demo-hint">
-            <strong>Demo credentials:</strong> user@123 / Admin123$
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="CK.closeModal('loginModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Log In →</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Toast notification -->
-  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-
-  <!-- Floating WhatsApp -->
-  <a href="https://wa.me/919025846663" target="_blank" rel="noopener"
-     class="wa-fab" aria-label="Chat on WhatsApp" title="Chat with us on WhatsApp">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  </a>
-
-  <!-- Back to top -->
-  <button id="backToTop" class="back-to-top" aria-label="Scroll back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <!-- Scripts (order matters) -->
-  <!-- REMOVED: mock/api-mock.js (using real backend now) -->
+  <!-- Scripts -->
   <script src="assets/js/main.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/router.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script src="assets/js/student.js"></script>
+  <script src="assets/js/coach.js"></script>
+
 </body>
 </html>

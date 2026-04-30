@@ -155,14 +155,6 @@
     });
   }
 
-  // ---- Back to Top ----
-  const backToTopBtn = document.getElementById('backToTop');
-  if (backToTopBtn) {
-    window.addEventListener('scroll', () => {
-      backToTopBtn.classList.toggle('visible', window.scrollY > 300);
-    });
-  }
-
   // ---- Preloader ----
   window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
