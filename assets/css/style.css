@@ -480,3 +480,203 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   backdrop-filter: blur(12px);
 }
+
+/* ---------------------------------------------
+   LOGIN PAGE — Matches chesskidoo.com reference
+--------------------------------------------- */
+.login-bg-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f1e8;
+  position: relative;
+  overflow: hidden;
+  padding: 40px 16px;
+}
+.login-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.login-piece {
+  position: absolute;
+  font-size: 10rem;
+  opacity: 0.07;
+  color: var(--ink);
+  font-family: serif;
+  line-height: 1;
+}
+.login-piece-1 { top: 10%; left: 5%;  transform: rotate(-15deg); }
+.login-piece-2 { bottom: 10%; right: 5%; transform: rotate(12deg); font-size: 8rem; }
+.login-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.09);
+  position: relative;
+  z-index: 1;
+}
+.login-logo { display: flex; flex-direction: column; align-items: center; }
+
+/* ---------------------------------------------
+   ADMIN PORTAL — Matches chesskidoo.com/admin
+--------------------------------------------- */
+.admin-tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e7eb;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.admin-tab {
+  padding: 13px 22px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.admin-tab:hover  { color: var(--ink); }
+.admin-tab.active { background: var(--ink); color: #fff; border-radius: 6px 6px 0 0; }
+
+/* Filter Bar */
+.ck-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.ck-select {
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: #fff;
+  cursor: pointer;
+  min-width: 140px;
+  appearance: auto;
+}
+
+/* Buttons */
+.ck-btn { padding: 10px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.ck-btn-primary { background: var(--amber); color: #fff; }
+.ck-btn-primary:hover { background: #b45309; }
+.ck-btn-dark    { background: var(--ink); color: #fff; }
+.ck-btn-dark:hover { background: #2d1f14; }
+.ck-btn-green   { background: #166534; color: #fff; }
+.ck-btn-green:hover { background: #14532d; }
+.ck-btn-red     { background: #dc2626; color: #fff; }
+.ck-btn-red:hover { background: #b91c1c; }
+.ck-btn-outline { background: #fff; color: var(--ink); border: 1.5px solid #e0e0e0; }
+.ck-btn-outline:hover { border-color: var(--amber); color: var(--amber); }
+.ck-btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
+
+/* Table */
+.ck-table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 12px; }
+.ck-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.ck-table thead tr { background: #fafafa; border-bottom: 2px solid #e5e7eb; }
+.ck-table th { padding: 14px 16px; text-align: left; font-weight: 700; color: #555; white-space: nowrap; }
+.ck-table td { padding: 13px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.ck-table tbody tr:hover { background: #fffbf5; }
+.ck-table tbody tr:last-child td { border-bottom: none; }
+.ck-empty { text-align: center; padding: 60px 20px; opacity: 0.45; }
+
+/* Input */
+.ck-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.ck-input:focus { border-color: var(--amber); }
+
+/* Card */
+.ck-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border: 1px solid #e5e7eb;
+}
+
+/* Attendance Calendar */
+.ck-coach-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ck-coach-tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s;
+}
+.ck-coach-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.ck-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+.ck-cal-nav h3 { margin: 0; font-family: var(--font-display); font-size: 1.4rem; }
+.ck-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.ck-cal-header {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #888;
+  padding: 6px 0;
+}
+.ck-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  background: #f9f9f9;
+  border: 1px solid #e5e7eb;
+  cursor: default;
+}
+.ck-cal-cell.ck-cal-empty { background: transparent; border: none; }
+.ck-cal-cell.ck-cal-present { background: #dcfce7; border-color: #86efac; }
+.ck-cal-cell.ck-cal-absent  { background: #fee2e2; border-color: #fca5a5; }
+.ck-cal-num { font-weight: 700; font-size: 0.85rem; }
+.ck-cal-check { color: #166534; font-size: 1rem; font-weight: 900; }
+.ck-cal-cross { color: #dc2626; font-size: 1rem; font-weight: 900; }
+
+/* Empty State */
+.ck-empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  opacity: 0.45;
+  font-size: 3rem;
+}
+.ck-empty-state p { font-size: 1rem; margin-top: 12px; opacity: 0.8; }
