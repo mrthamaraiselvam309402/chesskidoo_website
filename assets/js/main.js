@@ -1,67 +1,111 @@
 /* assets/js/main.js -------------------------------------------------------
-   Shared UI logic for ChessKidoo: scroll, modals, animations, etc.
+   Core UI & Navigation Logic for ChessKidoo
    --------------------------------------------------------------- */
 
 (() => {
   const CK = window.CK = window.CK || {};
 
-  // ---- Preloader ----
-  const hidePreloader = () => {
+  // ============ Init ============
+  window.addEventListener('load', () => {
+    // Preloader
     const preloader = document.getElementById('preloader');
-    if (preloader) {
-      setTimeout(() => preloader.classList.add('hidden'), 600);
-    }
-  };
-  window.addEventListener('load', hidePreloader);
+    setTimeout(() => {
+      preloader.classList.add('hidden');
+    }, 600);
 
-  // ---- Scroll Effects ----
-  const header = document.getElementById('header');
-  const scrollProgress = document.getElementById('scrollProgress');
-
-  window.addEventListener('scroll', () => {
-    const s = window.scrollY;
-    const h = document.documentElement.scrollHeight - window.innerHeight;
+    // Chessboard
+    createBoard();
     
-    if (scrollProgress) scrollProgress.style.width = (h > 0 ? (s / h) * 100 : 0) + '%';
-    if (header) header.classList.toggle('scrolled', s > 50);
-  }, { passive: true });
+    // Reveal Init
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  });
 
-  // ---- Navigation & Scroll ----
-  CK.scrollToSection = (id) => {
-    // If not on landing page, switch to it first
-    const landing = document.getElementById('landing-page');
-    if (landing && !landing.classList.contains('active')) {
-      if (typeof CK.showHome === 'function') {
-        CK.showHome();
-        setTimeout(() => performScroll(id), 100);
-        return;
-      }
-    }
-    performScroll(id);
-  };
+  // ============ Scroll & Header ============
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('header');
+    const scrollProgress = document.getElementById('scrollProgress');
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    
+    scrollProgress.style.width = (winScroll / height) * 100 + '%';
+    if (window.scrollY > 50) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  });
 
-  function performScroll(id) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  // ============ Chessboard Logic ============
+  function createBoard() {
+    const board = document.getElementById('chessboard');
+    if (!board) return;
+    
+    const pieces = { 0: '♜', 1: '♞', 2: '♝', 3: '♛', 4: '♚', 5: '♝', 6: '♞', 7: '♜' };
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 64; i++) {
+      const sq = document.createElement('div');
+      const row = Math.floor(i / 8);
+      const col = i % 8;
+      sq.className = 'board-square' + ((row + col) % 2 === 0 ? ' light' : ' dark');
+      
+      if (row === 0) sq.textContent = pieces[col];
+      if (row === 1) sq.textContent = '♟';
+      if (row === 6) sq.textContent = '♙';
+      if (row === 7) sq.textContent = pieces[col].replace(/[♜♞♝♛♚]/g, m => ({'♜':'♖','♞':'♘','♝':'♗','♛':'♕','♚':'♔'}[m]));
+      
+      board.appendChild(sq);
     }
   }
 
-  // ---- Modals ----
-  CK.openModal = (id) => {
-    const modal = document.getElementById(id || 'contactModal');
-    if (modal) {
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
+  // ============ Navigation ============
+  CK.navigate = (sectionId) => {
+    // If we're not on the landing page, show it first
+    const landing = document.getElementById('landing-page');
+    const login = document.getElementById('login-page');
+    
+    if (sectionId === 'login') {
+      CK.showPage('login');
+      return;
+    }
+
+    if (!landing.classList.contains('active')) {
+      CK.showPage('landing');
+    }
+
+    const target = document.getElementById(sectionId);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    
+    // Close mobile menu
+    const navLinks = document.getElementById('navLinks');
+    if (window.innerWidth <= 768) navLinks.style.display = '';
+  };
+
+  CK.showPage = (pageId) => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(`${pageId}-page`).classList.add('active');
+    window.scrollTo(0, 0);
+
+    // Update Header visibility
+    const header = document.getElementById('header');
+    if (pageId.includes('admin') || pageId.includes('student') || pageId.includes('coach')) {
+      header.style.display = 'none';
+    } else {
+      header.style.display = 'block';
     }
   };
 
-  CK.closeModal = (id) => {
-    const modal = document.getElementById(id || 'contactModal');
-    if (modal) {
-      modal.classList.remove('active');
-      document.body.style.overflow = '';
-    }
+  // ============ Modals ============
+  CK.openModal = (id) => {
+    document.getElementById(id).classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  CK.closeModal = () => {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.body.style.overflow = '';
   };
 
   CK.openDemoModal = () => CK.openModal('contactModal');
@@ -87,116 +131,69 @@
       form.reset();
     } catch (err) {
       console.error("Lead Error:", err);
-      CK.showToast("Failed to submit. Please try again or WhatsApp us.", "error");
+      CK.showToast("Failed to submit. Please try again.", "error");
     }
   };
 
-  // Close modal on overlay click
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal-overlay')) {
-      CK.closeModal(e.target.id);
-    }
-  });
-
-  // ---- Snackbar / Toast ----
-  CK.showToast = (msg, type = 'info') => {
-    const snack = document.getElementById('snackbar');
-    if (snack) {
-      snack.textContent = (type === 'success' ? '✅ ' : type === 'error' ? '❌ ' : 'ℹ️ ') + msg;
-      snack.className = 'snackbar ' + type + ' show';
-      clearTimeout(snack._t);
-      snack._t = setTimeout(() => snack.classList.remove('show'), 4000);
-    }
-  };
-
-  // ---- Reveal Animations ----
-  const revealObserver = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
+  // ============ Mobile Menu ============
+  const mobileBtn = document.getElementById('mobileMenuBtn');
+  const navLinks = document.getElementById('navLinks');
+  if (mobileBtn) {
+    mobileBtn.addEventListener('click', () => {
+      navLinks.style.display = (navLinks.style.display === 'flex') ? '' : 'flex';
+      if (navLinks.style.display === 'flex') {
+        navLinks.style.cssText = `display:flex; flex-direction:column; position:absolute; top:100%; left:0; right:0; background:var(--cream); padding:16px; border-bottom:1px solid var(--border-light); box-shadow:var(--shadow-md); z-index:1001;`;
       }
     });
-  }, { threshold: 0.1 });
+  }
 
-  // ---- Gemini Chatbot ----
+  // ============ Chatbot ============
   CK.toggleChat = () => {
-    const drawer = document.getElementById('chatDrawer');
-    if (drawer) drawer.classList.toggle('active');
+    document.getElementById('chat-drawer').classList.toggle('active');
   };
 
-  const chatForm = document.getElementById('chatForm');
-  const chatInput = document.getElementById('chatInput');
-  const chatMessages = document.getElementById('chatMessages');
+  CK.handleChatSend = async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
 
-  if (chatForm) {
-    chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
+    appendMessage('user', msg);
+    input.value = '';
 
-      // Add user message
-      addMessage(text, 'user');
-      chatInput.value = '';
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${window.APP_CONFIG.GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `You are ChessMaster AI, an expert coach at ChessKiddo academy. Be encouraging, professional, and knowledgeable. Answer this student: ${msg}` }] }]
+        })
+      });
+      const data = await response.json();
+      const botMsg = data.candidates[0].content.parts[0].text;
+      appendMessage('bot', botMsg);
+    } catch (err) {
+      appendMessage('bot', "I'm having a hard time thinking right now. Please try again later!");
+    }
+  };
 
-      try {
-        const { GoogleGenerativeAI } = await import("@google/generative-ai");
-        const genAI = new GoogleGenerativeAI(window.APP_CONFIG.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-        const result = await model.generateContent(text);
-        const responseText = result.response.text();
-        addMessage(responseText, 'bot');
-      } catch (err) {
-        console.error("Gemini Error:", err);
-        addMessage("Sorry, I'm having trouble connecting right now. Please try again later.", 'bot');
-      }
-    });
-  }
-
-  function addMessage(text, sender) {
+  function appendMessage(role, text) {
+    const container = document.getElementById('chat-messages');
     const div = document.createElement('div');
-    div.className = `msg ${sender}`;
+    div.className = `message ${role}`;
     div.textContent = text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-    
-    // Chessboard Generation
-    const board = document.getElementById('chessboard');
-    if (board) {
-      const pieces = { 0: '♜', 1: '♞', 2: '♝', 3: '♛', 4: '♚', 5: '♝', 6: '♞', 7: '♜' };
-      for (let i = 0; i < 64; i++) {
-        const sq = document.createElement('div');
-        const row = Math.floor(i / 8);
-        const col = i % 8;
-        sq.className = `board-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-        if (row === 0) sq.textContent = pieces[col];
-        if (row === 1) sq.textContent = '♟';
-        if (row === 6) sq.textContent = '♙';
-        if (row === 7) sq.textContent = pieces[col].replace(/[♜♞♝♛♚]/g, m => ({'♜':'♖','♞':'♘','♝':'♗','♛':'♕','♚':'♔'}[m]));
-        board.appendChild(sq);
-      }
-    }
-    // Mobile Menu Toggle
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.querySelector('.nav-links');
-    if (menuToggle && navLinks) {
-      menuToggle.addEventListener('click', () => {
-        menuToggle.classList.toggle('active');
-        navLinks.classList.toggle('active');
-      });
-
-      // Close menu on link click
-      navLinks.querySelectorAll('button, a').forEach(link => {
-        link.addEventListener('click', () => {
-          menuToggle.classList.remove('active');
-          navLinks.classList.remove('active');
-        });
-      });
-    }
-  });
+  // ============ Toast ============
+  CK.showToast = (msg, type = "success") => {
+    const toast = document.createElement('div');
+    toast.className = `snackbar ${type} show`;
+    toast.style.cssText = `position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:3000; padding:12px 24px; border-radius:12px; color:white; font-weight:600; background: ${type === 'error' ? '#DC2626' : (type === 'info' ? '#3B82F6' : '#059669')}`;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  };
 
 })();

@@ -127,7 +127,7 @@
     el.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h3>User Management</h3>
-        <button class="btn btn-primary" onclick="CK.openModal('addUserModal')">+ Add Student</button>
+        <button class="btn btn-primary" onclick="CK.openModal('addUserModal')">+ Add New User</button>
       </div>
       <div class="table-wrapper">
         <table class="table">
@@ -323,6 +323,85 @@
     } catch (err) {
       CK.showToast("Upload failed", "error");
     }
+  };
+
+  CK.handleAchUpload = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const file = form.file.files[0];
+    
+    if (!file) return CK.showToast("Please select an image", "error");
+
+    try {
+      CK.showToast("Saving achievement...", "info");
+      const filePath = `achievements/${Date.now()}_${file.name}`;
+      
+      const { error: storageErr } = await window.supabaseClient.storage.from('pdfs').upload(filePath, file);
+      if (storageErr) throw storageErr;
+
+      const { error: dbErr } = await window.supabaseClient.from('achievements').insert([{
+        image_path: filePath,
+        title: form.title.value,
+        description: form.description.value,
+        created_at: new Date()
+      }]);
+      if (dbErr) throw dbErr;
+
+      CK.showToast("Achievement saved! 🏅", "success");
+      CK.closeModal();
+      CK.loadAdminTab('achievements');
+    } catch (err) {
+      CK.showToast("Failed to save achievement", "error");
+    }
+  };
+
+  CK.handleAddUser = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value;
+    const password = form.password.value;
+    const role = form.role.value;
+    const fullName = form.fullName.value;
+
+    try {
+      CK.showToast("Creating account...", "info");
+      
+      // 1. Create Supabase Auth User
+      const { data: authData, error: authError } = await window.supabaseClient.auth.signUp({
+        email, password,
+        options: { data: { full_name: fullName, role: role } }
+      });
+      if (authError) throw authError;
+
+      // 2. Insert into 'users' table
+      const userData = {
+        userid: authData.user.id,
+        email,
+        full_name: fullName,
+        role: role,
+        created_at: new Date()
+      };
+
+      if (role === 'student') {
+        userData.level = form.level.value;
+        userData.coach = form.assignedCoach.value;
+      }
+
+      const { error: dbError } = await window.supabaseClient.from('users').insert([userData]);
+      if (dbError) throw dbError;
+
+      CK.showToast("User created successfully! ✅", "success");
+      CK.closeModal();
+      CK.loadAdminTab('users');
+    } catch (err) {
+      console.error("Add User Error:", err);
+      CK.showToast("Failed to create user: " + err.message, "error");
+    }
+  };
+
+  CK.toggleUserFields = (role) => {
+    const studentFields = document.getElementById('student-only-fields');
+    studentFields.style.display = (role === 'student') ? 'block' : 'none';
   };
 
   CK.loadUserAttendance = async (id, name) => {
