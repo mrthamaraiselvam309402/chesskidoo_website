@@ -124,6 +124,8 @@
         name: form.fullName.value,
         phone: form.phone.value,
         parent_name: form.fullName.value,
+        child_age: form.age.value,
+        city: form.city.value,
         status: 'new',
         created_at: new Date().toISOString()
       });
