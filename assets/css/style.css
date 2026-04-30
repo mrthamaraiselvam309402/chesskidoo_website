@@ -271,7 +271,7 @@ body {
 .login-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); padding: 48px; border-radius: 32px; border: 1px solid rgba(217, 119, 6, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; position: relative; overflow: hidden; }
 .login-card::before { content: " \; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, var(--amber), var(--amber-light)); }
 /* --- Coach Image Zoom Fix --- */
-.coach-img-wrap { height: 260px !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center bottom !important; background-color: #f3f4f6; border-bottom: 1px solid var(--border-light); }
+
 
 /* --- Chess Piece Styling --- */
 .board-square { display: flex; align-items: center; justify-content: center; font-size: 2.2rem; cursor: default; user-select: none; }
@@ -415,7 +415,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 --------------------------------------------- */
 .coach-img-wrap {
   width: 100%;
-  aspect-ratio: 4/3;
+  height: 250px !important;
   background-size: cover !important;
   background-position: center top !important;
   background-repeat: no-repeat !important;
@@ -654,7 +654,7 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   padding: 6px 0;
 }
 .ck-cal-cell {
-  aspect-ratio: 1;
+  height: 250px !important;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
