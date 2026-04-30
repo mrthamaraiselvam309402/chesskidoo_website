@@ -1,46 +1,109 @@
 /* assets/js/main.js -------------------------------------------------------
-   Core UI Logic & AI Integrations for ChessKidoo
+   Core UI & Router for ChessKidoo - 3D Autoplay Edition
    --------------------------------------------------------------- */
 
 (() => {
   const CK = window.CK = window.CK || {};
 
-  /* ─── Initialization ─── */
-  document.addEventListener('DOMContentLoaded', () => {
-    initPreloader();
-    initScrollEffects();
-    initMobileMenu();
-    initChessboard(); // Fix for blank board
-    CK.navigate('landing');
-  });
-
-  function initPreloader() {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          preloader.classList.add('hidden');
-        }, 800);
-      });
+  // 1. Navigation SPA Logic
+  CK.showPage = (pageId) => {
+    document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(pageId);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo(0, 0);
     }
-  }
+  };
 
-  function initScrollEffects() {
-    const header = document.querySelector('.site-header');
-    const scrollProgress = document.getElementById('scrollProgress');
+  CK.navigate = (page) => CK.showPage(page);
 
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY > 50;
-      if (header) header.classList.toggle('scrolled', scrolled);
-      
-      if (scrollProgress) {
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolledPct = (winScroll / height) * 100;
-        scrollProgress.style.width = scrolledPct + "%";
+  // 2. 3D Autoplay Chessboard Engine
+  CK.initChessboard = () => {
+    const board = document.getElementById('main-chessboard');
+    if (!board) return;
+
+    // Initial Position
+    const initialPos = {
+      '0,0': '♖', '0,1': '♘', '0,2': '♗', '0,3': '♕', '0,4': '♔', '0,5': '♗', '0,6': '♘', '0,7': '♖',
+      '1,0': '♙', '1,1': '♙', '1,2': '♙', '1,3': '♙', '1,4': '♙', '1,5': '♙', '1,6': '♙', '1,7': '♙',
+      '6,0': '♟', '6,1': '♟', '6,2': '♟', '6,3': '♟', '6,4': '♟', '6,5': '♟', '6,6': '♟', '6,7': '♟',
+      '7,0': '♜', '7,1': '♞', '7,2': '♝', '7,3': '♛', '7,4': '♚', '7,5': '♝', '7,6': '♞', '7,7': '♜'
+    };
+
+    // Famous Game Sequence (Morphy vs Duke of Brunswick)
+    const moves = [
+      { from: '6,4', to: '4,4', p: '♟' }, { from: '1,4', to: '3,4', p: '♙' },
+      { from: '7,6', to: '5,5', p: '♞' }, { from: '0,3', to: '4,7', p: '♕' },
+      { from: '6,3', to: '4,3', p: '♟' }, { from: '0,6', to: '2,5', p: '♘' },
+      { from: '7,2', to: '3,6', p: '♝' }, { from: '1,3', to: '3,3', p: '♙' }
+    ];
+
+    board.innerHTML = '';
+    const squareMap = {};
+
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const sq = document.createElement('div');
+        sq.className = `board-square ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+        sq.dataset.pos = `${r},${c}`;
+        board.appendChild(sq);
+        squareMap[`${r},${c}`] = sq;
+
+        if (initialPos[`${r},${c}`]) {
+          const piece = document.createElement('div');
+          piece.className = 'piece';
+          piece.innerText = initialPos[`${r},${c}`];
+          sq.appendChild(piece);
+        }
       }
-    });
+    }
 
+    // Autoplay Loop
+    let moveIdx = 0;
+    setInterval(() => {
+      const move = moves[moveIdx % moves.length];
+      const fromSq = squareMap[move.from];
+      const toSq = squareMap[move.to];
+      const piece = fromSq.querySelector('.piece');
+
+      if (piece) {
+        // Simple "jump" for now in DOM, but CSS transitions make it look smooth
+        toSq.appendChild(piece);
+      } else {
+        // Reset board if sequence ends or breaks
+        CK.initChessboard();
+      }
+      moveIdx++;
+    }, 3000);
+  };
+
+  // 3. AI Assistant Bot
+  CK.toggleChat = () => {
+    const bot = document.getElementById('ai-bot-window');
+    bot.style.display = bot.style.display === 'flex' ? 'none' : 'flex';
+  };
+
+  CK.sendBotMessage = (e) => {
+    if (e) e.preventDefault();
+    const input = document.getElementById('bot-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const chatBody = document.getElementById('bot-chat-body');
+    chatBody.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><span style="background:var(--amber); color:white; padding:8px 12px; border-radius:15px; font-size:0.85rem;">${msg}</span></div>`;
+    input.value = '';
+
+    setTimeout(() => {
+      chatBody.innerHTML += `<div style="text-align:left; margin-bottom:10px;"><span style="background:var(--cream); padding:8px 12px; border-radius:15px; font-size:0.85rem;">That is a great strategic question! Our Grandmaster coaches can help you master that concept in Batch 11. ♟✨</span></div>`;
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }, 1000);
+  };
+
+  // Initialize
+  window.addEventListener('DOMContentLoaded', () => {
+    CK.initChessboard();
+    
+    // Reveal animations on scroll
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('visible');
@@ -48,186 +111,6 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-  }
-
-  function initMobileMenu() {
-    const btn = document.getElementById('mobileMenuBtn');
-    const nav = document.getElementById('navLinks');
-    if (btn && nav) {
-      btn.onclick = () => {
-        nav.classList.toggle('active');
-      };
-    }
-  }
-
-  /* ─── Chess Board Renderer ─── */
-  function initChessboard() {
-    const board = document.getElementById('chessboard');
-    if (!board) return;
-
-    const pieces = {
-      'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟',
-      'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙'
-    };
-
-    const initialPos = [
-      ['r','n','b','q','k','b','n','r'],
-      ['p','p','p','p','p','p','p','p'],
-      ['','','','','','','',''],
-      ['','','','','','','',''],
-      ['','','','','','','',''],
-      ['','','','','','','',''],
-      ['P','P','P','P','P','P','P','P'],
-      ['R','N','B','Q','K','B','N','R']
-    ];
-
-    board.innerHTML = '';
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const square = document.createElement('div');
-        const isLight = (r + c) % 2 === 0;
-        square.className = `board-square ${isLight ? 'light' : 'dark'}`;
-        
-        const piece = initialPos[r][c];
-        if (piece) {
-          square.innerHTML = `<span class="piece" style="color: ${piece === piece.toLowerCase() ? '#000' : '#fff'}">${pieces[piece]}</span>`;
-        }
-        
-        board.appendChild(square);
-      }
-    }
-  }
-
-  /* ─── Navigation & SPA Logic ─── */
-  CK.navigate = (pageId) => {
-    const landingSections = ['home', 'features', 'levels', 'coaches', 'about'];
-    if (landingSections.includes(pageId)) {
-      CK.showPage('landing-page');
-      const target = document.getElementById(pageId);
-      if (target) {
-        window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
-      }
-      return;
-    }
-
-    if (pageId === 'landing') CK.showPage('landing-page');
-    else if (pageId === 'login') CK.showPage('login-page');
-    else if (pageId === 'admin') CK.showPage('admin-page');
-    else if (pageId === 'student') CK.showPage('student-page');
-    else if (pageId === 'coach') CK.showPage('coach-page');
-  };
-
-  CK.showPage = (id) => {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(id);
-    if (target) {
-      target.classList.add('active');
-      window.scrollTo(0, 0);
-      
-      if (id === 'student-page') CK.loadStudentDashboard();
-      if (id === 'admin-page') CK.loadAdminDashboard();
-      if (id === 'coach-page') CK.loadCoachDashboard();
-    }
-  };
-
-  CK.openModal = (id) => {
-    const m = document.getElementById(id);
-    if (m) m.classList.add('active');
-  };
-
-  CK.closeModal = () => {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-  };
-
-  CK.showToast = (msg, type = 'info') => {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  };
-
-  /* ─── AI Chatbot Logic ─── */
-  CK.toggleChat = () => CK.toggleBot();
-  CK.handleChatSend = (e) => {
-    e.preventDefault();
-    CK.sendBotMessage();
-  };
-
-  CK.toggleBot = () => {
-    const win = document.getElementById('bot-window');
-    if (win) {
-      win.classList.toggle('active');
-      if (win.classList.contains('active')) {
-        const msgs = document.getElementById('bot-messages');
-        if (msgs && msgs.children.length === 0) {
-          addBotMessage("ai", "Hello! I'm your ChessKidoo AI assistant. How can I help you today?");
-        }
-      }
-    }
-  };
-
-  CK.sendBotMessage = async () => {
-    const input = document.getElementById('bot-input-field') || document.getElementById('chatInput');
-    const msg = input ? input.value.trim() : "";
-    if (!msg) return;
-
-    addBotMessage("user", msg);
-    if (input) input.value = '';
-
-    setTimeout(() => {
-      addBotMessage("ai", "That's a fantastic question about strategy! To master this, I recommend analyzing your games and focusing on central control. Keep it up!");
-    }, 1000);
-  };
-
-  function addBotMessage(role, text) {
-    const container = document.getElementById('bot-messages') || document.getElementById('chat-messages');
-    if (container) {
-      const div = document.createElement('div');
-      div.className = `bot-msg ${role}`;
-      div.innerText = text;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
-  }
-
-  /* ─── Mini-Games ─── */
-  CK.startGMGame = () => {
-    CK.openModal('gameModal');
-    CK.nextGMGame();
-  };
-
-  CK.nextGMGame = () => {
-    const el = document.getElementById('game-content');
-    if (el) {
-      el.innerHTML = `
-        <div style="background:var(--cream); padding:20px; border-radius:15px; margin-bottom:20px;">
-          <p style="font-weight:700; color:var(--amber);">Clues:</p>
-          <ul style="padding-left:20px; margin-top:10px;">
-            <li style="margin-bottom:8px;">Highest rating in history (2882)</li>
-            <li style="margin-bottom:8px;">5-time World Champion</li>
-          </ul>
-        </div>
-        <div class="form-group">
-          <label>Guess the Player</label>
-          <input type="text" id="gm-guess" placeholder="e.g. Magnus Carlsen">
-        </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="CK.checkGMGuess('Magnus Carlsen')">Check Answer</button>
-        <div id="gm-result" style="margin-top:15px; font-weight:700; text-align:center;"></div>
-      `;
-    }
-  };
-
-  CK.checkGMGuess = (correct) => {
-    const guess = document.getElementById('gm-guess').value.trim().toLowerCase();
-    const res = document.getElementById('gm-result');
-    if (guess === correct.toLowerCase()) {
-      res.innerHTML = "✨ Correct! You know your masters!";
-      res.style.color = "var(--green)";
-    } else {
-      res.innerHTML = "❌ Not quite! Think of the GOAT.";
-      res.style.color = "red";
-    }
-  };
+  });
 
 })();
