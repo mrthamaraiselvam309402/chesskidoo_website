@@ -266,3 +266,9 @@ body {
 .step-label { font-size: 0.75rem; font-weight: 700; color: var(--ink); }
 .step-line { flex: 1; height: 2px; background: var(--border-light); margin: 0 10px; position: relative; top: -15px; }
 .step-line.active { background: var(--amber); }
+
+/* --- Premium Login Portal --- */
+.login-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); padding: 48px; border-radius: 32px; border: 1px solid rgba(217, 119, 6, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; position: relative; overflow: hidden; }
+.login-card::before { content: " \; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, var(--amber), var(--amber-light)); }
+/* --- Coach Image Zoom Fix --- */
+.coach-img-wrap { height: 260px !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center bottom !important; background-color: #f3f4f6; border-bottom: 1px solid var(--border-light); }
