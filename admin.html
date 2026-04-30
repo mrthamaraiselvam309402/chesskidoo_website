@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChessKidoo – Admin Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="assets/css/dashboard.css"/>
+</head>
+<body>
+  <!-- Guard: only admins can stay on this page -->
+  <script src="assets/js/auth.js"></script>
+  <script>if (!Auth.guard('admin')) document.write('Redirecting…');</script>
+
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <h3 style="margin-bottom:24px; color:#fff;">ChessKidoo</h3>
+      <a href="admin.html" class="active">🏠 Dashboard</a>
+      <a href="#students">🧑‍🤝‍🧑 Students</a>
+      <a href="#coaches">👩‍🏫 Coaches</a>
+      <a href="#classes">📅 Classes</a>
+      <a href="#" id="adminLogout">🚪 Log out</a>
+    </nav>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- 1️⃣ Summary cards -->
+      <section class="card">
+        <h3>Welcome, <span id="adminName"></span>!</h3>
+        <p>Quick overview of the platform.</p>
+        <div class="grid-wrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:24px; margin-top:24px;">
+          <div class="card"><h4>Students</h4><p id="statStudents">0</p></div>
+          <div class="card"><h4>Coaches</h4><p id="statCoaches">0</p></div>
+          <div class="card"><h4>Classes</h4><p id="statClasses">0</p></div>
+          <div class="card"><h4>Demo requests (24 h)</h4><p id="statDemos">0</p></div>
+        </div>
+      </section>
+
+      <!-- 2️⃣ Students table -->
+      <section id="students" class="card">
+        <h3>Student List</h3>
+        <button type="button" class="btn btn-primary btn-sm" id="addStudentBtn">+ Add Student</button>
+        <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+          <table class="table" id="studentsTable">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3️⃣ Coaches table -->
+      <section id="coaches" class="card">
+        <h3>Coach List</h3>
+        <button type="button" class="btn btn-primary btn-sm" id="addCoachBtn">+ Add Coach</button>
+        <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+          <table class="table" id="coachesTable">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>FIDE rating</th><th>Email</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4️⃣ Classes table -->
+      <section id="classes" class="card">
+        <h3>Class Schedule</h3>
+        <button type="button" class="btn btn-primary btn-sm" id="addClassBtn">+ Add Class</button>
+        <div class="table-wrapper" style="overflow-x:auto; margin-top:12px;">
+          <table class="table" id="classesTable">
+            <thead>
+              <tr><th>#</th><th>Title</th><th>Level</th><th>Day / Time</th><th>Coach</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script>
+    // Show admin name in the greeting
+    const cur = Auth.currentUser();
+    if (cur) document.getElementById('adminName').textContent = cur.name;
+
+    // Logout handler
+    document.getElementById('adminLogout').addEventListener('click', e => {
+      e.preventDefault();
+      Auth.logout();
+    });
+  </script>
+</body>
+</html>
