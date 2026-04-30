@@ -1211,3 +1211,31 @@ section {
   .portal-welcome-text h1 { font-size: 2rem; }
   .dashboard-shell { padding: 20px 10px; }
 }
+
+/* --- Centered Login Page --- */
+#login-page {
+  min-height: 100vh;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: #fdfcf9;
+}
+
+.login-bg-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.login-card {
+  margin: 0 auto;
+  text-align: left;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
