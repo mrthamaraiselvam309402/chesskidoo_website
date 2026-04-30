@@ -926,3 +926,56 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   color: #64748b;
   font-weight: 500;
 }
+
+/* --- Trust Bar Section --- */
+.trust-bar {
+  background: var(--ink);
+  color: #fff;
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.trust-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.trust-item {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--amber-pale);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.trust-divider {
+  width: 4px;
+  height: 4px;
+  background: var(--amber-light);
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+  .trust-inner {
+    gap: 12px;
+  }
+  .trust-divider {
+    display: none;
+  }
+  .trust-item {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 99px;
+  }
+}
