@@ -1,5 +1,5 @@
 /* assets/js/auth.js -------------------------------------------------------
-   Supabase-based Authentication Logic for ChessKidoo
+   Supabase Authentication — handles all roles: admin, student, coach
    --------------------------------------------------------------- */
 
 (() => {
@@ -8,70 +8,83 @@
   CK.handleLogin = async (e) => {
     e.preventDefault();
     const form = e.target;
-    const email = form.email.value;
+    const email    = form.email.value.trim();
     const password = form.password.value;
+    const btn      = form.querySelector('[type="submit"]');
+
+    btn.textContent = '♛ Entering...';
+    btn.disabled = true;
 
     try {
-      CK.showToast("Authenticating...", "info");
-      const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
+      CK.showToast('Authenticating...', 'info');
 
+      const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Fetch user profile from the 'users' table
-      const { data: profile, error: profError } = await window.supabaseClient
+      // Fetch profile from public.users table
+      const { data: profile, error: profErr } = await window.supabaseClient
         .from('users')
         .select('*')
         .eq('userid', data.user.id)
         .maybeSingle();
 
-      if (profError) throw profError;
+      if (profErr) throw profErr;
 
-      if (profile) {
-        CK.currentUser = profile;
-        localStorage.setItem('ck_user', JSON.stringify(profile));
-        localStorage.setItem('ck_session', JSON.stringify(data.session));
-        
-        CK.showToast(`Welcome back, ${profile.full_name}!`, 'success');
-        
-        // Redirect based on role
-        const role = profile.role || 'student';
-        CK.showPage(`${role}-page`);
-        
-        // Load specific dashboard data
-        if (role === 'admin') CK.loadAdminDashboard();
-        if (role === 'student') CK.loadStudentDashboard();
-        if (role === 'coach') CK.loadCoachDashboard();
-        
-      } else {
-        throw new Error("User profile not found. Please contact admin.");
+      if (!profile) {
+        // Fallback: check if this is admin via config
+        if (data.user.id === window.APP_CONFIG?.ADMIN_ID || email === 'admin@gmail.com') {
+          const adminProfile = {
+            userid: data.user.id,
+            full_name: 'Academy Admin',
+            email: email,
+            role: 'admin'
+          };
+          CK.currentUser = adminProfile;
+          localStorage.setItem('ck_user', JSON.stringify(adminProfile));
+          localStorage.setItem('ck_session', JSON.stringify(data.session));
+          CK.showToast('Welcome, Admin! 🏆', 'success');
+          CK.showPage('admin-page');
+          CK.loadAdminDashboard();
+          return;
+        }
+        throw new Error('User profile not found. Please contact the admin.');
       }
 
+      CK.currentUser = profile;
+      localStorage.setItem('ck_user', JSON.stringify(profile));
+      localStorage.setItem('ck_session', JSON.stringify(data.session));
+
+      const role = (profile.role || 'student').toLowerCase();
+      CK.showToast(`Welcome back, ${profile.full_name || 'Champion'}! ♟`, 'success');
+
+      setTimeout(() => {
+        CK.showPage(`${role}-page`);
+        if (role === 'admin')   CK.loadAdminDashboard();
+        if (role === 'student') CK.loadStudentDashboard();
+        if (role === 'coach')   CK.loadCoachDashboard();
+      }, 500);
+
     } catch (err) {
-      console.error("Login failed:", err);
-      CK.showToast(err.message || "Invalid credentials", 'error');
+      console.error('Login error:', err);
+      CK.showToast(err.message || 'Invalid credentials. Please try again.', 'error');
+    } finally {
+      btn.textContent = 'Enter the Arena →';
+      btn.disabled = false;
     }
   };
 
   CK.logout = async () => {
-    await window.supabaseClient.auth.signOut();
+    try {
+      await window.supabaseClient.auth.signOut();
+    } catch(e) {}
     localStorage.removeItem('ck_user');
     localStorage.removeItem('ck_session');
     CK.currentUser = null;
-    CK.showPage('landing');
-    CK.showToast("Logged out successfully", 'success');
-    window.location.reload(); // Refresh to clear all states
+    CK.showToast('Logged out successfully.', 'success');
+    setTimeout(() => {
+      CK.showPage('landing-page');
+      window.scrollTo(0, 0);
+    }, 400);
   };
-
-  // Restore session on load
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('ck_user');
-    if (savedUser) {
-      CK.currentUser = JSON.parse(savedUser);
-      // Optional: Auto-login logic could go here
-    }
-  });
 
 })();
