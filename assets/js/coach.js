@@ -1,118 +1,153 @@
-/* assets/js/coach.js ---------------------------------------------------
-   Loads the coach's profile, chart, schedule, etc.
+/* assets/js/coach.js -------------------------------------------------------
+   Coach Dashboard logic for ChessKidoo
    --------------------------------------------------------------- */
+
 (() => {
-  const token = `Bearer ${localStorage.getItem('ck_token')}`;
-  const headers = { Authorization: token, 'Content-Type': 'application/json' };
+  const CK = window.CK = window.CK || {};
 
-  const _fetch = (url, opts = {}) => fetch(url, { headers, ...opts })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    }).catch(err => {
-      console.log('API not available, using mock data');
-      // Return mock data for demo
-      if (url.includes('/classes')) {
-        return Promise.resolve([
-          { id: 1, title: "Beginner Basics", level: "Beginner", day: "Mon", time: "17:00", coach_id: 3 },
-          { id: 2, title: "Intermediate Strategies", level: "Intermediate", day: "Tue", time: "16:00", coach_id: 3 }
-        ]);
+  CK.switchCoachTab = (tab, btn) => {
+    document.querySelectorAll('#coach-page .admin-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    CK.loadCoachTab(tab);
+  };
+
+  CK.loadCoachDashboard = () => {
+    CK.loadCoachTab('students');
+  };
+
+  CK.loadCoachTab = async (tab) => {
+    const content = document.getElementById('coach-tab-content');
+    content.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
+
+    try {
+      const user = CK.currentUser;
+      if (!user) throw new Error("Not logged in");
+
+      switch (tab) {
+        case 'students':
+          await loadCoachStudents(content, user);
+          break;
+        case 'attendance':
+          await loadCoachAttendance(content, user);
+          break;
+        case 'resources':
+          await loadCoachResources(content, user);
+          break;
       }
-      return Promise.resolve([]);
-    });
-
-  /* -----------------------------------------------------------------
-     1️⃣ PROFILE & basic info
-     ----------------------------------------------------------------- */
-  async function loadProfile() {
-    const user = Auth.currentUser();
-    document.getElementById('coachName').textContent = user.name;
-    document.getElementById('currSpecialty').textContent = 'Tactics & Strategy';
-    document.getElementById('currRating').textContent = '2200+';
-    document.getElementById('studentCount').textContent = '10';
-    document.getElementById('nextClass').textContent = 'Tue 16:00 – Intermediate';
-  }
-
-  /* -----------------------------------------------------------------
-     2️⃣ COACH CHART (Chart.js)
-     ----------------------------------------------------------------- */
-  async function renderChart() {
-    // Dummy data for coaching impact
-    const data = {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [{
-        label: 'Student Ratings',
-        data: [850, 900, 950, 1000, 1050, 1100],
-        borderColor: 'var(--gold)',
-        backgroundColor: 'rgba(200,134,10,.15)',
-        tension: .3,
-        fill: true,
-        pointRadius: 4
-      }]
-    };
-
-    const ctx = document.getElementById('coachChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: data,
-      options: {
-        scales: {
-          y: { beginAtZero: false, suggestedMin: 800, suggestedMax: 1200 }
-        },
-        plugins: { legend: { display:false } }
-      }
-    });
-  }
-
-  /* -----------------------------------------------------------------
-     3️⃣ CLASS SCHEDULE (coach-only classes)
-     ----------------------------------------------------------------- */
-  async function renderSchedule() {
-    const allClasses = await _fetch('/api/classes');
-    const user = Auth.currentUser();
-    const filtered = allClasses.filter(c => c.coach_id == user.sub);
-    const tbody = document.querySelector('#coachScheduleTable tbody');
-    tbody.innerHTML = '';
-    filtered.forEach(c => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${c.id}</td><td>${c.title}</td><td>${c.day} ${c.time}</td><td>${c.level}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* -----------------------------------------------------------------
-     4️⃣ GAME REVIEW LIST (static demo data)
-     ----------------------------------------------------------------- */
-  function renderGames() {
-    const list = document.getElementById('coachGameList');
-    const videos = [
-      { title: 'Advanced Tactics Review', url: 'https://www.youtube.com/watch?v=_demo4' },
-      { title: 'Student Game Analysis', url: 'https://www.youtube.com/watch?v=_demo5' }
-    ];
-    videos.forEach(v => {
-      const li = document.createElement('li');
-      li.innerHTML = `<a href="${v.url}" target="_blank" rel="noopener">▶️ ${v.title}</a>`;
-      list.appendChild(li);
-    });
-  }
-
-  /* -----------------------------------------------------------------
-     5️⃣ Load Data Function (called by router)
-     ----------------------------------------------------------------- */
-  window.loadCoachData = () => {
-    const user = Auth.currentUser();
-    if (user && user.role === 'coach') {
-      loadProfile();
-      renderChart();
-      renderSchedule();
-      renderGames();
+    } catch (err) {
+      console.error("Coach Tab Error:", err);
+      content.innerHTML = `<div class="error-wrap">❌ Error: ${err.message}</div>`;
     }
   };
 
-  /* -----------------------------------------------------------------
-     6️⃣ Init (only load if on coach page)
-     ----------------------------------------------------------------- */
-  window.addEventListener('DOMContentLoaded', () => {
-    // Router will call loadCoachData when needed
-  });
+  async function loadCoachStudents(el, coach) {
+    const { data: students } = await window.supabaseClient
+      .from('users')
+      .select('*')
+      .eq('coach', coach.full_name)
+      .eq('role', 'student');
+
+    el.innerHTML = `
+      <h3>My Students (${students.length})</h3>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Level</th><th>Batch</th><th>Rating</th></tr>
+          </thead>
+          <tbody>
+            ${students.map(s => `
+              <tr>
+                <td style="font-weight:600;">${s.full_name}</td>
+                <td><span class="hero-badge" style="font-size:0.7rem;">${s.level}</span></td>
+                <td>${s.batch || '-'}</td>
+                <td>${s.star || 0} ★</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function loadCoachAttendance(el, coach) {
+    const { data: students } = await window.supabaseClient
+      .from('users')
+      .select('*')
+      .eq('coach', coach.full_name)
+      .eq('role', 'student');
+
+    el.innerHTML = `
+      <h3>Mark Attendance</h3>
+      <p style="margin-bottom:20px; opacity:0.7;">Mark students present for today: ${new Date().toLocaleDateString()}</p>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Student</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            ${students.map(s => `
+              <tr>
+                <td>${s.full_name}</td>
+                <td id="att-status-${s.id}">-</td>
+                <td>
+                  <button class="btn btn-primary btn-sm" onclick="CK.markStudentPresent('${s.id}')">Present ✅</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function loadCoachResources(el, coach) {
+    const { data: files } = await window.supabaseClient
+      .from('document')
+      .select('*')
+      .eq('coach', coach.full_name)
+      .order('created_at', { ascending: false });
+
+    el.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3>My Resources</h3>
+        <button class="btn btn-primary" onclick="CK.openModal('uploadModal')">+ Upload Resource</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Date</th><th>Document</th><th>Level</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${files.map(f => `
+              <tr>
+                <td>${new Date(f.created_at).toLocaleDateString()}</td>
+                <td style="font-weight:600;">${f.file_name.split('/').pop()}</td>
+                <td>${f.level}</td>
+                <td>
+                  <button class="btn btn-ghost btn-sm" onclick="CK.deleteFile('${f.file_name}')">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  CK.markStudentPresent = async (studentId) => {
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      const { error } = await window.supabaseClient.from('attendance').upsert({
+        userid: studentId,
+        date: date,
+        status: 'present'
+      });
+      if (error) throw error;
+      document.getElementById(`att-status-${studentId}`).innerHTML = '<span style="color:green;">Present ✅</span>';
+      CK.showToast("Attendance marked", "success");
+    } catch (err) {
+      CK.showToast("Failed to mark attendance", "error");
+    }
+  };
+
 })();

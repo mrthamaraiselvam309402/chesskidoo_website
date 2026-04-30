@@ -261,6 +261,70 @@
     }
   };
 
+  CK.handleResourceUpload = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const file = form.file.files[0];
+    const user = CK.currentUser;
+    
+    if (!file) return CK.showToast("Please select a file", "error");
+
+    try {
+      CK.showToast("Uploading...", "info");
+      const filePath = `${form.level.value}/${Date.now()}_${file.name}`;
+      
+      const { error: storageErr } = await window.supabaseClient.storage.from('pdfs').upload(filePath, file);
+      if (storageErr) throw storageErr;
+
+      const { error: dbErr } = await window.supabaseClient.from('document').insert([{
+        file_name: filePath,
+        link: form.refUrl.value,
+        level: form.level.value,
+        name: form.fileName.value,
+        coach: user.full_name,
+        created_at: new Date()
+      }]);
+      if (dbErr) throw dbErr;
+
+      CK.showToast("Resource uploaded successfully! ✅", "success");
+      CK.closeModal();
+      CK.loadAdminTab('files');
+      if (user.role === 'coach') CK.loadCoachTab('resources');
+    } catch (err) {
+      console.error("Upload Error:", err);
+      CK.showToast("Upload failed: " + err.message, "error");
+    }
+  };
+
+  CK.handleTournUpload = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const file = form.file.files[0];
+    
+    if (!file) return CK.showToast("Please select a file", "error");
+
+    try {
+      CK.showToast("Uploading tournament...", "info");
+      const filePath = `tournaments/${Date.now()}_${file.name}`;
+      
+      const { error: storageErr } = await window.supabaseClient.storage.from('pdfs').upload(filePath, file);
+      if (storageErr) throw storageErr;
+
+      const { error: dbErr } = await window.supabaseClient.from('tourns').insert([{
+        file_name: filePath,
+        name: form.name.value,
+        created_at: new Date()
+      }]);
+      if (dbErr) throw dbErr;
+
+      CK.showToast("Tournament added! 🏆", "success");
+      CK.closeModal();
+      CK.loadAdminTab('tournaments');
+    } catch (err) {
+      CK.showToast("Upload failed", "error");
+    }
+  };
+
   CK.loadUserAttendance = async (id, name) => {
     const calendarEl = document.getElementById('attendanceCalendar');
     calendarEl.innerHTML = '♛ Loading Calendar...';

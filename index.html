@@ -474,57 +474,26 @@
     </div>
     <!-- Coach Dashboard -->
     <div id="coach-page" class="page">
-      <div class="dashboard-layout">
-        <nav class="sidebar">
-          <div class="sidebar-brand">
-            <div class="logo-icon">♛</div>
-            <span>ChessKidoo</span>
+      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="eyebrow" style="color: var(--amber-pale)">Coach Portal</span>
+            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Instructor Dashboard</h1>
           </div>
-          <div class="sidebar-nav">
-            <a href="#" class="active" onclick="CK.showCoach(); return false;">🏠 Home</a>
-            <a href="#coach-progress">📈 Impact</a>
-            <a href="#coach-schedule">📅 Schedule</a>
-            <a href="#coach-games">♟ Game Review</a>
-            <a href="#" onclick="Auth.logout(); return false;">🚪 Log out</a>
-          </div>
+          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+        </div>
+      </header>
+
+      <div class="container" style="margin-top: 20px;">
+        <nav class="admin-tabs">
+          <button class="admin-tab active" onclick="CK.switchCoachTab('students', this)">My Students</button>
+          <button class="admin-tab" onclick="CK.switchCoachTab('attendance', this)">Mark Attendance</button>
+          <button class="admin-tab" onclick="CK.switchCoachTab('resources', this)">Shared Resources</button>
         </nav>
-        <main class="dashboard-main">
-          <header class="dashboard-header">
-            <h2>Coach Dashboard</h2>
-            <div class="user-meta">Hello, <span id="coachName">Coach</span>! 🎉</div>
-          </header>
 
-          <div class="stats-grid">
-            <div class="stat-card"><h4>Specialty</h4><p id="currSpecialty" style="font-size:1.5rem; font-family:var(--font-body); font-weight:600; margin-top:10px;">Tactics</p></div>
-            <div class="stat-card"><h4>Rating</h4><p id="currRating">2200+</p></div>
-            <div class="stat-card"><h4>Students</h4><p id="studentCount">0</p></div>
-            <div class="stat-card"><h4>Upcoming</h4><p id="nextClass" style="font-size:1.2rem; font-family:var(--font-body); font-weight:600; margin-top:10px;">Loading...</p></div>
-          </div>
-
-          <section id="coach-progress" class="card">
-            <h3>Coaching Impact</h3>
-            <div style="height: 300px;">
-              <canvas id="coachChart"></canvas>
-            </div>
-          </section>
-
-          <section id="coach-schedule" class="card">
-            <h3>My Schedule</h3>
-            <div class="table-wrapper" style="overflow-x:auto;">
-              <table class="table" id="coachScheduleTable">
-                <thead>
-                  <tr><th>#</th><th>Title</th><th>Day / Time</th><th>Student Level</th></tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="coach-games" class="card">
-            <h3>Game Review Videos</h3>
-            <ul id="coachGameList" style="list-style:none; padding:0;"></ul>
-          </section>
-        </main>
+        <div id="coach-tab-content" style="padding: 40px 0;">
+          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        </div>
       </div>
     </div>
 
@@ -588,5 +557,62 @@
   <script src="assets/js/student.js"></script>
   <script src="assets/js/coach.js"></script>
 
-</body>
+  <!-- Resource Upload Modal -->
+  <div id="uploadModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Resource</h3>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Add study material for your students.</p>
+      </div>
+      <form class="modal-body" onsubmit="CK.handleResourceUpload(event)">
+        <div class="form-group">
+          <label>File Name / Note</label>
+          <input type="text" name="fileName" required placeholder="e.g. Opening Basics">
+        </div>
+        <div class="form-group">
+          <label>Reference URL (Optional)</label>
+          <input type="url" name="refUrl" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Select Level</label>
+          <select name="level" required>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>File (PDF/Image)</label>
+          <input type="file" name="file" required>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tournament Upload Modal -->
+  <div id="uploadTournModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Tournament</h3>
+      </div>
+      <form class="modal-body" onsubmit="CK.handleTournUpload(event)">
+        <div class="form-group">
+          <label>Tournament Name</label>
+          <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+          <label>PDF Schedule/Info</label>
+          <input type="file" name="file" required>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </html>
