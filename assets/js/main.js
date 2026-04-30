@@ -10,7 +10,7 @@
     initPreloader();
     initScrollEffects();
     initMobileMenu();
-    // Default to landing page
+    initChessboard(); // Fix for blank board
     CK.navigate('landing');
   });
 
@@ -60,9 +60,46 @@
     }
   }
 
+  /* ─── Chess Board Renderer ─── */
+  function initChessboard() {
+    const board = document.getElementById('chessboard');
+    if (!board) return;
+
+    const pieces = {
+      'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟',
+      'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙'
+    };
+
+    const initialPos = [
+      ['r','n','b','q','k','b','n','r'],
+      ['p','p','p','p','p','p','p','p'],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['P','P','P','P','P','P','P','P'],
+      ['R','N','B','Q','K','B','N','R']
+    ];
+
+    board.innerHTML = '';
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const square = document.createElement('div');
+        const isLight = (r + c) % 2 === 0;
+        square.className = `board-square ${isLight ? 'light' : 'dark'}`;
+        
+        const piece = initialPos[r][c];
+        if (piece) {
+          square.innerHTML = `<span class="piece" style="color: ${piece === piece.toLowerCase() ? '#000' : '#fff'}">${pieces[piece]}</span>`;
+        }
+        
+        board.appendChild(square);
+      }
+    }
+  }
+
   /* ─── Navigation & SPA Logic ─── */
   CK.navigate = (pageId) => {
-    // Scroll mapping for landing page sections
     const landingSections = ['home', 'features', 'levels', 'coaches', 'about'];
     if (landingSections.includes(pageId)) {
       CK.showPage('landing-page');
@@ -73,7 +110,6 @@
       return;
     }
 
-    // Direct page mapping
     if (pageId === 'landing') CK.showPage('landing-page');
     else if (pageId === 'login') CK.showPage('login-page');
     else if (pageId === 'admin') CK.showPage('admin-page');
@@ -88,7 +124,6 @@
       target.classList.add('active');
       window.scrollTo(0, 0);
       
-      // Load specific portal data
       if (id === 'student-page') CK.loadStudentDashboard();
       if (id === 'admin-page') CK.loadAdminDashboard();
       if (id === 'coach-page') CK.loadCoachDashboard();
@@ -140,14 +175,9 @@
     addBotMessage("user", msg);
     if (input) input.value = '';
 
-    try {
-      // Professional AI simulation
-      setTimeout(() => {
-        addBotMessage("ai", "That's a fantastic question about strategy! To master this, I recommend analyzing your games and focusing on central control. Keep it up!");
-      }, 1000);
-    } catch (err) {
-      addBotMessage("ai", "Something went wrong. Let's try again later.");
-    }
+    setTimeout(() => {
+      addBotMessage("ai", "That's a fantastic question about strategy! To master this, I recommend analyzing your games and focusing on central control. Keep it up!");
+    }, 1000);
   };
 
   function addBotMessage(role, text) {
