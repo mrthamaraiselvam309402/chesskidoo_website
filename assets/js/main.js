@@ -30,12 +30,34 @@
 
   // ---- Navigation ----
   CK.scrollToSection = (id) => {
+    // If not on landing page, switch to it first
+    const landing = document.getElementById('landing-page');
+    if (landing && !landing.classList.contains('active')) {
+      if (typeof CK.showHome === 'function') {
+        CK.showHome();
+        // Wait for page transition then scroll
+        setTimeout(() => performScroll(id), 100);
+        return;
+      }
+    }
+    performScroll(id);
+  };
+
+  function performScroll(id) {
     const el = document.getElementById(id);
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: 'smooth' });
+      const offset = 80; // Header height
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
-  };
+  }
 
   CK.toggleMobileMenu = () => {
     const nav = document.getElementById('mobileNav');
