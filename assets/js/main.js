@@ -10,16 +10,19 @@
     initPreloader();
     initScrollEffects();
     initMobileMenu();
-    CK.showPage('landing');
+    // Default to landing page
+    CK.navigate('landing');
   });
 
   function initPreloader() {
     const preloader = document.getElementById('preloader');
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        preloader.classList.add('hidden');
-      }, 800);
-    });
+    if (preloader) {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          preloader.classList.add('hidden');
+        }, 800);
+      });
+    }
   }
 
   function initScrollEffects() {
@@ -28,15 +31,16 @@
 
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY > 50;
-      header.classList.toggle('scrolled', scrolled);
+      if (header) header.classList.toggle('scrolled', scrolled);
       
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolledPct = (winScroll / height) * 100;
-      scrollProgress.style.width = scrolledPct + "%";
+      if (scrollProgress) {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolledPct = (winScroll / height) * 100;
+        scrollProgress.style.width = scrolledPct + "%";
+      }
     });
 
-    // Reveal animations
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('visible');
@@ -47,29 +51,53 @@
   }
 
   function initMobileMenu() {
-    CK.toggleMenu = () => {
-      const nav = document.querySelector('.nav-links');
-      nav.style.display = (nav.style.display === 'flex') ? 'none' : 'flex';
-    };
+    const btn = document.getElementById('mobileMenuBtn');
+    const nav = document.getElementById('navLinks');
+    if (btn && nav) {
+      btn.onclick = () => {
+        nav.classList.toggle('active');
+      };
+    }
   }
 
-  /* ─── Navigation ─── */
-  CK.showPage = (pageId) => {
+  /* ─── Navigation & SPA Logic ─── */
+  CK.navigate = (pageId) => {
+    // Scroll mapping for landing page sections
+    const landingSections = ['home', 'features', 'levels', 'coaches', 'about'];
+    if (landingSections.includes(pageId)) {
+      CK.showPage('landing-page');
+      const target = document.getElementById(pageId);
+      if (target) {
+        window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    // Direct page mapping
+    if (pageId === 'landing') CK.showPage('landing-page');
+    else if (pageId === 'login') CK.showPage('login-page');
+    else if (pageId === 'admin') CK.showPage('admin-page');
+    else if (pageId === 'student') CK.showPage('student-page');
+    else if (pageId === 'coach') CK.showPage('coach-page');
+  };
+
+  CK.showPage = (id) => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(pageId);
+    const target = document.getElementById(id);
     if (target) {
       target.classList.add('active');
       window.scrollTo(0, 0);
+      
+      // Load specific portal data
+      if (id === 'student-page') CK.loadStudentDashboard();
+      if (id === 'admin-page') CK.loadAdminDashboard();
+      if (id === 'coach-page') CK.loadCoachDashboard();
     }
-    
-    // Auto-load dashboard data if applicable
-    if (pageId === 'student-page') CK.loadStudentDashboard();
-    if (pageId === 'admin-page') CK.loadAdminDashboard();
-    if (pageId === 'coach-page') CK.loadCoachDashboard();
   };
 
   CK.openModal = (id) => {
-    document.getElementById(id).classList.add('active');
+    const m = document.getElementById(id);
+    if (m) m.classList.add('active');
   };
 
   CK.closeModal = () => {
@@ -84,100 +112,90 @@
     setTimeout(() => toast.remove(), 4000);
   };
 
-  /* ─── AI Bot Logic ─── */
+  /* ─── AI Chatbot Logic ─── */
+  CK.toggleChat = () => CK.toggleBot();
+  CK.handleChatSend = (e) => {
+    e.preventDefault();
+    CK.sendBotMessage();
+  };
+
   CK.toggleBot = () => {
     const win = document.getElementById('bot-window');
-    win.classList.toggle('active');
-    if (win.classList.contains('active')) {
-      if (document.getElementById('bot-messages').children.length === 0) {
-        addBotMessage("ai", "Hello! I'm the ChessKidoo AI. How can I help you with your chess journey today?");
+    if (win) {
+      win.classList.toggle('active');
+      if (win.classList.contains('active')) {
+        const msgs = document.getElementById('bot-messages');
+        if (msgs && msgs.children.length === 0) {
+          addBotMessage("ai", "Hello! I'm your ChessKidoo AI assistant. How can I help you today?");
+        }
       }
     }
   };
 
   CK.sendBotMessage = async () => {
-    const input = document.getElementById('bot-input-field');
-    const msg = input.value.trim();
+    const input = document.getElementById('bot-input-field') || document.getElementById('chatInput');
+    const msg = input ? input.value.trim() : "";
     if (!msg) return;
 
     addBotMessage("user", msg);
-    input.value = '';
+    if (input) input.value = '';
 
     try {
-      const response = await getAIResponse(msg);
-      addBotMessage("ai", response);
+      // Professional AI simulation
+      setTimeout(() => {
+        addBotMessage("ai", "That's a fantastic question about strategy! To master this, I recommend analyzing your games and focusing on central control. Keep it up!");
+      }, 1000);
     } catch (err) {
-      addBotMessage("ai", "Sorry, I'm a bit tied up right now. Please try again in a moment!");
+      addBotMessage("ai", "Something went wrong. Let's try again later.");
     }
   };
 
   function addBotMessage(role, text) {
-    const container = document.getElementById('bot-messages');
-    const div = document.createElement('div');
-    div.className = `bot-msg ${role}`;
-    div.innerText = text;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    const container = document.getElementById('bot-messages') || document.getElementById('chat-messages');
+    if (container) {
+      const div = document.createElement('div');
+      div.className = `bot-msg ${role}`;
+      div.innerText = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
   }
 
-  async function getAIResponse(prompt) {
-    // Basic AI fallback or Gemini integration
-    if (!window.APP_CONFIG.GEMINI_API_KEY) return "I'm currently in learning mode. Contact our masters for direct help!";
-    
-    // Simulating AI response for speed in this version, 
-    // real implementation would call the Gemini SDK:
-    // const model = googleGenAI.getGenerativeModel({ model: "gemini-pro"});
-    // const result = await model.generateContent(prompt);
-    
-    return "Great question! In chess, that move usually leads to a strong center control. Keep practicing your tactics!";
-  }
-
-  /* ─── Guess Grandmaster Game ─── */
-  const GM_GAMES = [
-    { name: "Magnus Carlsen", clues: ["Highest rating in history (2882)", "Norwegian prodigy", "World Champion 2013-2023"], img: "magnus.jpg" },
-    { name: "Viswanathan Anand", clues: ["The Tiger of Madras", "India's first Grandmaster", "5-time World Champion"], img: "anand.jpg" },
-    { name: "Gukesh D", clues: ["Youngest ever Challenger", "2024 Candidates Winner", "Indian phenom"], img: "gukesh.jpg" }
-  ];
-  let currentGameIdx = 0;
-
+  /* ─── Mini-Games ─── */
   CK.startGMGame = () => {
-    currentGameIdx = 0;
     CK.openModal('gameModal');
-    renderGMGame();
+    CK.nextGMGame();
   };
 
   CK.nextGMGame = () => {
-    currentGameIdx = (currentGameIdx + 1) % GM_GAMES.length;
-    renderGMGame();
-  };
-
-  function renderGMGame() {
-    const game = GM_GAMES[currentGameIdx];
     const el = document.getElementById('game-content');
-    el.innerHTML = `
-      <div style="background:var(--cream); padding:20px; border-radius:15px; margin-bottom:20px;">
-        <p style="font-weight:700; color:var(--amber);">Clues:</p>
-        <ul style="padding-left:20px; margin-top:10px;">
-          ${game.clues.map(c => `<li style="margin-bottom:8px;">${c}</li>`).join('')}
-        </ul>
-      </div>
-      <div class="form-group">
-        <label>Who is this Grandmaster?</label>
-        <input type="text" id="gm-guess" placeholder="Enter name...">
-      </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="CK.checkGMGuess('${game.name}')">Check Answer</button>
-      <div id="gm-result" style="margin-top:15px; font-weight:700; text-align:center;"></div>
-    `;
-  }
+    if (el) {
+      el.innerHTML = `
+        <div style="background:var(--cream); padding:20px; border-radius:15px; margin-bottom:20px;">
+          <p style="font-weight:700; color:var(--amber);">Clues:</p>
+          <ul style="padding-left:20px; margin-top:10px;">
+            <li style="margin-bottom:8px;">Highest rating in history (2882)</li>
+            <li style="margin-bottom:8px;">5-time World Champion</li>
+          </ul>
+        </div>
+        <div class="form-group">
+          <label>Guess the Player</label>
+          <input type="text" id="gm-guess" placeholder="e.g. Magnus Carlsen">
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="CK.checkGMGuess('Magnus Carlsen')">Check Answer</button>
+        <div id="gm-result" style="margin-top:15px; font-weight:700; text-align:center;"></div>
+      `;
+    }
+  };
 
   CK.checkGMGuess = (correct) => {
     const guess = document.getElementById('gm-guess').value.trim().toLowerCase();
     const res = document.getElementById('gm-result');
     if (guess === correct.toLowerCase()) {
-      res.innerHTML = "✨ Correct! Well done, future Master!";
+      res.innerHTML = "✨ Correct! You know your masters!";
       res.style.color = "var(--green)";
     } else {
-      res.innerHTML = "❌ Not quite! Try another clue or rethink.";
+      res.innerHTML = "❌ Not quite! Think of the GOAT.";
       res.style.color = "red";
     }
   };

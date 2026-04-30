@@ -18,7 +18,6 @@
   <!-- External Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.0/dist/index.min.js"></script>
 </head>
 <body>
   <!-- Scroll Progress -->
@@ -44,7 +43,7 @@
         <button class="nav-link" onclick="CK.navigate('levels')">Curriculum</button>
         <button class="nav-link" onclick="CK.navigate('coaches')">Coaches</button>
         <button class="nav-link" onclick="CK.navigate('about')">About</button>
-        <button class="nav-link btn btn-primary" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.openDemoModal()">Book Demo</button>
+        <button class="nav-link btn btn-primary" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.openModal('contactModal')">Book Demo</button>
         <button id="loginNavBtn" class="nav-link btn btn-ghost" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.navigate('login')">Log In</button>
       </nav>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
@@ -327,29 +326,6 @@
 
   </div>
 
-  <!-- Global Chatbot -->
-  <div id="chat-trigger" onclick="CK.toggleChat()">💬</div>
-  <div id="chat-drawer" class="chat-drawer">
-    <div class="chat-header">
-      <div class="chat-header-info">
-        <div class="bot-avatar">♛</div>
-        <div>
-          <strong>ChessMaster AI</strong>
-          <div style="font-size: 0.7rem; opacity: 0.7;">Powered by Gemini 2.0</div>
-        </div>
-      </div>
-      <button class="chat-close" onclick="CK.toggleChat()">×</button>
-    </div>
-    <div id="chat-messages" class="chat-messages">
-      <div class="message bot">
-        Hello! I'm your ChessMaster AI. How can I help you today?
-      </div>
-    </div>
-    <form class="chat-footer" onsubmit="CK.handleChatSend(event)">
-      <input type="text" id="chatInput" placeholder="Ask about tactics, openings..." autocomplete="off">
-      <button type="submit">Send</button>
-    </form>
-  </div>
 
   <!-- Modals -->
   <!-- Demo/Contact Modal -->
