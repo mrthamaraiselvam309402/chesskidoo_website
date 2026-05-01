@@ -295,6 +295,7 @@
       if (move) {
         selectedSq = null;
         renderBoard(null, [r,f]);
+        renderMoves(); // UPDATE MOVE LIST
         CK.showToast(`You played ${move.san}`, 'info');
         
         // AI Turn
@@ -315,6 +316,7 @@
     if (move) {
       const m = chess.move(move);
       renderBoard();
+      renderMoves(); // UPDATE MOVE LIST
       CK.showToast(`AI played ${m.san}`, 'warning');
       checkGameOver();
     }
@@ -344,7 +346,7 @@
     q('.match-loc', 'Training Match');
     
     const ml = document.getElementById('move-list');
-    if(ml) ml.innerHTML = '<div style="padding:20px; opacity:0.5; font-size:12px; text-align:center;">Make your move by clicking a piece and then a target square!</div>';
+    if(ml) ml.innerHTML = ''; 
     
     renderBoard();
     const bPause = document.getElementById('b-pause');
@@ -355,7 +357,34 @@
     const ml = document.getElementById('move-list');
     if (!ml) return;
     
-    // Initial build if empty
+    if (gameMode === 'PLAY') {
+      const history = chess.history();
+      ml.innerHTML = '';
+      for (let i = 0; i < history.length; i += 2) {
+        const row = document.createElement('div');
+        row.className = 'move-row';
+        const num = document.createElement('div');
+        num.className = 'move-n';
+        num.textContent = (Math.floor(i/2)+1)+'.';
+        row.appendChild(num);
+        
+        [0,1].forEach(s => {
+          if (history[i+s]) {
+            const m = document.createElement('div');
+            m.className = 'move-san' + (i+s === history.length-1 ? ' active' : '');
+            m.textContent = history[i+s];
+            row.appendChild(m);
+          }
+        });
+        ml.appendChild(row);
+      }
+      // Auto-scroll to bottom
+      const container = ml.parentElement;
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    // Initial build if empty (REPLAY MODE)
     if (!ml.children.length) {
       currentGame.san.forEach((pair, i) => {
         const row = document.createElement('div');
