@@ -529,6 +529,7 @@ body {
 .sq.dark  { background:var(--board-dark); }
 .sq.hl-from { background:rgba(255,216,0,.55) !important; }
 .sq.hl-to   { background:rgba(255,140,0,.65) !important; }
+.sq.selected { background:rgba(16, 185, 129, 0.6) !important; }
 .piece {
   font-size:30px;line-height:1;user-select:none;z-index:2;position:relative;
   transition:transform .18s ease;

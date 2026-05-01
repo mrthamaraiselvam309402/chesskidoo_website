@@ -91,6 +91,134 @@
   const speeds = [2800, 1800, 1100, 650, 320];
   let spd = 2;
 
+  /* ─── Play vs AI State ─── */
+  let gameMode = 'REPLAY'; // 'REPLAY' or 'PLAY'
+  let chess = null; // chess.js instance
+  let selectedSq = null;
+
+  // Simple Piece-Square Tables for AI positioning
+  const pst = {
+    p: [
+      [0,  0,  0,  0,  0,  0,  0,  0],
+      [50, 50, 50, 50, 50, 50, 50, 50],
+      [10, 10, 20, 30, 30, 20, 10, 10],
+      [5,  5, 10, 25, 25, 10,  5,  5],
+      [0,  0,  0, 20, 20,  0,  0,  0],
+      [5, -5,-10,  0,  0,-10, -5,  5],
+      [5, 10, 10,-20,-20, 10, 10,  5],
+      [0,  0,  0,  0,  0,  0,  0,  0]
+    ],
+    n: [
+      [-50,-40,-30,-30,-30,-30,-40,-50],
+      [-40,-20,  0,  0,  0,  0,-20,-40],
+      [-30,  0, 10, 15, 15, 10,  0,-30],
+      [-30,  5, 15, 20, 20, 15,  5,-30],
+      [-30,  0, 15, 20, 20, 15,  0,-30],
+      [-30,  5, 10, 15, 15, 10,  5,-30],
+      [-40,-20,  0,  5,  5,  0,-20,-40],
+      [-50,-40,-30,-30,-30,-30,-40,-50]
+    ],
+    b: [
+      [-20,-10,-10,-10,-10,-10,-10,-20],
+      [-10,  0,  0,  0,  0,  0,  0,-10],
+      [-10,  0,  5, 10, 10,  5,  0,-10],
+      [-10,  5,  5, 10, 10,  5,  5,-10],
+      [-10,  0, 10, 10, 10, 10,  0,-10],
+      [-10, 10, 10, 10, 10, 10, 10,-10],
+      [-10,  5,  0,  0,  0,  0,  5,-10],
+      [-20,-10,-10,-10,-10,-10,-10,-20]
+    ],
+    r: [
+      [0,  0,  0,  0,  0,  0,  0,  0],
+      [5, 10, 10, 10, 10, 10, 10,  5],
+      [-5,  0,  0,  0,  0,  0,  0, -5],
+      [-5,  0,  0,  0,  0,  0,  0, -5],
+      [-5,  0,  0,  0,  0,  0,  0, -5],
+      [-5,  0,  0,  0,  0,  0,  0, -5],
+      [-5,  0,  0,  0,  0,  0,  0, -5],
+      [0,  0,  0,  5,  5,  0,  0,  0]
+    ],
+    q: [
+      [-20,-10,-10, -5, -5,-10,-10,-20],
+      [-10,  0,  0,  0,  0,  0,  0,-10],
+      [-10,  0,  5,  5,  5,  5,  0,-10],
+      [-5,  0,  5,  5,  5,  5,  0, -5],
+      [0,  0,  5,  5,  5,  5,  0, -5],
+      [-10,  5,  5,  5,  5,  5,  0,-10],
+      [-10,  0,  5,  0,  0,  0,  0,-10],
+      [-20,-10,-10, -5, -5,-10,-10,-20]
+    ],
+    k: [
+      [-30,-40,-40,-50,-50,-40,-40,-30],
+      [-30,-40,-40,-50,-50,-40,-40,-30],
+      [-30,-40,-40,-50,-50,-40,-40,-30],
+      [-30,-40,-40,-50,-50,-40,-40,-30],
+      [-20,-30,-30,-40,-40,-30,-30,-20],
+      [-10,-20,-20,-20,-20,-20,-20,-10],
+      [20, 20,  0,  0,  0,  0, 20, 20],
+      [20, 30, 10,  0,  0, 10, 30, 20]
+    ]
+  };
+
+  const pieceValues = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
+
+  function evaluateBoard(g) {
+    let total = 0;
+    const b = g.board();
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const p = b[r][f];
+        if (p) {
+          const val = pieceValues[p.type] + pst[p.type][p.color === 'w' ? 7 - r : r][f];
+          total += (p.color === 'w' ? val : -val);
+        }
+      }
+    }
+    return total;
+  }
+
+  function minimax(g, depth, alpha, beta, isMaximizing) {
+    if (depth === 0) return -evaluateBoard(g);
+    const moves = g.moves();
+    if (isMaximizing) {
+      let bestVal = -9999;
+      for (const m of moves) {
+        g.move(m);
+        bestVal = Math.max(bestVal, minimax(g, depth - 1, alpha, beta, !isMaximizing));
+        g.undo();
+        alpha = Math.max(alpha, bestVal);
+        if (beta <= alpha) return bestVal;
+      }
+      return bestVal;
+    } else {
+      let bestVal = 9999;
+      for (const m of moves) {
+        g.move(m);
+        bestVal = Math.min(bestVal, minimax(g, depth - 1, alpha, beta, !isMaximizing));
+        g.undo();
+        beta = Math.min(beta, bestVal);
+        if (beta <= alpha) return bestVal;
+      }
+      return bestVal;
+    }
+  }
+
+  function getBestMove(g) {
+    const moves = g.moves();
+    let bestMove = null;
+    let bestVal = -9999;
+    for (const m of moves) {
+      g.move(m);
+      const val = minimax(g, 2, -10000, 10000, false);
+      g.undo();
+      if (val > bestVal) {
+        bestVal = val;
+        bestMove = m;
+      }
+    }
+    return bestMove;
+  }
+
   function initBoardState() {
     return [
       ['bR','bN','bB','bQ','bK','bB','bN','bR'],
@@ -108,13 +236,37 @@
     const boardEl = document.getElementById('board');
     if (!boardEl) return;
     boardEl.innerHTML = '';
+    
+    // Get board from chess.js if in PLAY mode, else use local board array
+    const currentBoard = gameMode === 'PLAY' ? chess.board() : board;
+
     for (let r = 0; r < 8; r++) {
       for (let f = 0; f < 8; f++) {
         const sq = document.createElement('div');
         sq.className = 'sq ' + ((r+f)%2===0 ? 'light' : 'dark');
+        
+        const pos = FILES[f] + RANKS_LABELS[r];
+        sq.dataset.pos = pos;
+        sq.dataset.r = r;
+        sq.dataset.f = f;
+
+        // Highlights
         if (hf && hf[0]===r && hf[1]===f) sq.classList.add('hl-from');
         if (ht && ht[0]===r && ht[1]===f) sq.classList.add('hl-to');
-        const pc = board[r][f];
+        if (selectedSq === pos) sq.classList.add('selected');
+
+        // Click handler
+        sq.onclick = () => handleSqClick(pos, r, f);
+
+        // Piece
+        let pc = null;
+        if (gameMode === 'PLAY') {
+          const piece = currentBoard[r][f];
+          if (piece) pc = piece.color + piece.type.toUpperCase();
+        } else {
+          pc = board[r][f];
+        }
+
         if (pc) {
           const span = document.createElement('span');
           span.className = 'piece';
@@ -124,6 +276,79 @@
         boardEl.appendChild(sq);
       }
     }
+  }
+
+  function handleSqClick(pos, r, f) {
+    if (gameMode !== 'PLAY') return;
+    
+    // If selecting own piece
+    const piece = chess.get(pos);
+    if (piece && piece.color === chess.turn()) {
+      selectedSq = pos;
+      renderBoard();
+      return;
+    }
+
+    // If moving selected piece
+    if (selectedSq) {
+      const move = chess.move({ from: selectedSq, to: pos, promotion: 'q' });
+      if (move) {
+        selectedSq = null;
+        renderBoard(null, [r,f]);
+        CK.showToast(`You played ${move.san}`, 'info');
+        
+        // AI Turn
+        if (!chess.game_over()) {
+          setTimeout(makeAIMove, 600);
+        } else {
+          checkGameOver();
+        }
+      } else {
+        selectedSq = null;
+        renderBoard();
+      }
+    }
+  }
+
+  function makeAIMove() {
+    const move = getBestMove(chess);
+    if (move) {
+      const m = chess.move(move);
+      renderBoard();
+      CK.showToast(`AI played ${m.san}`, 'warning');
+      checkGameOver();
+    }
+  }
+
+  function checkGameOver() {
+    if (chess.in_checkmate()) {
+      CK.showToast('Checkmate!', 'error');
+    } else if (chess.in_draw()) {
+      CK.showToast('Draw!', 'info');
+    }
+  }
+
+  function startPlayMode() {
+    stopReplay();
+    gameMode = 'PLAY';
+    chess = new Chess();
+    selectedSq = null;
+    
+    // Update UI
+    const q = (sel, val) => { const el = document.querySelector(sel); if(el) el.textContent = val; };
+    q('.panel-head', 'Player vs AI');
+    q('.player-chip:not(.right) .pname', 'You');
+    q('.player-chip:not(.right) .pelo', 'Ranked');
+    q('.player-chip.right .pname', 'Stockfish Lite');
+    q('.player-chip.right .pelo', 'Level 5');
+    q('.match-loc', 'Training Match');
+    
+    const ml = document.getElementById('move-list');
+    if(ml) ml.innerHTML = '<div style="padding:20px; opacity:0.5; font-size:12px; text-align:center;">Make your move by clicking a piece and then a target square!</div>';
+    
+    renderBoard();
+    const bPause = document.getElementById('b-pause');
+    if(bPause) bPause.textContent = '⏸ Pause';
   }
 
   function renderMoves() {
@@ -295,6 +520,7 @@
 
   // Export to CK namespace
   CK.initChessboard = initChessboardUI;
+  CK.startPlayMode = startPlayMode;
 
   // Auto-init on DOM load if we are on landing page
   window.addEventListener('load', () => {
