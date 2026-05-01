@@ -160,7 +160,16 @@
 
     const active = ml.querySelector('.active');
     if (active) {
-      active.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      // Localized scroll: only scroll the container, NOT the whole page
+      const container = ml.parentElement; // .moves-panel
+      const activeTop = active.offsetTop;
+      const containerScrollTop = container.scrollTop;
+      const containerHeight = container.offsetHeight;
+
+      // Only scroll if move is out of visible area of the panel
+      if (activeTop < containerScrollTop || activeTop > (containerScrollTop + containerHeight - 40)) {
+        container.scrollTop = activeTop - (containerHeight / 2);
+      }
     }
   }
 
