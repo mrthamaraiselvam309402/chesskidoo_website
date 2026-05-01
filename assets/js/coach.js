@@ -1,192 +1,139 @@
-/* assets/js/coach.js -------------------------------------------------------
-   Coach Dashboard logic for ChessKidoo
-   --------------------------------------------------------------- */
+/**
+ * ChessKidoo Coach Portal Logic
+ * Managed under CK.coach namespace
+ */
+CK.coach = {
+  user: {
+    name: 'Sarah Chess',
+    title: 'FIDE Instructor',
+    rating: 2100,
+    students: 12,
+    attendance: 98,
+    classesPerWeek: 5
+  },
 
-(() => {
-  const CK = window.CK = window.CK || {};
-  const SB = () => window.supabaseClient;
+  db: {
+    students: [
+      { id: '101', name: 'Emma Wilson', level: 'Intermediate', status: 'Online' },
+      { id: '103', name: 'Leo Garcia', level: 'Advanced', status: 'Online' },
+      { id: '105', name: 'Sophie Chen', level: 'Intermediate', status: 'Offline' }
+    ],
+    today: [
+      { id: 'C1', class: 'Intermediate Strategy', level: 'Intermediate', time: '4:00 PM', students: 8, status: 'Upcoming' },
+      { id: 'C2', class: 'Advanced Endgames', level: 'Advanced', time: '6:30 PM', students: 5, status: 'Scheduled' }
+    ],
+    notes: []
+  },
 
-  CK.switchCoachTab = (tab, btn) => {
-    document.querySelectorAll('#coach-page .admin-tab').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    CK.loadCoachTab(tab);
-  };
+  init() {
+    console.log("Coach Portal Initializing...");
+    this.updateProfile();
+    this.renderDashboard();
+  },
 
-  CK.loadCoachDashboard = () => {
-    const first = document.querySelector('#coach-page .admin-tab');
-    if (first) first.classList.add('active');
-    CK.loadCoachTab('students');
-  };
-
-  CK.loadCoachTab = async (tab) => {
-    const el = document.getElementById('coach-tab-content');
-    if (!el) return;
-    el.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
-
-    try {
-      const user = CK.currentUser;
-      if (!user) throw new Error("Not logged in");
-
-      if (tab === 'students')        await tabCoachStudents(el, user);
-      else if (tab === 'attendance') await tabCoachAttendance(el, user);
-      else if (tab === 'resources')  await tabCoachResources(el, user);
-    } catch (err) {
-      console.error("Coach Tab Error:", err);
-      el.innerHTML = `<div class="error-wrap">❌ Error: ${err.message}</div>`;
-    }
-  };
-
-  async function tabCoachStudents(el, coach) {
-    const { data: students } = await SB().from('users')
-      .select('*')
-      .eq('coach', coach.full_name)
-      .eq('role', 'student');
-
-    const list = students || [];
-
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2rem; color:var(--ink);">My Roster (${list.length})</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.exportCoachCSV()">📥 Export Roster</button>
-      </div>
-      <div class="ck-table-wrap">
-        <table class="ck-table">
-          <thead>
-            <tr><th>Student Name</th><th>Level</th><th>Batch</th><th>Rating</th></tr>
-          </thead>
-          <tbody>
-            ${list.length ? list.map(s => `
-              <tr>
-                <td style="font-weight:600; color:var(--ink);">${s.full_name}</td>
-                <td><span class="status-pill ${(s.level||'').toLowerCase().includes('inter')?'enrolled':'new'}">${s.level || 'Beginner'}</span></td>
-                <td>${s.batch || '-'}</td>
-                <td style="color:var(--amber); font-weight:700;">${s.star || 0} ★</td>
-              </tr>
-            `).join('') : `<tr><td colspan="4" class="ck-empty">No students assigned to you yet.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
-    window._ckCoachStudents = list;
-  }
-
-  CK.exportCoachCSV = () => {
-    const rows = (window._ckCoachStudents||[]).map(s=>[s.full_name, s.level, s.batch, s.star].map(v=>`"${v||''}"`));
-    const csv = 'Student Name,Level,Batch,Rating\n' + rows.map(r=>r.join(',')).join('\n');
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
-      download: 'my_students.csv', style: 'display:none'
+  nav(panelId) {
+    document.querySelectorAll('#coach-page .p-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`coach-panel-${panelId}`).classList.add('active');
+    
+    document.querySelectorAll('#coach-page .p-nav-item').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('onclick')?.includes(`'${panelId}'`)) {
+        btn.classList.add('active');
+      }
     });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  };
-
-  async function tabCoachAttendance(el, coach) {
-    const { data: students } = await SB().from('users')
-      .select('id, full_name, batch')
-      .eq('coach', coach.full_name)
-      .eq('role', 'student')
-      .order('full_name');
     
-    const list = students || [];
-    const today = new Date().toISOString().split('T')[0];
-
-    // Fetch who is already marked today
-    const { data: att } = await SB().from('attendance')
-      .select('userid, status')
-      .in('userid', list.map(s=>s.id))
-      .eq('date', today);
+    const titles = {
+      home: 'Coach Dashboard',
+      session: 'Live Session',
+      students: 'My Students',
+      attendance: 'Mark Attendance',
+      schedule: 'My Schedule',
+      notes: 'Game Notes',
+      puzzles: 'Assign Puzzles'
+    };
+    document.getElementById('coachPanelTitle').innerText = titles[panelId] || 'Dashboard';
     
-    const attMap = {};
-    (att||[]).forEach(a => attMap[a.userid] = a.status);
+    document.getElementById('coachTopBtn').style.display = (panelId === 'notes') ? 'block' : 'none';
+  },
 
-    el.innerHTML = `
-      <div style="margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Attendance Tracker</h3>
-        <p style="opacity:0.6; font-size:0.9rem;">Date: <strong style="color:var(--ink);">${new Date().toLocaleDateString('en-GB')}</strong></p>
-      </div>
-      <div class="ck-table-wrap">
-        <table class="ck-table">
-          <thead>
-            <tr><th>Student</th><th>Batch</th><th>Status</th><th>Action</th></tr>
-          </thead>
-          <tbody>
-            ${list.length ? list.map(s => {
-              const status = attMap[s.id];
-              let statusHTML = '-';
-              if (status === 'present') statusHTML = '<span style="color:#166534; font-weight:700;">✅ Present</span>';
-              if (status === 'absent')  statusHTML = '<span style="color:#dc2626; font-weight:700;">❌ Absent</span>';
+  updateProfile() {
+    document.getElementById('coachSidebarName').innerText = this.user.name;
+    document.getElementById('coachSidebarSub').innerText = `${this.user.title} · ${this.user.rating}`;
+    document.getElementById('coachSidebarAvatar').innerText = this.user.name.split(' ').map(n => n[0]).join('');
+    
+    document.getElementById('coachStatStudents').innerText = this.user.students;
+    document.getElementById('coachStatAttend').innerText = this.user.attendance + '%';
+    document.getElementById('coachStatClasses').innerText = this.user.classesPerWeek;
+  },
 
-              return `
-              <tr>
-                <td style="font-weight:600;">${s.full_name}</td>
-                <td>${s.batch || '-'}</td>
-                <td id="c-att-status-${s.id}">${statusHTML}</td>
-                <td>
-                  <div style="display:flex; gap:8px;">
-                    <button class="ck-btn ck-btn-sm ck-btn-green" onclick="CK.markStudentAtt('${s.id}', 'present')">Present</button>
-                    <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.markStudentAtt('${s.id}', 'absent')">Absent</button>
-                  </div>
-                </td>
-              </tr>
-            `}).join('') : `<tr><td colspan="4" class="ck-empty">No students found.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
+  renderDashboard() {
+    const tbody = document.getElementById('coachTodayClasses');
+    tbody.innerHTML = this.db.today.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.class}</td>
+        <td><span class="p-badge p-badge-blue">${c.level}</span></td>
+        <td>${c.time}</td>
+        <td>${c.students} Students</td>
+        <td><span class="p-badge p-badge-green">${c.status}</span></td>
+        <td><button class="p-btn p-btn-teal p-btn-sm" onclick="CK.coach.startSession('${c.id}')">Start</button></td>
+      </tr>
+    `).join('');
 
-  CK.markStudentAtt = async (id, status) => {
-    try {
-      const date = new Date().toISOString().split('T')[0];
-      const { error } = await SB().from('attendance').upsert({
-        userid: id, date: date, status: status
-      });
-      if (error) throw error;
-      document.getElementById(`c-att-status-${id}`).innerHTML = status === 'present' 
-        ? '<span style="color:#166534; font-weight:700;">✅ Present</span>'
-        : '<span style="color:#dc2626; font-weight:700;">❌ Absent</span>';
-      CK.showToast(`Marked ${status}!`, 'success');
-    } catch(err) {
-      CK.showToast('Failed to mark', 'error');
+    const grid = document.getElementById('coachStudentsGrid');
+    if(grid) {
+      grid.innerHTML = this.db.students.map(s => `
+        <div class="p-live-card ${s.status.toLowerCase()}">
+          <div class="p-live-avatar" style="background:var(--p-surface3); color:var(--p-teal)">${s.name.charAt(0)}</div>
+          <div class="p-live-info">
+            <div class="p-live-name">${s.name}</div>
+            <div class="p-live-sub">${s.level}</div>
+            <div class="p-live-status"><span class="p-status-dot ${s.status.toLowerCase()}"></span> ${s.status}</div>
+          </div>
+          <button class="p-icon-btn">📊</button>
+        </div>
+      `).join('');
     }
-  };
+  },
 
-  async function tabCoachResources(el, coach) {
-    const { data: files } = await SB().from('document')
-      .select('*')
-      .eq('coach', coach.full_name)
-      .order('created_at', { ascending: false });
+  startSession(classId) {
+    const c = this.db.today.find(x => x.id === classId);
+    this.nav('session');
+    document.getElementById('coachSessionName').innerText = c.class;
+    document.getElementById('coachSessionSub').innerText = `${c.level} · ${c.students} Students Checked-in`;
+    CK.showToast("Session environment ready", "success");
+  },
 
-    const list = files || [];
+  toggleSession() {
+    const btn = document.getElementById('coachStartBtn');
+    if(btn.innerText.includes('Start')) {
+      btn.innerText = '⏸ Pause Session';
+      btn.classList.remove('p-btn-teal');
+      btn.classList.add('p-btn-ghost');
+      CK.showToast("Session started", "success");
+    } else {
+      btn.innerText = '▶ Resume Session';
+      btn.classList.remove('p-btn-ghost');
+      btn.classList.add('p-btn-teal');
+    }
+  },
 
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2rem; color:var(--ink);">My Shared Resources</h3>
-        <button class="ck-btn ck-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Resource</button>
-      </div>
-      <div class="ck-table-wrap">
-        <table class="ck-table">
-          <thead>
-            <tr><th>Date</th><th>Document</th><th>Level</th><th>Links</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            ${list.length ? list.map(f => `
-              <tr>
-                <td>${new Date(f.created_at).toLocaleDateString('en-GB')}</td>
-                <td style="font-weight:600;"><a href="#" onclick="CK.downloadFile('${f.file_name}')" style="color:#D97706; text-decoration:none;">${f.file_name?.split('/').pop() || f.name}</a></td>
-                <td><span class="status-pill enrolled">${f.level}</span></td>
-                <td>
-                  ${f.link ? `<a href="${f.link}" target="_blank" style="color:var(--amber);">🔗 Link</a>` : '-'}
-                </td>
-                <td>
-                  <button class="ck-btn ck-btn-sm ck-btn-red" onclick="CK.deleteFile('${f.file_name}')">🗑️</button>
-                </td>
-              </tr>
-            `).join('') : `<tr><td colspan="5" class="ck-empty">No resources uploaded yet.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
+  topAction() {
+    const panel = document.querySelector('#coach-page .p-panel.active').id;
+    if(panel === 'coach-panel-notes') {
+      const select = document.getElementById('coach_note_student');
+      select.innerHTML = this.db.students.map(s => `<option>${s.name}</option>`).join('');
+      CK.openModal('coachNoteModal');
+    }
+  },
+
+  saveNote() {
+    const name = document.getElementById('coach_note_student').value;
+    const text = document.getElementById('coach_note_text').value;
+    if(!text) return CK.showToast("Note content required", "error");
+    
+    this.db.notes.push({ student: name, text, date: new Date().toLocaleDateString() });
+    CK.showToast("Game note saved", "success");
+    CK.closeModal('coachNoteModal');
+    document.getElementById('coach_note_text').value = '';
   }
-
-})();
+};

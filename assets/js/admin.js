@@ -1,392 +1,503 @@
-/* assets/js/admin.js -------------------------------------------------------
-   Admin Dashboard — Matches chesskidoo.com/admin reference
-   Tabs: File Management | Meetings | Attendance | User Management | Tournaments | Achievements
-   --------------------------------------------------------------- */
+/**
+ * ChessKidoo Admin Portal Logic
+ * Managed under CK.admin namespace
+ */
+CK.admin = {
+  db: {
+    students: [
+      { id: '101', name: 'Emma Wilson', age: 10, level: 'Intermediate', coach: 'Sarah Chess', rating: 1120, attendance: '92%', status: 'Online' },
+      { id: '102', name: 'James Smith', age: 8, level: 'Beginner', coach: 'Michael Knight', rating: 650, attendance: '85%', status: 'Away' },
+      { id: '103', name: 'Leo Garcia', age: 12, level: 'Advanced', coach: 'Sarah Chess', rating: 1450, attendance: '98%', status: 'Online' }
+    ],
+    coaches: [
+      { id: 'C1', name: 'Sarah Chess', rating: 2100, spec: 'Opening Theory', students: 12, classes: 5, status: 'Online' },
+      { id: 'C2', name: 'Michael Knight', rating: 1950, spec: 'Tactics', students: 8, classes: 3, status: 'Offline' }
+    ],
+    classes: [
+      { id: 'CL1', title: 'Intermediate Strategy', level: 'Intermediate', coach: 'Sarah Chess', schedule: 'Mon 4:00 PM', students: 8, max: 10 },
+      { id: 'CL2', title: 'Beginner Basics', level: 'Beginner', coach: 'Michael Knight', schedule: 'Tue 5:00 PM', students: 5, max: 8 }
+    ],
+    activity: [
+      { time: '2 mins ago', event: 'Student Check-in', user: 'Emma Wilson', status: 'p-badge-green' },
+      { time: '15 mins ago', event: 'New Enrollment', user: 'James Smith', status: 'p-badge-blue' },
+      { time: '1 hour ago', event: 'Class Completed', user: 'Intermediate Strategy', status: 'p-badge-gold' }
+    ]
+  },
 
-(() => {
-  const CK = window.CK = window.CK || {};
-  const SB = () => window.supabaseClient;
-  const COACHES = ['SARAN','HARIS','GYANASURYA','YOGESH','ARIVUSELVAM','VISHNU','ROHITH SELVARAJ','RANJITH','SUDHIN'];
-
-  /* ─── Tab Switching ─── */
-  CK.switchAdminTab = (tab, btn) => {
-    document.querySelectorAll('#admin-page .admin-tab').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    CK.loadAdminTab(tab);
-  };
-
-  CK.loadAdminDashboard = () => {
-    const first = document.querySelector('#admin-page .admin-tab');
-    if (first) first.classList.add('active');
-    CK.loadAdminTab('files');
-  };
-
-  CK.loadAdminTab = async (tab) => {
-    const el = document.getElementById('admin-tab-content');
-    if (!el) return;
-    el.innerHTML = '<div class="loading-wrap">♛ Loading...</div>';
-    try {
-      if (tab === 'files')        await tabFiles(el);
-      else if (tab === 'meetings')     tabMeetings(el);
-      else if (tab === 'attendance')   await tabAttendance(el);
-      else if (tab === 'users')        await tabUsers(el);
-      else if (tab === 'tournaments')  tabTournaments(el);
-      else if (tab === 'achievements') tabAchievements(el);
-    } catch (err) {
-      console.error('Admin tab error:', err);
-      el.innerHTML = `<div class="error-wrap">❌ ${err.message}</div>`;
-    }
-  };
-
-  /* ══════════════════════════════════════════
-     FILE MANAGEMENT
-  ══════════════════════════════════════════ */
-  async function tabFiles(el) {
-    const { data: docs } = await SB().from('document').select('*').order('created_at', { ascending: false });
-    const files = docs || [];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Document Library</h3>
-      </div>
-      <div class="ck-filter-bar">
-        <select id="f-level" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Levels</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Advanced">Advanced</option>
-        </select>
-        <select id="f-month" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Months</option>
-          ${months.map((m,i)=>`<option value="${i+1}" ${i===3?'selected':''}>${m}</option>`).join('')}
-        </select>
-        <select id="f-coach" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Coaches</option>
-          ${COACHES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-        </select>
-        <select id="f-batch" class="ck-select" onchange="CK.filterFiles()">
-          <option value="">All Batches</option>
-          ${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option value="${n}">Batch ${n}</option>`).join('')}
-        </select>
-        <div style="flex:1"></div>
-        <button class="dash-btn dash-btn-green" onclick="CK.exportFilesExcel()">📊 Export To Excel</button>
-        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('uploadModal')">📤 Upload Files</button>
-      </div>
-
-      <div class="portal-table-wrap">
-        <table class="portal-table" id="files-table">
-          <thead><tr>
-            <th>Date Uploaded</th><th>Document</th><th>Notes</th><th>Reference URL</th><th>Coach</th><th>Actions</th>
-          </tr></thead>
-          <tbody id="files-tbody">${renderFileRows(files)}</tbody>
-        </table>
-      </div>
-    `;
-    window._ckFiles = files;
-  }
-
-  function renderFileRows(files) {
-    if (!files.length) return `<tr><td colspan="6" class="ck-empty">No files uploaded yet.</td></tr>`;
-    return files.map(f => `
-      <tr>
-        <td>${new Date(f.created_at).toLocaleDateString('en-GB')}</td>
-        <td><a href="#" onclick="CK.downloadFile('${f.file_name}')" style="color:#D97706; text-decoration:none; word-break:break-all;">${f.file_name?.split('/').pop() || f.name || '-'}</a></td>
-        <td>${f.name || '-'}</td>
-        <td>${f.link ? `<a href="${f.link}" target="_blank" style="color:#D97706;">🔗 Link</a>` : '-'}</td>
-        <td>${f.coach || '-'}</td>
-        <td>
-          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteFile('${f.file_name}')">🗑 Delete</button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  CK.filterFiles = () => {
-    const level  = document.getElementById('f-level')?.value;
-    const month  = document.getElementById('f-month')?.value;
-    const coach  = document.getElementById('f-coach')?.value;
-    const batch  = document.getElementById('f-batch')?.value;
-    let filtered = (window._ckFiles || []);
-    if (level) filtered = filtered.filter(f => f.level === level);
-    if (coach) filtered = filtered.filter(f => f.coach === coach);
-    if (batch) filtered = filtered.filter(f => String(f.batch) === batch);
-    if (month) filtered = filtered.filter(f => new Date(f.created_at).getMonth() + 1 === parseInt(month));
-    document.getElementById('files-tbody').innerHTML = renderFileRows(filtered);
-  };
-
-  CK.exportFilesExcel = () => {
-    const rows = (window._ckFiles || []).map(f => [
-      new Date(f.created_at).toLocaleDateString('en-GB'),
-      f.file_name?.split('/').pop() || '', f.name || '', f.link || '', f.coach || ''
-    ]);
-    let csv = 'Date,Document,Notes,Reference URL,Coach\n' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
-      download: 'files_export.csv', style:'display:none'
+  init() {
+    console.log("Admin Portal Initializing...");
+    this.renderDashboard();
+    this.initCharts();
+    this.updateStats();
+    this.loadStudents();
+    this.loadCoaches();
+    this.loadClasses();
+    this.loadAttendance();
+    this.loadFiles();
+    this.renderActivity();
+    
+    // Populate modal coach selects
+    const coachSelects = ['admin_s_coach', 'admin_cl_coach'];
+    coachSelects.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = this.db.coaches.map(c => `<option>${c.name}</option>`).join('');
     });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    CK.showToast('Exported!', 'success');
-  };
+  },
 
-  /* ══════════════════════════════════════════
-     MEETINGS
-  ══════════════════════════════════════════ */
-  function tabMeetings(el) {
-    el.innerHTML = `
-      <div style="display:flex; justify-content:center; align-items:flex-start; padding:40px 0;">
-        <div class="dash-card" style="width:100%; max-width:540px; padding:40px;">
-          <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">📅 Schedule a Session</h3>
-          <form onsubmit="CK.scheduleMeeting(event)">
-            <input class="ck-input" type="url" id="meet-url" placeholder="Meeting URL" required style="margin-bottom:16px;">
-            <input class="ck-input" type="datetime-local" id="meet-dt" required style="margin-bottom:16px;">
-            <input class="ck-input" type="text" id="meet-batch" placeholder="Batch (e.g. 1)" required style="margin-bottom:24px;">
-            <button type="submit" class="dash-btn dash-btn-primary" style="width:100%; padding:14px; font-size:0.9rem; letter-spacing:0.1em;">
-              SCHEDULE REMINDER
-            </button>
-          </form>
-          <div id="meetings-list" style="margin-top:30px;"></div>
-        </div>
-      </div>
-    `;
-    loadMeetingsList();
-  }
+  renderActivity() {
+    const tbody = document.getElementById('adminActivityTable');
+    if(!tbody) return;
+    const activities = [
+      { time: '2 mins ago', event: 'New Student Enrolled', user: 'Emma Wilson', status: 'p-badge-green', label: 'Success' },
+      { time: '15 mins ago', event: 'File Uploaded', user: 'Admin', status: 'p-badge-blue', label: 'Info' },
+      { time: '1 hour ago', event: 'Class Cancelled', user: 'Sarah Chess', status: 'p-badge-red', label: 'Urgent' },
+      { time: '3 hours ago', event: 'New Coach Registered', user: 'Michael Knight', status: 'p-badge-gold', label: 'New' }
+    ];
+    tbody.innerHTML = activities.map(a => `
+      <tr>
+        <td style="color:var(--p-text-muted)">${a.time}</td>
+        <td style="font-weight:600">${a.event}</td>
+        <td>${a.user}</td>
+        <td><span class="p-badge ${a.status}">${a.label}</span></td>
+      </tr>
+    `).join('');
+  },
 
-  async function loadMeetingsList() {
-    const box = document.getElementById('meetings-list');
-    if (!box) return;
-    try {
-      const { data, error } = await SB().from('meetings').select('*').order('meeting_time', { ascending: true }).limit(10);
-      if (error && error.code === '42P01') {
-        box.innerHTML = '<p style="text-align:center;color:red;opacity:0.8;">Meetings table missing. Please run setup_meetings.sql in Supabase.</p>';
-        return;
+  showPanel(panelId) {
+    document.querySelectorAll('#admin-page .p-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`p-panel-${panelId}`).classList.add('active');
+    
+    // Update sidebar buttons
+    document.querySelectorAll('#admin-page .p-nav-item').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('onclick')?.includes(`'${panelId}'`)) {
+        btn.classList.add('active');
       }
-      if (!data?.length) { box.innerHTML = '<p style="text-align:center;opacity:0.5;font-size:0.85rem;">No upcoming meetings.</p>'; return; }
-      box.innerHTML = `<h5 style="margin-bottom:12px; opacity:0.6;">Upcoming</h5>` + data.map(m => `
-        <div style="background:var(--cream); padding:12px 16px; border-radius:10px; margin-bottom:10px; font-size:0.85rem;">
-          <div style="font-weight:700;">${new Date(m.meeting_time).toLocaleString()}</div>
-          <div style="opacity:0.6;">Batch ${m.batch} — <a href="${m.url}" target="_blank" style="color:var(--amber);">Join Link</a></div>
-        </div>
-      `).join('');
-    } catch(e) {}
-  }
+    });
+    
+    const titles = {
+      dashboard: 'Dashboard',
+      live: 'Live Tracking',
+      students: 'Student Management',
+      coaches: 'Coach Management',
+      classes: 'Class Schedule',
+      attendance: 'Attendance Records',
+      files: 'Learning Materials',
+      reports: 'Progress Reports',
+      settings: 'Academy Settings'
+    };
+    document.getElementById('adminPanelTitle').innerText = titles[panelId] || 'Admin';
+    
+    // Action button context
+    const btn = document.getElementById('adminTopActionBtn');
+    if(panelId === 'students') { btn.innerText = '+ Add Student'; btn.style.display = 'block'; }
+    else if(panelId === 'coaches') { btn.innerText = '+ Add Coach'; btn.style.display = 'block'; }
+    else if(panelId === 'classes') { btn.innerText = '+ Add Class'; btn.style.display = 'block'; }
+    else { btn.style.display = 'none'; }
 
-  CK.scheduleMeeting = async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('[type="submit"]');
-    btn.textContent = 'Scheduling...'; btn.disabled = true;
-    try {
-      await SB().from('meetings').insert({
-        url: document.getElementById('meet-url').value,
-        meeting_time: document.getElementById('meet-dt').value,
-        batch: document.getElementById('meet-batch').value
+    if(panelId === 'live') this.renderLive();
+  },
+
+  updateStats() {
+    const s = {
+      students: this.db.students.length,
+      coaches: this.db.coaches.length,
+      classes: this.db.classes.length,
+      revenue: '$' + (this.db.students.length * 1250).toLocaleString()
+    };
+    const elS = document.getElementById('stat-students');
+    const elC = document.getElementById('stat-coaches');
+    const elCl = document.getElementById('stat-classes');
+    const elR = document.getElementById('stat-revenue');
+    const elB = document.getElementById('badge-students');
+
+    if(elS) elS.innerText = s.students;
+    if(elC) elC.innerText = s.coaches;
+    if(elCl) elCl.innerText = s.classes;
+    if(elR) elR.innerText = s.revenue;
+    if(elB) elB.innerText = s.students;
+  },
+
+  renderDashboard() {
+    const tbody = document.getElementById('adminActivityTable');
+    tbody.innerHTML = this.db.activity.map(a => `
+      <tr>
+        <td style="color:var(--p-text-muted)">${a.time}</td>
+        <td style="font-weight:600">${a.event}</td>
+        <td>${a.user}</td>
+        <td><span class="p-badge ${a.status}">${a.event.split(' ')[1] || 'Info'}</span></td>
+      </tr>
+    `).join('');
+  },
+
+  initCharts() {
+    const ctxMain = document.getElementById('chartMain')?.getContext('2d');
+    if(ctxMain) {
+      new Chart(ctxMain, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Students',
+            data: [45, 52, 60, 72, 85, 98],
+            borderColor: '#e8b84b',
+            tension: 0.4,
+            fill: true,
+            backgroundColor: 'rgba(232,184,75,0.05)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { grid: { color: '#252b35' }, ticks: { color: '#7a8499' } }, x: { grid: { display: false }, ticks: { color: '#7a8499' } } }
+        }
       });
-      CK.showToast('Meeting scheduled!', 'success');
-      e.target.reset();
-      loadMeetingsList();
-    } catch(err) {
-      CK.showToast('Failed: ' + err.message, 'error');
-    } finally { btn.textContent = 'SCHEDULE REMINDER'; btn.disabled = false; }
-  };
-
-  /* ══════════════════════════════════════════
-     ATTENDANCE — Calendar View per Coach
-  ══════════════════════════════════════════ */
-  let _attCoach = COACHES[0];
-  let _attDate  = new Date();
-
-  async function tabAttendance(el) {
-    el.innerHTML = `
-      <h2 style="text-align:center; font-family:var(--font-display); font-size:2.5rem; margin-bottom:24px; color:var(--ink);">Attendance Tracker</h2>
-      <div class="ck-coach-tabs" id="att-coach-tabs">
-        ${COACHES.map((c,i) => `
-          <button class="ck-coach-tab ${i===0?'active':''}" onclick="CK.switchAttCoach('${c}', this)">${c}</button>
-        `).join('')}
-      </div>
-      <div id="att-calendar" style="margin-top:30px;"></div>
-    `;
-    renderAttCalendar();
-  }
-
-  CK.switchAttCoach = (coach, btn) => {
-    document.querySelectorAll('.ck-coach-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    _attCoach = coach;
-    renderAttCalendar();
-  };
-
-  async function renderAttCalendar() {
-    const box = document.getElementById('att-calendar');
-    if (!box) return;
-    const y = _attDate.getFullYear(), m = _attDate.getMonth();
-    const monthName = _attDate.toLocaleString('default',{month:'long'});
-    const firstDay  = new Date(y, m, 1).getDay();
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-    const today = new Date();
-
-    // Fetch attendance records for this coach's students this month
-    const start = `${y}-${String(m+1).padStart(2,'0')}-01`;
-    const end   = `${y}-${String(m+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
-
-    let attMap = {};
-    try {
-      // Get students under this coach
-      const { data: students } = await SB().from('users')
-        .select('id').eq('coach', _attCoach).eq('role','student');
-      const ids = (students||[]).map(s=>s.id);
-      if (ids.length) {
-        const { data: att } = await SB().from('attendance')
-          .select('userid, date, status')
-          .in('userid', ids)
-          .gte('date', start).lte('date', end);
-        // Aggregate: count present per day
-        (att||[]).forEach(a => {
-          const d = a.date; // yyyy-mm-dd
-          if (!attMap[d]) attMap[d] = { present:0, total:0 };
-          attMap[d].total++;
-          if (a.status === 'present') attMap[d].present++;
-        });
-      }
-    } catch(e) {}
-
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    let cells = '';
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) cells += `<div class="ck-cal-cell ck-cal-empty"></div>`;
-    // Day cells
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isPast  = new Date(y, m, d) <= today;
-      const rec = attMap[dateStr];
-      let icon = '';
-      if (isPast && rec) {
-        icon = rec.present > 0
-          ? `<div class="ck-cal-check">✓</div>`
-          : `<div class="ck-cal-cross">✗</div>`;
-      } else if (isPast) {
-        icon = `<div class="ck-cal-cross">✗</div>`;
-      }
-      cells += `
-        <div class="ck-cal-cell ${isPast && rec?.present ? 'ck-cal-present' : isPast ? 'ck-cal-absent' : ''}">
-          <div class="ck-cal-num">${d}</div>
-          ${icon}
-        </div>`;
     }
 
-    box.innerHTML = `
-      <div class="ck-cal-nav">
-        <button class="dash-btn dash-btn-sm" onclick="CK.prevMonth()">← Prev</button>
-        <h3>${monthName} ${y}</h3>
-        <button class="dash-btn dash-btn-sm" onclick="CK.nextMonth()">Next →</button>
-      </div>
-      <div class="ck-cal-grid">
-        ${days.map(d=>`<div class="ck-cal-header">${d}</div>`).join('')}
-        ${cells}
-      </div>
-    `;
-  }
+    const ctxLevels = document.getElementById('chartLevels')?.getContext('2d');
+    if(ctxLevels) {
+      new Chart(ctxLevels, {
+        type: 'doughnut',
+        data: {
+          labels: ['Beginner', 'Intermediate', 'Advanced'],
+          datasets: [{
+            data: [40, 35, 25],
+            backgroundColor: ['#e8b84b', '#00c9a7', '#5b9cf6'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#7a8499', padding: 20, usePointStyle: true } } },
+          cutout: '70%'
+        }
+      });
+    }
+  },
 
-  CK.prevMonth = () => { _attDate.setMonth(_attDate.getMonth()-1); renderAttCalendar(); };
-  CK.nextMonth = () => { _attDate.setMonth(_attDate.getMonth()+1); renderAttCalendar(); };
-
-  /* ══════════════════════════════════════════
-     USER MANAGEMENT
-  ══════════════════════════════════════════ */
-  async function tabUsers(el) {
-    const { data: users } = await SB().from('users').select('*').order('full_name');
-    window._ckUsers = users || [];
-
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">Student Roster</h3>
-      </div>
-      <div class="ck-filter-bar" style="margin-bottom:24px;">
-        <select class="ck-select" onchange="CK.filterByCoach(this.value)">
-          <option value="">Select Coach</option>
-          ${COACHES.map(c=>`<option value="${c}">${c}</option>`).join('')}
-        </select>
-        <div style="flex:1"></div>
-        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('addUserModal')">
-          👤 Add Student
-        </button>
-      </div>
-      <div class="portal-table-wrap">
-        <table class="portal-table" id="users-table">
-          <thead><tr>
-            <th>UserId</th><th>Full Name</th><th>Email ID</th><th>Level</th><th>Coach</th><th>Fee</th><th>Status</th><th>Actions</th>
-          </tr></thead>
-          <tbody id="users-tbody">${renderUserRows(window._ckUsers)}</tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  function renderUserRows(users) {
-    if (!users?.length) return `<tr><td colspan="8" class="ck-empty">No students found.</td></tr>`;
-    return users.filter(u => u.role !== 'admin').map((u,i) => `
+  loadStudents(data = null) {
+    const tbody = document.getElementById('adminStudentsTable');
+    if(!tbody) return;
+    const list = data || this.db.students;
+    if(list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; opacity:0.5; padding:20px;">No students found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map((s, i) => `
       <tr>
-        <td style="color:var(--amber); font-weight:700;">${1000 + i}</td>
-        <td style="font-weight:600;">${u.full_name || '-'}</td>
-        <td style="opacity:0.7;">${u.email || '-'}</td>
-        <td><span class="status-pill ${(u.level||'').toLowerCase().includes('inter') ? 'enrolled' : 'new'}">${(u.level||'beginner').split(' ')[0]}</span></td>
-        <td>${u.coach || '-'}</td>
-        <td style="font-weight:600;">${u.fee || '-'}</td>
-        <td><span class="status-pill ${(u.payment_status||'').toLowerCase()}">${u.payment_status||'Pending'}</span></td>
-        <td style="display:flex; gap:6px;">
-          <button class="dash-btn dash-btn-sm dash-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
-          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
+        <td style="color:var(--p-text-muted)">#${s.id}</td>
+        <td style="font-weight:600">${s.name}</td>
+        <td>${s.age} yrs</td>
+        <td><span class="p-badge p-badge-blue">${s.level}</span></td>
+        <td>${s.coach}</td>
+        <td style="font-weight:700; color:var(--p-gold)">${s.rating}</td>
+        <td>${s.attendance}</td>
+        <td><span class="p-status-dot ${s.status.toLowerCase()}"></span> ${s.status}</td>
+        <td>
+          <div class="p-action-group">
+            <button class="p-icon-btn p-btn-sm" onclick="CK.admin.editStudent('${s.id}')" title="Edit">✏️</button>
+            <button class="p-icon-btn p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')" title="Delete">🗑️</button>
+          </div>
         </td>
       </tr>
     `).join('');
-  }
+  },
 
-  CK.filterByCoach = (coach) => {
-    const filtered = coach ? (window._ckUsers||[]).filter(u=>u.coach===coach) : (window._ckUsers||[]);
-    document.getElementById('users-tbody').innerHTML = renderUserRows(filtered);
-  };
+  filterStudents() {
+    const level = document.getElementById('adminFilterLevel').value;
+    const filtered = level ? this.db.students.filter(s => s.level === level) : this.db.students;
+    this.loadStudents(filtered);
+  },
 
-  CK.deleteUser = async (id) => {
-    if (!confirm('Remove this student permanently?')) return;
-    await SB().from('users').delete().eq('id', id);
-    CK.showToast('Student removed.', 'success');
-    CK.loadAdminTab('users');
-  };
+  editStudent(id) {
+    this.openStudentModal(id);
+  },
 
-  CK.editUser = (id) => {
-    const u = (window._ckUsers||[]).find(x=>x.id===id);
-    if (!u) return;
-    CK.showToast(`Edit for ${u.full_name} — form coming soon!`, 'info');
-  };
+  loadCoaches() {
+    const tbody = document.getElementById('adminCoachesTable');
+    if(!tbody) return;
+    tbody.innerHTML = this.db.coaches.map(c => `
+      <tr>
+        <td>#${c.id}</td>
+        <td style="font-weight:600">${c.name}</td>
+        <td style="font-weight:700; color:var(--p-teal)">${c.rating}</td>
+        <td>${c.spec}</td>
+        <td>${c.students}</td>
+        <td>${c.classes}</td>
+        <td><span class="p-badge ${c.status === 'Online' ? 'p-badge-green' : 'p-badge-red'}">${c.status}</span></td>
+        <td><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editCoach('${c.id}')">Edit</button></td>
+      </tr>
+    `).join('');
+  },
 
-  CK.exportUsersCSV = () => {
-    const headers = ['Name','Email','Level','Coach','Schedule','Fee','Payment'];
-    const rows = (window._ckUsers||[]).map(u=>[u.full_name,u.email,u.level,u.coach,u.schedule,u.fee,u.payment_status].map(v=>`"${v||''}"`));
-    const csv = [headers, ...rows].map(r=>r.join(',')).join('\n');
-    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'roster.csv',style:'display:none'});
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  };
+  loadClasses() {
+    const tbody = document.getElementById('adminClassesTable');
+    if(!tbody) return;
+    tbody.innerHTML = this.db.classes.map(cl => `
+      <tr>
+        <td>#${cl.id}</td>
+        <td style="font-weight:600">${cl.title}</td>
+        <td><span class="p-badge p-badge-blue">${cl.level}</span></td>
+        <td>${cl.coach}</td>
+        <td>${cl.schedule}</td>
+        <td>${cl.students} / ${cl.max}</td>
+        <td><div class="p-progress-bar"><div class="p-progress-fill" style="width:${(cl.students/cl.max)*100}%"></div></div></td>
+        <td><button class="p-btn p-btn-ghost p-btn-sm">Manage</button></td>
+      </tr>
+    `).join('');
+  },
 
-  /* ══════════════════════════════════════════
-     TOURNAMENTS & ACHIEVEMENTS (stubs)
-  ══════════════════════════════════════════ */
-  function tabTournaments(el) {
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🏆 Tournament Results</h3>
-        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('uploadTournModal')">+ Add Tournament</button>
+  loadAttendance() {
+    const tbody = document.getElementById('adminAttendanceTable');
+    if(!tbody) return;
+    const date = document.getElementById('adminAttendanceDate').value || 'Today';
+    
+    // Generate mock attendance based on students
+    tbody.innerHTML = this.db.students.slice(0, 5).map(s => `
+      <tr>
+        <td style="font-weight:600">${s.name}</td>
+        <td>Intermediate Strategy</td>
+        <td>Sarah Chess</td>
+        <td>4:0${Math.floor(Math.random()*9)} PM</td>
+        <td>${50 + Math.floor(Math.random()*10)} mins</td>
+        <td><span class="p-badge p-badge-green">Present</span></td>
+      </tr>
+    `).join('');
+  },
+
+  renderLive() {
+    const grid = document.getElementById('adminLiveGrid');
+    grid.innerHTML = this.db.students.map(s => `
+      <div class="p-live-card ${s.status.toLowerCase()}">
+        <div class="p-live-avatar" style="background:var(--p-surface3); color:var(--p-gold)">${s.name.charAt(0)}</div>
+        <div class="p-live-info">
+          <div class="p-live-name">${s.name}</div>
+          <div class="p-live-sub">${s.level} · ${s.coach}</div>
+          <div class="p-live-status">
+            <span class="p-status-dot ${s.status.toLowerCase()}"></span> ${s.status}
+          </div>
+        </div>
+        <button class="p-icon-btn" title="View Board">👁️</button>
       </div>
-      <div class="ck-empty-state">🏆<p>No tournament data yet. Add your first result!</p></div>
-    `;
-  }
+    `).join('');
+    document.getElementById('adminLiveCount').innerText = `${this.db.students.filter(s => s.status==='Online').length} students online`;
+  },
 
-  function tabAchievements(el) {
-    el.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="margin:0; font-family:var(--font-display); font-size:2.5rem; color:var(--ink);">🎖 Student Achievements</h3>
-        <button class="dash-btn dash-btn-dark" onclick="CK.openModal('addAchModal')">+ Add Achievement</button>
-      </div>
-      <div class="ck-empty-state">🥇<p>No achievements posted yet. Celebrate your champions!</p></div>
-    `;
-  }
+  openModal(id) { CK.openModal(id); },
+  closeModal(id) { CK.closeModal(id); },
 
-})();
+  topAction() {
+    const panel = document.querySelector('#admin-page .p-panel.active').id;
+    if(panel === 'p-panel-students') this.openStudentModal();
+    if(panel === 'p-panel-coaches') this.openCoachModal();
+    if(panel === 'p-panel-classes') this.openClassModal();
+  },
+
+  openStudentModal(studentId = null) {
+    const modal = document.getElementById('adminStudentModal');
+    const title = document.getElementById('adminStudentModalTitle');
+    const coachesSelect = document.getElementById('admin_s_coach');
+    
+    coachesSelect.innerHTML = this.db.coaches.map(c => `<option>${c.name}</option>`).join('');
+    
+    if(studentId) {
+      title.innerText = 'Edit Student';
+      const s = this.db.students.find(x => x.id === studentId);
+      document.getElementById('admin_s_id').value = s.id;
+      document.getElementById('admin_s_name').value = s.name;
+      document.getElementById('admin_s_level').value = s.level;
+    } else {
+      title.innerText = 'Add New Student';
+      document.getElementById('admin_s_id').value = '';
+      document.getElementById('admin_s_name').value = '';
+    }
+    this.openModal('adminStudentModal');
+  },
+
+  saveStudent() {
+    const name = document.getElementById('admin_s_name').value;
+    if(!name) return CK.showToast('Name is required', 'error');
+    
+    const id = document.getElementById('admin_s_id').value || Math.floor(Math.random()*1000).toString();
+    const isNew = !document.getElementById('admin_s_id').value;
+    
+    const studentData = {
+      id, name,
+      age: document.getElementById('admin_s_age').value || 10,
+      level: document.getElementById('admin_s_level').value,
+      coach: document.getElementById('admin_s_coach').value,
+      rating: document.getElementById('admin_s_rating').value || 800,
+      attendance: '100%', status: 'Offline'
+    };
+
+    if(isNew) this.db.students.push(studentData);
+    else {
+      const idx = this.db.students.findIndex(s => s.id === id);
+      this.db.students[idx] = studentData;
+    }
+
+    this.loadStudents();
+    this.updateStats();
+    this.closeModal('adminStudentModal');
+    CK.showToast(`Student ${isNew ? 'added' : 'updated'} successfully!`, 'success');
+  },
+
+  deleteStudent(id) {
+    if(confirm('Are you sure you want to delete this student?')) {
+      this.db.students = this.db.students.filter(s => s.id !== id);
+      this.loadStudents();
+      this.updateStats();
+      CK.showToast('Student removed', 'success');
+    }
+  },
+
+  handleSearch(val) {
+    const q = val.toLowerCase();
+    const filtered = this.db.students.filter(s => s.name.toLowerCase().includes(q) || s.id.includes(q));
+    this.loadStudents(filtered);
+  },
+
+  async handleResourceUpload(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+    
+    try {
+      const file = form.file.files[0];
+      const path = `docs/${Date.now()}_${file.name}`;
+      const { error: upErr } = await window.supabaseClient.storage.from('documents').upload(path, file);
+      if (upErr) throw upErr;
+      
+      await window.supabaseClient.from('document').insert({
+        name: form.fileName.value,
+        file_name: path,
+        level: form.level.value,
+        batch: form.batch.value,
+        created_at: new Date().toISOString()
+      });
+      
+      CK.showToast('Resource uploaded!', 'success');
+      CK.closeModal('uploadModal');
+      form.reset();
+      this.loadFiles();
+    } catch (err) {
+      CK.showToast(err.message || 'Upload failed.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Upload';
+    }
+  },
+
+  async loadFiles() {
+    const tbody = document.getElementById('adminFilesTable');
+    if(!tbody) return;
+    
+    try {
+      const { data, error } = await window.supabaseClient.from('document').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      
+      tbody.innerHTML = data.map(f => `
+        <tr>
+          <td style="font-weight:600">${f.name}</td>
+          <td><span class="p-badge p-badge-blue">${f.level}</span></td>
+          <td>${f.batch || 'All'}</td>
+          <td><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.downloadFile('${f.file_name}')">📎 View</button></td>
+          <td style="color:var(--p-text-muted)">${new Date(f.created_at).toLocaleDateString()}</td>
+          <td><button class="p-icon-btn" style="color:var(--p-danger)" onclick="CK.admin.deleteFile('${f.id}', '${f.file_name}')">🗑️</button></td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">No files found or error loading.</td></tr>';
+    }
+  },
+
+  async downloadFile(fileName) {
+    const { data } = window.supabaseClient.storage.from('documents').getPublicUrl(fileName);
+    if (data?.publicUrl) window.open(data.publicUrl, '_blank');
+  },
+
+  async deleteFile(id, fileName) {
+    if(!confirm('Delete this file permanently?')) return;
+    try {
+      await window.supabaseClient.storage.from('documents').remove([fileName]);
+      await window.supabaseClient.from('document').delete().eq('id', id);
+      CK.showToast('File deleted.', 'success');
+      this.loadFiles();
+    } catch(e) { CK.showToast('Delete failed.', 'error'); }
+  },
+
+  saveCoach() {
+    const name = document.getElementById('admin_c_name').value;
+    if(!name) return CK.showToast('Name required', 'error');
+    
+    const id = document.getElementById('admin_c_id').value;
+    const isNew = !id;
+    const coachData = {
+      id: id || 'C' + (this.db.coaches.length + 1),
+      name: name,
+      rating: document.getElementById('admin_c_fide').value || 1200,
+      spec: document.getElementById('admin_c_spec').value,
+      students: isNew ? 0 : this.db.coaches.find(c=>c.id===id).students,
+      classes: isNew ? 0 : this.db.coaches.find(c=>c.id===id).classes,
+      status: isNew ? 'Offline' : this.db.coaches.find(c=>c.id===id).status
+    };
+    
+    if(isNew) this.db.coaches.push(coachData);
+    else {
+      const idx = this.db.coaches.findIndex(c => c.id === id);
+      this.db.coaches[idx] = coachData;
+    }
+    
+    this.loadCoaches();
+    this.updateStats();
+    this.closeModal('adminCoachModal');
+    CK.showToast(`Coach ${isNew ? 'added' : 'updated'}!`, 'success');
+  },
+
+  openCoachModal(coachId = null) {
+    document.getElementById('admin_c_id').value = coachId || '';
+    document.getElementById('admin_c_name').value = '';
+    document.getElementById('admin_c_fide').value = '';
+    document.getElementById('admin_c_spec').value = 'Beginner Expert';
+    
+    if(coachId) {
+      const c = this.db.coaches.find(x => x.id === coachId);
+      document.getElementById('admin_c_name').value = c.name;
+      document.getElementById('admin_c_fide').value = c.rating;
+      document.getElementById('admin_c_spec').value = c.spec;
+    }
+    this.openModal('adminCoachModal');
+  },
+
+  editCoach(id) { this.openCoachModal(id); },
+
+  openClassModal() {
+    const coachSelect = document.getElementById('admin_cl_coach');
+    coachSelect.innerHTML = this.db.coaches.map(c => `<option>${c.name}</option>`).join('');
+    this.openModal('adminClassModal');
+  },
+
+  saveClass() {
+    const title = document.getElementById('admin_cl_title').value;
+    if(!title) return CK.showToast('Title required', 'error');
+    
+    const coachSelect = document.getElementById('admin_cl_coach');
+    this.db.classes.push({
+      id: 'CL' + (this.db.classes.length + 1),
+      title: title,
+      level: document.getElementById('admin_cl_level').value,
+      coach: coachSelect.value,
+      schedule: document.getElementById('admin_cl_day').value + ' ' + document.getElementById('admin_cl_time').value,
+      students: 0, max: 10
+    });
+    
+    this.loadClasses();
+    this.updateStats();
+    this.closeModal('adminClassModal');
+    CK.showToast('Class scheduled!', 'success');
+  }
+};

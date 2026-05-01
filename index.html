@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/portals.css">
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -83,15 +84,85 @@
                   WhatsApp Us
                 </a>
               </div>
-              <div class="hero-stats">
-                <div><div class="hero-stat-num">500+</div><div class="hero-stat-label">Active Students</div></div>
-                <div><div class="hero-stat-num">7</div><div class="hero-stat-label">FIDE Coaches</div></div>
-                <div><div class="hero-stat-num">12+</div><div class="hero-stat-label">Championships</div></div>
-                <div><div class="hero-stat-num">4.9★</div><div class="hero-stat-label">Parent Rating</div></div>
+              <div class="stats-row">
+                <div class="stat">
+                  <span class="stat-val">500+</span>
+                  <span class="stat-label">Active Students</span>
+                </div>
+                <div class="stat-div"></div>
+                <div class="stat">
+                  <span class="stat-val">8</span>
+                  <span class="stat-label">FIDE Coaches</span>
+                </div>
+                <div class="stat-div"></div>
+                <div class="stat">
+                  <span class="stat-val">12+</span>
+                  <span class="stat-label">Championships</span>
+                </div>
+                <div class="stat-div"></div>
+                <div class="stat">
+                  <span class="stat-val">4.9★</span>
+                  <span class="stat-label">Parent Rating</span>
+                </div>
               </div>
             </div>
             <div class="hero-visual">
-              <div id="main-chessboard" class="reveal"></div>
+              <div class="board-panel reveal">
+                <!-- Players bar -->
+                <div class="players-bar">
+                  <div class="player-chip">
+                    <div class="avatar av-white">♔</div>
+                    <div>
+                      <div class="pname">Adolf Anderssen</div>
+                      <div class="pelo">White · ELO ~2600</div>
+                    </div>
+                  </div>
+                  <div class="match-center">
+                    <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
+                    <div class="match-loc">London, 1851</div>
+                  </div>
+                  <div class="player-chip right">
+                    <div class="avatar av-black">♚</div>
+                    <div style="text-align:right">
+                      <div class="pname">L. Kieseritzky</div>
+                      <div class="pelo">Black · ELO ~2400</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Board + moves -->
+                <div class="board-section">
+                  <!-- Rank labels + board -->
+                  <div style="display:flex;align-items:flex-start;gap:0">
+                    <div class="coords-col" id="ranks-col"></div>
+                    <div>
+                      <div id="board"></div>
+                      <div class="coords-row" id="files-row"></div>
+                    </div>
+                  </div>
+
+                  <!-- Move list -->
+                  <div class="moves-panel">
+                    <div class="panel-head">The Immortal Game</div>
+                    <div id="move-list"></div>
+                  </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="board-controls">
+                  <div class="ctrl-group">
+                    <button class="cb" id="b-start">⏮</button>
+                    <button class="cb" id="b-prev">◀</button>
+                    <button class="cb cb-pause" id="b-pause">⏸ Pause</button>
+                    <button class="cb" id="b-next">▶</button>
+                    <button class="cb" id="b-end">⏭</button>
+                  </div>
+                  <div class="speed-group">
+                    SPEED <input type="range" class="speed-range" id="speed" min="1" max="5" value="3">
+                  </div>
+                  <button class="ai-btn" onclick="CK.showToast('Play vs AI feature coming soon!','info')">🤖 Play vs AI</button>
+                </div>
+              </div>
             </div>
 
 
@@ -213,7 +284,7 @@
         <div class="section-head reveal">
           <div class="eyebrow">Our Expert Faculty</div>
           <h2>Meet the Minds Behind the Moves</h2>
-          <p class="lead">7 FIDE-certified coaches with international ratings and state-championship experience.</p>
+          <p class="lead">8 FIDE-certified coaches with international ratings and state-championship experience.</p>
         </div>
         <div class="coach-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px; padding: 20px 0;">
           
@@ -316,8 +387,8 @@
         </div>
       </section>
 
-      <!-- Global Certifications -->
-      <section id="certifications" class="section-padding" style="background: #fdfcf9; border-top: 1px solid #eee;">
+      <!-- Global Certifications / About -->
+      <section id="about" class="section-padding" style="background: #fdfcf9; border-top: 1px solid #eee;">
         <div class="section-head reveal">
           <div class="eyebrow">Global Certifications</div>
           <h2 style="font-size: 3rem;">Global Certifications</h2>
@@ -628,18 +699,18 @@
             <div>
               <h5 style="margin-bottom:24px; color:var(--amber); font-family:var(--font-display); font-size: 1.1rem; letter-spacing: 0.5px;">Learn</h5>
               <div style="display:flex; flex-direction:column; gap:14px; opacity:0.8;">
-                <a href="#features" style="color:#fff; text-decoration:none;">Features</a>
-                <a href="#coaches" style="color:#fff; text-decoration:none;">Our Coaches</a>
-                <a href="#levels" style="color:#fff; text-decoration:none;">Curriculum</a>
-                <a href="#pricing" style="color:#fff; text-decoration:none;">Pricing</a>
+                <button class="footer-link-btn" onclick="CK.navigate('features')">Features</button>
+                <button class="footer-link-btn" onclick="CK.navigate('coaches')">Our Coaches</button>
+                <button class="footer-link-btn" onclick="CK.navigate('levels')">Curriculum</button>
+                <button class="footer-link-btn" onclick="CK.navigate('pricing')">Pricing</button>
               </div>
             </div>
 
             <div>
               <h5 style="margin-bottom:24px; color:var(--amber); font-family:var(--font-display); font-size: 1.1rem; letter-spacing: 0.5px;">Company</h5>
               <div style="display:flex; flex-direction:column; gap:14px; opacity:0.8;">
-                <a href="#reviews" style="color:#fff; text-decoration:none;">Reviews</a>
-                <a href="#faq" style="color:#fff; text-decoration:none;">FAQ</a>
+                <button class="footer-link-btn" onclick="CK.navigate('reviews')">Reviews</button>
+                <button class="footer-link-btn" onclick="CK.navigate('faq')">FAQ</button>
                 <a href="https://www.instagram.com/chesskidoo/" target="_blank" style="color:#fff; text-decoration:none;">Instagram</a>
                 <a href="#" style="color:#fff; text-decoration:none;">YouTube</a>
               </div>
@@ -674,10 +745,6 @@
     <div id="login-page" class="page">
       <section class="login-bg-section">
         <!-- Chess piece bg pattern -->
-        <div class="login-bg-pattern">
-          <span class="login-piece login-piece-1">♞</span>
-          <span class="login-piece login-piece-2">♛</span>
-        </div>
         <div class="login-card reveal" style="margin: 0 auto;">
           <div style="text-align:center; margin-bottom:28px;">
             <div class="login-logo" style="margin-bottom:32px;">
@@ -693,12 +760,20 @@
               <input type="email" name="email" placeholder="name@example.com" required autocomplete="username"
                 style="height:52px; border-radius:10px; border:1.5px solid #ddd; font-size:0.95rem; padding:0 16px;">
             </div>
-            <div class="form-group" style="margin-bottom:6px;">
+            <div class="form-group" style="margin-bottom:6px; position:relative;">
               <label style="font-size:0.85rem; font-weight:600; color:var(--ink);">Password</label>
               <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"
-                style="height:52px; border-radius:10px; border:1.5px solid #ddd; font-size:0.95rem; padding:0 16px;">
+                style="height:52px; border-radius:10px; border:1.5px solid #ddd; font-size:0.95rem; padding:0 45px 0 16px; width:100%;">
+              <button type="button" onclick="CK.togglePassword('loginForm')" 
+                style="position:absolute; right:12px; bottom:14px; background:none; border:none; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:5px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
             </div>
-            <div style="text-align:right; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <button type="button" onclick="CK.showPage('landing-page')" style="font-size:0.82rem; color:#64748b; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">← Back to Home</button>
               <a href="#" style="font-size:0.82rem; color:var(--amber); text-decoration:none; font-weight:600;">Forgot Password?</a>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%; height:52px; border-radius:10px; font-size:1rem; font-weight:700; letter-spacing:0.03em;">Sign In</button>
@@ -709,7 +784,12 @@
             <div style="flex:1; height:1px; background:#e5e7eb;"></div>
           </div>
           <button class="btn btn-ghost" style="width:100%; height:52px; border-radius:10px; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="CK.showToast('Google login coming soon!','info')">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px; height:20px;"> Continue with Google
+            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 12-4.53z" fill="#EA4335"/>
+            </svg> Continue with Google
           </button>
           <p style="text-align:center; margin-top:20px; font-size:0.82rem; opacity:0.5;">Don't have an account? <a href="#" style="color:var(--amber); font-weight:700;">Create Account</a></p>
         </div>
@@ -718,65 +798,453 @@
 
     <!-- Dashboards -->
     <div id="admin-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Control Center</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Admin Dashboard</h1>
+      <div class="portal-body">
+        <!-- SIDEBAR -->
+        <nav class="p-sidebar">
+          <div class="p-sidebar-brand">
+            <div class="p-brand-logo">
+              <div class="p-brand-icon">♛</div>
+              <div>
+                <div class="p-brand-name">ChessKidoo</div>
+                <div class="p-brand-role">Admin Portal</div>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
-          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
+          <div class="p-sidebar-nav">
+            <div class="p-nav-section-label">Overview</div>
+            <button class="p-nav-item active" onclick="CK.admin.showPanel('dashboard')">
+              <span class="icon">⬛</span><span>Dashboard</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('live')">
+              <span class="icon">📡</span><span>Live Tracking</span>
+              <span class="p-live-indicator"><span class="p-live-dot"></span>LIVE</span>
+            </button>
+            <div class="p-nav-section-label">Management</div>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('students')">
+              <span class="icon">🎓</span><span>Students</span>
+              <span class="p-nav-badge" id="badge-students">0</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('coaches')">
+              <span class="icon">👨‍🏫</span><span>Coaches</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('classes')">
+              <span class="icon">📅</span><span>Classes</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('attendance')">
+              <span class="icon">✅</span><span>Attendance</span>
+            </button>
+            <div class="p-nav-section-label">Operations</div>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('files')">
+              <span class="icon">📁</span><span>File Management</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('reports')">
+              <span class="icon">📊</span><span>Reports</span>
+            </button>
+            <div class="p-section-sep"></div>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('settings')">
+              <span class="icon">⚙️</span><span>Settings</span>
+            </button>
+            <button class="p-nav-item" onclick="CK.logout()">
+              <span class="icon">🚪</span><span>Log out</span>
+            </button>
+          </div>
+          <div class="p-sidebar-footer">
+            <div class="p-user-card">
+              <div class="p-user-avatar" id="adminSidebarAvatar">A</div>
+              <div class="p-user-info">
+                <div class="p-user-name" id="adminSidebarName">Admin</div>
+                <div class="p-user-email">admin@chesskidoo.com</div>
+              </div>
+            </div>
+          </div>
         </nav>
-        <div id="admin-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        <!-- MAIN -->
+        <div class="p-main">
+          <header class="p-topbar">
+            <div class="p-topbar-title" id="adminPanelTitle">Dashboard</div>
+            <div class="p-topbar-search">
+              <span class="search-icon">🔍</span>
+              <input type="text" placeholder="Search students, coaches…" id="adminGlobalSearch" oninput="CK.admin.handleSearch(this.value)"/>
+            </div>
+            <div class="p-topbar-actions">
+              <div class="p-icon-btn" title="Notifications">🔔<span class="p-notif-dot"></span></div>
+              <div class="p-icon-btn" title="Help">❓</div>
+              <button class="p-btn p-btn-gold p-btn-sm" id="adminTopActionBtn" onclick="CK.admin.topAction()">+ Add Student</button>
+            </div>
+          </header>
+          <div class="p-content">
+            <!-- ══ DASHBOARD PANEL ══ -->
+            <div class="p-panel active" id="p-panel-dashboard">
+              <div class="p-stats-grid">
+                <div class="p-stat-card">
+                  <div class="p-stat-icon gold">🎓</div>
+                  <div class="p-stat-val" id="stat-students">0</div>
+                  <div class="p-stat-label">Total Students</div>
+                  <div class="p-stat-change up">↑ 8% this month</div>
+                </div>
+                <div class="p-stat-card">
+                  <div class="p-stat-icon teal">👨‍🏫</div>
+                  <div class="p-stat-val" id="stat-coaches">0</div>
+                  <div class="p-stat-label">Active Coaches</div>
+                  <div class="p-stat-change up">↑ 1 new hire</div>
+                </div>
+                <div class="p-stat-card">
+                  <div class="p-stat-icon blue">📅</div>
+                  <div class="p-stat-val" id="stat-classes">0</div>
+                  <div class="p-stat-label">Classes This Week</div>
+                  <div class="p-stat-change up">↑ 2 sessions added</div>
+                </div>
+                <div class="p-stat-card">
+                  <div class="p-stat-icon rose">💰</div>
+                  <div class="p-stat-val" id="stat-revenue">$0</div>
+                  <div class="p-stat-label">Monthly Revenue</div>
+                  <div class="p-stat-change up">↑ 12% vs last month</div>
+                </div>
+              </div>
+              <div class="p-charts-row">
+                <div class="p-card">
+                  <div class="p-card-header"><div class="p-card-title">📈 Monthly Enrollment & Revenue</div></div>
+                  <div class="p-card-body"><div class="p-chart-wrap"><canvas id="chartMain"></canvas></div></div>
+                </div>
+                <div class="p-card">
+                  <div class="p-card-header"><div class="p-card-title">🎯 Student Levels</div></div>
+                  <div class="p-card-body"><div class="p-chart-wrap"><canvas id="chartLevels"></canvas></div></div>
+                </div>
+              </div>
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">🕒 Recent Activity</div></div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Time</th><th>Event</th><th>User</th><th>Status</th></tr></thead>
+                    <tbody id="adminActivityTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ LIVE TRACKING PANEL ══ -->
+            <div class="p-panel" id="p-panel-live">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">📡 Live Student Tracking</div>
+                  <span class="p-live-indicator"><span class="p-live-dot"></span>REAL-TIME</span>
+                  <span style="color:var(--p-text-muted);font-size:.8rem" id="adminLiveCount">0 students online</span>
+                </div>
+                <div class="p-card-body"><div class="p-live-grid" id="adminLiveGrid"></div></div>
+              </div>
+            </div>
+            <!-- ══ STUDENTS PANEL ══ -->
+            <div class="p-panel" id="p-panel-students">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">🎓 Student Management</div>
+                  <div style="display:flex;gap:8px">
+                    <select class="p-form-control" style="width:auto;padding:6px 10px;font-size:.78rem" id="adminFilterLevel" onchange="CK.admin.filterStudents()">
+                      <option value="">All Levels</option>
+                      <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option>
+                    </select>
+                    <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openStudentModal()">+ Add Student</button>
+                  </div>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Rating</th><th>Attendance</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="adminStudentsTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ COACHES PANEL ══ -->
+            <div class="p-panel" id="p-panel-coaches">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">👨‍🏫 Coach Management</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openCoachModal()">+ Add Coach</button>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>#</th><th>Name</th><th>FIDE Rating</th><th>Speciality</th><th>Students</th><th>Classes/wk</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="adminCoachesTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ CLASSES PANEL ══ -->
+            <div class="p-panel" id="p-panel-classes">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">📅 Class Schedule</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openClassModal()">+ Add Class</button>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>#</th><th>Class</th><th>Level</th><th>Coach</th><th>Day & Time</th><th>Students</th><th>Max</th><th>Actions</th></tr></thead>
+                    <tbody id="adminClassesTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ ATTENDANCE PANEL ══ -->
+            <div class="p-panel" id="p-panel-attendance">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">✅ Attendance Records</div>
+                  <input type="date" class="p-form-control" style="width:auto" id="adminAttendanceDate" onchange="CK.admin.loadAttendance()"/>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Student</th><th>Class</th><th>Coach</th><th>Check-in</th><th>Duration</th><th>Status</th></tr></thead>
+                    <tbody id="adminAttendanceTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ FILE MANAGEMENT PANEL ══ -->
+            <div class="p-panel" id="p-panel-files">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">📁 Learning Materials</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.openModal('uploadModal')">+ Upload File</button>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>File Name</th><th>Level</th><th>Batch</th><th>Link</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody id="adminFilesTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ REPORTS PANEL ══ -->
+            <div class="p-panel" id="p-panel-reports">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">📊 Progress Reports</div></div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Student</th><th>Level</th><th>Rating ↑</th><th>Lessons Completed</th><th>Puzzles Solved</th><th>Coach Note</th></tr></thead>
+                    <tbody id="adminReportsTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ SETTINGS PANEL ══ -->
+            <div class="p-panel" id="p-panel-settings">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">⚙️ Academy Settings</div></div>
+                <div class="p-card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                  <div class="p-form-group"><label class="p-form-label">Academy Name</label><input class="p-form-control" value="ChessKidoo Academy"/></div>
+                  <div class="p-form-group"><label class="p-form-label">Contact Email</label><input class="p-form-control" value="info@chesskidoo.com"/></div>
+                  <div style="grid-column:1/-1"><button class="p-btn p-btn-gold">Save Settings</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="student-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Student Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">My Dashboard</h1>
+      <div class="portal-body">
+        <!-- SIDEBAR -->
+        <nav class="p-sidebar">
+          <div class="p-sidebar-brand">
+            <div class="p-brand-row">
+              <div class="p-brand-icon student-portal-icon">♞</div>
+              <div>
+                <div class="p-brand-name">ChessKidoo</div>
+                <div class="p-brand-role">Student Portal</div>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+          <div class="p-sidebar-nav">
+            <div class="p-nav-section-label">My Learning</div>
+            <button class="p-nav-item active" onclick="CK.student.nav('home')"><span class="icon">🏠</span><span>My Dashboard</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('progress')"><span class="icon">📈</span><span>My Progress</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('schedule')"><span class="icon">📅</span><span>My Schedule</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('session')"><span class="icon">📡</span><span>Join Class</span></button>
+            <div class="p-nav-section-label">Practice</div>
+            <button class="p-nav-item" onclick="CK.student.nav('puzzles')"><span class="icon">🧩</span><span>My Puzzles</span><span class="p-nav-badge" id="studentPuzzleBadge">0</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('reviews')"><span class="icon">📝</span><span>Coach Reviews</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('achievements')"><span class="icon">🏆</span><span>Achievements</span></button>
+            <div class="p-section-sep"></div>
+            <button class="p-nav-item" onclick="CK.logout()"><span class="icon">🚪</span><span>Log out</span></button>
+          </div>
+          <div class="p-sidebar-footer">
+            <div class="p-user-card">
+              <div class="p-user-avatar" id="studentSidebarAvatar">EW</div>
+              <div class="p-user-info">
+                <div class="p-user-name" id="studentSidebarName">Student</div>
+                <div class="p-user-sub" id="studentSidebarSub">Intermediate · ELO 0</div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <!-- MAIN -->
+        <div class="p-main">
+          <header class="p-topbar">
+            <div class="p-topbar-title" id="studentPanelTitle">My Dashboard</div>
+            <div class="p-topbar-actions">
+              <div class="p-icon-btn" title="Notifications">🔔<span class="p-notif-dot"></span></div>
+              <div class="p-icon-btn" title="Help">❓</div>
+            </div>
+          </header>
+          <div class="p-content">
+            <!-- HOME -->
+            <div class="p-panel active" id="student-panel-home">
+              <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:stretch">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div class="next-class">
+                    <div class="next-class-time" id="nextClassTime">--:--</div>
+                    <div class="next-class-info">
+                      <div class="next-class-name" id="nextClassName">No upcoming class</div>
+                      <div class="next-class-sub" id="nextClassSub">--</div>
+                      <div class="countdown" id="studentCountdown">--</div>
+                    </div>
+                    <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.student.nav('session')">Join →</button>
+                  </div>
+                  <div class="p-stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="p-stat-card"><div class="stat-icon">📅</div><div class="p-stat-val" id="studentStatLessons">0</div><div class="p-stat-label">Lessons Done</div></div>
+                    <div class="p-stat-card"><div class="stat-icon">🧩</div><div class="p-stat-val" id="studentStatPuzzles">0</div><div class="p-stat-label">Puzzles Solved</div></div>
+                    <div class="p-stat-card"><div class="stat-icon">✅</div><div class="p-stat-val" id="studentStatAttend">0%</div><div class="p-stat-label">Attendance</div></div>
+                  </div>
+                </div>
+                <div class="rating-hero" style="min-width:240px">
+                  <div style="font-size:.72rem;color:var(--p-text-muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">My Rating</div>
+                  <div class="rating-num" id="studentRatingNum">0</div>
+                  <div class="rating-change" id="studentRatingChange">↑ +0 this month</div>
+                  <div class="rating-label" id="studentRatingLabel">Level --</div>
+                </div>
+              </div>
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">🧩 Pending Puzzles</div></div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Puzzle</th><th>Type</th><th>Difficulty</th><th>Coach</th><th>Due</th><th>Action</th></tr></thead>
+                    <tbody id="studentPendingPuzzles"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- PROGRESS -->
+            <div class="p-panel" id="student-panel-progress">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">📈 Rating History</div></div>
+                <div class="p-card-body"><div class="p-chart-wrap"><canvas id="ratingChart"></canvas></div></div>
+              </div>
+            </div>
+            <!-- SCHEDULE -->
+            <div class="p-panel" id="student-panel-schedule">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">📋 Upcoming Classes</div></div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Date</th><th>Class</th><th>Coach</th><th>Time</th><th>Duration</th><th>Status</th></tr></thead>
+                    <tbody id="studentUpcomingTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- SESSION -->
+            <div class="p-panel" id="student-panel-session">
+              <div class="p-card" style="border-color:rgba(91,156,246,.3)">
+                <div style="background:linear-gradient(135deg,rgba(91,156,246,.08),rgba(171,130,255,.05));padding:28px;text-align:center">
+                  <div style="font-size:3rem;margin-bottom:12px">♟</div>
+                  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px" id="studentSessionTitle">No active session</div>
+                  <button class="p-btn p-btn-blue" id="studentJoinBtn" onclick="CK.student.joinClass()">▶ Join Class Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <div class="dashboard-shell">
-        <main class="dashboard-main" id="student-dashboard-content"></main>
-      </div>
       </div>
     </div>
 
     <div id="coach-page" class="page">
-      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span class="eyebrow" style="color: var(--amber-pale)">Coach Portal</span>
-            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Instructor Dashboard</h1>
+      <div class="portal-body">
+        <!-- SIDEBAR -->
+        <nav class="p-sidebar">
+          <div class="p-sidebar-brand">
+            <div class="p-brand-row">
+              <div class="p-brand-icon coach-portal-icon">♟</div>
+              <div>
+                <div class="p-brand-name">ChessKidoo</div>
+                <div class="p-brand-role">Coach Portal</div>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
-        </div>
-      </header>
-      <div class="container" style="margin-top: 20px;">
-        <nav class="admin-tabs">
-          <button class="admin-tab active" onclick="CK.switchCoachTab('students', this)">My Students</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('attendance', this)">Mark Attendance</button>
-          <button class="admin-tab" onclick="CK.switchCoachTab('resources', this)">Shared Resources</button>
+          <div class="p-sidebar-nav">
+            <div class="p-nav-section-label">Overview</div>
+            <button class="p-nav-item active" onclick="CK.coach.nav('home')"><span class="icon">🏠</span><span>My Dashboard</span></button>
+            <button class="p-nav-item" onclick="CK.coach.nav('session')"><span class="icon">📡</span><span>Live Session</span><span class="p-live-indicator"><span class="p-live-dot"></span>ON</span></button>
+            <div class="p-nav-section-label">Teaching</div>
+            <button class="p-nav-item" onclick="CK.coach.nav('students')"><span class="icon">🎓</span><span>My Students</span></button>
+            <button class="p-nav-item" onclick="CK.coach.nav('attendance')"><span class="icon">✅</span><span>Attendance</span></button>
+            <button class="p-nav-item" onclick="CK.coach.nav('schedule')"><span class="icon">📅</span><span>My Schedule</span></button>
+            <button class="p-nav-item" onclick="CK.coach.nav('notes')"><span class="icon">📝</span><span>Game Notes</span></button>
+            <div class="p-nav-section-label">Tools</div>
+            <button class="p-nav-item" onclick="CK.coach.nav('puzzles')"><span class="icon">🧩</span><span>Assign Puzzles</span></button>
+            <div class="p-section-sep"></div>
+            <button class="p-nav-item" onclick="CK.logout()"><span class="icon">🚪</span><span>Log out</span></button>
+          </div>
+          <div class="p-sidebar-footer">
+            <div class="p-user-card">
+              <div class="p-user-avatar" id="coachSidebarAvatar">SC</div>
+              <div class="p-user-info">
+                <div class="p-user-name" id="coachSidebarName">Coach</div>
+                <div class="p-user-sub" id="coachSidebarSub">FIDE 0 · Expert</div>
+              </div>
+            </div>
+          </div>
         </nav>
-        <div id="coach-tab-content" style="padding: 40px 0;">
-          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        <!-- MAIN -->
+        <div class="p-main">
+          <header class="p-topbar">
+            <div class="p-topbar-title" id="coachPanelTitle">My Dashboard</div>
+            <div class="p-topbar-actions">
+              <div class="p-icon-btn" title="Notifications">🔔</div>
+              <button class="p-btn p-btn-teal p-btn-sm" id="coachTopBtn" onclick="CK.coach.topAction()">+ Add Note</button>
+            </div>
+          </header>
+          <div class="p-content">
+            <!-- HOME -->
+            <div class="p-panel active" id="coach-panel-home">
+              <div class="p-stats-grid">
+                <div class="p-stat-card"><div class="p-stat-icon teal">🎓</div><div class="p-stat-val" id="coachStatStudents">0</div><div class="p-stat-label">My Students</div></div>
+                <div class="p-stat-card"><div class="p-stat-icon gold">⭐</div><div class="p-stat-val" id="coachStatAttend">0%</div><div class="p-stat-label">Avg Attendance</div></div>
+                <div class="p-stat-card"><div class="p-stat-icon blue">📅</div><div class="p-stat-val" id="coachStatClasses">0</div><div class="p-stat-label">Classes/Week</div></div>
+              </div>
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">📅 Today's Classes</div></div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Class</th><th>Level</th><th>Time</th><th>Students</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="coachTodayClasses"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- SESSION -->
+            <div class="p-panel" id="coach-panel-session">
+              <div class="session-live" style="background:var(--p-surface); border:2px solid rgba(0,201,167,.3); border-radius:14px; padding:22px; position:relative; overflow:hidden">
+                <div class="session-header" style="display:flex; align-items:center; gap:14px; margin-bottom:18px">
+                  <div style="flex:1">
+                    <div class="session-title" id="coachSessionName" style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700">No active session</div>
+                    <div id="coachSessionSub" style="font-size:.78rem; color:var(--p-text-muted)">--</div>
+                  </div>
+                  <div class="session-timer" id="coachSessionTimer" style="font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--p-teal)">00:00</div>
+                </div>
+                <div class="session-controls" style="display:flex; gap:10px; flex-wrap:wrap">
+                  <button class="p-btn p-btn-teal" id="coachStartBtn" onclick="CK.coach.toggleSession()">▶ Start Session</button>
+                  <button class="p-btn p-btn-ghost" onclick="CK.coach.endSession()">⬛ End Session</button>
+                </div>
+              </div>
+            </div>
+            <!-- STUDENTS -->
+            <div class="p-panel" id="coach-panel-students">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">🎓 My Students</div></div>
+                <div class="p-card-body"><div class="p-live-grid" id="coachStudentsGrid"></div></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -784,7 +1252,131 @@
   </div>
 
 
-  <!-- Modals -->
+  <!-- Student Modal -->
+  <div class="p-modal-overlay" id="adminStudentModal">
+    <div class="p-modal">
+      <div class="p-modal-header">
+        <div class="p-modal-title" id="adminStudentModalTitle">Add New Student</div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminStudentModal')">✕</button>
+      </div>
+      <div class="p-modal-body">
+        <input type="hidden" id="admin_s_id"/>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Full Name</label><input class="p-form-control" id="admin_s_name" placeholder="Emma Wilson"/></div>
+          <div class="p-form-group"><label class="p-form-label">Email</label><input class="p-form-control" id="admin_s_email" type="email" placeholder="parent@email.com"/></div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Age</label><input class="p-form-control" id="admin_s_age" type="number" placeholder="10"/></div>
+          <div class="p-form-group"><label class="p-form-label">Level</label>
+            <select class="p-form-control" id="admin_s_level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option></select>
+          </div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Assign Coach</label>
+            <select class="p-form-control" id="admin_s_coach"><option>Select coach…</option></select>
+          </div>
+          <div class="p-form-group"><label class="p-form-label">Rating</label><input class="p-form-control" id="admin_s_rating" type="number" placeholder="800"/></div>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminStudentModal')">Cancel</button>
+        <button class="p-btn p-btn-gold" onclick="CK.admin.saveStudent()">Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coach Modal -->
+  <div class="p-modal-overlay" id="adminCoachModal">
+    <div class="p-modal">
+      <div class="p-modal-header">
+        <div class="p-modal-title" id="adminCoachModalTitle">Add New Coach</div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminCoachModal')">✕</button>
+      </div>
+      <div class="p-modal-body">
+        <input type="hidden" id="admin_c_id"/>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Full Name</label><input class="p-form-control" id="admin_c_name"/></div>
+          <div class="p-form-group"><label class="p-form-label">Email</label><input class="p-form-control" id="admin_c_email" type="email"/></div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">FIDE Rating</label><input class="p-form-control" id="admin_c_fide" type="number" placeholder="1850"/></div>
+          <div class="p-form-group"><label class="p-form-label">Speciality</label>
+            <select class="p-form-control" id="admin_c_spec"><option>Opening Theory</option><option>Endgame</option><option>Tactics</option><option>Strategy</option><option>General</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminCoachModal')">Cancel</button>
+        <button class="p-btn p-btn-gold" onclick="CK.admin.saveCoach()">Save Coach</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Modal -->
+  <div class="p-modal-overlay" id="adminClassModal">
+    <div class="p-modal">
+      <div class="p-modal-header">
+        <div class="p-modal-title">Add New Class</div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminClassModal')">✕</button>
+      </div>
+      <div class="p-modal-body">
+        <div class="p-form-group"><label class="p-form-label">Class Title</label><input class="p-form-control" id="admin_cl_title" placeholder="e.g. Beginner Tactics"/></div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Level</label>
+            <select class="p-form-control" id="admin_cl_level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option></select>
+          </div>
+          <div class="p-form-group"><label class="p-form-label">Coach</label>
+            <select class="p-form-control" id="admin_cl_coach"><option>Select…</option></select>
+          </div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Day</label>
+            <select class="p-form-control" id="admin_cl_day"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
+          </div>
+          <div class="p-form-group"><label class="p-form-label">Time</label><input class="p-form-control" id="admin_cl_time" type="time" value="16:00"/></div>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminClassModal')">Cancel</button>
+        <button class="p-btn p-btn-gold" onclick="CK.admin.saveClass()">Save Class</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Modal (Coach) -->
+  <div class="p-modal-overlay" id="coachNoteModal">
+    <div class="p-modal">
+      <div class="p-modal-header">
+        <div class="p-modal-title">📝 Add Game Note</div>
+        <button class="p-modal-close" onclick="CK.closeModal('coachNoteModal')">✕</button>
+      </div>
+      <div class="p-modal-body">
+        <div class="p-form-group"><label class="p-form-label">Student</label>
+          <select class="p-form-control" id="coach_note_student"></select>
+        </div>
+        <div class="p-form-group"><label class="p-form-label">Note</label>
+          <textarea class="p-form-control" id="coach_note_text" rows="4" placeholder="Coach observation or game review…"></textarea>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('coachNoteModal')">Cancel</button>
+        <button class="p-btn p-btn-teal" onclick="CK.coach.saveNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating UI -->
+  <div class="floating-ui">
+    <a href="https://wa.me/919025846663" target="_blank" class="whatsapp-float" title="Chat with us" style="background: #25D366; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); text-decoration: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="white" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.061 3.978l-.125.125L.16 16l4.216-1.106.123.123A7.85 7.85 0 0 0 7.994 16c4.366 0 7.923-3.56 7.927-7.928.001-2.127-.827-4.128-2.32-5.619zm-3.607 9.854c-.185.185-.43.277-.708.277-.277 0-.523-.092-.708-.277L7.14 10.457a.994.994 0 0 1 0-1.414.994.994 0 0 1 1.414 0l1.44 1.44c.185.185.277.43.277.708 0 .278-.092.523-.277.708zm-2.414-2.414c.185-.185.277-.43.277-.708s-.092-.523-.277-.708L5.14 6.457a.994.994 0 0 0-1.414 0 .994.994 0 0 0 0 1.414l1.44 1.44c.185.185.43.277.708.277.278 0 .523-.092.708-.277z"/>
+      </svg>
+    </a>
+    <div id="bot-launcher" class="bot-float" onclick="CK.toggleBot()" title="Ask ChessKidoo AI">
+      <span>🤖</span>
+    </div>
+  </div>
+
   <!-- Demo/Contact Modal -->
   <div id="contactModal" class="modal-overlay">
     <div class="modal-card">
@@ -795,137 +1387,48 @@
       <form class="modal-body" onsubmit="CK.handleDemoSubmit(event)">
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" name="fullName" required placeholder="Parent's Name">
+          <input type="text" name="fullName" required placeholder="Parent's Name" style="width:100%; height:48px; border-radius:8px; border:1px solid #ddd; padding:0 12px; margin-top:4px;">
         </div>
         <div class="form-group">
           <label>Phone Number</label>
-          <input type="tel" name="phone" required placeholder="WhatsApp Number">
+          <input type="tel" name="phone" required placeholder="WhatsApp Number" style="width:100%; height:48px; border-radius:8px; border:1px solid #ddd; padding:0 12px; margin-top:4px;">
         </div>
         <div class="form-group">
           <label>Child's Age</label>
-          <input type="number" name="age" required placeholder="e.g. 8">
+          <input type="number" name="age" required placeholder="e.g. 8" style="width:100%; height:48px; border-radius:8px; border:1px solid #ddd; padding:0 12px; margin-top:4px;">
         </div>
         <div class="form-group">
           <label>City</label>
-          <input type="text" name="city" placeholder="e.g. Chennai">
+          <input type="text" name="city" placeholder="e.g. Chennai" style="width:100%; height:48px; border-radius:8px; border:1px solid #ddd; padding:0 12px; margin-top:4px;">
         </div>
         <div style="display:flex; gap:12px; margin-top:20px;">
           <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm Booking</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">Confirm Booking</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Resource Upload Modal -->
+  <!-- Resource Upload Modal (Admin) -->
   <div id="uploadModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 600px;">
       <div class="modal-header">
         <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Resource</h3>
       </div>
-      <form class="modal-body" onsubmit="CK.handleResourceUpload(event)">
-        <div class="form-group"><label>File Name</label><input type="text" name="fileName" required></div>
-        <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-          <div class="form-group"><label>Level</label><select name="level"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
-          <div class="form-group"><label>Batch</label><input type="text" name="batch" placeholder="e.g. 1"></div>
+      <form class="modal-body" onsubmit="CK.admin.handleResourceUpload(event)">
+        <div class="form-group"><label>File Name</label><input type="text" name="fileName" required style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
+          <div class="form-group"><label>Level</label><select name="level" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
+          <div class="form-group"><label>Batch</label><input type="text" name="batch" placeholder="e.g. 1" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
         </div>
-        <div class="form-group"><label>Reference URL</label><input type="url" name="refUrl"></div>
-        <div class="form-group"><label>Class Recording Link</label><input type="url" name="classLink"></div>
-        <div class="form-group"><label>Target Students (CSV IDs - Optional)</label><input type="text" name="userIds" placeholder="e.g. 101, 102"></div>
-        <div class="form-group"><label>File</label><input type="file" name="file" required></div>
+        <div class="form-group" style="margin-top:10px;"><label>File</label><input type="file" name="file" required style="width:100%; padding:10px 0;"></div>
         <div style="display:flex; gap:12px; margin-top:20px;">
           <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Upload</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">Upload</button>
         </div>
       </form>
     </div>
   </div>
-
-  <!-- Tournament Upload Modal -->
-  <div id="uploadTournModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Upload Tournament</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleTournUpload(event)">
-        <div class="form-group"><label>Tournament Name</label><input type="text" name="name" required></div>
-        <div class="form-group"><label>File</label><input type="file" name="file" required></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Upload</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add User Modal -->
-  <div id="addUserModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 700px;">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Add New User</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleAddUser(event)">
-        <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-          <div class="form-group"><label>Full Name</label><input type="text" name="fullName" required></div>
-          <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
-          <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
-          <div class="form-group"><label>User ID</label><input type="text" name="userId" required placeholder="e.g. 101"></div>
-          <div class="form-group"><label>Phone</label><input type="tel" name="phone"></div>
-          <div class="form-group"><label>Age</label><input type="number" name="age"></div>
-          <div class="form-group"><label>City</label><input type="text" name="city"></div>
-          <div class="form-group"><label>Grade</label><input type="text" name="grade"></div>
-          <div class="form-group"><label>Role</label><select name="role" required onchange="CK.toggleUserFields(this.value)"><option value="student">Student</option><option value="coach">Coach</option></select></div>
-        </div>
-        
-        <div id="student-only-fields">
-          <div class="grid-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div class="form-group"><label>Level</label><select name="level"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
-            <div class="form-group"><label>Assigned Coach</label><input type="text" name="assignedCoach"></div>
-            <div class="form-group"><label>Batch</label><input type="text" name="batch"></div>
-            <div class="form-group"><label>Puzzles %</label><input type="text" name="puzzle"></div>
-            <div class="form-group"><label>Games Analyzed</label><input type="text" name="game"></div>
-            <div class="form-group"><label>Stars</label><input type="number" name="star" value="0"></div>
-            <div class="form-group"><label>Online Rating</label><input type="number" name="rating"></div>
-            <div class="form-group"><label>International Rating</label><input type="number" name="intRating"></div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create User</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Achievements Modal -->
-  <div id="addAchModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px;">Add Achievement</h3>
-      </div>
-      <form class="modal-body" onsubmit="CK.handleAchUpload(event)">
-        <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
-        <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
-        <div class="form-group"><label>Image</label><input type="file" name="file" required></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Floating UI -->
-  <div class="floating-ui">
-    <a href="https://wa.me/919025846663" target="_blank" class="whatsapp-float" title="Chat with us">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA">
-    </a>
-    <div id="bot-launcher" class="bot-float" onclick="CK.toggleBot()" title="Ask ChessKidoo AI">
-      <span>🤖</span>
-    </div>
-  </div>
-
-  <!-- AI Chat Window -->
   <div id="bot-window" class="bot-window" style="display:none;">
     <div class="bot-header">
       <h4>♟ ChessKidoo AI</h4>

@@ -17,27 +17,53 @@
 
   // Alias navigate to handle both section scrolling (landing) and page routing
   CK.navigate = (section) => {
-    const landingPage = document.getElementById('landing-page');
-    if (landingPage && landingPage.classList.contains('active')) {
-      // Scroll to section on landing page
-      const el = document.getElementById(section);
-      if (el) { el.scrollIntoView({ behavior: 'smooth' }); return; }
+    const landingSections = ['home', 'features', 'levels', 'coaches', 'about', 'reviews', 'pricing', 'faq'];
+    const isLandingSection = landingSections.includes(section);
+    
+    if (isLandingSection) {
+      const landingPage = document.getElementById('landing-page');
+      if (!landingPage.classList.contains('active')) {
+        CK.showPage('landing-page');
+      }
+      
+      // Delay slightly if we just switched pages to ensure DOM is ready for scroll
+      setTimeout(() => {
+        const el = document.getElementById(section);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+      return;
     }
-    // Route to a specific page
+
+    // Route to a specific page (like login-page)
     CK.showPage(section + '-page');
   };
 
   /* ─── Modal System ─── */
   CK.openModal = (id) => {
     const m = document.getElementById(id);
-    if (m) { m.classList.add('active'); m.style.display = 'flex'; }
+    if (m) {
+      m.classList.add('active');
+      m.classList.add('open'); // For new portals
+      m.style.display = 'flex';
+      if (m.classList.contains('p-modal-overlay')) m.style.display = 'grid';
+    }
   };
 
-  CK.closeModal = () => {
-    document.querySelectorAll('.modal-overlay.active, .modal-overlay[style*="flex"]').forEach(m => {
-      m.classList.remove('active');
-      m.style.display = 'none';
-    });
+  CK.closeModal = (id) => {
+    if (id) {
+      const m = document.getElementById(id);
+      if (m) {
+        m.classList.remove('active');
+        m.classList.remove('open');
+        m.style.display = 'none';
+      }
+    } else {
+      document.querySelectorAll('.modal-overlay, .p-modal-overlay').forEach(m => {
+        m.classList.remove('active');
+        m.classList.remove('open');
+        m.style.display = 'none';
+      });
+    }
   };
 
   CK.openDemoModal = () => CK.openModal('contactModal');
@@ -56,20 +82,20 @@
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'ck-toast';
-      toast.style.cssText = `
-        position:fixed; bottom:30px; right:30px; z-index:99999;
-        padding:14px 24px; border-radius:12px; font-weight:600; font-size:0.9rem;
-        color:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.2);
-        transition:all 0.4s ease; opacity:0; transform:translateY(20px);
-      `;
+      toast.className = 'p-toast';
       document.body.appendChild(toast);
     }
-    const colors = { success: '#166534', error: '#991b1b', info: '#1e40af', warning: '#854d0e' };
-    toast.style.background = colors[type] || colors.info;
-    toast.textContent = msg;
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
-    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; }, 3500);
+    
+    // Status icons
+    const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+    toast.innerHTML = `<span>${icons[type] || '♟'}</span> <span>${msg}</span>`;
+    
+    // Apply status class
+    toast.className = `p-toast show ${type}`;
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 4000);
   };
 
   /* ─── AI Bot ─── */
@@ -112,119 +138,61 @@
     }, 800);
   };
 
-  /* ─── Demo Form Submission ─── */
   CK.handleDemoSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     const btn = form.querySelector('[type="submit"]');
+    const name = form.fullName.value;
+    const phone = form.phone.value;
+    const age = form.age.value;
+    const city = form.city.value || 'Not specified';
+
     btn.textContent = 'Booking...';
     btn.disabled = true;
     try {
-      const { error } = await window.supabaseClient.from('leads').insert({
-        name: form.fullName.value,
-        phone: form.phone.value,
-        parent_name: form.fullName.value,
-        child_age: form.age.value,
-        city: form.city.value,
-        status: 'new',
-        created_at: new Date().toISOString()
-      });
-      if (error) throw error;
-      CK.showToast('🎉 Demo booked! We\'ll contact you within 24 hours.', 'success');
-      CK.closeModal();
-      form.reset();
+      if (window.supabaseClient) {
+        try {
+          const { error } = await window.supabaseClient.from('leads').insert({
+            name,
+            phone,
+            parent_name: name,
+            child_age: age,
+            city,
+            status: 'new',
+            created_at: new Date().toISOString()
+          });
+          if (error) console.error('Supabase save error:', error);
+        } catch (supaErr) {
+          console.error('Supabase connection error:', supaErr);
+        }
+      }
+
+      // WhatsApp Redirection - Always trigger even if Supabase fails
+      const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class.\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City:* ${city}\n\nPlease confirm my slot!`;
+      const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+
+      CK.showToast('🎉 Demo details ready! Redirecting to WhatsApp...', 'success');
+
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+        CK.closeModal();
+        form.reset();
+      }, 1500);
+
     } catch (err) {
-      CK.showToast('Failed to book demo. Please WhatsApp us directly!', 'error');
+      CK.showToast('Failed to prepare booking. Please WhatsApp us directly!', 'error');
     } finally {
       btn.textContent = 'Confirm Booking';
       btn.disabled = false;
     }
   };
 
-  /* ─── Admin Helpers (stubs that call admin.js) ─── */
-  CK.handleAddUser = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('[type="submit"]');
-    btn.textContent = 'Creating...';
-    btn.disabled = true;
-    try {
-      const { error } = await window.supabaseClient.from('users').insert({
-        full_name: form.fullName.value,
-        email: form.email.value,
-        role: form.role.value,
-        level: form.level ? form.level.value : null,
-        coach: form.assignedCoach ? form.assignedCoach.value : null,
-        phone: form.phone ? form.phone.value : null,
-      });
-      if (error) throw error;
-      CK.showToast('User created successfully!', 'success');
-      CK.closeModal();
-      form.reset();
-      if (typeof CK.loadAdminTab === 'function') CK.loadAdminTab('users');
-    } catch (err) {
-      CK.showToast(err.message || 'Failed to create user.', 'error');
-    } finally {
-      btn.textContent = 'Create User';
-      btn.disabled = false;
+  CK.togglePassword = (id) => {
+    const input = document.querySelector(`#${id} input[name="password"]`) || document.querySelector(`input[name="${id}"]`);
+    if (input) {
+      input.type = input.type === 'password' ? 'text' : 'password';
     }
   };
-
-  CK.handleResourceUpload = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    try {
-      const file = form.file.files[0];
-      const path = `docs/${Date.now()}_${file.name}`;
-      const { error: upErr } = await window.supabaseClient.storage.from('documents').upload(path, file);
-      if (upErr) throw upErr;
-      await window.supabaseClient.from('document').insert({
-        name: form.fileName.value,
-        file_name: path,
-        level: form.level.value,
-        batch: form.batch.value,
-        link: form.refUrl.value,
-        class_link: form.classLink.value,
-      });
-      CK.showToast('Resource uploaded!', 'success');
-      CK.closeModal();
-      form.reset();
-      if (typeof CK.loadAdminTab === 'function') CK.loadAdminTab('files');
-    } catch (err) {
-      CK.showToast(err.message || 'Upload failed.', 'error');
-    }
-  };
-
-  CK.handleTournUpload = async (e) => {
-    e.preventDefault();
-    CK.showToast('Tournament upload coming soon!', 'info');
-  };
-
-  CK.handleAchUpload = async (e) => {
-    e.preventDefault();
-    CK.showToast('Achievement saved!', 'success');
-    CK.closeModal();
-  };
-
-  CK.toggleUserFields = (role) => {
-    const fields = document.getElementById('student-only-fields');
-    if (fields) fields.style.display = role === 'student' ? 'block' : 'none';
-  };
-
-  CK.downloadFile = async (fileName) => {
-    const { data } = window.supabaseClient.storage.from('documents').getPublicUrl(fileName);
-    if (data?.publicUrl) window.open(data.publicUrl, '_blank');
-  };
-
-  CK.deleteFile = async (fileName) => {
-    if (!confirm('Delete this file?')) return;
-    await window.supabaseClient.storage.from('documents').remove([fileName]);
-    await window.supabaseClient.from('document').delete().eq('file_name', fileName);
-    CK.showToast('File deleted.', 'success');
-    if (typeof CK.loadAdminTab === 'function') CK.loadAdminTab('files');
-  };
-
-  CK.editUser = (id) => CK.showToast('Edit user: coming soon!', 'info');
 
   /* ─── Guess Grandmaster Mini Game ─── */
   const GMs = [
@@ -306,7 +274,19 @@
     if (savedUser) {
       try {
         CK.currentUser = JSON.parse(savedUser);
-      } catch(e) { localStorage.removeItem('ck_user'); }
+        const role = CK.currentUser.role.toLowerCase();
+        CK.showPage(`${role}-page`);
+        setTimeout(() => {
+          if (role === 'admin' && CK.admin) CK.admin.init();
+          if (role === 'student' && CK.student) CK.student.init();
+          if (role === 'coach' && CK.coach) CK.coach.init();
+        }, 100);
+      } catch(e) { 
+        localStorage.removeItem('ck_user'); 
+        CK.showPage('landing-page');
+      }
+    } else {
+      CK.showPage('landing-page');
     }
 
     // Counter animations

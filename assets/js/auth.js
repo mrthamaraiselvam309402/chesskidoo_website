@@ -31,8 +31,9 @@
         CK.showToast('Welcome to Demo Mode! ♛', 'success');
         setTimeout(() => {
           CK.showPage(role + '-page');
-          if (role === 'admin') CK.loadAdminDashboard();
-          if (role === 'coach') CK.loadCoachDashboard();
+          if (role === 'admin') CK.admin.init();
+          if (role === 'coach') CK.coach.init();
+          if (role === 'student') CK.student.init();
         }, 500);
         return;
       }
@@ -64,7 +65,7 @@
           localStorage.setItem('ck_session', JSON.stringify(data.session));
           CK.showToast('Welcome, Admin! 🏆', 'success');
           CK.showPage('admin-page');
-          CK.loadAdminDashboard();
+          CK.admin.init();
           return;
         }
         throw new Error('User profile not found. Please contact the admin.');
@@ -79,9 +80,9 @@
 
       setTimeout(() => {
         CK.showPage(`${role}-page`);
-        if (role === 'admin')   CK.loadAdminDashboard();
-        if (role === 'student') CK.loadStudentDashboard();
-        if (role === 'coach')   CK.loadCoachDashboard();
+        if (role === 'admin')   CK.admin.init();
+        if (role === 'student') CK.student.init();
+        if (role === 'coach')   CK.coach.init();
       }, 500);
 
     } catch (err) {

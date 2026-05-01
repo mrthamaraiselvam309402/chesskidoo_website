@@ -1,172 +1,152 @@
-/* assets/js/student.js -------------------------------------------------------
-   Student Dashboard logic for ChessKidoo - Resilient Version
-   --------------------------------------------------------------- */
+/**
+ * ChessKidoo Student Portal Logic
+ * Managed under CK.student namespace
+ */
+CK.student = {
+  user: {
+    name: 'Emma Wilson',
+    level: 'Intermediate',
+    rating: 1120,
+    ratingHistory: [800, 850, 920, 1050, 1100, 1120],
+    puzzles: 45,
+    lessons: 28,
+    attendance: 94
+  },
 
-(() => {
-  const CK = window.CK = window.CK || {};
+  db: {
+    puzzles: [
+      { id: 'P1', title: 'Back-rank Mate', type: 'Tactics', diff: 'Easy', coach: 'Sarah Chess', due: 'Today' },
+      { id: 'P2', title: 'Minor Piece Endgame', type: 'Endgame', diff: 'Medium', coach: 'Sarah Chess', due: 'Tomorrow' }
+    ],
+    schedule: [
+      { date: 'Today', class: 'Intermediate Strategy', coach: 'Sarah Chess', time: '4:00 PM', dur: '60m', status: 'p-badge-green' },
+      { date: 'May 15', class: 'Tactics Workshop', coach: 'Michael Knight', time: '5:30 PM', dur: '45m', status: 'p-badge-blue' }
+    ]
+  },
 
-  CK.loadStudentDashboard = async () => {
-    const user = CK.currentUser || {};
-    const container = document.getElementById('student-dashboard-content');
-    if (!container) return;
+  init() {
+    console.log("Student Portal Initializing...");
+    this.updateProfile();
+    this.renderDashboard();
+    this.initCharts();
+    this.startCountdown();
+  },
 
-    container.innerHTML = '<div class="loading-wrap">♛ Loading Student Portal...</div>';
-
-    try {
-      // 1. Fetch Stats with safe defaults
-      let presentCount = 0;
-      try {
-        const { count } = await window.supabaseClient
-          .from('attendance')
-          .select('*', { count: 'exact' })
-          .eq('userid', user.userid)
-          .eq('status', 'present');
-        presentCount = count || 0;
-      } catch (e) { console.warn("Attendance table not found or empty."); }
-
-      // 2. Fetch Ratings
-      let ratings = [];
-      try {
-        const { data } = await window.supabaseClient
-          .from('ratings')
-          .select('*')
-          .eq('user_id', user.userid)
-          .order('date', { ascending: true });
-        ratings = data || [];
-      } catch (e) { console.warn("Ratings table not found or empty."); }
-
-      // 3. Fetch Resources (Refactored to be more resilient)
-      let files = [];
-      try {
-        const userLevel = user.level || 'Beginner';
-        const { data } = await window.supabaseClient
-          .from('document')
-          .select('*')
-          .or(`level.eq.${userLevel}`)
-          .order('created_at', { ascending: false });
-        files = data || [];
-      } catch (e) { console.warn("Document table error, checking structure."); }
-
-      
-    const fullName = user.full_name || 'Chess Student';
-    const level = user.level || 'Beginner';
-    const isBeginner = level === 'Beginner';
-    const isIntermediate = level === 'Intermediate';
-    const isAdvanced = level === 'Advanced';
-
-    container.innerHTML = `
-      <div class="portal-welcome-banner">
-        <div class="portal-welcome-text">
-          <h1>Welcome Back, ${fullName}!</h1>
-          <p>You're on the path to becoming a Chess Grandmaster.</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.1); padding:15px 25px; border-radius:15px; text-align:center; backdrop-filter:blur(5px);">
-          <div style="font-size:0.8rem; text-transform:uppercase; opacity:0.7; letter-spacing:1px;">Current Rating</div>
-          <div style="font-size:2rem; font-weight:800; color:var(--amber);">${user.online || 400}</div>
-        </div>
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- Learning Journey Card -->
-        <div class="dash-card">
-          <div class="dash-card-title">♟ Learning Roadmap</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div style="text-align:center; opacity:${isBeginner?1:0.4}">
-              <div style="font-size:1.5rem;">♙</div><div style="font-size:0.7rem; font-weight:800;">BEGINNER</div>
-            </div>
-            <div style="flex:1; height:2px; background:#e2e8f0; margin:0 10px; position:relative;">
-              <div style="position:absolute; left:0; top:0; height:100%; width:${isIntermediate||isAdvanced?'100%':'0%'}; background:var(--amber);"></div>
-            </div>
-            <div style="text-align:center; opacity:${isIntermediate?1:0.4}">
-              <div style="font-size:1.5rem;">♗</div><div style="font-size:0.7rem; font-weight:800;">INTERMEDIATE</div>
-            </div>
-            <div style="flex:1; height:2px; background:#e2e8f0; margin:0 10px; position:relative;">
-              <div style="position:absolute; left:0; top:0; height:100%; width:${isAdvanced?'100%':'0%'}; background:var(--amber);"></div>
-            </div>
-            <div style="text-align:center; opacity:${isAdvanced?1:0.4}">
-              <div style="font-size:1.5rem;">♛</div><div style="font-size:0.7rem; font-weight:800;">ADVANCED</div>
-            </div>
-          </div>
-          <p style="font-size:0.85rem; color:#64748b; line-height:1.5;">Master the fundamentals to unlock Intermediate techniques.</p>
-          <button class="dash-btn dash-btn-primary" style="width:100%; margin-top:10px;">View Curriculum</button>
-        </div>
-
-        <!-- Progress Stats Card -->
-        <div class="dash-card">
-          <div class="dash-card-title">📊 Performance Tracking</div>
-          <div style="height:150px;"><canvas id="studentRatingChart"></canvas></div>
-          <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-            <div style="background:#f8fafc; padding:12px; border-radius:12px; text-align:center;">
-              <div style="font-size:0.7rem; opacity:0.6;">ATTENDANCE</div>
-              <div style="font-size:1.2rem; font-weight:800;">${presentCount}</div>
-            </div>
-            <div style="background:#fff7ed; padding:12px; border-radius:12px; text-align:center;">
-              <div style="font-size:0.7rem; color:#9a3412; opacity:0.6;">STARS</div>
-              <div style="font-size:1.2rem; font-weight:800; color:#c2410c;">${user.star || 0} ★</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Coach Support Card -->
-        <div class="dash-card">
-          <div class="dash-card-title">👨‍🏫 Your Coach</div>
-          <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-            <div style="width:50px; height:50px; border-radius:50%; background:var(--amber-pale); display:flex; align-items:center; justify-content:center; font-size:1.5rem;">👤</div>
-            <div>
-              <div style="font-weight:700;">${user.coach || 'Assigning...'}</div>
-              <div style="font-size:0.75rem; opacity:0.6;">Professional FIDE Coach</div>
-            </div>
-          </div>
-          <button class="dash-btn" style="width:100%;" onclick="window.open('https://wa.me/919025846663')">💬 Chat with Support</button>
-        </div>
-      </div>
-
-      <div style="margin-top:40px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h2 style="font-family:var(--font-display); margin:0;">Study Materials</h2>
-          <span style="font-size:0.85rem; color:#64748b;">Showing materials for <strong>${level}</strong> level</span>
-        </div>
-        <div class="portal-table-wrap">
-          <table class="portal-table">
-            <thead>
-              <tr><th>Date</th><th>Material Name</th><th>Category</th><th>Download</th></tr>
-            </thead>
-            <tbody>
-              ${files.length ? files.map(f => `
-                <tr>
-                  <td>${new Date(f.created_at).toLocaleDateString()}</td>
-                  <td style="font-weight:700;">${f.name || 'Resource'}</td>
-                  <td><span class="status-pill status-paid" style="background:#e0f2fe; color:#0369a1;">Learning Asset</span></td>
-                  <td><button class="dash-btn" onclick="CK.downloadFile('${f.file_name}')">📥 Download</button></td>
-                </tr>
-              `).join('') : '<tr><td colspan="4" style="text-align:center; padding:60px; opacity:0.4;">No materials assigned to your level yet.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
-
-
-      if (ratings.length > 0) {
-        const ctx = document.getElementById('studentRatingChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ratings.map(r => new Date(r.date).toLocaleDateString()),
-            datasets: [{ label: 'Rating', data: ratings.map(r => r.online), borderColor: '#D97706', tension: 0.4, fill: true, backgroundColor: 'rgba(217,119,6,0.1)' }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { beginAtZero: false } } }
-        });
+  nav(panelId) {
+    document.querySelectorAll('#student-page .p-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`student-panel-${panelId}`).classList.add('active');
+    
+    document.querySelectorAll('#student-page .p-nav-item').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('onclick')?.includes(`'${panelId}'`)) {
+        btn.classList.add('active');
       }
+    });
+    
+    const titles = {
+      home: 'My Dashboard',
+      progress: 'My Progress',
+      schedule: 'My Schedule',
+      session: 'Join Class',
+      puzzles: 'My Puzzles',
+      reviews: 'Coach Reviews',
+      achievements: 'Achievements'
+    };
+    document.getElementById('studentPanelTitle').innerText = titles[panelId] || 'Dashboard';
+  },
 
-    } catch (err) {
-      console.error("Dashboard Error:", err);
-      container.innerHTML = `<div class="error-wrap" style="padding:60px; text-align:center;">
-        <h2 style="font-family:var(--font-display); margin-bottom:15px;">Welcome to your Portal</h2>
-        <p style="opacity:0.6; margin-bottom:25px;">Your dashboard is being initialized. Check back in a few moments!</p>
-        <button class="btn btn-primary" onclick="CK.loadStudentDashboard()">🔄 Retry Loading</button>
-      </div>`;
+  updateProfile() {
+    document.getElementById('studentSidebarName').innerText = this.user.name;
+    document.getElementById('studentSidebarSub').innerText = `${this.user.level} · ELO ${this.user.rating}`;
+    document.getElementById('studentSidebarAvatar').innerText = this.user.name.split(' ').map(n => n[0]).join('');
+    
+    document.getElementById('studentRatingNum').innerText = this.user.rating;
+    document.getElementById('studentRatingLabel').innerText = `Level: ${this.user.level}`;
+    
+    document.getElementById('studentStatLessons').innerText = this.user.lessons;
+    document.getElementById('studentStatPuzzles').innerText = this.user.puzzles;
+    document.getElementById('studentStatAttend').innerText = this.user.attendance + '%';
+    
+    document.getElementById('studentPuzzleBadge').innerText = this.db.puzzles.length;
+  },
+
+  renderDashboard() {
+    // Puzzles
+    const pTable = document.getElementById('studentPendingPuzzles');
+    pTable.innerHTML = this.db.puzzles.map(p => `
+      <tr>
+        <td style="font-weight:600">${p.title}</td>
+        <td>${p.type}</td>
+        <td><span class="p-badge ${p.diff==='Easy'?'p-badge-green':'p-badge-yellow'}">${p.diff}</span></td>
+        <td>${p.coach}</td>
+        <td style="color:var(--p-danger)">${p.due}</td>
+        <td><button class="p-btn p-btn-blue p-btn-sm">Solve</button></td>
+      </tr>
+    `).join('');
+
+    // Schedule
+    const sTable = document.getElementById('studentUpcomingTable');
+    if(sTable) {
+      sTable.innerHTML = this.db.schedule.map(s => `
+        <tr>
+          <td>${s.date}</td>
+          <td style="font-weight:600">${s.class}</td>
+          <td>${s.coach}</td>
+          <td>${s.time}</td>
+          <td>${s.dur}</td>
+          <td><span class="p-badge ${s.status}">${s.date==='Today'?'Upcoming':'Scheduled'}</span></td>
+        </tr>
+      `).join('');
     }
-  };
+  },
 
-})();
+  initCharts() {
+    const ctx = document.getElementById('ratingChart')?.getContext('2d');
+    if(ctx) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Now'],
+          datasets: [{
+            label: 'Rating',
+            data: this.user.ratingHistory,
+            borderColor: '#5b9cf6',
+            backgroundColor: 'rgba(91,156,246,0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { grid: { color: '#252b35' } }, x: { grid: { display: false } } }
+        }
+      });
+    }
+  },
+
+  startCountdown() {
+    const el = document.getElementById('studentCountdown');
+    const nextClass = "4:00 PM";
+    document.getElementById('nextClassTime').innerText = nextClass;
+    document.getElementById('nextClassName').innerText = "Intermediate Strategy";
+    document.getElementById('nextClassSub').innerText = "with Coach Sarah Chess";
+    
+    let mins = 45;
+    setInterval(() => {
+      if(mins > 0) {
+        mins--;
+        el.innerText = `Starts in ${mins}m`;
+      }
+    }, 60000);
+    el.innerText = `Starts in ${mins}m`;
+  },
+
+  joinClass() {
+    CK.showToast("Opening class session...", "success");
+    // Redirect to meeting or open internal board
+    document.getElementById('studentSessionTitle').innerText = "Joining 'Intermediate Strategy'...";
+    document.getElementById('studentJoinBtn').innerText = "Connecting...";
+  }
+};
