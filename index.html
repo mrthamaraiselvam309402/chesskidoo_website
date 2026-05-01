@@ -8,7 +8,7 @@
   <title>ChessKidoo | India's Premier Chess Academy</title>
   
   <!-- Professional Chess Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♛</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23D97706%22/><text y=%22.85em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2270%22 fill=%22white%22>♛</text></svg>">
 
   <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,7 +78,10 @@
               <p class="hero-sub">Manage your chess students, track progress, and level up your coaching experience with FIDE-certified experts.</p>
               <div class="hero-btns">
                 <button class="btn btn-primary" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
-                <a href="https://wa.me/919025846663" target="_blank" class="btn btn-ghost">💬 WhatsApp Us</a>
+                <a href="https://wa.me/919025846663" target="_blank" class="btn btn-ghost wa-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.258-.041.404.314.145.356.491 1.2.535 1.288s.072.188.014.303c-.058.116-.087.188-.173.289l-.26.303c-.087.101-.177.211-.077.383.101.173.446.735.956 1.19.658.587 1.212.769 1.385.855.173.087.274.072.376-.043.101-.116.433-.505.548-.678.116-.173.231-.144.39-.087.159.058 1.011.477 1.184.564s.289.13.332.202c.045.072.045.419-.1.824z"/></svg>
+                  WhatsApp Us
+                </a>
               </div>
               <div class="hero-stats">
                 <div><div class="hero-stat-num">500+</div><div class="hero-stat-label">Active Students</div></div>
@@ -88,16 +91,11 @@
               </div>
             </div>
             <div class="hero-visual">
-              <div class="hero-board reveal">
-                <div class="hero-board-wrap">
-                  <div id="main-chessboard" class="chessboard-container"></div>
-                </div>
-                <div class="board-shadow"></div>
-              </div>
-              <div class="floating-badge">🏆 FIDE Certified</div>
-              <div class="floating-badge">📈 Live Progress Tracking</div>
-              <div class="floating-badge" style="top: 80%; left: -20px; right: auto;">🎓 7 Expert Coaches</div>
+              <div id="main-chessboard" class="reveal"></div>
             </div>
+
+
+
           </div>
         </div>
       </section>
@@ -115,14 +113,15 @@
         </div>
       </div>
 
-      <!-- Features -->
+      <!-- Features Section -->
       <section id="features" class="section-padding">
         <div class="section-head reveal">
-          <div class="eyebrow">Why ChessKidoo?</div>
+          <div class="eyebrow">Key Features</div>
           <h2>Everything Your Child Needs to Excel</h2>
           <p class="lead">One-stop solution for kids learning chess - tracking, coaching, tournaments and more.</p>
         </div>
-        <div class="feat-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        
+        <div class="feat-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
           <div class="feat-card reveal">
             <div class="feat-icon-wrap">📊</div><h3>Smart Student Tracking</h3>
             <p>Manage profiles, game history, and ratings for every student in one clean dashboard.</p>
@@ -136,27 +135,24 @@
             <p>Manage tournaments, match pairings, and leaderboards with professional efficiency.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🌍</div><h3>Internationally Certified Coaches</h3>
+            <div class="feat-icon-wrap">🌍</div><h3>Certified Coaches</h3>
             <p>Learn from professionals trained under FIDE's rigorous global standards.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">⭐</div><h3>FIDE-Rated Experts (ELO 1600+)</h3>
-            <p>Coaches with real competitive success and proven tournament experience.</p>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🧩</div><h3>India's 1st Tracking System</h3>
-            <p>Monthly reports, rating growth and skill-analytics for every child.</p>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon-wrap">📚</div><h3>Complete Training Program</h3>
-            <p>Openings, middlegame tactics, endgames, strategy and mental prep - all on one platform.</p>
+            <div class="feat-icon-wrap">♟️</div><h3>Advanced Curriculum</h3>
+            <p>Openings, middlegame tactics, endgames, and mental prep - all on one platform.</p>
           </div>
           <div class="feat-card reveal">
             <div class="feat-icon-wrap">🗣️</div><h3>Personalized Feedback</h3>
             <p>Every game is reviewed and discussed with the coach for continuous improvement.</p>
           </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🇮🇳</div><h3>Bilingual Support</h3>
+        </div>
+        
+        <!-- Centered Bilingual Support (Perfectly matched with feat-card style) -->
+        <div style="display: flex; justify-content: center; margin-top: 30px;">
+          <div class="feat-card reveal" style="max-width: 400px; width: 100%; margin: 0; text-align: center;">
+            <div class="feat-icon-wrap" style="margin: 0 auto 20px;">🇮🇳</div>
+            <h3>Bilingual Support</h3>
             <p>Clear communication for students and parents in English & Tamil.</p>
           </div>
         </div>
@@ -273,7 +269,7 @@
           <div class="reveal" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; position:relative; transition:transform 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition-delay:0.4s;">
             <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Beginner, Intermediate</div>
             <div style="height:320px; overflow:hidden; background:#f8fafc;">
-              <img src="assets/img/saran.jpeg" alt="Saran" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;">
+              <img src="assets/img/saran.jpg" alt="Saran" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;">
             </div>
             <div style="padding:24px 16px; text-align:center;">
               <h5 style="color:#0f172a; font-family:var(--font-display); font-weight:800; font-size:1.25rem; margin:0 0 8px 0; letter-spacing:-0.02em;">Saran</h5>
@@ -305,6 +301,37 @@
             </div>
           </div>
 
+          <!-- Suriya T -->
+          <div class="reveal" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; position:relative; transition:transform 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition-delay:0.7s;">
+            <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Intermediate</div>
+            <div style="height:320px; overflow:hidden; background:#f8fafc;">
+              <img src="assets/img/surya.jpeg" alt="Suriya T" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;">
+            </div>
+            <div style="padding:24px 16px; text-align:center;">
+              <h5 style="color:#0f172a; font-family:var(--font-display); font-weight:800; font-size:1.25rem; margin:0 0 8px 0; letter-spacing:-0.02em;">Suriya T</h5>
+              <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Intermediate Coach · Certified Chess Trainer</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Global Certifications -->
+      <section id="certifications" class="section-padding" style="background: #fdfcf9; border-top: 1px solid #eee;">
+        <div class="section-head reveal">
+          <div class="eyebrow">Global Certifications</div>
+          <h2 style="font-size: 3rem;">Global Certifications</h2>
+        </div>
+        <div class="container">
+          <div style="display: flex; gap: 60px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 30px;">
+            <div class="reveal" style="max-width: 450px; width: 100%;">
+              <img src="assets/img/fide.jpeg" alt="FIDE Certificate" style="width: 100%; border: 12px solid #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 4px;">
+            </div>
+            <div class="reveal" style="max-width: 450px; width: 100%; transition-delay: 0.2s;">
+              <img src="assets/img/iso.jpeg" alt="Rishi Chess Academy Certificate" style="width: 100%; border: 12px solid #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 4px;">
+            </div>
+          </div>
+          
         </div>
       </section>
 
@@ -584,48 +611,62 @@
         </div>
       </section>
 
-      <!-- Footer -->
-      <footer style="background: #0F0A06; color: white; padding: 80px 0 30px;">
-        <div class="container footer-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px;">
-          <div style="grid-column: span 2;">
-            <div class="logo" style="margin-bottom:20px;">
-              <div class="logo-icon" style="color:var(--amber);">♛</div>
-              <span class="logo-text" style="color: white;">Chess<span>Kidoo</span></span>
+      <!-- Global Footer -->
+      <footer style="background:#0F0A06; color:#fff; padding:100px 0 60px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="container">
+          <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap:60px;">
+            <div>
+              <div class="logo" style="margin-bottom:24px;">
+                <div class="logo-icon" style="color:var(--amber);">♛</div>
+                <span class="logo-text" style="color:#fff;">Chess<span style="color:var(--amber);">Kidoo</span></span>
+              </div>
+              <p style="opacity:0.6; line-height:1.7; font-size:1rem; max-width:340px;">
+                India's #1 FIDE-certified chess academy for students aged 6–18. Building champions, one move at a time.
+              </p>
             </div>
-            <p style="opacity: 0.6; line-height:1.6; max-width:300px;">India's #1 FIDE-certified chess academy for students aged 6–18. Building champions, one move at a time.</p>
-          </div>
-          <div>
-            <h5 style="margin-bottom:20px; color:var(--amber); font-family:var(--font-display);">Learn</h5>
-            <div style="display:flex; flex-direction:column; gap:12px; opacity:0.7;">
-              <a href="#features" style="color:#fff; text-decoration:none;">Features</a>
-              <a href="#coaches" style="color:#fff; text-decoration:none;">Our Coaches</a>
-              <a href="#levels" style="color:#fff; text-decoration:none;">Curriculum</a>
-              <a href="#pricing" style="color:#fff; text-decoration:none;">Pricing</a>
+            
+            <div>
+              <h5 style="margin-bottom:24px; color:var(--amber); font-family:var(--font-display); font-size: 1.1rem; letter-spacing: 0.5px;">Learn</h5>
+              <div style="display:flex; flex-direction:column; gap:14px; opacity:0.8;">
+                <a href="#features" style="color:#fff; text-decoration:none;">Features</a>
+                <a href="#coaches" style="color:#fff; text-decoration:none;">Our Coaches</a>
+                <a href="#levels" style="color:#fff; text-decoration:none;">Curriculum</a>
+                <a href="#pricing" style="color:#fff; text-decoration:none;">Pricing</a>
+              </div>
+            </div>
+
+            <div>
+              <h5 style="margin-bottom:24px; color:var(--amber); font-family:var(--font-display); font-size: 1.1rem; letter-spacing: 0.5px;">Company</h5>
+              <div style="display:flex; flex-direction:column; gap:14px; opacity:0.8;">
+                <a href="#reviews" style="color:#fff; text-decoration:none;">Reviews</a>
+                <a href="#faq" style="color:#fff; text-decoration:none;">FAQ</a>
+                <a href="https://www.instagram.com/chesskidoo/" target="_blank" style="color:#fff; text-decoration:none;">Instagram</a>
+                <a href="#" style="color:#fff; text-decoration:none;">YouTube</a>
+              </div>
+            </div>
+
+            <div>
+              <h5 style="margin-bottom:24px; color:var(--amber); font-family:var(--font-display); font-size: 1.1rem; letter-spacing: 0.5px;">Contact Us</h5>
+              <div class="contact-us-details" style="display:flex; flex-direction:column; gap:18px; opacity:0.9; font-size:1rem;">
+                <a href="tel:+919025846663" style="display:flex; align-items:center; gap:12px; color: #fff; text-decoration: none;">
+                  <span style="font-size: 1.2rem;">📞</span> +91 90258 46663
+                </a>
+                <a href="mailto:Chesskidoo37@gmail.com" style="display:flex; align-items:center; gap:12px; color: #fff; text-decoration: none;">
+                  <span style="font-size: 1.2rem;">📧</span> Chesskidoo37@gmail.com
+                </a>
+                <a href="https://www.instagram.com/chesskidoo/" target="_blank" style="display:flex; align-items:center; gap:12px; color: #fff; text-decoration: none;">
+                  <span style="font-size: 1.2rem;">📸</span> Instagram
+                </a>
+                <button class="btn btn-primary" style="margin-top:10px; width: fit-content; padding: 12px 24px;" onclick="CK.openDemoModal()">Get Free Demo</button>
+              </div>
             </div>
           </div>
-          <div>
-            <h5 style="margin-bottom:20px; color:var(--amber); font-family:var(--font-display);">Company</h5>
-            <div style="display:flex; flex-direction:column; gap:12px; opacity:0.7;">
-              <a href="#reviews" style="color:#fff; text-decoration:none;">Reviews</a>
-              <a href="#faq" style="color:#fff; text-decoration:none;">FAQ</a>
-              <a href="#" style="color:#fff; text-decoration:none;">Instagram</a>
-              <a href="#" style="color:#fff; text-decoration:none;">YouTube</a>
-            </div>
+          
+          <div style="margin-top: 80px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; font-size: 0.85rem; opacity: 0.4; text-align: center; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+            <div>Copyright © 2026 ChessKidoo, Inc. All Rights Reserved.</div>
+            <div>FIDE Certified · ISO 9001:2015 · AICF Affiliate</div>
+            <div>Made with ♟ in India</div>
           </div>
-          <div>
-            <h5 style="margin-bottom:20px; color:var(--amber); font-family:var(--font-display); font-size: 1.2rem;">Contact Us</h5>
-            <div class="contact-us-details" style="display:flex; flex-direction:column; gap:16px; opacity:0.8; font-size:1.1rem;">
-              <span style="display:flex; align-items:center; gap:10px;"><span style="font-size: 1.2rem;">📞</span> +91 90258 46663</span>
-              <span style="display:flex; align-items:center; gap:10px;"><span style="font-size: 1.2rem;">📧</span> Chesskidoo37@gmail.com</span>
-              <button class="btn demo-btn-gray" style="margin-top:15px;" onclick="CK.openDemoModal()">Get Free Demo</button>
-            </div>
-          </div>
-        </div>
-        </div>
-        <div class="container" style="margin-top: 60px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; font-size: 0.85rem; opacity: 0.4; text-align: center; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px;">
-          <div>Copyright © 2026 ChessKidoo, Inc. All Rights Reserved.</div>
-          <div>FIDE Certified · ISO 9001:2015 · AICF Affiliate</div>
-          <div>Made with ♟ in India</div>
         </div>
       </footer>
     </div>
@@ -676,53 +717,71 @@
     </div>
 
     <!-- Dashboards -->
-    
     <div id="admin-page" class="page">
-      <div class="portal-container">
-        <aside class="portal-sidebar">
-          <div class="sidebar-brand">
-            <div class="brand-icon">♛</div>
-            <span>Admin Center</span>
+      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="eyebrow" style="color: var(--amber-pale)">Control Center</span>
+            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Admin Dashboard</h1>
           </div>
-          <nav class="sidebar-nav">
-            <button class="nav-item active" onclick="CK.switchAdminTab('files', this)">
-              <span class="nav-icon">📁</span> Document Library
-            </button>
-            <button class="nav-item" onclick="CK.switchAdminTab('meetings', this)">
-              <span class="nav-icon">📅</span> Meetings
-            </button>
-            <button class="nav-item" onclick="CK.switchAdminTab('attendance', this)">
-              <span class="nav-icon">✅</span> Attendance
-            </button>
-            <button class="nav-item" onclick="CK.switchAdminTab('users', this)">
-              <span class="nav-icon">👥</span> Student Roster
-            </button>
-            <button class="nav-item" onclick="CK.switchAdminTab('tournaments', this)">
-              <span class="nav-icon">🏆</span> Tournaments
-            </button>
-            <button class="nav-item" onclick="CK.switchAdminTab('achievements', this)">
-              <span class="nav-icon">🎖</span> Achievements
-            </button>
-          </nav>
-          <div class="sidebar-footer">
-            <button class="btn btn-outline" style="width:100%; border-color:rgba(255,255,255,0.2); color:white;" onclick="CK.logout()">🚪 Logout</button>
-          </div>
-        </aside>
-        <main class="portal-main">
-          <header class="portal-header">
-            <div id="admin-tab-title">Document Library</div>
-            <div class="portal-user">
-              <span>Academy Admin</span>
-              <div class="user-avatar">AD</div>
-            </div>
-          </header>
-          <div class="portal-content" id="admin-tab-content">
-            <!-- Content injected here -->
-          </div>
-        </main>
+          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+        </div>
+      </header>
+      <div class="container" style="margin-top: 20px;">
+        <nav class="admin-tabs">
+          <button class="admin-tab active" onclick="CK.switchAdminTab('files', this)">File Management</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('meetings', this)">Meetings</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('attendance', this)">Attendance</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('users', this)">User Management</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('tournaments', this)">Tournaments</button>
+          <button class="admin-tab" onclick="CK.switchAdminTab('achievements', this)">Achievements</button>
+        </nav>
+        <div id="admin-tab-content" style="padding: 40px 0;">
+          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        </div>
       </div>
     </div>
 
+    <div id="student-page" class="page">
+      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="eyebrow" style="color: var(--amber-pale)">Student Portal</span>
+            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">My Dashboard</h1>
+          </div>
+          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+        </div>
+      </header>
+      <div class="container" style="margin-top: 20px;">
+        <div class="dashboard-shell">
+        <main class="dashboard-main" id="student-dashboard-content"></main>
+      </div>
+      </div>
+    </div>
+
+    <div id="coach-page" class="page">
+      <header class="dashboard-header" style="background: var(--ink); color: #fff; padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="eyebrow" style="color: var(--amber-pale)">Coach Portal</span>
+            <h1 style="font-family: var(--font-display); font-size: 2.5rem;">Instructor Dashboard</h1>
+          </div>
+          <button class="btn btn-ghost" style="color: #fff; border-color: rgba(255,255,255,0.3);" onclick="CK.logout()">Logout</button>
+        </div>
+      </header>
+      <div class="container" style="margin-top: 20px;">
+        <nav class="admin-tabs">
+          <button class="admin-tab active" onclick="CK.switchCoachTab('students', this)">My Students</button>
+          <button class="admin-tab" onclick="CK.switchCoachTab('attendance', this)">Mark Attendance</button>
+          <button class="admin-tab" onclick="CK.switchCoachTab('resources', this)">Shared Resources</button>
+        </nav>
+        <div id="coach-tab-content" style="padding: 40px 0;">
+          <div class="loading-wrap">♛ Loading Dashboard...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
 
   <!-- Modals -->
@@ -907,6 +966,7 @@
   <script src="assets/js/admin.js"></script>
   <script src="assets/js/student.js"></script>
   <script src="assets/js/coach.js"></script>
+  <script src="assets/js/chessboard.js"></script>
 
 </body>
 </html>

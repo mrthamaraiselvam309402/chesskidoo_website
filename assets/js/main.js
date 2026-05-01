@@ -262,85 +262,6 @@
     `;
   }
 
-  /* ─── 3D Autoplay Chessboard ─── */
-  CK.initChessboard = () => {
-    const board = document.getElementById('main-chessboard');
-    if (!board) return;
-
-    const pieces = {
-      '0,0':'♜','0,1':'♞','0,2':'♝','0,3':'♛','0,4':'♚','0,5':'♝','0,6':'♞','0,7':'♜',
-      '1,0':'♟','1,1':'♟','1,2':'♟','1,3':'♟','1,4':'♟','1,5':'♟','1,6':'♟','1,7':'♟',
-      '6,0':'♙','6,1':'♙','6,2':'♙','6,3':'♙','6,4':'♙','6,5':'♙','6,6':'♙','6,7':'♙',
-      '7,0':'♖','7,1':'♘','7,2':'♗','7,3':'♕','7,4':'♔','7,5':'♗','7,6':'♘','7,7':'♖'
-    };
-
-    // Famous Opera Game moves (Morphy vs Duke of Brunswick, 1858)
-    const sequence = [
-      ['6,4','4,4'],['1,4','3,4'],['7,6','5,5'],['0,3','2,5'],
-      ['6,3','4,3'],['7,5','4,2'],['7,2','5,4'],['0,5','2,3'],
-      ['5,5','3,4'],['0,6','2,5'],['5,4','3,6'],['2,3','4,1'],
-      ['3,4','1,3'],['0,4','0,2'],['7,0','7,3'],['0,0','0,3']
-    ];
-
-    board.innerHTML = '';
-    board.style.cssText = `display:grid; grid-template-columns:repeat(8,1fr); width:100%; aspect-ratio:1;`;
-
-    const squareMap = {};
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const sq = document.createElement('div');
-        const isLight = (r + c) % 2 === 0;
-        sq.style.cssText = `
-          background: ${isLight ? '#f0d9b5' : '#b58863'};
-          display:flex; align-items:center; justify-content:center;
-          font-size:clamp(1.2rem, 3vw, 2.2rem);
-          position:relative; cursor:default;
-          transition: background 0.3s;
-        `;
-        if (pieces[`${r},${c}`]) {
-          sq.textContent = pieces[`${r},${c}`];
-          sq.style.color = (r <= 1) ? '#1a1512' : '#fff';
-          sq.style.textShadow = '0 2px 4px rgba(0,0,0,0.4)';
-        }
-        board.appendChild(sq);
-        squareMap[`${r},${c}`] = sq;
-      }
-    }
-
-    let idx = 0;
-    const interval = setInterval(() => {
-      if (idx >= sequence.length) {
-        clearInterval(interval);
-        // Reset after pause
-        setTimeout(() => { CK.initChessboard(); }, 2000);
-        return;
-      }
-      const [from, to] = sequence[idx];
-      const fromSq = squareMap[from];
-      const toSq = squareMap[to];
-      if (fromSq && toSq) {
-        // Highlight move
-        fromSq.style.background = '#f6f669';
-        toSq.style.background = '#baca2b';
-        setTimeout(() => {
-          const piece = fromSq.textContent;
-          const color = fromSq.style.color;
-          const shadow = fromSq.style.textShadow;
-          toSq.textContent = piece;
-          toSq.style.color = color;
-          toSq.style.textShadow = shadow;
-          fromSq.textContent = '';
-          // Restore square colors after highlight
-          const [fr, fc] = from.split(',').map(Number);
-          const [tr, tc] = to.split(',').map(Number);
-          fromSq.style.background = ((fr + fc) % 2 === 0) ? '#f0d9b5' : '#b58863';
-          toSq.style.background = ((tr + tc) % 2 === 0) ? '#f0d9b5' : '#b58863';
-        }, 400);
-      }
-      idx++;
-    }, 1800);
-  };
-
   /* ─── Mobile Menu ─── */
   const mobileBtn = document.getElementById('mobileMenuBtn');
   const navLinks = document.getElementById('navLinks');
@@ -376,11 +297,9 @@
       }, 800);
     }
 
-    // Initialize chessboard
-    CK.initChessboard();
-
     // Observe reveal elements
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
 
     // Restore session if present
     const savedUser = localStorage.getItem('ck_user');

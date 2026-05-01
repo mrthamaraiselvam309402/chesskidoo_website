@@ -9,26 +9,11 @@
   const COACHES = ['SARAN','HARIS','GYANASURYA','YOGESH','ARIVUSELVAM','VISHNU','ROHITH SELVARAJ','RANJITH','SUDHIN'];
 
   /* ─── Tab Switching ─── */
-  
   CK.switchAdminTab = (tab, btn) => {
-    document.querySelectorAll('#admin-page .nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#admin-page .admin-tab').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
-    // Update Header Title
-    const titleMap = {
-      'files': 'Document Library',
-      'meetings': 'Schedule Sessions',
-      'attendance': 'Attendance Tracker',
-      'users': 'Student Roster',
-      'tournaments': 'Tournaments',
-      'achievements': 'Achievements'
-    };
-    const titleEl = document.querySelector('#admin-page .portal-header div:first-child');
-    if (titleEl && titleMap[tab]) titleEl.textContent = titleMap[tab];
-
     CK.loadAdminTab(tab);
   };
-
 
   CK.loadAdminDashboard = () => {
     const first = document.querySelector('#admin-page .admin-tab');
@@ -147,37 +132,25 @@
   /* ══════════════════════════════════════════
      MEETINGS
   ══════════════════════════════════════════ */
-  
   function tabMeetings(el) {
     el.innerHTML = `
       <div style="display:flex; justify-content:center; align-items:flex-start; padding:40px 0;">
-        <div class="dash-card" style="width:100%; max-width:540px; padding:48px; border-radius:32px;">
-          <h2 style="text-align:center; font-family:var(--font-display); font-size:2rem; margin-bottom:10px;">📅 Schedule Session</h2>
-          <p style="text-align:center; opacity:0.5; margin-bottom:32px; font-size:0.95rem;">Send a meeting reminder to your students.</p>
+        <div class="dash-card" style="width:100%; max-width:540px; padding:40px;">
+          <h3 style="text-align:center; font-family:var(--font-display); margin-bottom:30px;">📅 Schedule a Session</h3>
           <form onsubmit="CK.scheduleMeeting(event)">
-            <div class="ck-input-group">
-              <span class="ck-input-icon">🔗</span>
-              <input class="ck-input-pretty" type="url" id="meet-url" placeholder="Meeting URL (Zoom/GMeet)" required>
-            </div>
-            <div class="ck-input-group">
-              <span class="ck-input-icon">🕒</span>
-              <input class="ck-input-pretty" type="datetime-local" id="meet-dt" required>
-            </div>
-            <div class="ck-input-group">
-              <span class="ck-input-icon">👥</span>
-              <input class="ck-input-pretty" type="text" id="meet-batch" placeholder="Target Batch Number (e.g. 1)" required>
-            </div>
-            <button type="submit" class="dash-btn dash-btn-primary" style="width:100%; padding:18px; font-size:1rem; border-radius:15px; margin-top:10px;">
-              CONFIRM & SCHEDULE
+            <input class="ck-input" type="url" id="meet-url" placeholder="Meeting URL" required style="margin-bottom:16px;">
+            <input class="ck-input" type="datetime-local" id="meet-dt" required style="margin-bottom:16px;">
+            <input class="ck-input" type="text" id="meet-batch" placeholder="Batch (e.g. 1)" required style="margin-bottom:24px;">
+            <button type="submit" class="dash-btn dash-btn-primary" style="width:100%; padding:14px; font-size:0.9rem; letter-spacing:0.1em;">
+              SCHEDULE REMINDER
             </button>
           </form>
-          <div id="meetings-list" style="margin-top:40px;"></div>
+          <div id="meetings-list" style="margin-top:30px;"></div>
         </div>
       </div>
     `;
     loadMeetingsList();
   }
-
 
   async function loadMeetingsList() {
     const box = document.getElementById('meetings-list');
@@ -225,9 +198,9 @@
   async function tabAttendance(el) {
     el.innerHTML = `
       <h2 style="text-align:center; font-family:var(--font-display); font-size:2.5rem; margin-bottom:24px; color:var(--ink);">Attendance Tracker</h2>
-      <div class="tab-btns" id="att-coach-tabs">
+      <div class="ck-coach-tabs" id="att-coach-tabs">
         ${COACHES.map((c,i) => `
-          <button class="tab-btn ${i===0?'active':''}" onclick="CK.switchAttCoach('${c}', this)">${c}</button>
+          <button class="ck-coach-tab ${i===0?'active':''}" onclick="CK.switchAttCoach('${c}', this)">${c}</button>
         `).join('')}
       </div>
       <div id="att-calendar" style="margin-top:30px;"></div>
@@ -236,7 +209,7 @@
   }
 
   CK.switchAttCoach = (coach, btn) => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ck-coach-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     _attCoach = coach;
     renderAttCalendar();
@@ -288,10 +261,10 @@
       let icon = '';
       if (isPast && rec) {
         icon = rec.present > 0
-          ? `<div class="ck-status-dot" style="width:8px; height:8px; background:white; border-radius:50%;"></div>`
-          : `<div class="ck-status-dot" style="width:8px; height:8px; background:rgba(255,255,255,0.3); border-radius:50%;"></div>`;
+          ? `<div class="ck-cal-check">✓</div>`
+          : `<div class="ck-cal-cross">✗</div>`;
       } else if (isPast) {
-        icon = `<div class="ck-status-dot" style="width:8px; height:8px; background:rgba(255,255,255,0.3); border-radius:50%;"></div>`;
+        icon = `<div class="ck-cal-cross">✗</div>`;
       }
       cells += `
         <div class="ck-cal-cell ${isPast && rec?.present ? 'ck-cal-present' : isPast ? 'ck-cal-absent' : ''}">
@@ -348,41 +321,23 @@
     `;
   }
 
-  
   function renderUserRows(users) {
     if (!users?.length) return `<tr><td colspan="8" class="ck-empty">No students found.</td></tr>`;
-    return users.filter(u => u.role !== 'admin').map((u,i) => {
-      const initials = (u.full_name || 'S').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-      const levelClass = (u.level||'').toLowerCase().includes('inter') ? 'status-paid' : (u.level||'').toLowerCase().includes('adv') ? 'status-paid' : 'status-pending';
-      const payStatus = (u.payment_status||'Pending').toLowerCase();
-      const payClass = payStatus === 'paid' ? 'status-paid' : payStatus === 'pending' ? 'status-pending' : 'status-overdue';
-
-      return `
-        <tr>
-          <td><span class="ck-badge ck-badge-amber">ID-${1000 + i}</span></td>
-          <td>
-            <div class="student-name-cell">
-              <div class="student-avatar">${initials}</div>
-              <div>
-                <div style="font-weight:700; color:var(--ink);">${u.full_name || '-'}</div>
-                <div style="font-size:0.75rem; opacity:0.5;">Joined: ${new Date(u.created_at || Date.now()).toLocaleDateString()}</div>
-              </div>
-            </div>
-          </td>
-          <td style="opacity:0.7; font-size:0.85rem;">${u.email || '-'}</td>
-          <td><span class="status-pill ${levelClass}" style="background:#f1f5f9; color:#475569;">${u.level || 'Beginner'}</span></td>
-          <td><div style="font-weight:600; font-size:0.85rem;">${u.coach || 'Unassigned'}</div></td>
-          <td style="font-weight:700; color:var(--ink);">${u.fee || '-'}</td>
-          <td><span class="status-pill ${payClass}">${u.payment_status || 'Pending'}</span></td>
-          <td>
-            <div style="display:flex; gap:8px;">
-              <button class="dash-btn" title="Edit" onclick="CK.editUser('${u.id}')">✏️</button>
-              <button class="dash-btn" style="color:#ef4444;" title="Delete" onclick="CK.deleteUser('${u.id}')">🗑</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    return users.filter(u => u.role !== 'admin').map((u,i) => `
+      <tr>
+        <td style="color:var(--amber); font-weight:700;">${1000 + i}</td>
+        <td style="font-weight:600;">${u.full_name || '-'}</td>
+        <td style="opacity:0.7;">${u.email || '-'}</td>
+        <td><span class="status-pill ${(u.level||'').toLowerCase().includes('inter') ? 'enrolled' : 'new'}">${(u.level||'beginner').split(' ')[0]}</span></td>
+        <td>${u.coach || '-'}</td>
+        <td style="font-weight:600;">${u.fee || '-'}</td>
+        <td><span class="status-pill ${(u.payment_status||'').toLowerCase()}">${u.payment_status||'Pending'}</span></td>
+        <td style="display:flex; gap:6px;">
+          <button class="dash-btn dash-btn-sm dash-btn-outline" onclick="CK.editUser('${u.id}')">✏️ Edit</button>
+          <button class="dash-btn dash-btn-sm dash-btn-red" onclick="CK.deleteUser('${u.id}')">🗑 Delete</button>
+        </td>
+      </tr>
+    `).join('');
   }
 
   CK.filterByCoach = (coach) => {

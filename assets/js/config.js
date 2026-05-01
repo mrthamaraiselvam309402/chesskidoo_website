@@ -24,24 +24,38 @@ window.APP_CONFIG = {
 
 // Initialize Supabase Client
 (function initSupabase() {
-  if (!window.supabase) {
-    console.error("[ChessKidoo] Supabase SDK not loaded. Check CDN import.");
-    return;
-  }
-  try {
-    window.supabaseClient = window.supabase.createClient(
-      window.APP_CONFIG.SUPABASE_URL,
-      window.APP_CONFIG.SUPABASE_ANON_KEY,
-      {
-        auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: false
-        }
+  const maxRetries = 10;
+  let retries = 0;
+
+  function attemptInit() {
+    if (window.supabase) {
+      try {
+        window.supabaseClient = window.supabase.createClient(
+          window.APP_CONFIG.SUPABASE_URL,
+          window.APP_CONFIG.SUPABASE_ANON_KEY,
+          {
+            auth: {
+              autoRefreshToken: true,
+              persistSession: true,
+              detectSessionInUrl: false
+            }
+          }
+        );
+        console.log("[ChessKidoo] Supabase connected ✓");
+      } catch (e) {
+        console.error("[ChessKidoo] Supabase init failed:", e);
       }
-    );
-    console.log("[ChessKidoo] Supabase connected ✓");
-  } catch (e) {
-    console.error("[ChessKidoo] Supabase init failed:", e);
+    } else {
+      retries++;
+      if (retries < maxRetries) {
+        console.warn(`[ChessKidoo] Supabase SDK not ready, retrying... (${retries}/${maxRetries})`);
+        setTimeout(attemptInit, 500);
+      } else {
+        console.error("[ChessKidoo] Supabase SDK failed to load after multiple attempts. Check CDN import.");
+      }
+    }
   }
+
+  attemptInit();
 })();
+
