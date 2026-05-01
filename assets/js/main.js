@@ -35,6 +35,18 @@
     }
 
     // Route to a specific page (like login-page)
+    if (section === 'login' && CK.currentUser) {
+      const role = CK.currentUser.role.toLowerCase();
+      CK.showPage(`${role}-page`);
+      // Re-init portal logic if needed
+      setTimeout(() => {
+        if (role === 'admin' && CK.admin) CK.admin.init();
+        if (role === 'student' && CK.student) CK.student.init();
+        if (role === 'coach' && CK.coach) CK.coach.init();
+      }, 50);
+      return;
+    }
+    
     CK.showPage(section + '-page');
   };
 
@@ -269,25 +281,18 @@
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 
-    // Restore session if present
+    // Restore session if present (In background only)
     const savedUser = localStorage.getItem('ck_user');
     if (savedUser) {
       try {
         CK.currentUser = JSON.parse(savedUser);
-        const role = CK.currentUser.role.toLowerCase();
-        CK.showPage(`${role}-page`);
-        setTimeout(() => {
-          if (role === 'admin' && CK.admin) CK.admin.init();
-          if (role === 'student' && CK.student) CK.student.init();
-          if (role === 'coach' && CK.coach) CK.coach.init();
-        }, 100);
       } catch(e) { 
         localStorage.removeItem('ck_user'); 
-        CK.showPage('landing-page');
       }
-    } else {
-      CK.showPage('landing-page');
     }
+    
+    // ALWAYS start on landing page as requested by user
+    CK.showPage('landing-page');
 
     // Counter animations
     document.querySelectorAll('.hero-stat-num').forEach(el => {
