@@ -15,6 +15,22 @@
     }
   };
 
+  // Mobile Menu Logic
+  const mobileBtn = document.getElementById('mobileMenuBtn');
+  const navLinks = document.getElementById('navLinks');
+  if (mobileBtn && navLinks) {
+    mobileBtn.addEventListener('click', () => {
+      const isVisible = navLinks.style.display === 'flex';
+      navLinks.style.display = isVisible ? 'none' : 'flex';
+    });
+    // Auto-close on link click
+    navLinks.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (window.innerWidth <= 768) navLinks.style.display = 'none';
+      });
+    });
+  }
+
   // Alias navigate to handle both section scrolling (landing) and page routing
   CK.navigate = (section) => {
     const landingSections = ['home', 'features', 'levels', 'coaches', 'about', 'reviews', 'pricing', 'faq'];

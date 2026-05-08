@@ -20,6 +20,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
+  <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+  
   <!-- Failsafe Reveal -->
   <script>
     window.addEventListener('load', () => {
@@ -29,6 +31,10 @@
       }, 500);
     });
     // Force reveal after 3s if load event hangs
+    setTimeout(() => {
+      document.body.classList.add('loaded');
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+    }, 3000);
   </script>
 </head>
 <body>
@@ -132,13 +138,8 @@
 
                 <!-- Board + moves -->
                 <div class="board-section">
-                  <!-- Rank labels + board -->
-                  <div style="display:flex;align-items:flex-start;gap:0">
-                    <div class="coords-col" id="ranks-col"></div>
-                    <div>
-                      <div id="board"></div>
-                      <div class="coords-row" id="files-row"></div>
-                    </div>
+                  <div class="board-wrapper" style="width:100%; max-width: 320px;">
+                    <div id="board" style="width: 100%;"></div>
                   </div>
 
                   <!-- Move list -->
@@ -973,6 +974,7 @@
               <div class="p-card">
                 <div class="p-card-header">
                   <div class="p-card-title">📅 Class Schedule</div>
+                  <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.openModal('adminClassModal')">+ Schedule Class</button>
                   <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openClassModal()">+ Add Class</button>
                 </div>
                 <div style="overflow-x:auto">
@@ -1060,6 +1062,7 @@
             <button class="p-nav-item" onclick="CK.student.nav('progress')"><span class="icon">📈</span><span>My Progress</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('schedule')"><span class="icon">📅</span><span>My Schedule</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('session')"><span class="icon">📡</span><span>Join Class</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('resources')"><span class="icon">📚</span><span>Learning Resources</span></button>
             <div class="p-nav-section-label">Practice</div>
             <button class="p-nav-item" onclick="CK.student.nav('puzzles')"><span class="icon">🧩</span><span>My Puzzles</span><span class="p-nav-badge" id="studentPuzzleBadge">0</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('reviews')"><span class="icon">📝</span><span>Coach Reviews</span></button>
@@ -1111,6 +1114,7 @@
                   <div class="rating-num" id="studentRatingNum">0</div>
                   <div class="rating-change" id="studentRatingChange">↑ +0 this month</div>
                   <div class="rating-label" id="studentRatingLabel">Level --</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" id="studentCertificateBtn" style="display:none; margin-top:15px; width:100%" onclick="CK.student.downloadCertificate()">🏆 Download Certificate</button>
                 </div>
               </div>
               <div class="p-card">
@@ -1123,6 +1127,16 @@
                 </div>
               </div>
             </div>
+            
+            <!-- RESOURCES -->
+            <div class="p-panel" id="student-panel-resources">
+              <div class="p-card">
+                <div class="p-card-header"><div class="p-card-title">📚 Learning Resources</div></div>
+                <div class="p-card-body" id="studentResourcesList">
+                  <div style="opacity:0.6; padding:20px; text-align:center;">No resources assigned to your batch.</div>
+                </div>
+              </div>
+            </div>
             <!-- PROGRESS -->
             <div class="p-panel" id="student-panel-progress">
               <div class="p-card">
@@ -1130,6 +1144,13 @@
                 <div class="p-card-body"><div class="p-chart-wrap"><canvas id="ratingChart"></canvas></div></div>
               </div>
             </div>
+            
+              <div class="p-card" style="margin-top:20px;">
+                <div class="p-card-header"><div class="p-card-title">✅ Attendance Calendar</div></div>
+                <div class="p-card-body" id="studentAttendanceCalendar" style="display:flex; gap:8px; flex-wrap:wrap;">
+                </div>
+              </div>
+
             <!-- SCHEDULE -->
             <div class="p-panel" id="student-panel-schedule">
               <div class="p-card">
@@ -1267,6 +1288,7 @@
         </div>
         <div class="p-form-row">
           <div class="p-form-group"><label class="p-form-label">Age</label><input class="p-form-control" id="admin_s_age" type="number" placeholder="10"/></div>
+          <div class="p-form-group"><label class="p-form-label">Batch</label><input class="p-form-control" id="admin_s_batch" type="text" placeholder="1"/></div>
           <div class="p-form-group"><label class="p-form-label">Level</label>
             <select class="p-form-control" id="admin_s_level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option></select>
           </div>
@@ -1276,6 +1298,7 @@
             <select class="p-form-control" id="admin_s_coach"><option>Select coach…</option></select>
           </div>
           <div class="p-form-group"><label class="p-form-label">Rating</label><input class="p-form-control" id="admin_s_rating" type="number" placeholder="800"/></div>
+          <div class="p-form-group"><label class="p-form-label">Stars</label><input class="p-form-control" id="admin_s_stars" type="number" min="0" max="5" placeholder="5"/></div>
         </div>
       </div>
       <div class="p-modal-footer">
@@ -1421,6 +1444,7 @@
           <div class="form-group"><label>Level</label><select name="level" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
           <div class="form-group"><label>Batch</label><input type="text" name="batch" placeholder="e.g. 1" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
         </div>
+        <div class="form-group" style="margin-top:10px;"><label>Notes</label><input type="text" name="notes" placeholder="Review before Friday" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
         <div class="form-group" style="margin-top:10px;"><label>File</label><input type="file" name="file" required style="width:100%; padding:10px 0;"></div>
         <div style="display:flex; gap:12px; margin-top:20px;">
           <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>
@@ -1462,6 +1486,8 @@
   </div>
 
   <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <script src="assets/js/config.js"></script>
   <script src="assets/js/auth.js"></script>

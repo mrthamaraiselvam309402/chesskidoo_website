@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.base.css">
+  <link rel="stylesheet" href="https://unpkg.com/chessground/assets/chessground.brown.css">
+  <style>
+    .cg-wrap { width: 400px; height: 400px; }
+  </style>
+</head>
+<body>
+  <div id="board" class="cg-wrap"></div>
+  <script type="module">
+    import { Chessground } from 'https://unpkg.com/chessground@9.0.0/chessground.js';
+    const cg = Chessground(document.getElementById('board'), {
+      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    });
+  </script>
+</body>
+</html>

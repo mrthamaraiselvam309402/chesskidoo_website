@@ -502,26 +502,29 @@ body {
 .match-loc { color:rgba(255,255,255,.45);font-size:11px;font-weight:500; }
 
 /* BOARD + MOVES LAYOUT */
-.board-section { display:flex;gap:14px;align-items:flex-start; }
+.board-section { display:flex;gap:14px;align-items:flex-start; flex-wrap: wrap; }
 
 /* COORD LABELS */
-.coords-col { display:flex;flex-direction:column;justify-content:space-around;height:320px;padding-right:4px; }
-.coords-row { display:flex;justify-content:space-around;padding-top:5px; }
-.coord { font-size:10px;font-weight:600;color:rgba(255,255,255,.28);width:14px;text-align:center;font-family:var(--font-body); }
+.coords-col { display:flex;flex-direction:column;justify-content:space-around;height:100%;padding-right:4px; }
+.coords-row { display:flex;justify-content:space-around;padding-top:5px; width:100%; }
+.coord { font-size:clamp(8px, 2vw, 10px);font-weight:600;color:rgba(255,255,255,.28);width:12.5%;text-align:center;font-family:var(--font-body); }
 
 /* CHESS BOARD */
-#board {
+#board, .student-board {
   display:grid;
-  grid-template-columns:repeat(8,40px);
-  grid-template-rows:repeat(8,40px);
+  grid-template-columns:repeat(8, 1fr);
+  grid-template-rows:repeat(8, 1fr);
   border:3px solid var(--board-border);
   border-radius:3px;
   overflow:hidden;
   box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);
   flex-shrink:0;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
 }
 .sq {
-  width:40px;height:40px;
+  width:100%; height:100%;
   display:flex;align-items:center;justify-content:center;
   position:relative;cursor:pointer;transition:filter .1s;
 }
@@ -531,7 +534,7 @@ body {
 .sq.hl-to   { background:rgba(255,140,0,.65) !important; }
 .sq.selected { background:rgba(16, 185, 129, 0.6) !important; }
 .piece {
-  font-size:30px;line-height:1;user-select:none;z-index:2;position:relative;
+  font-size:clamp(20px, 6vw, 36px);line-height:1;user-select:none;z-index:2;position:relative;
   transition:transform .18s ease;
   filter:drop-shadow(0 1px 3px rgba(0,0,0,.55));
 }
@@ -539,11 +542,12 @@ body {
 /* MOVE LIST */
 .moves-panel {
   flex:1;
+  min-width: 250px;
   background:rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.07);
   border-radius:12px;
   padding:12px;
-  height:320px;
+  height: clamp(250px, 40vw, 400px);
   overflow-y:auto;
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.12) transparent;
@@ -600,3 +604,397 @@ body {
 .ai-btn:hover { opacity:.88;transform:translateY(-1px); }
 
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.75)} }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3D ANIMATION ENGINE — ChessKidoo Premium Experience Layer
+   Pure CSS 3D transforms, perspective effects, parallax-like depth,
+   and micro-interaction animations. No external libraries required.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── 3D Perspective Container ─── */
+.hero, .section-padding, .login-bg-section {
+  perspective: 1200px;
+}
+
+/* ─── 3D Floating Chess Pieces (Hero Background Orbs) ─── */
+.hero::after {
+  content: '♛';
+  position: absolute;
+  font-size: 18rem;
+  color: rgba(217, 119, 6, 0.03);
+  top: 10%;
+  right: -5%;
+  z-index: 0;
+  animation: heroChessFloat 12s ease-in-out infinite;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.hero::before {
+  content: '♟';
+  position: absolute;
+  font-size: 12rem;
+  color: rgba(217, 119, 6, 0.025);
+  bottom: 5%;
+  left: 2%;
+  z-index: 0;
+  animation: heroChessFloat2 15s ease-in-out infinite;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+@keyframes heroChessFloat {
+  0%   { transform: rotateY(0deg) rotateX(0deg) translateY(0px) scale(1); }
+  25%  { transform: rotateY(15deg) rotateX(-5deg) translateY(-30px) scale(1.02); }
+  50%  { transform: rotateY(0deg) rotateX(5deg) translateY(-15px) scale(1); }
+  75%  { transform: rotateY(-15deg) rotateX(-3deg) translateY(-40px) scale(1.01); }
+  100% { transform: rotateY(0deg) rotateX(0deg) translateY(0px) scale(1); }
+}
+@keyframes heroChessFloat2 {
+  0%   { transform: rotateZ(0deg) rotateY(0deg) translateY(0px); }
+  33%  { transform: rotateZ(5deg) rotateY(20deg) translateY(-20px); }
+  66%  { transform: rotateZ(-3deg) rotateY(-15deg) translateY(-35px); }
+  100% { transform: rotateZ(0deg) rotateY(0deg) translateY(0px); }
+}
+
+/* ─── 3D Hero Board Enhancement ─── */
+.board-panel {
+  transform-style: preserve-3d;
+  animation: boardEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+}
+@keyframes boardEntrance {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(25deg) rotateY(-15deg) translateZ(-80px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1);
+  }
+}
+
+/* ─── 3D Feature Cards with Tilt ─── */
+.feat-card {
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+}
+.feat-card:hover {
+  transform: perspective(800px) rotateX(-3deg) rotateY(5deg) translateY(-12px) translateZ(20px);
+  box-shadow: 
+    0 25px 50px rgba(0,0,0,0.15), 
+    0 0 0 1px rgba(217, 119, 6, 0.15),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.feat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(217,119,6,0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.feat-card:hover::before { opacity: 1; }
+
+/* 3D Icon Float on Feature Cards */
+.feat-icon-wrap {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+.feat-card:hover .feat-icon-wrap {
+  transform: translateZ(30px) rotateY(10deg) scale(1.15);
+  box-shadow: 0 10px 24px rgba(217,119,6,0.2);
+}
+
+/* ─── 3D Coach Image Cards ─── */
+.coach-grid > div, .coach-grid > .reveal {
+  transform-style: preserve-3d;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  position: relative;
+}
+.coach-grid > div:hover, .coach-grid > .reveal:hover {
+  transform: perspective(900px) rotateY(-6deg) rotateX(3deg) translateY(-10px) translateZ(15px) !important;
+  box-shadow: 
+    20px 20px 60px rgba(0,0,0,0.2),
+    -5px -5px 20px rgba(255,255,255,0.05),
+    0 0 0 1px rgba(217,119,6,0.1) !important;
+}
+
+/* 3D Image Parallax on Coach Cards */
+.coach-grid > div:hover img, .coach-grid > .reveal:hover img {
+  transform: scale(1.08) translateZ(10px);
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ─── 3D Level Cards with Depth ─── */
+.level-card {
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+.level-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 30%, rgba(217,119,6,0.05), transparent 70%);
+  transform: translateZ(-10px);
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+.level-card:hover {
+  transform: perspective(800px) rotateX(-4deg) translateY(-15px) translateZ(25px);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 40px rgba(217,119,6,0.05);
+}
+.level-card:hover .level-piece {
+  animation: chessPieceBounce 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes chessPieceBounce {
+  0%   { transform: translateZ(0) rotateY(0deg); }
+  30%  { transform: translateZ(30px) rotateY(20deg) scale(1.15); }
+  60%  { transform: translateZ(15px) rotateY(-10deg) scale(1.05); }
+  100% { transform: translateZ(0) rotateY(0deg) scale(1); }
+}
+
+/* ─── 3D Pricing Cards ─── */
+.price-card {
+  transform-style: preserve-3d;
+  position: relative;
+}
+.price-card:hover {
+  transform: perspective(1000px) rotateX(-2deg) rotateY(3deg) translateY(-16px) translateZ(20px) !important;
+}
+.price-card.gold-card {
+  animation: goldCardGlow 4s ease-in-out infinite;
+}
+@keyframes goldCardGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(217,119,6,0.15), 0 0 0 2px rgba(245,158,11,0.3); }
+  50%      { box-shadow: 0 16px 48px rgba(217,119,6,0.25), 0 0 0 2px rgba(245,158,11,0.5), 0 0 80px rgba(217,119,6,0.08); }
+}
+
+/* ─── Trust Bar 3D Glass Morphism ─── */
+.trust-bar {
+  position: relative;
+  overflow: hidden;
+}
+.trust-bar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  animation: trustBarShimmer 8s linear infinite;
+  transform: skewX(-25deg);
+}
+@keyframes trustBarShimmer {
+  from { left: -40%; }
+  to   { left: 140%; }
+}
+.trust-item {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+.trust-item:hover {
+  transform: translateZ(10px) scale(1.05);
+  opacity: 1 !important;
+  color: var(--amber-light);
+  text-shadow: 0 0 20px rgba(245,158,11,0.3);
+}
+
+/* ─── Enhanced Reveal Animations (3D Depth) ─── */
+.reveal {
+  opacity: 0;
+  transform: perspective(800px) translateY(40px) rotateX(5deg);
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: perspective(800px) translateY(0) rotateX(0deg);
+}
+
+/* Staggered 3D children reveal */
+.feat-grid .reveal:nth-child(1) { transition-delay: 0.05s; }
+.feat-grid .reveal:nth-child(2) { transition-delay: 0.15s; }
+.feat-grid .reveal:nth-child(3) { transition-delay: 0.25s; }
+.feat-grid .reveal:nth-child(4) { transition-delay: 0.35s; }
+.feat-grid .reveal:nth-child(5) { transition-delay: 0.45s; }
+.feat-grid .reveal:nth-child(6) { transition-delay: 0.55s; }
+
+/* ─── 3D Hero Title Entrance ─── */
+.hero-title {
+  animation: heroTitleEntrance 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+@keyframes heroTitleEntrance {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateX(-10deg) translateY(30px) translateZ(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(600px) rotateX(0deg) translateY(0) translateZ(0);
+  }
+}
+.hero-sub {
+  animation: heroSubEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+@keyframes heroSubEntrance {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 0.7; transform: translateY(0); }
+}
+.hero-btns {
+  animation: heroBtnsEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+}
+@keyframes heroBtnsEntrance {
+  from { opacity: 0; transform: translateY(25px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── 3D Button Interactions ─── */
+.btn-primary {
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+.btn-primary:hover {
+  transform: perspective(500px) translateY(-3px) translateZ(8px) rotateX(-2deg);
+  box-shadow: 0 15px 35px rgba(217,119,6,0.4), 0 5px 15px rgba(217,119,6,0.2);
+}
+
+.btn-ghost {
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.btn-ghost:hover {
+  transform: perspective(500px) translateY(-2px) translateZ(5px);
+}
+
+/* ─── 3D Floating Badges ─── */
+.floating-badge {
+  transform-style: preserve-3d;
+  animation: floatingBadge3D 4s ease-in-out infinite;
+}
+.floating-badge:nth-of-type(2) { animation-delay: 1.3s; }
+.floating-badge:nth-of-type(3) { animation-delay: 2.6s; }
+
+@keyframes floatingBadge3D {
+  0%   { transform: perspective(500px) translateY(0) rotateX(0deg) rotateY(0deg); }
+  25%  { transform: perspective(500px) translateY(-12px) rotateX(3deg) rotateY(-5deg); }
+  50%  { transform: perspective(500px) translateY(-6px) rotateX(-2deg) rotateY(3deg); }
+  75%  { transform: perspective(500px) translateY(-15px) rotateX(4deg) rotateY(-3deg); }
+  100% { transform: perspective(500px) translateY(0) rotateX(0deg) rotateY(0deg); }
+}
+
+/* ─── Floating UI 3D Lift ─── */
+.whatsapp-float, .bot-float {
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.whatsapp-float:hover {
+  transform: perspective(400px) translateY(-8px) rotateX(-5deg) scale(1.12);
+  box-shadow: 0 15px 35px rgba(37, 211, 102, 0.35);
+}
+.bot-float:hover {
+  transform: perspective(400px) translateY(-8px) rotateX(-5deg) scale(1.12);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* ─── Login Card 3D ─── */
+.login-card {
+  transform-style: preserve-3d;
+  animation: loginCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes loginCardEntrance {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateX(8deg) translateY(40px) translateZ(-60px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0deg) translateY(0) translateZ(0) scale(1);
+  }
+}
+
+/* ─── Section Head 3D ─── */
+.section-head h2 {
+  transform-style: preserve-3d;
+}
+.section-head.visible h2 {
+  animation: sectionTitle3D 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes sectionTitle3D {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateX(-8deg) translateY(25px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(600px) rotateX(0deg) translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ─── 3D Particle Orbs (Ambient Depth) ─── */
+.section-padding {
+  position: relative;
+  overflow: hidden;
+}
+.section-padding::before {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,119,6,0.03) 0%, transparent 70%);
+  top: 20%; right: -100px;
+  animation: ambientOrb 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes ambientOrb {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-60px, 40px) scale(1.3); }
+  66%  { transform: translate(30px, -30px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* ─── Smooth Page Transition ─── */
+.page {
+  animation: pageTransition3D 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page.active {
+  animation: pageTransitionIn3D 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pageTransitionIn3D {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateZ(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) translateZ(0);
+  }
+}
+
+/* ─── Accessibility: Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,4 +1,10 @@
-/* assets/js/chessboard.js ---------------------------------------------------
+import re
+
+def rewrite_chessboard():
+    # We will generate a new assets/js/chessboard.js that leverages Chessboard.js
+    # and chess.js for the AI and replay functionality.
+    
+    code = """/* assets/js/chessboard.js ---------------------------------------------------
    High-Fidelity Chess Engine using Chessboard.js & chess.js — ChessKidoo
    --------------------------------------------------------------- */
 
@@ -269,3 +275,9 @@
   });
 
 })();
+"""
+    with open('d:/MY/chessk/assets/js/chessboard.js', 'w', encoding='utf-8') as f:
+        f.write(code)
+
+rewrite_chessboard()
+print("chessboard.js rewritten to use open source Chessboard.js.")
