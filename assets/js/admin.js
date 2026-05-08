@@ -539,6 +539,25 @@ CK.admin = {
         filePath = `docs/${Date.now()}_${file.name}`;
         const { error: upErr } = await window.supabaseClient.storage.from('documents').upload(filePath, file);
         if (upErr) throw upErr;
+
+      // Push to our local mock DB for grouping display
+      if (!CK.db.resources) CK.db.resources = [];
+      CK.db.resources.push({
+        id: 'R' + Date.now(),
+        name: file.name,
+        batch: parseInt(form.batch.value) || 'Unassigned',
+        type: form.type ? form.type.value : 'Material',
+        notes: form.notes ? form.notes.value : ''
+      });
+      
+      CK.showToast("File Uploaded Successfully!", "success");
+      CK.closeModal('uploadModal');
+      
+      // If coach is doing this, refresh their view
+      if (window.location.hash === '#coach' && CK.coach && CK.coach.renderResources) {
+        CK.coach.renderResources();
+      }
+
       }
       
       // Save record using our DB layer

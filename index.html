@@ -1201,6 +1201,7 @@
             <button class="p-nav-item" onclick="CK.coach.nav('schedule')"><span class="icon">📅</span><span>My Schedule</span></button>
             <button class="p-nav-item" onclick="CK.coach.nav('notes')"><span class="icon">📝</span><span>Game Notes</span></button>
             <div class="p-nav-section-label">Tools</div>
+            <button class="p-nav-item" onclick="CK.coach.nav('resources')"><span class="icon">📁</span><span>Homework & Notes</span></button>
             <button class="p-nav-item" onclick="CK.coach.nav('puzzles')"><span class="icon">🧩</span><span>Assign Puzzles</span></button>
             <div class="p-section-sep"></div>
             <button class="p-nav-item" onclick="CK.logout()"><span class="icon">🚪</span><span>Log out</span></button>
@@ -1263,6 +1264,19 @@
               <div class="p-card">
                 <div class="p-card-header"><div class="p-card-title">🎓 My Students</div></div>
                 <div class="p-card-body"><div class="p-live-grid" id="coachStudentsGrid"></div></div>
+              </div>
+            </div>
+            
+            <!-- RESOURCES (Homework & Notes) -->
+            <div class="p-panel" id="coach-panel-resources">
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">📁 Homework & Class Notes</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.openModal('uploadModal')">+ Upload Material</button>
+                </div>
+                <div class="p-card-body" id="coachResourcesContainer">
+                  <!-- JS populated groupings -->
+                </div>
               </div>
             </div>
           </div>
@@ -1444,7 +1458,10 @@
           <div class="form-group"><label>Level</label><select name="level" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select></div>
           <div class="form-group"><label>Batch</label><input type="text" name="batch" placeholder="e.g. 1" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
         </div>
-        <div class="form-group" style="margin-top:10px;"><label>Notes</label><input type="text" name="notes" placeholder="Review before Friday" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
+          <div class="form-group"><label>Type</label><select name="type" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"><option value="Homework">Homework</option><option value="Class Notes">Class Notes</option><option value="Other">Other</option></select></div>
+          <div class="form-group"><label>Notes</label><input type="text" name="notes" placeholder="Review before Friday" style="width:100%; height:44px; border-radius:6px; border:1px solid #ddd; padding:0 10px;"></div>
+        </div>
         <div class="form-group" style="margin-top:10px;"><label>File</label><input type="file" name="file" required style="width:100%; padding:10px 0;"></div>
         <div style="display:flex; gap:12px; margin-top:20px;">
           <button type="button" class="btn btn-ghost" onclick="CK.closeModal()">Cancel</button>

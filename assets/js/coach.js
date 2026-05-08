@@ -57,11 +57,13 @@ CK.coach = {
       attendance: 'Mark Attendance',
       schedule: 'My Schedule',
       notes: 'Game Notes',
-      puzzles: 'Assign Puzzles'
+      puzzles: 'Assign Puzzles',
+      resources: 'Homework & Notes'
     };
     document.getElementById('coachPanelTitle').innerText = titles[panelId] || 'Dashboard';
     
     document.getElementById('coachTopBtn').style.display = (panelId === 'notes') ? 'block' : 'none';
+    if(panelId === 'resources') this.renderResources();
   },
 
   async updateProfile() {
@@ -80,6 +82,57 @@ CK.coach = {
     document.getElementById('coachStatStudents').innerText = myStudents.length || 0;
     document.getElementById('coachStatAttend').innerText = '96%';
     document.getElementById('coachStatClasses').innerText = '5';
+  },
+
+  renderResources() {
+    const container = document.getElementById('coachResourcesContainer');
+    if (!container) return;
+
+    const resources = CK.db.resources || [];
+    
+    if (resources.length === 0) {
+      container.innerHTML = '<div style="opacity:0.6; padding:20px; text-align:center;">No resources uploaded yet.</div>';
+      return;
+    }
+
+    // Group by Batch
+    const grouped = resources.reduce((acc, res) => {
+      const b = res.batch || 'Unassigned';
+      if (!acc[b]) acc[b] = [];
+      acc[b].push(res);
+      return acc;
+    }, {});
+
+    let html = '';
+    
+    for (const [batchStr, files] of Object.entries(grouped)) {
+      html += `
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-family: var(--font-display); font-size: 1.2rem; color: var(--p-gold); margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+            Batch ${batchStr}
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+      `;
+      
+      files.forEach(f => {
+        const typeBadge = f.type === 'Homework' ? 'p-badge-rose' : 'p-badge-blue';
+        html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:var(--p-surface3); border-radius:8px;">
+              <div>
+                <div style="font-weight:600; color:var(--p-text); display:flex; align-items:center; gap:8px;">
+                  📄 ${f.name} <span class="p-badge ${typeBadge}" style="font-size:0.7rem; padding: 2px 6px;">${f.type || 'Material'}</span>
+                </div>
+                <div style="font-size:0.85rem; color:var(--p-text-muted); margin-top:4px;">📝 Note: ${f.notes}</div>
+              </div>
+              <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.showToast('Downloading ${f.name}...', 'success')">Download</button>
+            </div>
+        `;
+      });
+      
+      html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
   },
 
   async renderDashboard() {

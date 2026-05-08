@@ -132,7 +132,14 @@
         batch: "1"
       }
     ],
-    attendance: [
+    
+  resources: [
+    { id: 'R1', name: 'Mating_Puzzles.pdf', batch: 1, type: 'Homework', notes: 'Review before Friday' },
+    { id: 'R2', name: 'Endgame_Basics.pdf', batch: 2, type: 'Homework', notes: 'Read chapter 1' },
+    { id: 'R3', name: 'Opening_Principles.pdf', batch: 1, type: 'Class Notes', notes: 'Memorize lines' },
+    { id: 'R4', name: 'Tactics_Test.pdf', batch: 3, type: 'Homework', notes: 'Complete by Sunday' }
+  ],
+  attendance: [
       { id: 1, userid: "student-uuid-1", date: "2026-05-01", status: "present" },
       { id: 2, userid: "student-uuid-1", date: "2026-05-02", status: "present" },
       { id: 3, userid: "student-uuid-1", date: "2026-05-04", status: "present" },
