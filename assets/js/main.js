@@ -397,4 +397,26 @@
     });
   });
 
+  CK.toggleFaq = (button) => {
+    const item = button.closest('.faq-item');
+    const content = item.querySelector('.faq-content');
+    const isActive = item.classList.contains('active');
+
+    // Smooth accordion behavior: collapse all other open items
+    document.querySelectorAll('.faq-item').forEach(el => {
+      if (el !== item) {
+        el.classList.remove('active');
+        el.querySelector('.faq-content').style.maxHeight = null;
+      }
+    });
+
+    if (isActive) {
+      item.classList.remove('active');
+      content.style.maxHeight = null;
+    } else {
+      item.classList.add('active');
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  };
+
 })();

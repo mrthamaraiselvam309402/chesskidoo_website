@@ -662,20 +662,120 @@
       </section>
 
       <!-- FAQ Section -->
-      <section id="faq" class="section-padding" style="background: var(--cream-dark); max-width:800px; margin:0 auto; width:100%; border-radius:24px;">
-        <div class="section-head reveal">
-          <div class="eyebrow">FAQ</div>
-          <h2>Frequently Asked Questions</h2>
-          <p class="lead">Everything parents want to know before booking a demo class.</p>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('We welcome kids from age 5 and up.','info')">What is the minimum age to join ChessKidoo? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('We provide highly interactive online classes via Google Meet.','info')">Are the classes online or offline? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('No! Our Beginner level starts from absolute scratch.','info')">Does my child need prior chess knowledge? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('It is a 45-min live session with a coach to assess your child's level.','info')">How does the free demo class work? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Yes! Our Elite Queen plan focuses specifically on tournament preparation.','info')">Will my child be prepared for FIDE-rated tournaments? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Absolutely. Our Student Portal provides live analytics and attendance.','info')">Can I track my child's progress? <span>+</span></div>
-          <div style="background:#fff; padding:20px 24px; border-radius:12px; font-weight:600; display:flex; justify-content:space-between; cursor:pointer;" onclick="CK.showToast('Yes, our plans are flexible. You can change anytime.','info')">Can I change or cancel my plan? <span>+</span></div>
+      <section id="faq" class="section-padding" style="background: var(--cream-dark); border-radius: 32px; padding: 80px 24px; max-width: 1000px; margin: 0 auto; width: 100%;">
+        <div class="container">
+          <div class="section-head reveal" style="text-align: center; margin-bottom: 50px;">
+            <div class="eyebrow">FAQ</div>
+            <h2 style="font-family: var(--font-display); font-size: 2.5rem; color: var(--navy); margin-bottom: 12px;">Frequently Asked Questions</h2>
+            <p class="lead" style="color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Everything parents want to know before booking a demo class.</p>
+          </div>
+          
+          <div class="faq-accordion-wrap reveal">
+            <!-- Item 1 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">What is the minimum age to join ChessKidoo?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  We welcome young minds starting from age 5 and up. Our coaches specialize in teaching early learners with playful, interactive, and gamified methods that make learning chess an absolute joy!
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">Are the classes online or offline?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  All our classes are held online via premium, high-definition Google Meet sessions. Every session is highly interactive and live with FIDE-certified coaches, combined with automated game reviews on our custom student portal.
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">Does my child need prior chess knowledge?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  Not at all! Our Beginner level starts from absolute scratch, covering how the pieces move, simple piece captures, and essential fundamentals. We build their knowledge step-by-step up to advanced tactics.
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">How does the free demo class work?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  The free demo is a private 45-minute live interactive session with a senior FIDE-certified coach. The coach assesses your child's current logical thinking, maps their skill level, and guides them through their first mini-game.
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">Will my child be prepared for FIDE-rated tournaments?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  Yes, absolutely! Our Advanced and elite coaching modules are specifically tailored around state, national, and FIDE-rated tournament schedules, covering advanced chess psychology, professional opening theory, and end-game mastery.
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">Can I track my child's progress?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  Yes! Parents get access to our real-time Student Portal. Here, you can monitor classroom attendance, homework completion grades, tournament standings, FIDE rating progression charts, and direct coach feedback notes.
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 7 -->
+            <div class="faq-item">
+              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <span class="faq-question">Can I change or cancel my plan?</span>
+                <span class="faq-icon-arrow">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </button>
+              <div class="faq-content">
+                <div class="faq-content-inner">
+                  Our learning plans are highly flexible. You can upgrade, downgrade, or suspend your child's subscription plan at any time without any hidden cancellation fees or long-term commitments.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
