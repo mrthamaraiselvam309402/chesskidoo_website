@@ -351,18 +351,40 @@
     // ALWAYS start on landing page as requested by user
     CK.showPage('landing-page');
 
-    // Counter animations
+    // Counter animations (supports both integers and float decimals)
     document.querySelectorAll('.hero-stat-num').forEach(el => {
-      const target = parseInt(el.textContent.replace(/\D/g,''));
-      if (!target) return;
-      let count = 0;
-      const suffix = el.textContent.replace(/[0-9]/g,'');
-      const step = Math.ceil(target / 60);
-      const timer = setInterval(() => {
-        count = Math.min(count + step, target);
-        el.textContent = count + suffix;
-        if (count >= target) clearInterval(timer);
-      }, 30);
+      const text = el.textContent;
+      const hasDecimal = text.includes('.');
+      
+      if (hasDecimal) {
+        const numPart = parseFloat(text.replace(/[^\d.]/g, ''));
+        if (isNaN(numPart)) return;
+        let count = 0.0;
+        const suffix = text.replace(/[\d.]/g, '');
+        const step = numPart / 60;
+        const timer = setInterval(() => {
+          count = Math.min(count + step, numPart);
+          el.textContent = count.toFixed(1) + suffix;
+          if (count >= numPart) {
+            el.textContent = numPart.toFixed(1) + suffix;
+            clearInterval(timer);
+          }
+        }, 30);
+      } else {
+        const target = parseInt(text.replace(/\D/g,''), 10);
+        if (isNaN(target)) return;
+        let count = 0;
+        const suffix = text.replace(/[0-9]/g,'');
+        const step = Math.ceil(target / 60);
+        const timer = setInterval(() => {
+          count = Math.min(count + step, target);
+          el.textContent = count + suffix;
+          if (count >= target) {
+            el.textContent = target + suffix;
+            clearInterval(timer);
+          }
+        }, 30);
+      }
     });
   });
 
