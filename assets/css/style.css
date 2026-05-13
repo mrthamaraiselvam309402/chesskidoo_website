@@ -1646,3 +1646,209 @@ body {
   line-height: 1.7;
   color: var(--muted);
 }
+
+/* ─── Premium 3D Curriculum Levels CSS Styles ─── */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  padding: 40px 0;
+  perspective: 1500px; /* Essential for 3D depth */
+}
+
+.level-card {
+  position: relative;
+  background: rgba(23, 16, 7, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 520px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.4s;
+  cursor: pointer;
+  overflow: visible; /* Needed for translateZ elements to peak out beautifully */
+}
+
+/* Base Hover Translation */
+.level-card:hover {
+  transform: translateY(-12px) rotateX(10deg) rotateY(-5deg);
+  border-color: rgba(232, 160, 32, 0.4);
+}
+
+/* Glow Backgrounds */
+.level-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 10%, rgba(232, 160, 32, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.level-card:hover::before {
+  opacity: 1;
+}
+
+/* Individual Card Variant Glowing Shadows */
+/* Beginner Card - Pawn */
+.level-card.level-beginner:hover {
+  box-shadow: 0 30px 60px rgba(232, 160, 32, 0.12), 0 0 40px rgba(232, 160, 32, 0.03);
+}
+/* Intermediate Card - Bishop (Sleek Silver/Cyan Accent) */
+.level-card.level-intermediate:hover {
+  box-shadow: 0 30px 60px rgba(100, 180, 255, 0.12), 0 0 40px rgba(100, 180, 255, 0.03);
+  border-color: rgba(100, 180, 255, 0.4);
+}
+.level-card.level-intermediate::before {
+  background: radial-gradient(circle at 50% 10%, rgba(100, 180, 255, 0.15) 0%, transparent 70%);
+}
+/* Advanced Card - Queen (Gold Accent) */
+.level-card.level-advanced:hover {
+  box-shadow: 0 30px 60px rgba(251, 191, 36, 0.15), 0 0 40px rgba(251, 191, 36, 0.05);
+  border-color: rgba(251, 191, 36, 0.45);
+}
+.level-card.level-advanced::before {
+  background: radial-gradient(circle at 50% 10%, rgba(251, 191, 36, 0.18) 0%, transparent 70%);
+}
+
+/* 3D TranslateZ Layers */
+.level-rank {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transform: translateZ(30px);
+  transition: all 0.4s;
+  z-index: 10;
+}
+.level-card:hover .level-rank {
+  background: var(--amber);
+  color: #171007;
+  border-color: var(--amber);
+}
+.level-card.level-intermediate:hover .level-rank {
+  background: #64b4ff;
+  color: #171007;
+  border-color: #64b4ff;
+}
+.level-card.level-advanced:hover .level-rank {
+  background: #fbbf24;
+  color: #171007;
+  border-color: #fbbf24;
+}
+
+.level-piece {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+  transform: translateZ(60px);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s;
+  z-index: 5;
+  display: block;
+}
+.level-card:hover .level-piece {
+  transform: translateZ(90px) scale(1.15) rotate(5deg);
+  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+}
+
+.level-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 14px;
+  transform: translateZ(40px);
+}
+
+.level-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 24px;
+  transform: translateZ(35px);
+}
+
+.level-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateZ(30px);
+  width: 100%;
+}
+
+.level-card li {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level-card li::before {
+  content: '✓';
+  color: var(--amber);
+  font-weight: 800;
+  font-size: 1rem;
+}
+.level-card.level-intermediate li::before {
+  color: #64b4ff;
+}
+.level-card.level-advanced li::before {
+  color: #fbbf24;
+}
+
+.level-card-cta {
+  margin-top: auto;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--amber);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateZ(50px);
+  transition: all 0.3s;
+}
+.level-card:hover .level-card-cta {
+  transform: translateZ(75px) translateX(6px);
+}
+.level-card.level-intermediate .level-card-cta {
+  color: #64b4ff;
+}
+.level-card.level-advanced .level-card-cta {
+  color: #fbbf24;
+}
+
+@media (max-width: 1024px) {
+  .level-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+@media (max-width: 768px) {
+  .level-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .level-card {
+    min-height: auto;
+  }
+}

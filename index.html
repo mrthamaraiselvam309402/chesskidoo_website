@@ -240,51 +240,59 @@
       </section>
 
       <!-- Curriculum -->
-      <section id="levels" class="section-padding" style="background: var(--bg-dark); color: white;">
-        <div class="section-head reveal">
-          <div class="eyebrow" style="color: var(--amber-light)">Student Levels</div>
-          <h2 style="color: white;">Three Levels – One Journey</h2>
-          <p class="lead" style="color: rgba(255,255,255,0.7);">Progress from total beginner to tournament-ready competitor.</p>
-        </div>
-        <div class="level-grid">
-          <div class="level-card reveal">
-            <div class="level-rank">Beginner</div>
-            <span class="level-piece">♟</span>
-            <h3>Beginner Level</h3>
-            <p>Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
-            <ul style="text-align: left; opacity: 0.8; font-size: 0.9rem; margin: 20px 0; padding-left: 20px;">
-              <li>Piece movements & rules</li>
-              <li>Basic tactics & checkmates</li>
-              <li>Simple endgame principles</li>
-              <li>Board awareness training</li>
-            </ul>
-            <div style="margin-top:auto; font-weight:700; color:var(--amber);">Start Here →</div>
+      <section id="levels" class="section-padding" style="background: #090502; color: white; overflow: hidden;">
+        <div class="container">
+          <div class="section-head reveal" style="text-align: center; margin-bottom: 60px;">
+            <div class="eyebrow" style="color: var(--amber-light); text-transform: uppercase; letter-spacing: 2px;">Student Levels</div>
+            <h2 style="color: white; font-family: var(--font-display); font-size: 2.5rem; margin-top: 8px;">Three Levels – One Journey</h2>
+            <p class="lead" style="color: rgba(255,255,255,0.65); max-width: 600px; margin: 12px auto 0;">Progress from total beginner to tournament-ready competitor with our structured curriculum.</p>
           </div>
-          <div class="level-card featured reveal">
-            <div class="level-rank">Most Popular</div>
-            <span class="level-piece">♗</span>
-            <h3>Intermediate Level</h3>
-            <p>Designed for players with a solid foundation. Develops tactical awareness, middle-game strategy, and endgame mastery.</p>
-            <ul style="text-align: left; opacity: 0.8; font-size: 0.9rem; margin: 20px 0; padding-left: 20px;">
-              <li>Advanced combinations</li>
-              <li>Opening repertoire building</li>
-              <li>Middlegame strategy</li>
-              <li>Endgame technique drills</li>
-            </ul>
-            <div style="margin-top:auto; font-weight:700; color:var(--amber);">Level Up →</div>
-          </div>
-          <div class="level-card reveal">
-            <div class="level-rank">Elite</div>
-            <span class="level-piece">♛</span>
-            <h3>Advanced Level</h3>
-            <p>For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
-            <ul style="text-align: left; opacity: 0.8; font-size: 0.9rem; margin: 20px 0; padding-left: 20px;">
-              <li>Opening theory mastery</li>
-              <li>Endgame precision</li>
-              <li>Chess psychology training</li>
-              <li>FIDE rating preparation</li>
-            </ul>
-            <div style="margin-top:auto; font-weight:700; color:var(--amber);">Go Elite →</div>
+          
+          <div class="level-grid reveal">
+            <!-- Beginner Card -->
+            <div class="level-card level-beginner" onclick="CK.openDemoModal()">
+              <div class="level-rank">Beginner</div>
+              <span class="level-piece" style="color: #E8A020;">♟</span>
+              <h3>Beginner Level</h3>
+              <p>Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
+              <ul>
+                <li>Piece movements & rules</li>
+                <li>Basic tactics & checkmates</li>
+                <li>Simple endgame principles</li>
+                <li>Board awareness training</li>
+              </ul>
+              <div class="level-card-cta">Start Here <span style="font-size:1.15rem;">→</span></div>
+            </div>
+
+            <!-- Intermediate Card -->
+            <div class="level-card level-intermediate" onclick="CK.openDemoModal()">
+              <div class="level-rank">Most Popular</div>
+              <span class="level-piece" style="color: #64b4ff;">♗</span>
+              <h3>Intermediate Level</h3>
+              <p>Designed for players with a solid foundation. Develops tactical awareness, middle-game strategy, and endgame mastery.</p>
+              <ul>
+                <li>Advanced combinations</li>
+                <li>Opening repertoire building</li>
+                <li>Middlegame strategy</li>
+                <li>Endgame technique drills</li>
+              </ul>
+              <div class="level-card-cta">Level Up <span style="font-size:1.15rem;">→</span></div>
+            </div>
+
+            <!-- Advanced Card -->
+            <div class="level-card level-advanced" onclick="CK.openDemoModal()">
+              <div class="level-rank">Elite</div>
+              <span class="level-piece" style="color: #fbbf24;">♛</span>
+              <h3>Advanced Level</h3>
+              <p>For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
+              <ul>
+                <li>Opening theory mastery</li>
+                <li>Endgame precision</li>
+                <li>Chess psychology training</li>
+                <li>FIDE rating preparation</li>
+              </ul>
+              <div class="level-card-cta">Go Elite <span style="font-size:1.15rem;">→</span></div>
+            </div>
           </div>
         </div>
       </section>
