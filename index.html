@@ -111,63 +111,61 @@
             </div>
             <div class="hero-visual">
               <div class="board-panel reveal">
-                <!-- Players bar -->
+                <!-- Players bar (immortal game) -->
                 <div class="players-bar">
                   <div class="player-chip">
                     <div class="avatar av-white">♔</div>
                     <div>
                       <div class="pname">Adolf Anderssen</div>
-                      <div class="pelo">White · ELO ~2650</div>
+                      <div class="pelo">White · ELO ~2600</div>
                     </div>
                   </div>
                   <div class="match-center">
                     <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
-                    <div class="match-loc">Berlin, 1852</div>
+                    <div class="match-loc">London, 1851 · Immortal Game</div>
                   </div>
                   <div class="player-chip right">
                     <div class="avatar av-black">♚</div>
                     <div style="text-align:right">
-                      <div class="pname">Jean Dufresne</div>
-                      <div class="pelo">Black · ELO ~2450</div>
+                      <div class="pname">L. Kieseritzky</div>
+                      <div class="pelo">Black · ELO ~2400</div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Board + moves -->
+                <!-- Board + move list (side by side) -->
                 <div class="board-section">
-                  <div style="display: flex; align-items: stretch; gap: 8px;">
-                    <div class="coords-col" id="ranks-col" style="display: flex; flex-direction: column; justify-content: space-around; width: 20px; text-align: center; color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 700;"></div>
+                  <!-- rank labels + board -->
+                  <div style="display: flex; align-items: flex-start; gap: 0;">
+                    <div class="coords-col" id="ranks-col"></div>
                     <div>
-                      <div class="board-wrapper" style="width: 320px; max-width: 100%;">
-                        <div id="board" style="width: 320px; max-width: 100%;"></div>
-                      </div>
-                      <div class="coords-row" id="files-row" style="display: flex; justify-content: space-around; margin-top: 8px; color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 700; width: 100%;"></div>
+                      <div id="board"></div>
+                      <div class="coords-row" id="files-row"></div>
                     </div>
                   </div>
 
-                  <!-- Move list -->
+                  <!-- Move notation panel (side panel) -->
                   <div class="moves-panel">
-                    <div class="panel-head">♜ The Evergreen Game · Move list</div>
+                    <div class="panel-head">♜ The Immortal Game · Move list</div>
                     <div id="move-list"></div>
                   </div>
                 </div>
 
-                <!-- Controls -->
+                <!-- Controls: navigation + speed + replaced button (Check Ur Level) -->
                 <div class="board-controls">
                   <div class="ctrl-group">
-                    <button class="cb" id="b-start" title="First move">⏮</button>
-                    <button class="cb" id="b-prev" title="Previous move">◀</button>
-                    <button class="cb cb-pause" id="b-pause">⏸ Pause</button>
-                    <button class="cb" id="b-next" title="Next move">▶</button>
-                    <button class="cb" id="b-end" title="Last move">⏭</button>
+                    <button class="cb" id="b-start" title="First move">⏮️</button>
+                    <button class="cb" id="b-prev" title="Previous move">◀️</button>
+                    <button class="cb cb-pause" id="b-pause">⏸️ Pause</button>
+                    <button class="cb" id="b-next" title="Next move">▶️</button>
+                    <button class="cb" id="b-end" title="Last move">⏭️</button>
                   </div>
                   <div class="speed-group">
-                    SPEED <input type="range" class="speed-range" id="speed" min="1" max="5" value="3">
+                    ⚡ SPEED <input type="range" class="speed-range" id="speed" min="1" max="5" value="3">
                   </div>
-                  <button class="test-skill-btn" id="checkLevelBtn" onclick="CK.navigate('arena')" style="background: linear-gradient(110deg, #10B981, #059669); border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
-                    <span class="tsb-icon">📈</span>
-                    <span class="tsb-text">Check Ur Level</span>
-                    <span class="tsb-sub">AI Challenge Arena</span>
+                  <!-- REPLACED BUTTON: "Check Ur Level" (instead of Play vs AI) – same style, no layout change -->
+                  <button class="check-level-btn" id="checkLevelBtn" onclick="CK.navigate('arena')">
+                    <span>📈</span> Check Ur Level
                   </button>
                 </div>
               </div>
