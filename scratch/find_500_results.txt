@@ -1,0 +1,14 @@
+Line 16: <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+Line 31: }, 500);
+Line 189: <div class="trust-item">👨‍🎓 500+ Active Students</div><div class="trust-divider"></div>
+Line 309: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">FIDE-certified coach with 2 years of experience in training young talents.</p>
+Line 321: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">2 years of experience in Hindustan Incubation Chess Club.</p>
+Line 333: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">FIDE-certified coach with 2 years of experience.</p>
+Line 345: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Beginner coach of child specialist. AFM title player</p>
+Line 357: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Beginner coach of child specialist.</p>
+Line 369: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Anna University Player Team of South, Sri Eshwar College of Engineering</p>
+Line 381: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Psychology of Chess, Student Chess Council</p>
+Line 393: <p style="color:#64748b; font-size:0.9rem; margin:0; line-height:1.6; font-weight:500;">Intermediate Coach · Certified Chess Trainer</p>
+Line 541: font-weight: 500;
+Line 687: <p style="opacity: 0.7; margin: 20px auto 40px; max-width:600px; font-size:1.1rem; line-height:1.6;">Join 500+ students and families who chose ChessKidoo. No experience needed – just curiosity.</p>
+Line 1736: <div class="modal-card" style="max-width: 500px;">
