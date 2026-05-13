@@ -224,14 +224,23 @@
         }
       }
 
-      // WhatsApp Redirection - Always trigger even if Supabase fails
+      // WhatsApp Message Text
       const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class.\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City:* ${city}\n\nPlease confirm my slot!`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
 
-      CK.showToast('🎉 Demo details ready! Redirecting to WhatsApp...', 'success');
+      // Email Pre-filled Data
+      const emailSubject = `New Demo Class Booking - ${name}`;
+      const emailBody = `Hello ChessKidoo Team,\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 Parent Name: ${name}\n📞 Phone/WhatsApp: ${phone}\n👶 Child's Age: ${age}\n📍 City: ${city}\n\nPlease reach out to me to schedule our slot!\n\nBest regards,\n${name}`;
+      const mailtoUrl = `mailto:Chesskidoo37@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+
+      CK.showToast('🎉 Directing to WhatsApp and Email Client...', 'success');
 
       setTimeout(() => {
+        // Open WhatsApp redirection in a new window
         window.open(waUrl, '_blank');
+        // Trigger mail client launch
+        window.location.href = mailtoUrl;
+
         CK.closeModal();
         form.reset();
       }, 1500);

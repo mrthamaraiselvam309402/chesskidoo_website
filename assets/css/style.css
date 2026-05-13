@@ -1434,3 +1434,112 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Premium Redesigned Global Footer Styling ─── */
+.footer-col-title {
+  margin-bottom: 24px;
+  color: var(--amber);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+}
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.footer-link-btn:hover {
+  color: var(--gold2);
+  transform: translateX(4px);
+}
+.social-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.social-icon-btn:hover {
+  border-color: var(--amber);
+  color: #fff;
+  background: rgba(232, 160, 32, 0.1);
+  transform: translateY(-2px);
+}
+.footer-contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+.footer-contact-item:hover {
+  color: var(--gold2);
+}
+.contact-icon {
+  color: var(--amber);
+  font-size: 1.1rem;
+}
+.footer-cta-btn {
+  width: 100%;
+  max-width: 240px;
+  height: 48px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-decoration: none;
+}
+.footer-demo-btn {
+  background: #E8A020;
+  color: white;
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(232, 160, 32, 0.2);
+}
+.footer-demo-btn:hover {
+  background: #F5C842;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232, 160, 32, 0.3);
+}
+.footer-wa-btn {
+  background: #00A884;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 168, 132, 0.2);
+}
+.footer-wa-btn:hover {
+  background: #00c49a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 168, 132, 0.3);
+}
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+}
