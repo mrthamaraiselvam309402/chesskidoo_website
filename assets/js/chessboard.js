@@ -8,17 +8,16 @@
   /* ─── Legendary Games Collection ─── */
   const GAMES = [
     {
-      title: 'The Immortal Game',
-      white: { name: 'Adolf Anderssen', elo: '~2600' },
-      black: { name: 'L. Kieseritzky', elo: '~2400' },
-      meta: 'London, 1851',
+      title: 'The Evergreen Game',
+      white: { name: 'Adolf Anderssen', elo: '~2650' },
+      black: { name: 'Jean Dufresne', elo: '~2450' },
+      meta: 'Berlin, 1852',
       moves: [
-        'e4','e5','f4','exf4','Bc4','Qh4+','Kf1','b5',
-        'Bxb5','Nf6','Nf3','Qh6','d3','Nh5','Nh4','Qg5',
-        'Nf5','c6','g4','Nf6','Rg1','cxb5','h4','Qg6',
-        'h5','Qg5','Qf3','Ng8','Bxf4','Qf6','Nc3','Bc5',
-        'Nd5','Qxb2','Bd6','Bxg1','e5','Qa1+','Ke2','Na6',
-        'Nxg7+','Kd8','Qf6+','Nxf6','Be7#'
+        'e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5', 'b4', 'Bxb4', 'c3', 'Ba5',
+        'd4', 'exd4', 'O-O', 'd3', 'Qb3', 'Qf6', 'e5', 'Qg6', 'Re1', 'Nge7',
+        'Ba3', 'b5', 'Qxb5', 'Rb8', 'Qa4', 'Bb6', 'Nbd2', 'Bb7', 'Ne4', 'Qf5',
+        'Bxd3', 'Qh5', 'Nf6+', 'gxf6', 'exf6', 'Rg8', 'Rad1', 'Qxf3', 'Rxe7+', 'Nxe7',
+        'Qxd7+', 'Kxd7', 'Bf5+', 'Ke8', 'Bd7+', 'Kf8', 'Bxe7#'
       ]
     }
   ];
@@ -144,7 +143,8 @@
 
       list.appendChild(row);
     }
-    list.scrollTop = list.scrollHeight;
+    const panel = document.querySelector('.moves-panel');
+    if (panel) panel.scrollTop = panel.scrollHeight;
   }
 
   function applyState() {
@@ -239,6 +239,7 @@
       pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
       position: 'start',
       draggable: true,
+      showNotation: false,
       onDragStart: onDragStart,
       onDrop: onDrop,
       onSnapEnd: onSnapEnd
@@ -246,7 +247,42 @@
     if (document.getElementById('board')) {
       boardWidget = Chessboard('board', config);
       initControls();
+
+      // Draw external coordinates if present
+      const ranksCol = document.getElementById('ranks-col');
+      const filesRow = document.getElementById('files-row');
+      if (ranksCol && ranksCol.children.length === 0) {
+        ['8','7','6','5','4','3','2','1'].forEach(r => {
+          const d = document.createElement('div');
+          d.className = 'coord';
+          d.innerText = r;
+          ranksCol.appendChild(d);
+        });
+      }
+      if (filesRow && filesRow.children.length === 0) {
+        ['a','b','c','d','e','f','g','h'].forEach(f => {
+          const d = document.createElement('div');
+          d.className = 'coord';
+          d.innerText = f;
+          filesRow.appendChild(d);
+        });
+      }
       
+      // Dynamic loading of currentGame details into the UI
+      const wName = document.querySelector('.player-chip .pname');
+      const wElo = document.querySelector('.player-chip .pelo');
+      const bName = document.querySelector('.player-chip.right .pname');
+      const bElo = document.querySelector('.player-chip.right .pelo');
+      const mCenterLoc = document.querySelector('.match-loc');
+      const mTitle = document.querySelector('.panel-head');
+      
+      if (wName) wName.innerText = currentGame.white.name;
+      if (wElo) wElo.innerText = `White · ELO ${currentGame.white.elo}`;
+      if (bName) bName.innerText = currentGame.black.name;
+      if (bElo) bElo.innerText = `Black · ELO ${currentGame.black.elo}`;
+      if (mCenterLoc) mCenterLoc.innerText = currentGame.meta;
+      if (mTitle) mTitle.innerText = currentGame.title.toUpperCase();
+
       // Load initial game
       game.reset();
       moveIdx = 0;

@@ -20,19 +20,38 @@
   const navLinks = document.getElementById('navLinks');
   if (mobileBtn && navLinks) {
     mobileBtn.addEventListener('click', () => {
-      const isVisible = navLinks.style.display === 'flex';
-      navLinks.style.display = isVisible ? 'none' : 'flex';
+      navLinks.classList.toggle('open');
+      mobileBtn.classList.toggle('active');
     });
-    // Auto-close on link click
-    navLinks.querySelectorAll('button').forEach(btn => {
+    navLinks.querySelectorAll('.nav-link').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (window.innerWidth <= 768) navLinks.style.display = 'none';
+        if (window.innerWidth <= 768) {
+          navLinks.classList.remove('open');
+          mobileBtn.classList.remove('active');
+        }
       });
     });
   }
 
   // Alias navigate to handle both section scrolling (landing) and page routing
   CK.navigate = (section) => {
+    // Route to arena page first (before landing section check)
+    if (section === 'arena') {
+      console.log('Main: Navigating to arena page');
+      CK.showPage('arena-page');
+      console.log('Main: Arena page shown, initializing...');
+      setTimeout(() => {
+        console.log('Main: Checking if CK.arena exists:', !!CK.arena);
+        if (CK.arena) {
+          console.log('Main: Calling arena.init()');
+          CK.arena.init();
+        } else {
+          console.error('Main: CK.arena is not defined!');
+        }
+      }, 100);
+      return;
+    }
+
     const landingSections = ['home', 'features', 'levels', 'coaches', 'about', 'reviews', 'pricing', 'faq'];
     const isLandingSection = landingSections.includes(section);
     
@@ -258,15 +277,23 @@
     `;
   }
 
-  /* ─── Mobile Menu ─── */
-  const mobileBtn = document.getElementById('mobileMenuBtn');
-  const navLinks = document.getElementById('navLinks');
-  if (mobileBtn && navLinks) {
-    mobileBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
+  /* ─── Scroll Effects + Active Nav Highlighting ─── */
+  const header = document.getElementById('header');
+  const sections = ['home', 'features', 'levels', 'coaches', 'about', 'reviews', 'pricing', 'faq'];
+  const navLinkEls = document.querySelectorAll('.nav-link[data-section]');
+
+  function updateActiveNav() {
+    const scrollY = window.scrollY + 120;
+    let current = 'home';
+    sections.forEach(sec => {
+      const el = document.getElementById(sec);
+      if (el && el.offsetTop <= scrollY) current = sec;
+    });
+    navLinkEls.forEach(link => {
+      link.classList.toggle('active', link.dataset.section === current);
+    });
   }
 
-  /* ─── Scroll Effects ─── */
-  const header = document.getElementById('header');
   window.addEventListener('scroll', () => {
     if (header) header.classList.toggle('scrolled', window.scrollY > 50);
     const progress = document.getElementById('scrollProgress');
@@ -274,7 +301,11 @@
       const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
       progress.style.width = pct + '%';
     }
+    updateActiveNav();
   });
+
+  // Run once on load
+  window.addEventListener('load', updateActiveNav);
 
   /* ─── Intersection Observer (Reveal Animations) ─── */
   const observer = new IntersectionObserver((entries) => {

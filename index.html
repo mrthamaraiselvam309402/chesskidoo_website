@@ -13,7 +13,7 @@
   <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/portals.css">
   
@@ -43,7 +43,7 @@
 
   <!-- Preloader -->
   <div id="preloader">
-    <div class="preloader-chess">♛</div>
+    <img class="preloader-logo" src="assets/img/logo.png" alt="ChessKiddo Logo">
     <div class="preloader-spinner"></div>
     <div class="preloader-text">CHESS KIDDO</div>
   </div>
@@ -52,19 +52,27 @@
   <header class="site-header" id="header">
     <div class="header-inner">
       <a href="/" class="logo">
-        <div class="logo-icon">♛</div>
+        <img class="logo-img" src="assets/img/logo.png" alt="ChessKiddo Logo">
         <span class="logo-text">Chess<span>Kiddo</span></span>
       </a>
       <nav class="nav-links" id="navLinks">
-        <button class="nav-link" onclick="CK.navigate('home')">Home</button>
-        <button class="nav-link" onclick="CK.navigate('features')">Features</button>
-        <button class="nav-link" onclick="CK.navigate('levels')">Curriculum</button>
-        <button class="nav-link" onclick="CK.navigate('coaches')">Coaches</button>
-        <button class="nav-link" onclick="CK.navigate('about')">About</button>
-        <button class="nav-link btn btn-primary" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.openModal('contactModal')">Book Demo</button>
-        <button id="loginNavBtn" class="nav-link btn btn-ghost" style="padding: 8px 20px; font-size: 0.8rem;" onclick="CK.showPage('login-page')">Log In</button>
+        <button class="nav-link active" data-section="home" onclick="CK.navigate('home')">Home</button>
+        <button class="nav-link" data-section="features" onclick="CK.navigate('features')">Features</button>
+        <button class="nav-link" data-section="levels" onclick="CK.navigate('levels')">Curriculum</button>
+        <button class="nav-link" data-section="coaches" onclick="CK.navigate('coaches')">Coaches</button>
+        <button class="nav-link" data-section="about" onclick="CK.navigate('about')">About</button>
+        <a href="tel:+919025846663" class="nav-link nav-phone" aria-label="Call us">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </a>
+        <div class="nav-spacer"></div>
+        <button class="nav-link btn btn-primary nav-cta" onclick="CK.openModal('contactModal')">Book Demo</button>
+        <button id="loginNavBtn" class="nav-link btn btn-ghost nav-login" onclick="CK.showPage('login-page')">Log In</button>
       </nav>
-      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
     </div>
   </header>
 
@@ -75,40 +83,29 @@
     <div id="landing-page" class="page active">
       <!-- Hero Section -->
       <section class="hero" id="home">
-        <div class="hero-bg"></div>
-        <div class="hero-pattern"></div>
+        <div class="hero-bg-pattern"></div>
         <div class="hero-content-wrap">
           <div class="hero-grid">
             <div class="hero-content">
-              <div class="hero-badge"><span>🇮🇳</span> India's #1 Chess Academy for Kids</div>
-              <h1 class="hero-title">Where Young Minds<br><span class="line-accent">Master the Board</span></h1>
-              <p class="hero-sub">Manage your chess students, track progress, and level up your coaching experience with FIDE-certified experts.</p>
+              <div class="hero-badge"><span>♟</span> CHESS ACADEMY FOR YOUNG MINDS</div>
+              <h1 class="hero-title">Where kids learn to<br><em>think two moves</em><br>ahead.</h1>
+              <p class="hero-sub">Expert-led chess coaching for children of all skill levels. Live classes, game reviews, progress tracking — everything a young chess prodigy needs.</p>
               <div class="hero-btns">
-                <button class="btn btn-primary" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
-                <a href="https://wa.me/919025846663" target="_blank" class="btn btn-ghost wa-btn">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.258-.041.404.314.145.356.491 1.2.535 1.288s.072.188.014.303c-.058.116-.087.188-.173.289l-.26.303c-.087.101-.177.211-.077.383.101.173.446.735.956 1.19.658.587 1.212.769 1.385.855.173.087.274.072.376-.043.101-.116.433-.505.548-.678.116-.173.231-.144.39-.087.159.058 1.011.477 1.184.564s.289.13.332.202c.045.072.045.419-.1.824z"/></svg>
-                  WhatsApp Us
-                </a>
+                <button class="btn btn-primary" onclick="CK.openDemoModal()">Start Learning Free</button>
+                <a href="#features" class="btn btn-ghost">Watch a game replay</a>
               </div>
-              <div class="stats-row">
-                <div class="stat">
-                  <span class="stat-val">500+</span>
-                  <span class="stat-label">Active Students</span>
+              <div class="hero-stats">
+                <div class="stat-item">
+                  <div class="hero-stat-num">1,200+</div>
+                  <div class="hero-stat-label">Students Enrolled</div>
                 </div>
-                <div class="stat-div"></div>
-                <div class="stat">
-                  <span class="stat-val">8</span>
-                  <span class="stat-label">FIDE Coaches</span>
+                <div class="stat-item">
+                  <div class="hero-stat-num">48</div>
+                  <div class="hero-stat-label">Expert Coaches</div>
                 </div>
-                <div class="stat-div"></div>
-                <div class="stat">
-                  <span class="stat-val">12+</span>
-                  <span class="stat-label">Championships</span>
-                </div>
-                <div class="stat-div"></div>
-                <div class="stat">
-                  <span class="stat-val">4.9★</span>
-                  <span class="stat-label">Parent Rating</span>
+                <div class="stat-item">
+                  <div class="hero-stat-num">96%</div>
+                  <div class="hero-stat-label">Parent Satisfaction</div>
                 </div>
               </div>
             </div>
@@ -120,31 +117,37 @@
                     <div class="avatar av-white">♔</div>
                     <div>
                       <div class="pname">Adolf Anderssen</div>
-                      <div class="pelo">White · ELO ~2600</div>
+                      <div class="pelo">White · ELO ~2650</div>
                     </div>
                   </div>
                   <div class="match-center">
                     <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
-                    <div class="match-loc">London, 1851</div>
+                    <div class="match-loc">Berlin, 1852</div>
                   </div>
                   <div class="player-chip right">
                     <div class="avatar av-black">♚</div>
                     <div style="text-align:right">
-                      <div class="pname">L. Kieseritzky</div>
-                      <div class="pelo">Black · ELO ~2400</div>
+                      <div class="pname">Jean Dufresne</div>
+                      <div class="pelo">Black · ELO ~2450</div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Board + moves -->
                 <div class="board-section">
-                  <div class="board-wrapper" style="width:100%; max-width: 320px;">
-                    <div id="board" style="width: 100%;"></div>
+                  <div style="display: flex; align-items: stretch; gap: 8px;">
+                    <div class="coords-col" id="ranks-col" style="display: flex; flex-direction: column; justify-content: space-around; width: 20px; text-align: center; color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 700;"></div>
+                    <div>
+                      <div class="board-wrapper" style="width:100%; max-width: 320px;">
+                        <div id="board" style="width: 100%;"></div>
+                      </div>
+                      <div class="coords-row" id="files-row" style="display: flex; justify-content: space-around; margin-top: 8px; color: rgba(255,255,255,0.35); font-size: 11px; font-weight: 700; width: 100%;"></div>
+                    </div>
                   </div>
 
                   <!-- Move list -->
                   <div class="moves-panel">
-                    <div class="panel-head">The Immortal Game</div>
+                    <div class="panel-head">♜ The Evergreen Game · Move list</div>
                     <div id="move-list"></div>
                   </div>
                 </div>
@@ -152,16 +155,20 @@
                 <!-- Controls -->
                 <div class="board-controls">
                   <div class="ctrl-group">
-                    <button class="cb" id="b-start">⏮</button>
-                    <button class="cb" id="b-prev">◀</button>
+                    <button class="cb" id="b-start" title="First move">⏮</button>
+                    <button class="cb" id="b-prev" title="Previous move">◀</button>
                     <button class="cb cb-pause" id="b-pause">⏸ Pause</button>
-                    <button class="cb" id="b-next">▶</button>
-                    <button class="cb" id="b-end">⏭</button>
+                    <button class="cb" id="b-next" title="Next move">▶</button>
+                    <button class="cb" id="b-end" title="Last move">⏭</button>
                   </div>
                   <div class="speed-group">
                     SPEED <input type="range" class="speed-range" id="speed" min="1" max="5" value="3">
                   </div>
-                  <button class="ai-btn" onclick="CK.startPlayMode()">🤖 Play vs AI</button>
+                  <button class="test-skill-btn" id="checkLevelBtn" onclick="CK.navigate('arena')" style="background: linear-gradient(110deg, #10B981, #059669); border: none; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
+                    <span class="tsb-icon">📈</span>
+                    <span class="tsb-text">Check Ur Level</span>
+                    <span class="tsb-sub">AI Challenge Arena</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -689,8 +696,8 @@
           <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap:60px;">
             <div>
               <div class="logo" style="margin-bottom:24px;">
-                <div class="logo-icon" style="color:var(--amber);">♛</div>
-                <span class="logo-text" style="color:#fff;">Chess<span style="color:var(--amber);">Kidoo</span></span>
+                <img class="logo-img" src="assets/img/logo.png" alt="ChessKiddo Logo">
+                <span class="logo-text" style="color:#fff;">Chess<span style="color:var(--amber);">Kiddo</span></span>
               </div>
               <p style="opacity:0.6; line-height:1.7; font-size:1rem; max-width:340px;">
                 India's #1 FIDE-certified chess academy for students aged 6–18. Building champions, one move at a time.
@@ -1383,6 +1390,134 @@
       </div>
     </div>
 
+    <!-- ======================== ARENA PAGE ======================== -->
+    <div id="arena-page" class="page">
+      <!-- Arena Header -->
+      <header class="arena-header">
+        <div class="arena-header-left">
+          <a href="#" class="arena-logo" onclick="CK.navigate('home'); return false;" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+            <img class="logo-img" src="assets/img/logo.png" alt="ChessKiddo Logo" style="height: 36px; width: auto; object-fit: contain;">
+            <span class="arena-logo-text" style="font-family: var(--font-display); font-weight: 900; font-size: 1.2rem; color: white;">Chess<span style="color: var(--arena-gold);">Kiddo</span></span>
+          </a>
+          <span class="arena-title-text">AI Challenge Arena</span>
+        </div>
+        <div class="difficulty-selector">
+          <button class="diff-btn" data-level="Beginner" onclick="CK.arena.setDifficulty('Beginner')">Beginner</button>
+          <button class="diff-btn active" data-level="Intermediate" onclick="CK.arena.setDifficulty('Intermediate')">Intermediate</button>
+          <button class="diff-btn" data-level="Advanced" onclick="CK.arena.setDifficulty('Advanced')">Advanced</button>
+          <button class="diff-btn" data-level="Expert" onclick="CK.arena.setDifficulty('Expert')">Expert</button>
+        </div>
+        <div class="arena-header-right">
+          <div class="arena-player-info">
+            <div class="arena-player-avatar">P</div>
+            <span class="arena-player-name">Player</span>
+          </div>
+          <button class="btn-back-home" onclick="CK.arena.goHome()">&larr; Home</button>
+        </div>
+      </header>
+
+      <!-- Game Layout -->
+      <div class="arena-game-layout">
+        <!-- Board Column -->
+        <div class="arena-board-col">
+          <div class="arena-board-container">
+            <!-- Eval Bar -->
+            <div class="eval-bar-container">
+              <div class="eval-bar eval-bar-white" id="eval-bar-white" style="height: 50%"></div>
+              <div class="eval-bar eval-bar-black" id="eval-bar-black" style="height: 50%"></div>
+            </div>
+            <!-- Board with coords -->
+            <div>
+              <div class="arena-board-wrapper">
+                <div class="arena-board" id="arena-board"></div>
+              </div>
+              <div class="arena-coords-bottom">
+                <span class="arena-coord">a</span>
+                <span class="arena-coord">b</span>
+                <span class="arena-coord">c</span>
+                <span class="arena-coord">d</span>
+                <span class="arena-coord">e</span>
+                <span class="arena-coord">f</span>
+                <span class="arena-coord">g</span>
+                <span class="arena-coord">h</span>
+              </div>
+            </div>
+            <div class="arena-coords-left">
+              <span class="arena-coord">8</span>
+              <span class="arena-coord">7</span>
+              <span class="arena-coord">6</span>
+              <span class="arena-coord">5</span>
+              <span class="arena-coord">4</span>
+              <span class="arena-coord">3</span>
+              <span class="arena-coord">2</span>
+              <span class="arena-coord">1</span>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="arena-status" id="arena-status">Your turn — play as White</div>
+
+          <!-- Controls -->
+          <div class="arena-controls">
+            <button class="arena-ctrl-btn primary" onclick="CK.arena.newGame()">&#x1F504; New Game</button>
+            <button class="arena-ctrl-btn" onclick="CK.arena.offerDraw()">&#x1F91D; Offer Draw</button>
+            <button class="arena-ctrl-btn danger" onclick="CK.arena.resignGame()">&#x1F3F3; Resign</button>
+          </div>
+        </div>
+
+        <!-- Analysis Column -->
+        <div class="arena-analysis-col">
+          <!-- Engine Eval -->
+          <div class="arena-panel">
+            <div class="arena-panel-header">
+              <span>Engine Analysis</span>
+              <span id="arena-engine-status" style="font-size:0.65rem;font-weight:400;opacity:0.5">Loading...</span>
+            </div>
+            <div class="engine-eval-display">
+              <div class="engine-eval-value" id="arena-eval-value">0.0</div>
+              <div class="engine-depth" id="arena-engine-depth">Depth: —</div>
+              <div class="engine-best-line" id="arena-best-line">Best: —</div>
+            </div>
+          </div>
+
+          <!-- Clocks -->
+          <div class="arena-panel">
+            <div class="arena-clock">
+              <div id="arena-clock-white-wrap">
+                <div class="clock-time" id="arena-clock-white">10:00</div>
+                <div class="clock-label">White (You)</div>
+              </div>
+              <div id="arena-clock-black-wrap">
+                <div class="clock-time" id="arena-clock-black">10:00</div>
+                <div class="clock-label">Black (AI)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Captured Pieces -->
+          <div class="arena-panel">
+            <div class="arena-panel-header">Captured by You</div>
+            <div class="captured-pieces" id="arena-captured-white"></div>
+            <div class="arena-panel-header" style="border-top:1px solid var(--arena-border)">Captured by AI</div>
+            <div class="captured-pieces" id="arena-captured-black"></div>
+          </div>
+
+          <!-- Move List -->
+          <div class="arena-panel">
+            <div class="arena-panel-header">Move History</div>
+            <div class="arena-move-list" id="arena-move-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post-Game Report Overlay -->
+      <div class="arena-report-overlay" id="arena-report-overlay"></div>
+
+      <!-- Certificate Overlay -->
+      <div class="cert-overlay" id="cert-overlay"></div>
+    </div>
+    <!-- /ARENA PAGE -->
+
   </div>
 
 
@@ -1501,17 +1636,7 @@
     </div>
   </div>
 
-  <!-- Floating UI -->
-  <div class="floating-ui">
-    <a href="https://wa.me/919025846663" target="_blank" class="whatsapp-float" title="Chat with us" style="background: #25D366; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); text-decoration: none;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="white" viewBox="0 0 16 16">
-        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.061 3.978l-.125.125L.16 16l4.216-1.106.123.123A7.85 7.85 0 0 0 7.994 16c4.366 0 7.923-3.56 7.927-7.928.001-2.127-.827-4.128-2.32-5.619zm-3.607 9.854c-.185.185-.43.277-.708.277-.277 0-.523-.092-.708-.277L7.14 10.457a.994.994 0 0 1 0-1.414.994.994 0 0 1 1.414 0l1.44 1.44c.185.185.277.43.277.708 0 .278-.092.523-.277.708zm-2.414-2.414c.185-.185.277-.43.277-.708s-.092-.523-.277-.708L5.14 6.457a.994.994 0 0 0-1.414 0 .994.994 0 0 0 0 1.414l1.44 1.44c.185.185.43.277.708.277.278 0 .523-.092.708-.277z"/>
-      </svg>
-    </a>
-    <div id="bot-launcher" class="bot-float" onclick="CK.toggleBot()" title="Ask ChessKidoo AI">
-      <span>🤖</span>
-    </div>
-  </div>
+  <!-- Floating UI Removed -->
 
   <!-- Demo/Contact Modal -->
   <div id="contactModal" class="modal-overlay">
@@ -1615,10 +1740,8 @@
   <script src="assets/js/chessboard.js"></script>
 
 
-  <!-- WhatsApp Floating Widget -->
-  <a href="https://wa.me/1234567890" target="_blank" class="whatsapp-widget" style="position:fixed; bottom:20px; left:20px; background:#25D366; color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; box-shadow:0 4px 15px rgba(37,211,102,0.4); z-index:9999; text-decoration:none; transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-    <span style="transform: translateY(-2px);">💬</span>
-  </a>
+  <link rel="stylesheet" href="assets/css/arena.css">
+  <script src="assets/js/arena.js"></script>
 
 </body>
 </html>
