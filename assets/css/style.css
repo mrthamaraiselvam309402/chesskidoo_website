@@ -245,6 +245,36 @@ body {
 }
 .btn-ghost:hover::after { transform: translateX(4px); }
 
+/* Hero Specific Custom CTAs (Matching Target Image 1) */
+.hero-btn-demo {
+  background: #E8A020 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(232, 160, 32, 0.3) !important;
+  font-weight: 700;
+  border: none;
+}
+.hero-btn-demo:hover {
+  background: #F5C842 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(232, 160, 32, 0.45) !important;
+}
+.hero-btn-wa {
+  background: #FDF6EC !important;
+  border: 1.5px solid #7A5530 !important;
+  color: #171007 !important;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(122, 85, 48, 0.08) !important;
+}
+.hero-btn-wa:hover {
+  background: #FFFDF9 !important;
+  border-color: #E8A020 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(122, 85, 48, 0.15) !important;
+}
+
 /* ─── Hero Section ─── */
 .hero {
   position: relative;
