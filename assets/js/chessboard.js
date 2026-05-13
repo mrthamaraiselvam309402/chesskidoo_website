@@ -236,11 +236,19 @@
         row.appendChild(blackSpan);
         moveListEl.appendChild(row);
       }
-      // auto-scroll to active move
+      // auto-scroll to active move (confined to panel container only)
       const activeMove = moveListEl.querySelector('.move-san.active');
       if (activeMove) {
         const panel = document.querySelector('.moves-panel');
-        if (panel) activeMove.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (panel) {
+          const containerTop = panel.getBoundingClientRect().top;
+          const activeTop = activeMove.getBoundingClientRect().top;
+          const relativeTop = activeTop - containerTop + panel.scrollTop;
+          panel.scrollTo({
+            top: relativeTop - (panel.clientHeight / 2) + (activeMove.clientHeight / 2),
+            behavior: 'smooth'
+          });
+        }
       }
     }
 
