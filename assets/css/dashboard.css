@@ -3,11 +3,17 @@
    Consistent with the ChessKidoo Amber/Cream theme.
    --------------------------------------------------------------- */
 
-/* ---- Overall layout ------------------------------------------------ */
+/* Prevent horizontal scrolling */
+html, body {
+  overflow-x: hidden;
+}
+
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
   background: var(--cream);
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ---- Sidebar ------------------------------------------------------- */
@@ -216,6 +222,114 @@
     flex-direction: row;
     align-items: center;
     padding: 16px 20px;
+    overflow-x: auto;
+  }
+  .sidebar-brand {
+    margin-bottom: 0;
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+  }
+  .sidebar-nav a {
+    white-space: nowrap;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+  .dashboard-main {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .dashboard-header h2 {
+    font-size: 1.75rem;
+  }
+  .sidebar {
+    padding: 12px 16px;
+  }
+  .dashboard-main {
+    padding: 16px;
+  }
+  .card {
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .table {
+    font-size: 0.85rem;
+  }
+  .table th, .table td {
+    padding: 10px 12px;
+  }
+  .stat-card {
+    padding: 20px;
+  }
+  .stat-card p {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 10px 12px;
+  }
+  .sidebar-brand {
+    margin-right: 10px;
+  }
+  .sidebar-brand span {
+    font-size: 1rem;
+  }
+  .sidebar-nav a {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+  .dashboard-main {
+    padding: 12px;
+  }
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .sidebar-nav {
+    gap: 2px;
+  }
+  .sidebar-nav a {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+  .dashboard-main {
+    padding: 10px;
+  }
+  .stat-card p {
+    font-size: 1.6rem;
+  }
+}
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 20px;
   }
   .sidebar-brand {
     margin-bottom: 0;
@@ -241,5 +355,48 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 12px 16px;
+  }
+  .sidebar-brand {
+    margin-right: 12px;
+  }
+  .sidebar-nav a {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+  }
+  .dashboard-main {
+    padding: 16px;
+  }
+  .card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  .table {
+    font-size: 0.85rem;
+  }
+  .table th, .table td {
+    padding: 10px 12px;
+  }
+  .stat-card {
+    padding: 24px;
+  }
+  .stat-card p {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .sidebar-nav {
+    gap: 4px;
+  }
+  .sidebar-nav a {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    gap: 8px;
   }
 }

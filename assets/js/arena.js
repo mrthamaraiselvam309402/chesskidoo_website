@@ -31,8 +31,11 @@
   let blackClock = 600;
   let clockInterval = null;
   let activeClock = 'w';
+  let aiStartTime = null;
+  let lastTickTime = null;
   let evalChart = null;
   let achievements = [];
+  let puzzleMode = false;
 
   const DIFFICULTY_DEPTH = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -69,6 +72,7 @@
   /* ─── Init ─── */
   A.init = () => {
     console.log('Arena: Initializing AI Challenge Arena...');
+    puzzleMode = false;
     game = new Chess();
     boardEl = document.getElementById('arena-board');
 
@@ -90,6 +94,8 @@
     whiteClock = 600;
     blackClock = 600;
     activeClock = 'w';
+    aiStartTime = null;
+    lastTickTime = Date.now();
     achievements = JSON.parse(localStorage.getItem('ck_achievements') || '[]');
 
     console.log('Arena: Rendering board...');
@@ -103,22 +109,49 @@
     startClock();
     console.log('Arena: Initializing eval chart...');
     initEvalChart();
+    A.updateMinimaxAnalysis();
     console.log('Arena: Initialization complete!');
   };
 
+  function handleTimeout(loserColor) {
+    isGameOver = true;
+    isThinking = false;
+    if (clockInterval) clearInterval(clockInterval);
+
+    let result, resultText;
+    if (loserColor === 'w') {
+      result = 'loss'; resultText = 'AI Wins on Time ⏱️';
+    } else {
+      result = 'win'; resultText = 'You Win on Time! ⏱️';
+    }
+
+    updateStatus(resultText, 'gameover');
+    checkAchievements(result);
+
+    setTimeout(() => {
+      showPostGameReport(result);
+    }, 1200);
+  }
+
   function startClock() {
     if (clockInterval) clearInterval(clockInterval);
+    lastTickTime = Date.now();
     clockInterval = setInterval(() => {
       if (isGameOver) { clearInterval(clockInterval); return; }
-      if (activeClock === 'w' && isPlayerTurn && !isThinking) {
-        whiteClock = Math.max(0, whiteClock - 1);
-        if (whiteClock === 0) { endGame('timeout', 'b'); return; }
-      } else if (activeClock === 'b' && !isPlayerTurn && !isThinking) {
-        blackClock = Math.max(0, blackClock - 1);
-        if (blackClock === 0) { endGame('timeout', 'w'); return; }
+      const now = Date.now();
+      const elapsedSec = Math.floor((now - lastTickTime) / 1000);
+      if (elapsedSec >= 1) {
+        if (activeClock === 'w') {
+          whiteClock = Math.max(0, whiteClock - elapsedSec);
+          if (whiteClock === 0) { handleTimeout('w'); return; }
+        } else if (activeClock === 'b') {
+          blackClock = Math.max(0, blackClock - elapsedSec);
+          if (blackClock === 0) { handleTimeout('b'); return; }
+        }
+        lastTickTime = now;
+        updateClockDisplay();
       }
-      updateClockDisplay();
-    }, 1000);
+    }, 250);
   }
 
   function updateClockDisplay() {
@@ -268,7 +301,7 @@
       evalEl.textContent = sign + eval_.toFixed(1);
       evalEl.className = 'engine-eval-value' + (eval_ < 0 ? ' negative' : '');
     }
-    if (depthEl && depth) depthEl.textContent = `Depth: ${depth}`;
+    if (depthEl && depth !== null && depth !== undefined) depthEl.textContent = `Depth: ${depth}`;
     if (lineEl && bestLine.length) lineEl.textContent = `Best: ${bestLine.join(' ')}`;
 
     // Update evaluation bar heights
@@ -457,6 +490,8 @@ function executePlayerMove(move) {
     renderBoard();
     renderAnalysisPanel();
     activeClock = 'b';
+    aiStartTime = Date.now();
+    lastTickTime = Date.now();
 
     if (game.game_over()) {
       handleGameOver();
@@ -551,7 +586,19 @@ function executePlayerMove(move) {
 
     renderBoard();
     renderAnalysisPanel();
+    
+    // Deduct exact thinking time from AI clock if we have a valid aiStartTime
+    if (aiStartTime) {
+      const thinkingMs = Date.now() - aiStartTime;
+      const thinkingSec = Math.round(thinkingMs / 1000);
+      if (thinkingSec > 0) {
+        blackClock = Math.max(0, blackClock - thinkingSec);
+      }
+      aiStartTime = null;
+    }
+    
     activeClock = 'w';
+    lastTickTime = Date.now();
 
     if (game.game_over()) {
       handleGameOver();
@@ -560,6 +607,7 @@ function executePlayerMove(move) {
 
     isPlayerTurn = true;
     updateStatus('Your turn');
+    A.updateMinimaxAnalysis();
   }
 
   /* ─── Minimax Fallback ─── */
@@ -687,6 +735,10 @@ function executePlayerMove(move) {
       evalHistory.push(playerEval);
       updateEvalChart(moveHistory.length, playerEval);
       renderAnalysisPanel();
+      
+      // Update Engine Analysis HUD display in Minimax Mode
+      const displayEval = playerEval / 10;
+      updateEngineDisplay(displayEval, depth, bestMove ? [bestMove.san] : []);
     }
   }
 
@@ -1452,6 +1504,7 @@ let puzzleMoves = [];
 
 /* ─── Puzzle Mode ─── */
 A.startPuzzle = (puzzleId = null) => {
+  puzzleMode = true;
   if (puzzleId) {
     currentPuzzle = PUZZLES.find(p => p.id === puzzleId);
   } else {
@@ -1647,6 +1700,30 @@ A.showToast = (msg, type = 'info') => {
     toast.style.opacity = '0';
   }, 3000);
 };
+  A.updateMinimaxAnalysis = () => {
+    if (useWasm) return;
+    const depth = DIFFICULTY_DEPTH[currentDifficulty] || 2;
+    const moves = game.moves({ verbose: true });
+    if (moves.length === 0) return;
+
+    let bestMove = null;
+    let bestEval = game.turn() === 'w' ? -Infinity : Infinity;
+    const isMax = game.turn() === 'w';
+
+    for (const m of moves) {
+      game.move(m);
+      const ev = minimax(depth - 1, -Infinity, Infinity, !isMax);
+      game.undo();
+      if (isMax && ev > bestEval) { bestEval = ev; bestMove = m; }
+      if (!isMax && ev < bestEval) { bestEval = ev; bestMove = m; }
+    }
+
+    if (bestMove) {
+      const displayEval = bestEval / 10;
+      updateEngineDisplay(displayEval, depth, [bestMove.san]);
+    }
+  };
+
   A.goHome = () => {
     if (stockfish) {
       try { stockfish.terminate(); } catch(e) {}

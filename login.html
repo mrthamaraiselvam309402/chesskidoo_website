@@ -2,41 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>ChessKidoo – Sign In</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23D97706%22/><text y=%22.85em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2270%22 fill=%22white%22>♘</text></svg>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css"/>
   <link rel="stylesheet" href="assets/css/dashboard.css"/>
 </head>
 <body class="section-light">
 
-  <section class="section-light" style="padding:120px 0;">
-    <div class="grid-wrap" style="max-width:460px; margin:auto;">
+  <header class="site-header" id="header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon-box">
+          <span class="logo-icon-symbol">♘</span>
+        </div>
+        <span class="logo-text">Chess<span>Kidoo</span></span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <div class="nav-spacer"></div>
+      </nav>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="section-light" style="padding:100px 0 60px;">
+    <div class="grid-wrap" style="max-width:460px; margin:auto; width: 100%;">
       <h2 class="eyebrow">Welcome back</h2>
-      <h1 style="font-size:2rem; margin-bottom:1rem;">ChessKidoo Sign In</h1>
+      <h1 style="font-size:clamp(1.75rem, 5vw, 2.5rem); margin-bottom:1rem;">ChessKidoo Sign In</h1>
 
       <form id="loginForm" novalidate>
         <div class="form-group">
           <label for="login-user">Username <span class="req">*</span></label>
-          <input type="text" id="login-user" placeholder="e.g. admin@ck" autocomplete="username"/>
+          <input type="text" id="login-user" placeholder="e.g. admin@ck" autocomplete="username" style="font-size:16px;">
           <span class="f-err" id="login-user-err"></span>
         </div>
 
         <div class="form-group">
           <label for="login-pass">Password <span class="req">*</span></label>
           <div class="input-pwd-wrap">
-            <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+            <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" style="font-size:16px;">
             <button type="button" class="pwd-toggle" aria-label="Show password">👁</button>
           </div>
           <span class="f-err" id="login-pass-err"></span>
         </div>
 
         <div class="form-group" style="display:flex; align-items:center; gap:12px;">
-          <input type="checkbox" id="rememberMe"/>
+          <input type="checkbox" id="rememberMe">
           <label for="rememberMe" style="margin:0;">Remember me</label>
         </div>
 

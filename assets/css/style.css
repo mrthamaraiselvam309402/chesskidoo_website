@@ -52,6 +52,8 @@ body {
   background: var(--cream); 
   color: var(--ink); 
   line-height: 1.6; 
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ─── Layout ─── */
@@ -503,16 +505,7 @@ body {
   font-size: 1.75rem; margin-bottom: 20px;
 }
 
-/* Level Cards */
-.level-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
-.level-card {
-  background: var(--ink); padding: 40px 32px; border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.1); height: 100%;
-  display: flex; flex-direction: column; text-align: center;
-}
-.level-card.featured { border-color: var(--amber); background: linear-gradient(135deg, var(--ink) 0%, rgba(217,119,6,0.1) 100%); }
-.level-piece { font-size: 3.5rem; display: block; margin-bottom: 16px; color: var(--amber); }
-.level-rank { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--amber-pale); margin-bottom: 8px; letter-spacing: 1px; }
+/* Level Cards CSS Cleaned */
 
 /* Coach Cards */
 .coach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
@@ -1299,38 +1292,7 @@ body {
   transform: scale(1.05);
 }
 
-/* ─── 3D Level Cards with Depth ─── */
-.level-card {
-  transform-style: preserve-3d;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  position: relative;
-  overflow: hidden;
-}
-.level-card::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 30% 30%, rgba(217,119,6,0.05), transparent 70%);
-  transform: translateZ(-10px);
-  pointer-events: none;
-  transition: all 0.5s ease;
-}
-.level-card:hover {
-  transform: perspective(800px) rotateX(-4deg) translateY(-15px) translateZ(25px);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 40px rgba(217,119,6,0.05);
-}
-.level-card:hover .level-piece {
-  animation: chessPieceBounce 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-}
-@keyframes chessPieceBounce {
-  0%   { transform: translateZ(0) rotateY(0deg); }
-  30%  { transform: translateZ(30px) rotateY(20deg) scale(1.15); }
-  60%  { transform: translateZ(15px) rotateY(-10deg) scale(1.05); }
-  100% { transform: translateZ(0) rotateY(0deg) scale(1); }
-}
+/* Level Cards 3D CSS Cleaned */
 
 /* ─── 3D Pricing Cards ─── */
 .price-card {
@@ -2005,5 +1967,621 @@ body {
   }
   .level-card {
     min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .coach-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ─── Mobile Optimizations ─── */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.btn, .nav-link, .faq-trigger, .p-nav-item, .footer-link-btn, .social-icon-btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn, .nav-login, .nav-cta {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.faq-trigger {
+  min-height: 56px;
+  padding: 16px 20px;
+}
+
+.p-nav-item {
+  min-height: 48px;
+  padding: 12px 16px;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  min-height: 48px;
+  font-size: 16px;
+}
+
+/* Prevent horizontal scrolling */
+html, body {
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure all interactive elements are touch-friendly */
+button, input, textarea, select, a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 768px - Tablet breakpoint */
+@media (max-width: 1024px) {
+  .header-inner { padding: 16px 32px; }
+  .container { padding: 0 24px; }
+  .hero-content-wrap { padding: 10px 32px 60px; }
+  .section-padding { padding: 80px 0; }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+  }
+  
+  .nav-links {
+    top: 60px;
+  }
+  
+  .hero-btns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .hero-btns .btn {
+    width: 100%;
+  }
+  
+  .stats-row {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .stat-div {
+    width: 1px;
+    height: 40px;
+    margin: 6px 0;
+  }
+  
+  .board-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .ctrl-group {
+    justify-content: center;
+  }
+  
+  .floating-ui {
+    bottom: 20px;
+    right: 20px;
+    gap: 12px;
+  }
+  
+  .whatsapp-float, .bot-float {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .bot-window {
+    width: 95vw;
+    max-width: 340px;
+    height: 420px;
+    bottom: 100px;
+    right: 16px;
+    left: 16px;
+  }
+  
+  .level-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .coach-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .pricing-grid, .feat-grid, .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .trust-item {
+    font-size: 0.75rem;
+  }
+  
+  .preloader-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+  }
+}
+
+/* 480px - Small mobile breakpoint */
+@media (max-width: 480px) {
+  .header-inner { padding: 12px 16px; }
+  .logo-text { font-size: 1.25rem; }
+  .logo-icon-box { width: 32px; height: 32px; }
+  .logo-icon-symbol { font-size: 18px; }
+  
+  .container { padding: 0 16px; }
+  .section-padding { padding: 60px 0; }
+  .section-head { margin-bottom: 40px; padding: 0 12px; }
+  .section-head h2 { font-size: 1.75rem; }
+  .eyebrow { font-size: 0.65rem; letter-spacing: 1px; }
+  
+  .hero { padding-top: 80px; }
+  .hero-content-wrap { padding: 10px 16px 40px; }
+  .hero-title { font-size: clamp(2rem, 8vw, 3rem); }
+  .hero-badge { font-size: 0.7rem; padding: 6px 14px; }
+  .hero-stat-num { font-size: 1.8rem; }
+  .hero-stat-label { font-size: 0.7rem; }
+  
+  .btn { padding: 14px 28px; font-size: 0.95rem; }
+  .nav-login { padding: 8px 16px; font-size: 0.85rem; }
+  
+  .feat-card, .level-card, .price-card, .login-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  
+  .feat-icon-wrap { width: 50px; height: 50px; font-size: 1.4rem; margin-bottom: 16px; }
+  
+  .coach-grid { grid-template-columns: 1fr; }
+  .sidebar { padding: 16px 12px; }
+  .dashboard-main { padding: 16px; }
+  
+  .table th, .table td { padding: 12px 16px; }
+  .table { font-size: 0.85rem; }
+  
+  .preloader-text { font-size: 0.6rem; letter-spacing: 0.15em; }
+  
+  .board-panel { border-radius: 20px; padding: 16px; }
+  #board { width: 280px; height: 280px; grid-template-columns: repeat(8, 35px); grid-template-rows: repeat(8, 35px); }
+  .sq { width: 35px; height: 35px; }
+  .piece { font-size: 28px; }
+  .coords-col { height: 280px; }
+  .coords-row { width: 280px; }
+  .moves-panel { height: 180px; min-width: auto; }
+}
+
+/* 360px - Extra small screens */
+@media (max-width: 360px) {
+  .header-inner { padding: 10px 12px; }
+  .nav-link { font-size: 0.8rem; padding: 12px 10px; }
+  .btn { padding: 12px 20px; font-size: 0.9rem; }
+  
+  .hero-stat-num { font-size: 1.6rem; }
+  .hero-stat-label { font-size: 0.65rem; }
+  
+  .section-head h2 { font-size: 1.5rem; }
+  
+  .level-card, .feat-card, .price-card { padding: 20px; }
+  .level-piece { font-size: 3rem; margin-bottom: 12px; }
+  .level-card h3 { font-size: 1.3rem; }
+  
+  .preloader-text { font-size: 0.55rem; letter-spacing: 0.1em; }
+  
+  .trust-bar { padding: 16px 0; }
+  .trust-inner { gap: 16px; padding: 0 12px; }
+  
+  .floating-ui { bottom: 16px; right: 16px; }
+  .whatsapp-float, .bot-float { width: 50px; height: 50px; }
+}
+
+/* ─── Premium Redesigned Login Page & Header Styles (Mockup Perfect) ─── */
+.login-bg-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #0c121e;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  padding: 0 0 80px 0;
+}
+
+.login-header {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+}
+.login-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.login-header-logo-box {
+  width: 44px;
+  height: 44px;
+  background: #E8A020;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(232, 160, 32, 0.35);
+  transition: transform 0.3s;
+}
+.login-header-logo:hover .login-header-logo-box {
+  transform: rotate(-5deg) scale(1.05);
+}
+.login-header-logo-symbol {
+  font-size: 26px;
+  color: #1c2e4a;
+  line-height: 1;
+}
+.login-header-logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+.login-header-logo-text span {
+  color: #E8A020;
+}
+
+.login-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.login-header-nav-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  position: relative;
+  padding: 6px 0;
+  transition: color 0.25s ease;
+}
+.login-header-nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 100%;
+  height: 2px;
+  background: #E8A020;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.login-header-nav-btn:hover {
+  color: #ffffff;
+}
+.login-header-nav-btn:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+.login-header-nav-btn.active {
+  color: #E8A020;
+}
+.login-header-nav-btn.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.login-card-v2 {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 48px;
+  width: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  transform-style: preserve-3d;
+  animation: loginCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-card-v2-icon {
+  width: 72px;
+  height: 72px;
+  background: #111111;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 34px;
+  margin: 0 auto 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.login-card-v2-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: #0c121e;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+.login-card-v2-brand span {
+  color: #d97706;
+}
+
+.login-card-v2-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #0c121e;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.login-card-v2-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+.form-group-v2 {
+  margin-bottom: 20px;
+  text-align: left;
+}
+.form-group-v2-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0c121e;
+  margin-bottom: 8px;
+}
+.form-group-v2-input {
+  background: #edf2f9;
+  border: 1.5px solid rgba(15, 23, 42, 0.05);
+  color: #0c121e;
+  font-weight: 600;
+  height: 54px;
+  border-radius: 12px;
+  width: 100%;
+  padding: 0 18px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.form-group-v2-input:focus {
+  background: #ffffff;
+  border-color: #E8A020;
+  box-shadow: 0 0 0 4px rgba(232, 160, 32, 0.15);
+}
+
+.form-group-v2-eye {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: color 0.2s;
+}
+.form-group-v2-eye:hover {
+  color: #475569;
+}
+
+.login-card-v2-back {
+  font-size: 0.88rem;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0;
+  transition: color 0.2s;
+}
+.login-card-v2-back:hover {
+  color: #334155;
+}
+
+.login-card-v2-forgot {
+  font-size: 0.88rem;
+  color: #d97706;
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.2s;
+}
+.login-card-v2-forgot:hover {
+  color: #b45309;
+}
+
+.login-card-v2-btn {
+  background: linear-gradient(135deg, #eab308 0%, #d97706 100%);
+  height: 56px;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.login-card-v2-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(217, 119, 6, 0.45);
+}
+
+.login-card-v2-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+.login-card-v2-divider::before, .login-card-v2-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+.login-card-v2-divider span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.login-card-v2-google {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  height: 54px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.login-card-v2-google:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+@media (max-width: 768px) {
+  .login-header {
+    padding: 20px 24px;
+  }
+  .login-header-nav {
+    display: none;
+  }
+  .login-card-v2 {
+    padding: 32px 24px;
+  }
+}
+
+/* ─── Student Achievements Showcase Gallery ─── */
+.showcase-gallery-title {
+  color: #ffffff !important; /* Make sure the title renders beautifully in white on dark background */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.showcase-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.showcase-gallery-item {
+  perspective: 1000px;
+}
+
+.showcase-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #111827;
+}
+
+.showcase-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-info {
+  margin-top: 14px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.showcase-info h4 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+  color: #fbbf24; /* Golden Highlight */
+}
+
+.showcase-info p {
+  font-size: 0.82rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+}
+
+/* Hover effects */
+.showcase-gallery-item:hover .showcase-img-wrap {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #fbbf24;
+  box-shadow: 0 15px 35px rgba(251, 191, 36, 0.25), 0 0 15px rgba(251, 191, 36, 0.1);
+}
+
+.showcase-gallery-item:hover .showcase-img-wrap img {
+  transform: scale(1.08);
+}
+
+.showcase-gallery-item:hover .showcase-info h4 {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+}
+
+@media (max-width: 640px) {
+  .showcase-gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .showcase-info {
+    margin-top: 8px;
+  }
+  .showcase-info h4 {
+    font-size: 0.95rem;
+  }
+  .showcase-info p {
+    font-size: 0.7rem;
   }
 }
