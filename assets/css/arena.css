@@ -258,6 +258,17 @@
 }
 .a-piece:active { cursor: grabbing; }
 
+/* Custom premium pieces colors */
+.a-piece.piece-w {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.8);
+}
+.a-piece.piece-b {
+  color: #171007 !important; /* Premium dark wood espresso */
+  text-shadow: 0 0 2px #ffd880, 0 0 4px rgba(232, 160, 32, 0.7); /* Gorgeous warm gold outline for peak contrast */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
 /* Coordinate labels */
 .arena-coords-left {
   display: flex;
@@ -303,14 +314,14 @@
   transition: height 0.3s ease, top 0.3s ease;
 }
 .eval-bar-white {
-  top: 0;
+  bottom: 0;
   background: #e2e8f0;
-  border-radius: 3px 3px 0 0;
+  border-radius: 0 0 3px 3px;
 }
 .eval-bar-black {
-  bottom: 0;
-  background: #1a1a2e;
-  border-radius: 0 0 3px 3px;
+  top: 0;
+  background: #181d25; /* Match --arena-surface2 dark color */
+  border-radius: 3px 3px 0 0;
 }
 .eval-bar-label {
   position: absolute;

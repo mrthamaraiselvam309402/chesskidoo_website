@@ -89,6 +89,9 @@ body {
   border-bottom: 1px solid transparent;
   transition: background 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease;
 }
+.site-header.header-hidden {
+  display: none !important;
+}
 .site-header.scrolled {
   background: rgba(13, 27, 42, 0.92) !important;
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);

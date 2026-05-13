@@ -187,6 +187,17 @@
     }
     if (depthEl && depth) depthEl.textContent = `Depth: ${depth}`;
     if (lineEl && bestLine.length) lineEl.textContent = `Best: ${bestLine.join(' ')}`;
+
+    // Update evaluation bar heights
+    const barWhite = document.getElementById('eval-bar-white');
+    const barBlack = document.getElementById('eval-bar-black');
+    if (barWhite && barBlack && eval_ !== null) {
+      let whitePercent = 50 + (eval_ * 5); // +1.0 cp = 55%, -1.0 cp = 45%
+      whitePercent = Math.max(5, Math.min(95, whitePercent));
+      const blackPercent = 100 - whitePercent;
+      barWhite.style.height = `${whitePercent}%`;
+      barBlack.style.height = `${blackPercent}%`;
+    }
   }
 
   /* ─── Board Rendering ─── */
@@ -214,7 +225,7 @@
           const unicode = PIECE_UNICODE[piece.color][piece.type];
           console.log(`Arena: Piece at ${sq}: ${piece.color}${piece.type} -> ${unicode}`);
           const pieceEl = document.createElement('span');
-          pieceEl.className = 'a-piece';
+          pieceEl.className = `a-piece piece-${piece.color}`;
           pieceEl.textContent = unicode;
           sqEl.appendChild(pieceEl);
         }
@@ -447,10 +458,6 @@
 
     console.log('Arena: Evaluating', moves.length, 'moves');
 
-    // For now, just return the first move to test basic functionality
-    return moves[0];
-
-    /*
     let bestMove = null;
     let bestEval = game.turn() === 'w' ? -Infinity : Infinity;
     const isMaximizing = game.turn() === 'w';
@@ -461,14 +468,19 @@
       game.undo();
 
       if (isMaximizing) {
-        if (eval_ > bestEval) { bestEval = eval_; bestMove = move; }
+        if (eval_ > bestEval) {
+          bestEval = eval_;
+          bestMove = move;
+        }
       } else {
-        if (eval_ < bestEval) { bestEval = eval_; bestMove = move; }
+        if (eval_ < bestEval) {
+          bestEval = eval_;
+          bestMove = move;
+        }
       }
     }
 
-    return bestMove;
-    */
+    return bestMove || moves[0];
   }
 
   function minimax(depth, alpha, beta, isMaximizing) {
@@ -479,7 +491,6 @@
       return 0;
     }
 
-    // Simplified version for testing
     if (isMaximizing) {
       let maxEval = -Infinity;
       for (const move of moves) {
@@ -487,6 +498,8 @@
         const eval_ = minimax(depth - 1, alpha, beta, false);
         game.undo();
         maxEval = Math.max(maxEval, eval_);
+        alpha = Math.max(alpha, eval_);
+        if (beta <= alpha) break; // Beta cut-off (Pruning)
       }
       return maxEval;
     } else {
@@ -496,6 +509,8 @@
         const eval_ = minimax(depth - 1, alpha, beta, true);
         game.undo();
         minEval = Math.min(minEval, eval_);
+        beta = Math.min(beta, eval_);
+        if (beta <= alpha) break; // Alpha cut-off (Pruning)
       }
       return minEval;
     }

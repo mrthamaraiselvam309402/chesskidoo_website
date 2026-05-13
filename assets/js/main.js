@@ -13,6 +13,16 @@
       target.classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // Toggle global site header visibility
+    const header = document.getElementById('header');
+    if (header) {
+      if (id === 'landing-page') {
+        header.classList.remove('header-hidden');
+      } else {
+        header.classList.add('header-hidden');
+      }
+    }
   };
 
   // Mobile Menu Logic
