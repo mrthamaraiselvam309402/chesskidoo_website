@@ -419,4 +419,44 @@
     }
   };
 
+  // True 3D Mouse Tilt and Refractive Shine Effect for Curriculum Level Cards
+  const initLevelCards3D = () => {
+    const cards = document.querySelectorAll('.level-card');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left; // Mouse X position within the card
+        const y = e.clientY - rect.top;  // Mouse Y position within the card
+        
+        const width = rect.width;
+        const height = rect.height;
+        
+        // Calculate smooth rotation angles (-12deg to 12deg)
+        const rotateX = -12 * ((y - height / 2) / (height / 2));
+        const rotateY = 12 * ((x - width / 2) / (width / 2));
+        
+        card.style.transform = `translateY(-14px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        
+        // Reflective light source coordinates mapped to CSS custom variables
+        const pctX = (x / width) * 100;
+        const pctY = (y / height) * 100;
+        card.style.setProperty('--mouse-x', `${pctX}%`);
+        card.style.setProperty('--mouse-y', `${pctY}%`);
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0) rotateX(0) rotateY(0)';
+        card.style.setProperty('--mouse-x', '50%');
+        card.style.setProperty('--mouse-y', '10%');
+      });
+    });
+  };
+
+  // Run on page load
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initLevelCards3D();
+  } else {
+    document.addEventListener('DOMContentLoaded', initLevelCards3D);
+  }
+
 })();

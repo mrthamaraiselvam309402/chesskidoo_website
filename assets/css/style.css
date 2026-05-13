@@ -1676,21 +1676,21 @@ body {
   overflow: visible; /* Needed for translateZ elements to peak out beautifully */
 }
 
-/* Base Hover Translation */
+/* Base Hover CSS Fallback (will be augmented by high-performance JS tilt) */
 .level-card:hover {
-  transform: translateY(-12px) rotateX(10deg) rotateY(-5deg);
+  transform: translateY(-14px);
   border-color: rgba(232, 160, 32, 0.4);
 }
 
-/* Glow Backgrounds */
+/* Dynamic Cursor-Tracking spotlight */
 .level-card::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 24px;
-  background: radial-gradient(circle at 50% 10%, rgba(232, 160, 32, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 10%), rgba(232, 160, 32, 0.12) 0%, transparent 60%);
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
   z-index: 1;
 }
@@ -1698,26 +1698,31 @@ body {
   opacity: 1;
 }
 
-/* Individual Card Variant Glowing Shadows */
+/* Individual Card Variant Glowing Shadows & Dynamic Cursor spotlight colors */
 /* Beginner Card - Pawn */
 .level-card.level-beginner:hover {
-  box-shadow: 0 30px 60px rgba(232, 160, 32, 0.12), 0 0 40px rgba(232, 160, 32, 0.03);
+  box-shadow: 0 30px 60px rgba(232, 160, 32, 0.15), 0 0 40px rgba(232, 160, 32, 0.04);
 }
+.level-card.level-beginner::before {
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 10%), rgba(232, 160, 32, 0.14) 0%, transparent 60%);
+}
+
 /* Intermediate Card - Bishop (Sleek Silver/Cyan Accent) */
 .level-card.level-intermediate:hover {
-  box-shadow: 0 30px 60px rgba(100, 180, 255, 0.12), 0 0 40px rgba(100, 180, 255, 0.03);
+  box-shadow: 0 30px 60px rgba(100, 180, 255, 0.15), 0 0 40px rgba(100, 180, 255, 0.04);
   border-color: rgba(100, 180, 255, 0.4);
 }
 .level-card.level-intermediate::before {
-  background: radial-gradient(circle at 50% 10%, rgba(100, 180, 255, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 10%), rgba(37, 99, 235, 0.12) 0%, transparent 60%);
 }
+
 /* Advanced Card - Queen (Gold Accent) */
 .level-card.level-advanced:hover {
-  box-shadow: 0 30px 60px rgba(251, 191, 36, 0.15), 0 0 40px rgba(251, 191, 36, 0.04);
+  box-shadow: 0 30px 60px rgba(251, 191, 36, 0.18), 0 0 40px rgba(251, 191, 36, 0.05);
   border-color: rgba(251, 191, 36, 0.45);
 }
 .level-card.level-advanced::before {
-  background: radial-gradient(circle at 50% 10%, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 10%), rgba(217, 119, 6, 0.15) 0%, transparent 60%);
 }
 
 /* 3D TranslateZ Layers */
@@ -1754,19 +1759,31 @@ body {
   border-color: #d97706;
 }
 
+@keyframes floatPiece {
+  0% {
+    transform: translateZ(60px) translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateZ(60px) translateY(-8px) rotate(2deg);
+  }
+  100% {
+    transform: translateZ(60px) translateY(0px) rotate(0deg);
+  }
+}
+
 .level-piece {
-  font-size: 5rem;
+  font-size: 5.5rem;
   line-height: 1;
   margin-bottom: 24px;
-  filter: drop-shadow(0 10px 15px rgba(15, 23, 42, 0.08));
-  transform: translateZ(60px);
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s;
+  filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.08));
+  animation: floatPiece 4s ease-in-out infinite;
   z-index: 5;
   display: block;
 }
 .level-card:hover .level-piece {
-  transform: translateZ(90px) scale(1.15) rotate(5deg);
-  filter: drop-shadow(0 20px 30px rgba(15, 23, 42, 0.2));
+  animation: none; /* Pause float bobbing when hovering to allow clean 3D static lift */
+  transform: translateZ(95px) scale(1.18) rotate(4deg);
+  filter: drop-shadow(0 22px 32px rgba(15, 23, 42, 0.18));
 }
 
 .level-card h3 {
