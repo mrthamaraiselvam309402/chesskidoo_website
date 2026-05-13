@@ -1871,3 +1871,18 @@ body {
     min-height: auto;
   }
 }
+
+.level-cover-piece {
+  animation: floatChessCover 12s ease-in-out infinite;
+  will-change: transform;
+}
+.level-cover-piece:nth-child(1) { animation-delay: 0s; }
+.level-cover-piece:nth-child(2) { animation-delay: 2s; }
+.level-cover-piece:nth-child(3) { animation-delay: 4s; }
+
+@keyframes floatChessCover {
+  0%, 100% { transform: translateY(0) rotate(var(--rotate-start, 0deg)); opacity: 0.03; }
+  25% { transform: translateY(-15px) rotate(var(--rotate-mid, 5deg)); opacity: 0.04; }
+  50% { transform: translateY(10px) rotate(var(--rotate-end, -5deg)); opacity: 0.035; }
+  75% { transform: translateY(-8px) rotate(var(--rotate-start, 0deg)); opacity: 0.04; }
+}
