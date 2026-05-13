@@ -675,7 +675,14 @@ body {
 .coord { font-size:clamp(8px, 2vw, 10px);font-weight:600;color:rgba(255,255,255,.28);width:12.5%;text-align:center;font-family:var(--font-body); }
 
 /* CHESS BOARD */
-#board, .student-board {
+#board {
+  display: block;
+  width: 320px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+}
+.student-board {
   display:grid;
   grid-template-columns:repeat(8, 1fr);
   grid-template-rows:repeat(8, 1fr);
