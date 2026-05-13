@@ -9,7 +9,7 @@
   const A = CK.arena = {};
 
   /* ─── State ─── */
-  let game = null; // chess.js instance
+  let game = null;
   let boardEl = null;
   let selectedSq = null;
   let legalMoves = [];
@@ -31,12 +31,24 @@
   let blackClock = 600;
   let clockInterval = null;
   let activeClock = 'w';
+  let isReplayMode = false;
+  let replayTimeoutIds = [];
+  let evalChart = null;
 
   const DIFFICULTY_DEPTH = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
   const PIECE_UNICODE = {
     w: { p: '♙', n: '♘', b: '♗', r: '♖', q: '♕', k: '♔' },
     b: { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' }
+  };
+  const OPENINGS = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'Initial Position',
+    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'Queen\'s Pawn Game',
+    'rnbqkbnr/pppppppp/8/8/5P2/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'English Opening',
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'Starting Position',
+    'rnbqkbnr/pppppppp/8/8/4p3/8/pp2P3/RNBQKBNR w KQkq - 0 1': 'Caro-Kann Defense',
+    'rnbqkbnr/pppppppp/8/8/4P3/8/PPNn4/R1BQKBNR b KQkq - 0 1': 'Sicilian Defense',
+    'rnbqkbnr/pppppppp/8/8/5p2/8/PPPP1P2/RNBQKBNR b KQkq - 0 1': 'French Defense'
   };
 
   /* ─── Piece-square tables (simplified) ─── */
@@ -51,6 +63,23 @@
     [0,0,0,0,0,0,0,0]
   ];
 
+  /* ─── Sound Effects ─── */
+  const SOUNDS = {
+    move: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
+    capture: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
+    check: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
+    gameover: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ==')
+  };
+  function playSound(type) {
+    if (SOUNDS[type]) SOUNDS[type].currentTime = 0; SOUNDS[type].play().catch(() => {});
+  }
+
+  /* ─── Opening Identification ─── */
+  function getOpeningName(fen) {
+    const baseFen = fen.split(' ').slice(0, 4).join(' ');
+    return OPENINGS[baseFen] || 'Unknown Opening';
+  }
+
   /* ─── Init ─── */
   A.init = () => {
     console.log('Arena: Initializing AI Challenge Arena...');
@@ -62,6 +91,9 @@
       return;
     }
 
+    isReplayMode = false;
+    replayTimeoutIds.forEach(c => clearTimeout(c));
+    replayTimeoutIds = [];
     moveHistory = [];
     evalHistory = [];
     classificationHistory = [];
@@ -81,6 +113,7 @@
     console.log('Arena: Rendering analysis panel...');
     renderAnalysisPanel();
     updateStatus('Your turn — play as White');
+    updateOpeningDisplay();
     console.log('Arena: Initializing engine...');
     initEngine();
     console.log('Arena: Starting clock...');
@@ -238,6 +271,7 @@
     console.log('Arena: Board rendered with', boardEl.children.length, 'squares');
     highlightLastMove();
     highlightCheck();
+    updateOpeningDisplay();
   }
 
   function highlightLastMove() {
@@ -328,8 +362,12 @@
   /* ─── Execute Player Move ─── */
   function executePlayerMove(move) {
     const fenBefore = game.fen();
+    const isCapture = !!game.get(move.to);
     const moveResult = game.move(move);
     if (!moveResult) return;
+
+    playSound('move');
+    if (isCapture) playSound('capture');
 
     // Track captured pieces
     if (moveResult.captured) {
@@ -414,6 +452,10 @@
       handleGameOver();
       return;
     }
+
+    playSound('move');
+    if (move.captured) playSound('capture');
+    if (game.in_check()) playSound('check');
 
     if (move.captured) {
       if (move.color === 'w') {
@@ -635,11 +677,20 @@
     }
   }
 
+  function updateOpeningDisplay() {
+    const el = document.getElementById('arena-opening');
+    if (el) {
+      el.textContent = 'Opening: ' + getOpeningName(game.fen());
+    }
+  }
+
   /* ─── Game Over ─── */
   function handleGameOver() {
     isGameOver = true;
     isThinking = false;
     if (clockInterval) clearInterval(clockInterval);
+
+    playSound('gameover');
 
     let result, resultText;
     if (game.in_checkmate()) {
@@ -674,6 +725,7 @@
     const duration = Math.floor((Date.now() - gameStartTime) / 1000);
     const durationMin = Math.floor(duration / 60);
     const durationSec = duration % 60;
+    const openingName = moveHistory.length > 0 ? getOpeningName(moveHistory[0].fen) : 'Unknown';
 
     // Calculate accuracy
     const classifications = classificationHistory.map(c => c.classification);
@@ -707,7 +759,7 @@
       <div class="arena-report-modal">
         <div class="arena-report-header">
           <div class="arena-report-result ${resultClass}">${resultLabel}</div>
-          <div class="arena-report-sub">${currentDifficulty} difficulty · ${totalMoves} moves · ${durationMin}m ${durationSec}s</div>
+          <div class="arena-report-sub">${currentDifficulty} difficulty · ${totalMoves} moves · ${durationMin}m ${durationSec}s · ${openingName}</div>
         </div>
         <div class="arena-report-body">
           <div class="report-stats-grid">
@@ -744,7 +796,7 @@
 
           <div class="eval-graph-container">
             <div class="eval-graph-title">Evaluation Over Time</div>
-            <div id="arena-eval-chart" style="height: 160px; background: var(--arena-surface2); border-radius: 8px; padding: 16px; color: var(--arena-text-muted); display: flex; align-items: center; justify-content: center;">Evaluation graph will be displayed here</div>
+            <div id="arena-eval-chart" style="height: 160px; background: var(--arena-surface2); border-radius: 8px; padding: 16px; color: var(--arena-text-muted); display: flex; align-items: center; justify-content: center;">Loading chart...</div>
           </div>
 
           ${keyMoments.length > 0 ? `
@@ -761,7 +813,7 @@
         </div>
         <div class="arena-report-actions">
           <button class="report-btn report-btn-secondary" onclick="CK.arena.closeReport()">Close</button>
-          <button class="report-btn report-btn-secondary" onclick="CK.arena.playAgain()">Play Again</button>
+          <button class="report-btn report-btn-secondary" onclick="CK.arena.replayGame()">▶ Replay Game</button>
           <button class="report-btn report-btn-primary" onclick="CK.arena.showCertificate('${result}', '${grade}', '${gradeClass}', ${accuracy})">🏆 View Certificate</button>
         </div>
       </div>
@@ -769,12 +821,9 @@
 
     overlay.classList.add('active');
 
-    // Render eval chart (simplified for now)
+    // Render eval chart
     setTimeout(() => {
-      const chartEl = document.getElementById('arena-eval-chart');
-      if (chartEl) {
-        chartEl.textContent = `Evaluation data: ${evalHistory.slice(-10).join(', ')}`;
-      }
+      renderEvalChart();
     }, 100);
   }
 
@@ -791,6 +840,101 @@
       </div>
     `;
   }
+
+  /* ─── Evaluation Chart ─── */
+  function renderEvalChart() {
+    const chartEl = document.getElementById('arena-eval-chart');
+    if (!chartEl) return;
+
+    const evals = evalHistory.slice(-20);
+    if (evals.length === 0) {
+      chartEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.5;">No evaluation data</div>';
+      return;
+    }
+
+    const minWidth = 20;
+    const barWidth = Math.max(minWidth, 400 / evals.length);
+    const maxVal = Math.max(...evals.map(e => Math.abs(e)), 1);
+
+    let html = '<div style="display:flex;align-items:flex-end;justify-content:center;height:100%;gap:1px;">';
+    evals.forEach((eval_, i) => {
+      const height = Math.abs(eval_) / maxVal * 100;
+      const color = eval_ > 0 ? '#10B981' : eval_ < 0 ? '#EF5350' : '#64748b';
+      html += `<div style="width:${barWidth}px;height:${height}%;background:${color};opacity:${0.3 + 0.7 * (i / evals.length)}"></div>`;
+    });
+    html += '</div>';
+    chartEl.innerHTML = html;
+  }
+
+  /* ─── Replay Game ─── */
+  A.replayGame = () => {
+    if (moveHistory.length === 0) return;
+    if (clockInterval) clearInterval(clockInterval);
+
+    isReplayMode = true;
+    isGameOver = false;
+    isThinking = false;
+    replayTimeoutIds = [];
+
+    const overlay = document.getElementById('arena-report-overlay');
+    if (overlay) overlay.classList.remove('active');
+
+    game = new Chess();
+    moveHistory = [];
+    evalHistory = [];
+    classificationHistory = [];
+    capturedWhite = [];
+    capturedBlack = [];
+    selectedSq = null;
+    isPlayerTurn = true;
+    gameStartTime = Date.now();
+    whiteClock = 600;
+    blackClock = 600;
+    activeClock = 'w';
+
+    renderBoard();
+    renderAnalysisPanel();
+    updateStatus('Replay in progress...');
+
+    let currentIndex = 0;
+    const totalMoves = moveHistory.length;
+
+    function replayNext() {
+      if (currentIndex >= totalMoves) {
+        isReplayMode = false;
+        updateStatus('Replay complete!');
+        return;
+      }
+
+      const move = moveHistory[currentIndex];
+      game.move(move.san);
+      renderBoard();
+      renderAnalysisPanel();
+      updateStatus(`Replay: Move ${currentIndex + 1}/${totalMoves}`);
+
+      currentIndex++;
+      const delay = 800 + Math.random() * 400;
+      const tid = setTimeout(replayNext, delay);
+      replayTimeoutIds.push(tid);
+    }
+
+    replayNext();
+  };
+
+  A.pauseReplay = () => {
+    isReplayMode = false;
+    replayTimeoutIds.forEach(c => clearTimeout(c));
+    replayTimeoutIds = [];
+    updateStatus('Replay paused');
+  };
+
+  A.resumeReplay = () => {
+    if (!isReplayMode && replayTimeoutIds.length === 0) {
+      isReplayMode = true;
+      updateStatus('Replay resumed...');
+      A.replayGame();
+    }
+  };
 
 
 
@@ -814,6 +958,7 @@
     const certId = 'CK-' + now.getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     const playerName = 'Chess Challenger';
     const resultText = result === 'win' ? 'Victory' : result === 'loss' ? 'Defeat' : 'Draw';
+    const openingName = moveHistory.length > 0 ? getOpeningName(moveHistory[0].fen) : 'Unknown';
 
     overlay.innerHTML = `
       <div class="cert-modal">
@@ -841,6 +986,14 @@
               <div class="cert-detail-item">
                 <span class="cert-detail-label">Moves Played</span>
                 <span class="cert-detail-value">${moveHistory.length}</span>
+              </div>
+              <div class="cert-detail-item">
+                <span class="cert-detail-label">Opening</span>
+                <span class="cert-detail-value">${openingName}</span>
+              </div>
+              <div class="cert-detail-item">
+                <span class="cert-detail-label">Grade</span>
+                <span class="cert-detail-value">${grade}</span>
               </div>
             </div>
             <div class="cert-grade ${gradeClass}">${grade}</div>

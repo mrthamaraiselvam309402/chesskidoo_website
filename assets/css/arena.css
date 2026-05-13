@@ -490,6 +490,36 @@
 .arena-ctrl-btn.primary { background: var(--arena-gold); color: #0a0c0f; border-color: var(--arena-gold); }
 .arena-ctrl-btn.primary:hover { background: var(--arena-gold-dark); }
 
+/* ─── Replay Controls ─── */
+.arena-replay-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.arena-replay-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--arena-border);
+  background: var(--arena-surface2);
+  color: var(--arena-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.arena-replay-btn:hover { background: var(--arena-border); }
+
+/* ─── Opening Display ─── */
+.opening-display {
+  font-size: 0.85rem;
+  color: var(--arena-text-muted);
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+}
+
 /* ─── Game Status Bar ─── */
 .arena-status {
   text-align: center;
