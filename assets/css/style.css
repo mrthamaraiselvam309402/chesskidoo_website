@@ -25,13 +25,22 @@
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.15);
   --radius-lg: 24px;
   --radius-pill: 9999px;
-  --font-display: 'Fraunces', serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-header: 'Poppins', sans-serif;
   
   /* Board Specific */
   --board-light: #F0D9B5;
   --board-dark: #B58863;
   --board-border: #7A5530;
+  
+  /* Arena Colors */
+  --arena-gold: #F5C842;
+  --arena-gold-dark: #D97706;
+  --arena-purple: #8B5CF6;
+  --arena-blue: #3B82F6;
+  --arena-green: #10B981;
+  --arena-teal: #0D9488;
 }
 
 /* ─── Reset & Base ─── */
@@ -128,8 +137,8 @@ body {
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-link {
   padding: 6px 0; text-decoration: none; color: rgba(255, 255, 255, 0.65);
-  font-family: var(--font-body);
-  font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+  font-family: var(--font-header);
+  font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
   background: none; border: none; cursor: pointer;
   position: relative;
   transition: color 0.25s ease;
@@ -162,7 +171,18 @@ body {
 .nav-cta:hover { background: var(--amber-light) !important; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232, 160, 32, 0.4); }
 .nav-cta::after { display: none; }
 
-.nav-login { padding: 9px 22px; font-size: 0.88rem; color: #FFFFFF; }
+.nav-login {
+  padding: 9px 22px;
+  font-size: 0.88rem;
+  color: #FFFFFF;
+  border: 2px solid #F5C842 !important;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+.nav-login:hover {
+  border-color: #F5C842 !important;
+  box-shadow: 0 0 15px rgba(245, 200, 66, 0.4);
+}
 .nav-login::after { display: none; }
 
 /* ─── Mobile Menu Button (Hamburger) ─── */
@@ -351,6 +371,7 @@ body {
   line-height: 1;
 }
 .hero-stat-label {
+  font-family: var(--font-display);
   font-size: 0.82rem;
   color: rgba(255,255,255,0.45);
   font-weight: 500;
@@ -366,7 +387,7 @@ body {
 }
 
 /* --- Hero Visual / Chess Board (Premium Match Interface) --- */
-.hero-visual { position: relative; perspective: 1500px; margin-top: -75px; }
+.hero-visual { position: relative; perspective: 1500px; margin-top: -250px; }
 .hero-board-frame {
   background: #1a1a1a;
   border-radius: 24px;
@@ -464,9 +485,9 @@ body {
 
 /* ─── Sections ─── */
 .section-head { text-align: center; max-width: 700px; margin: 0 auto 64px; padding: 0 16px; }
-.eyebrow { display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); margin-bottom: 16px; }
+.eyebrow { display: inline-block; font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); margin-bottom: 16px; }
 .section-head h2 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; line-height: 1.2; margin-bottom: 16px; color: var(--ink); }
-.lead { font-size: 1.1rem; opacity: 0.7; }
+.lead { font-family: var(--font-body); font-size: 1.1rem; opacity: 0.7; }
 
 /* Features Grid */
 .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
@@ -530,7 +551,7 @@ body {
 .price-amount { font-size: 3.5rem; font-weight: 900; margin-bottom: 32px; font-family: var(--font-display); display: flex; align-items: baseline; gap: 4px; }
 .price-amount span { font-size: 1.25rem; opacity: 0.5; font-weight: 500; }
 .price-features { list-style: none; margin-bottom: 40px; flex-grow: 1; }
-.price-features li { display: flex; gap: 12px; margin-bottom: 16px; font-size: 0.95rem; opacity: 0.8; }
+.price-features li { display: flex; gap: 12px; margin-bottom: 16px; font-family: var(--font-display); font-size: 0.95rem; opacity: 0.8; }
 .price-features .check { color: var(--amber-light); font-weight: bold; }
 
 /* ─── Portal / Dashboard ─── */
@@ -655,6 +676,7 @@ body {
   color:var(--amber);line-height:1;
 }
 .stat-label {
+  font-family: var(--font-display);
   font-size:11px;color:var(--muted);font-weight:500;
   letter-spacing:.05em;text-transform:uppercase;margin-top:5px;
 }
@@ -717,6 +739,7 @@ body {
   letter-spacing: -0.2px;
 }
 .pelo {
+  font-family: var(--font-display);
   color: rgba(255, 255, 255, 0.45);
   font-size: 11px;
   font-weight: 500;
@@ -782,7 +805,7 @@ body {
   font-weight: 700;
   color: rgba(255, 255, 255, 0.35);
   text-align: center;
-  font-family: 'DM Sans', monospace;
+  font-family: 'Inter', monospace;
 }
 
 /* CHESS BOARD */
@@ -1054,7 +1077,7 @@ body {
 
 /* ─── 3D Floating Chess Pieces (Hero Background Orbs) ─── */
 .hero::after {
-  content: '♛';
+  content: '♘';
   position: absolute;
   font-size: 18rem;
   color: rgba(217, 119, 6, 0.03);
@@ -1066,7 +1089,7 @@ body {
   pointer-events: none;
 }
 .hero::before {
-  content: '♟';
+  content: '♙';
   position: absolute;
   font-size: 12rem;
   color: rgba(217, 119, 6, 0.025);
@@ -1161,6 +1184,119 @@ body {
 .coach-grid > div:hover img, .coach-grid > .reveal:hover img {
   transform: scale(1.08) translateZ(10px);
   transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ─── Achievements Section ─── */
+#achievements {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+#achievements .section-head {
+  text-align: center;
+  margin: 0 auto 64px;
+}
+
+#achievements .section-head h2 {
+  color: #ffffff;
+}
+
+#achievements .eyebrow {
+  color: var(--arena-gold);
+}
+
+#achievements .lead {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.achievement-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.achievement-card:hover {
+  transform: translateY(-10px) translateZ(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(245, 200, 66, 0.3);
+}
+
+.achievement-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-card:nth-child(1) .achievement-icon {
+  background: linear-gradient(135deg, var(--arena-gold), var(--arena-gold-dark));
+}
+
+.achievement-card:nth-child(2) .achievement-icon {
+  background: linear-gradient(135deg, var(--arena-purple), var(--arena-blue));
+}
+
+.achievement-card:nth-child(3) .achievement-icon {
+  background: linear-gradient(135deg, var(--arena-green), var(--arena-teal));
+}
+
+.achievement-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.achievement-card p {
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.gallery-item {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.gallery-item:hover {
+  transform: translateY(-8px) translateZ(15px);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
 }
 
 /* ─── 3D Level Cards with Depth ─── */

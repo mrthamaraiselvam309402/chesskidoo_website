@@ -24,16 +24,15 @@
   let capturedBlack = [];
   let stockfish = null;
   let engineReady = false;
-  let useWasm = true;
+  let useWasm = false;
   let playerColor = 'w';
   let gameStartTime = null;
   let whiteClock = 600;
   let blackClock = 600;
   let clockInterval = null;
   let activeClock = 'w';
-  let isReplayMode = false;
-  let replayTimeoutIds = [];
   let evalChart = null;
+  let achievements = [];
 
   const DIFFICULTY_DEPTH = { Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4 };
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -41,17 +40,7 @@
     w: { p: '♙', n: '♘', b: '♗', r: '♖', q: '♕', k: '♔' },
     b: { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' }
   };
-  const OPENINGS = {
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'Initial Position',
-    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'Queen\'s Pawn Game',
-    'rnbqkbnr/pppppppp/8/8/5P2/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'English Opening',
-    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'Starting Position',
-    'rnbqkbnr/pppppppp/8/8/4p3/8/pp2P3/RNBQKBNR w KQkq - 0 1': 'Caro-Kann Defense',
-    'rnbqkbnr/pppppppp/8/8/4P3/8/PPNn4/R1BQKBNR b KQkq - 0 1': 'Sicilian Defense',
-    'rnbqkbnr/pppppppp/8/8/5p2/8/PPPP1P2/RNBQKBNR b KQkq - 0 1': 'French Defense'
-  };
 
-  /* ─── Piece-square tables (simplified) ─── */
   const PST_PAWN = [
     [0,0,0,0,0,0,0,0],
     [50,50,50,50,50,50,50,50],
@@ -63,22 +52,19 @@
     [0,0,0,0,0,0,0,0]
   ];
 
-  /* ─── Sound Effects ─── */
-  const SOUNDS = {
-    move: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
-    capture: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
-    check: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ=='),
-    gameover: new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACBhYqFbF1fdJOnp5mPf3uFwqT868mNnqC8dC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkBQlC+fBkQ==')
+  const OPENING_BOOK = {
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1': 'e2e4',
+    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1': 'e7e5',
+    'rnbqkbnr/pppppppp/8/8/5P2/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1': 'e2e4',
   };
-  function playSound(type) {
-    if (SOUNDS[type]) SOUNDS[type].currentTime = 0; SOUNDS[type].play().catch(() => {});
-  }
 
-  /* ─── Opening Identification ─── */
-  function getOpeningName(fen) {
-    const baseFen = fen.split(' ').slice(0, 4).join(' ');
-    return OPENINGS[baseFen] || 'Unknown Opening';
-  }
+  const ACHIEVEMENTS = {
+    'first_win': { name: 'First Victory', icon: '🏆', desc: 'Win your first game' },
+    'blunder_finder': { name: 'Blunder Finder', icon: '🔍', desc: 'Spot 3 blunders in one game' },
+    'perfect_game': { name: 'Perfect Game', icon: '✨', desc: 'Zero blunders or mistakes' },
+    'speed_win': { name: 'Speed Demon', icon: '⚡', desc: 'Win in under 10 moves' },
+    'accuracy_master': { name: 'Accuracy Master', icon: '🎯', desc: '90%+ accuracy' }
+  };
 
   /* ─── Init ─── */
   A.init = () => {
@@ -91,9 +77,6 @@
       return;
     }
 
-    isReplayMode = false;
-    replayTimeoutIds.forEach(c => clearTimeout(c));
-    replayTimeoutIds = [];
     moveHistory = [];
     evalHistory = [];
     classificationHistory = [];
@@ -107,17 +90,19 @@
     whiteClock = 600;
     blackClock = 600;
     activeClock = 'w';
+    achievements = JSON.parse(localStorage.getItem('ck_achievements') || '[]');
 
     console.log('Arena: Rendering board...');
     renderBoard();
     console.log('Arena: Rendering analysis panel...');
     renderAnalysisPanel();
     updateStatus('Your turn — play as White');
-    updateOpeningDisplay();
     console.log('Arena: Initializing engine...');
     initEngine();
     console.log('Arena: Starting clock...');
     startClock();
+    console.log('Arena: Initializing eval chart...');
+    initEvalChart();
     console.log('Arena: Initialization complete!');
   };
 
@@ -155,22 +140,44 @@
 
   /* ─── Engine Init ─── */
   function initEngine() {
-    console.log('Arena: Initializing engine (using minimax)...');
-    engineReady = true;
-    useWasm = false;
     const statusEl = document.getElementById('arena-engine-status');
-    if (statusEl) statusEl.textContent = 'Engine ready (built-in)';
+    if (window.Stockfish) {
+      console.log('Arena: Loading Stockfish WASM...');
+      try {
+        stockfish = new window.Stockfish();
+        stockfish.onmessage = handleEngineMessage;
+        stockfish.postMessage('uci');
+      } catch (e) {
+        console.error('Arena: Stockfish WASM failed, using minimax:', e);
+        engineReady = true;
+        useWasm = false;
+        if (statusEl) statusEl.textContent = 'Engine ready (built-in)';
+      }
+    } else {
+      console.log('Arena: Stockfish not available, using minimax...');
+      engineReady = true;
+      useWasm = false;
+      if (statusEl) statusEl.textContent = 'Engine ready (built-in)';
+    }
   }
 
   function handleEngineMessage(e) {
     const line = e.data;
+    if (line === 'uciok') {
+      stockfish.postMessage('ucinewposition startpos');
+      stockfish.postMessage('isready');
+      return;
+    }
     if (line === 'readyok') {
       engineReady = true;
+      useWasm = true;
       const statusEl = document.getElementById('arena-engine-status');
-      if (statusEl) statusEl.textContent = 'Engine ready (Stockfish)';
+      if (statusEl) statusEl.textContent = 'Engine ready (Stockfish WASM)';
+      return;
     }
     if (line && line.startsWith('info depth')) {
       parseEngineInfo(line);
+      return;
     }
     if (line && line.startsWith('bestmove')) {
       const parts = line.split(' ');
@@ -178,6 +185,49 @@
       if (bestMove && bestMove !== '(none)') {
         makeAIMove(bestMove);
       }
+      return;
+    }
+  }
+
+  function initEvalChart() {
+    const chartEl = document.getElementById('arena-eval-chart');
+    if (!chartEl || !window.Chart) return;
+    
+    chartEl.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    chartEl.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    
+    evalChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Evaluation',
+          data: [],
+          borderColor: 'rgba(232, 184, 75, 1)',
+          backgroundColor: 'rgba(232, 184, 75, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { min: -3, max: 3, ticks: { color: '#8892a4', font: { size: 10 } }, grid: { display: false } },
+          x: { display: false }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  function updateEvalChart(moveNum, eval_) {
+    if (evalChart && eval_ !== null) {
+      evalChart.data.labels.push(moveNum);
+      evalChart.data.datasets[0].data.push(eval_);
+      evalChart.update();
     }
   }
 
@@ -271,7 +321,6 @@
     console.log('Arena: Board rendered with', boardEl.children.length, 'squares');
     highlightLastMove();
     highlightCheck();
-    updateOpeningDisplay();
   }
 
   function highlightLastMove() {
@@ -359,15 +408,30 @@
     }
   }
 
-  /* ─── Execute Player Move ─── */
-  function executePlayerMove(move) {
-    const fenBefore = game.fen();
-    const isCapture = !!game.get(move.to);
-    const moveResult = game.move(move);
-    if (!moveResult) return;
-
-    playSound('move');
-    if (isCapture) playSound('capture');
+/* ─── Execute Player Move ─── */
+function executePlayerMove(move) {
+  if (puzzleMode) {
+    if (!A.checkPuzzleSolution(move.san)) return;
+  }
+  
+  if (quickMoveState && !quickMoveState.solved) {
+    const moveStr = move.from + move.to;
+    if (moveStr !== quickMoveState.goal) {
+      CK.showToast('Wrong move! Try again.', 'error');
+      game.undo();
+      renderBoard();
+      return;
+    }
+    quickMoveState.solved = true;
+    CK.showToast('Correct!', 'success');
+    if (gameTimer) clearInterval(gameTimer);
+    setTimeout(() => A.startQuickMove(), 2000);
+    return;
+  }
+  
+  const fenBefore = game.fen();
+  const moveResult = game.move(move);
+  if (!moveResult) return;
 
     // Track captured pieces
     if (moveResult.captured) {
@@ -412,20 +476,33 @@
   function requestAIMove() {
     if (isGameOver) return;
 
+    const fen = game.fen();
+    if (OPENING_BOOK[fen] && Math.random() < 0.3) {
+      const bookMove = OPENING_BOOK[fen];
+      console.log('Arena: Playing opening book move:', bookMove);
+      makeAIMove(bookMove);
+      return;
+    }
+
     console.log('Arena: AI thinking...');
-    const depth = DIFFICULTY_DEPTH[currentDifficulty] || 2;
-    const bestMove = getBestMoveMinimax(depth);
-    if (bestMove) {
-      console.log('Arena: AI found best move:', bestMove);
-      makeAIMove(bestMove.from + bestMove.to + (bestMove.promotion || ''));
+    if (useWasm && engineReady && stockfish) {
+      stockfish.postMessage(`position fen ${fen}`);
+      stockfish.postMessage(`go depth ${DIFFICULTY_DEPTH[currentDifficulty] || 2}`);
     } else {
-      console.log('Arena: No best move found, using random move');
-      const moves = game.moves({ verbose: true });
-      if (moves.length > 0) {
-        const random = moves[Math.floor(Math.random() * moves.length)];
-        makeAIMove(random.from + random.to + (random.promotion || ''));
+      const depth = DIFFICULTY_DEPTH[currentDifficulty] || 2;
+      const bestMove = getBestMoveMinimax(depth);
+      if (bestMove) {
+        console.log('Arena: AI found best move:', bestMove);
+        makeAIMove(bestMove.from + bestMove.to + (bestMove.promotion || ''));
       } else {
-        console.error('Arena: No moves available!');
+        console.log('Arena: No best move found, using random move');
+        const moves = game.moves({ verbose: true });
+        if (moves.length > 0) {
+          const random = moves[Math.floor(Math.random() * moves.length)];
+          makeAIMove(random.from + random.to + (random.promotion || ''));
+        } else {
+          console.error('Arena: No moves available!');
+        }
       }
     }
   }
@@ -452,10 +529,6 @@
       handleGameOver();
       return;
     }
-
-    playSound('move');
-    if (move.captured) playSound('capture');
-    if (game.in_check()) playSound('check');
 
     if (move.captured) {
       if (move.color === 'w') {
@@ -612,6 +685,7 @@
       const classification = classifyFromDiff(diff, playerMove, bestMove);
       classificationHistory.push({ san: playerSan, classification, eval: playerEval });
       evalHistory.push(playerEval);
+      updateEvalChart(moveHistory.length, playerEval);
       renderAnalysisPanel();
     }
   }
@@ -677,20 +751,11 @@
     }
   }
 
-  function updateOpeningDisplay() {
-    const el = document.getElementById('arena-opening');
-    if (el) {
-      el.textContent = 'Opening: ' + getOpeningName(game.fen());
-    }
-  }
-
   /* ─── Game Over ─── */
   function handleGameOver() {
     isGameOver = true;
     isThinking = false;
     if (clockInterval) clearInterval(clockInterval);
-
-    playSound('gameover');
 
     let result, resultText;
     if (game.in_checkmate()) {
@@ -710,10 +775,40 @@
     }
 
     updateStatus(resultText, 'gameover');
+    checkAchievements(result);
 
     setTimeout(() => {
       showPostGameReport(result);
     }, 1200);
+  }
+
+  function checkAchievements(result) {
+    const classifications = classificationHistory.map(c => c.classification);
+    const totalMoves = moveHistory.length;
+    const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+
+    const weights = { brilliant: 1, best: 1, excellent: 0.9, good: 0.7, inaccuracy: 0.4, mistake: 0.2, blunder: 0 };
+    let totalWeight = 0;
+    classifications.forEach(c => { totalWeight += weights[c] || 0.5; });
+    const accuracy = classifications.length > 0 ? Math.round((totalWeight / classifications.length) * 100) : 50;
+
+    const newAchievements = [];
+    if (result === 'win') newAchievements.push(ACHIEVEMENTS.first_win);
+    if (classifications.filter(c => c === 'blunder').length >= 3) newAchievements.push(ACHIEVEMENTS.blunder_finder);
+    if (classifications.filter(c => c === 'blunder' || c === 'mistake').length === 0) newAchievements.push(ACHIEVEMENTS.perfect_game);
+    if (totalMoves <= 10 && result === 'win') newAchievements.push(ACHIEVEMENTS.speed_win);
+    if (accuracy >= 90) newAchievements.push(ACHIEVEMENTS.accuracy_master);
+
+    newAchievements.forEach(a => {
+      if (!achievements.find(existing => existing.name === a.name)) {
+        achievements.push(a);
+      }
+    });
+
+    if (newAchievements.length > 0) {
+      localStorage.setItem('ck_achievements', JSON.stringify(achievements));
+      setTimeout(() => CK.showToast(`Achievements unlocked: ${newAchievements.map(a => a.icon + ' ' + a.name).join(', ')}`, 'success'), 500);
+    }
   }
 
   /* ─── Post-Game Report ─── */
@@ -725,7 +820,6 @@
     const duration = Math.floor((Date.now() - gameStartTime) / 1000);
     const durationMin = Math.floor(duration / 60);
     const durationSec = duration % 60;
-    const openingName = moveHistory.length > 0 ? getOpeningName(moveHistory[0].fen) : 'Unknown';
 
     // Calculate accuracy
     const classifications = classificationHistory.map(c => c.classification);
@@ -759,7 +853,7 @@
       <div class="arena-report-modal">
         <div class="arena-report-header">
           <div class="arena-report-result ${resultClass}">${resultLabel}</div>
-          <div class="arena-report-sub">${currentDifficulty} difficulty · ${totalMoves} moves · ${durationMin}m ${durationSec}s · ${openingName}</div>
+          <div class="arena-report-sub">${currentDifficulty} difficulty · ${totalMoves} moves · ${durationMin}m ${durationSec}s</div>
         </div>
         <div class="arena-report-body">
           <div class="report-stats-grid">
@@ -796,8 +890,20 @@
 
           <div class="eval-graph-container">
             <div class="eval-graph-title">Evaluation Over Time</div>
-            <div id="arena-eval-chart" style="height: 160px; background: var(--arena-surface2); border-radius: 8px; padding: 16px; color: var(--arena-text-muted); display: flex; align-items: center; justify-content: center;">Loading chart...</div>
+            <div id="arena-eval-chart" style="height: 160px; background: var(--arena-surface2); border-radius: 8px; padding: 16px; color: var(--arena-text-muted); display: flex; align-items: center; justify-content: center;">Chart loading...</div>
           </div>
+
+          ${achievements.length > 0 ? `
+          <div class="key-moments">
+            <div class="key-moments-title">🏆 Achievements Unlocked</div>
+            ${achievements.map(a => `
+              <div class="key-moment-item">
+                <span class="km-move">${a.icon}</span>
+                <span class="km-type brilliant">${a.name}</span>
+                <span class="km-desc">${a.desc}</span>
+              </div>
+            `).join('')}
+          </div>` : ''}
 
           ${keyMoments.length > 0 ? `
           <div class="key-moments">
@@ -810,10 +916,12 @@
               </div>
             `).join('')}
           </div>` : ''}
+
+          ${renderMoveComparison()}
         </div>
         <div class="arena-report-actions">
           <button class="report-btn report-btn-secondary" onclick="CK.arena.closeReport()">Close</button>
-          <button class="report-btn report-btn-secondary" onclick="CK.arena.replayGame()">▶ Replay Game</button>
+          <button class="report-btn report-btn-secondary" onclick="CK.arena.playAgain()">Play Again</button>
           <button class="report-btn report-btn-primary" onclick="CK.arena.showCertificate('${result}', '${grade}', '${gradeClass}', ${accuracy})">🏆 View Certificate</button>
         </div>
       </div>
@@ -821,10 +929,65 @@
 
     overlay.classList.add('active');
 
-    // Render eval chart
+    // Render eval chart (simplified for now)
     setTimeout(() => {
-      renderEvalChart();
+      renderPostGameChart();
     }, 100);
+  }
+
+  function renderPostGameChart() {
+    const chartEl = document.getElementById('arena-eval-chart');
+    if (!chartEl || !window.Chart) return;
+    
+    chartEl.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    chartEl.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(232, 184, 75, 0.3)');
+    gradient.addColorStop(1, 'rgba(232, 184, 75, 0)');
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evalHistory.map((_, i) => (i + 1).toString()),
+        datasets: [{
+          label: 'Evaluation',
+          data: evalHistory,
+          borderColor: 'rgba(232, 184, 75, 1)',
+          backgroundColor: gradient,
+          tension: 0.3,
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { 
+            min: -3, 
+            max: 3, 
+            ticks: { color: '#8892a4', font: { size: 10 } }, 
+            grid: { display: false } 
+          },
+          x: { display: false }
+        },
+        plugins: { 
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            titleColor: '#f1f5f9',
+            bodyColor: '#94a3b8',
+            borderColor: '#f6c45a',
+            borderWidth: 1
+          }
+        }
+      }
+    });
   }
 
   function renderBreakdownBar(label, count, type, barClass) {
@@ -841,100 +1004,76 @@
     `;
   }
 
-  /* ─── Evaluation Chart ─── */
-  function renderEvalChart() {
-    const chartEl = document.getElementById('arena-eval-chart');
-    if (!chartEl) return;
-
-    const evals = evalHistory.slice(-20);
-    if (evals.length === 0) {
-      chartEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.5;">No evaluation data</div>';
-      return;
+  /* ─── Move Comparison ─── */
+  function renderMoveComparison() {
+    if (moveHistory.length === 0) return '';
+    
+    let html = `
+      <div class="move-breakdown" style="margin-top: 24px;">
+        <div class="move-breakdown-title">Move Comparison</div>
+        <div style="max-height: 200px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+            <thead>
+              <tr style="color: var(--arena-text-muted);">
+                <th style="text-align: left; padding: 6px;">#</th>
+                <th style="text-align: left; padding: 6px;">You</th>
+                <th style="text-align: left; padding: 6px;">Best</th>
+                <th style="text-align: left; padding: 6px;">Diff</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    for (let i = 0; i < moveHistory.length; i++) {
+      const classification = classificationHistory[i]?.classification || 'good';
+      const san = moveHistory[i]?.san || '';
+      const diff = getMoveDiff(i);
+      const diffColor = diff < 0.1 ? '#10b981' : diff < 0.5 ? '#f59e0b' : '#ef4444';
+      
+      html += `
+        <tr style="border-bottom: 1px solid var(--arena-border);">
+          <td style="padding: 6px; color: var(--arena-text-muted);">${Math.floor(i/2)+1}</td>
+          <td style="padding: 6px; font-family: monospace; color: ${getClassificationColor(classification)};">${san}</td>
+          <td style="padding: 6px; font-family: monospace; opacity: 0.6;">${getBestMoveForTurn(i) || '-'}</td>
+          <td style="padding: 6px; font-weight: 600; color: ${diffColor};">${diff.toFixed(2)}</td>
+        </tr>
+      `;
     }
-
-    const minWidth = 20;
-    const barWidth = Math.max(minWidth, 400 / evals.length);
-    const maxVal = Math.max(...evals.map(e => Math.abs(e)), 1);
-
-    let html = '<div style="display:flex;align-items:flex-end;justify-content:center;height:100%;gap:1px;">';
-    evals.forEach((eval_, i) => {
-      const height = Math.abs(eval_) / maxVal * 100;
-      const color = eval_ > 0 ? '#10B981' : eval_ < 0 ? '#EF5350' : '#64748b';
-      html += `<div style="width:${barWidth}px;height:${height}%;background:${color};opacity:${0.3 + 0.7 * (i / evals.length)}"></div>`;
-    });
-    html += '</div>';
-    chartEl.innerHTML = html;
+    
+    html += '</tbody></table></div></div>';
+    return html;
   }
 
-  /* ─── Replay Game ─── */
-  A.replayGame = () => {
-    if (moveHistory.length === 0) return;
-    if (clockInterval) clearInterval(clockInterval);
+  function getClassificationColor(c) {
+    const colors = { brilliant: '#00d4aa', best: '#10B981', excellent: '#34d399', good: '#63b3ed', inaccuracy: '#F59E0B', mistake: '#f97316', blunder: '#EF5350' };
+    return colors[c] || '#f1f5f9';
+  }
 
-    isReplayMode = true;
-    isGameOver = false;
-    isThinking = false;
-    replayTimeoutIds = [];
+  function getMoveDiff(moveIndex) {
+    if (!classificationHistory[moveIndex]) return 0;
+    const c = classificationHistory[moveIndex].classification;
+    const diffs = { brilliant: 0, best: 0, excellent: 0.1, good: 0.3, inaccuracy: 0.5, mistake: 1.0, blunder: 2.0 };
+    return diffs[c] || 0.5;
+  }
 
-    const overlay = document.getElementById('arena-report-overlay');
-    if (overlay) overlay.classList.remove('active');
-
-    game = new Chess();
-    moveHistory = [];
-    evalHistory = [];
-    classificationHistory = [];
-    capturedWhite = [];
-    capturedBlack = [];
-    selectedSq = null;
-    isPlayerTurn = true;
-    gameStartTime = Date.now();
-    whiteClock = 600;
-    blackClock = 600;
-    activeClock = 'w';
-
-    renderBoard();
-    renderAnalysisPanel();
-    updateStatus('Replay in progress...');
-
-    let currentIndex = 0;
-    const totalMoves = moveHistory.length;
-
-    function replayNext() {
-      if (currentIndex >= totalMoves) {
-        isReplayMode = false;
-        updateStatus('Replay complete!');
-        return;
-      }
-
-      const move = moveHistory[currentIndex];
-      game.move(move.san);
-      renderBoard();
-      renderAnalysisPanel();
-      updateStatus(`Replay: Move ${currentIndex + 1}/${totalMoves}`);
-
-      currentIndex++;
-      const delay = 800 + Math.random() * 400;
-      const tid = setTimeout(replayNext, delay);
-      replayTimeoutIds.push(tid);
+  function getBestMoveForTurn(moveIndex) {
+    const depth = DIFFICULTY_DEPTH[currentDifficulty] || 2;
+    const tempGame = new Chess();
+    tempGame.fen(moveHistory[Math.floor(moveIndex/2)]?.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+    const moves = tempGame.moves({ verbose: true });
+    if (moves.length === 0) return null;
+    let bestMove = null;
+    let bestEval = tempGame.turn() === 'w' ? -Infinity : Infinity;
+    const isMax = tempGame.turn() === 'w';
+    for (const m of moves) {
+      tempGame.move(m);
+      const ev = minimax(depth - 1, -Infinity, Infinity, !isMax);
+      tempGame.undo();
+      if (isMax && ev > bestEval) { bestEval = ev; bestMove = m; }
+      if (!isMax && ev < bestEval) { bestEval = ev; bestMove = m; }
     }
-
-    replayNext();
-  };
-
-  A.pauseReplay = () => {
-    isReplayMode = false;
-    replayTimeoutIds.forEach(c => clearTimeout(c));
-    replayTimeoutIds = [];
-    updateStatus('Replay paused');
-  };
-
-  A.resumeReplay = () => {
-    if (!isReplayMode && replayTimeoutIds.length === 0) {
-      isReplayMode = true;
-      updateStatus('Replay resumed...');
-      A.replayGame();
-    }
-  };
+    return bestMove ? bestMove.san : null;
+  }
 
 
 
@@ -948,108 +1087,566 @@
     setTimeout(() => A.init(), 200);
   };
 
-  /* ─── Certificate ─── */
-  A.showCertificate = (result, grade, gradeClass, accuracy) => {
-    const overlay = document.getElementById('cert-overlay');
-    if (!overlay) return;
+/* ─── Certificate ─── */
+A.showCertificate = (result, grade, gradeClass, accuracy) => {
+  const overlay = document.getElementById('cert-overlay');
+  if (!overlay) return;
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const certId = 'CK-' + now.getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-    const playerName = 'Chess Challenger';
-    const resultText = result === 'win' ? 'Victory' : result === 'loss' ? 'Defeat' : 'Draw';
-    const openingName = moveHistory.length > 0 ? getOpeningName(moveHistory[0].fen) : 'Unknown';
-
-    overlay.innerHTML = `
-      <div class="cert-modal">
-        <div class="cert-border-outer">
-          <div class="cert-border-inner">
-            <div class="cert-logo">♛</div>
-            <div class="cert-academy-name">Chess<span>Kidoo</span></div>
-            <div class="cert-title">Certificate of Achievement</div>
-            <div class="cert-subtitle">AI Challenge Arena</div>
-            <div class="cert-presented">This certificate is proudly presented to</div>
-            <div class="cert-player-name">${playerName}</div>
-            <div class="cert-details-grid">
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Difficulty</span>
-                <span class="cert-detail-value">${currentDifficulty}</span>
-              </div>
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Result</span>
-                <span class="cert-detail-value">${resultText}</span>
-              </div>
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Accuracy</span>
-                <span class="cert-detail-value">${accuracy}%</span>
-              </div>
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Moves Played</span>
-                <span class="cert-detail-value">${moveHistory.length}</span>
-              </div>
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Opening</span>
-                <span class="cert-detail-value">${openingName}</span>
-              </div>
-              <div class="cert-detail-item">
-                <span class="cert-detail-label">Grade</span>
-                <span class="cert-detail-value">${grade}</span>
-              </div>
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const certId = 'CK-' + now.getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  const savedName = localStorage.getItem('ck_player_name') || '';
+  
+  overlay.innerHTML = `
+    <div class="cert-modal">
+      <div class="cert-border-outer">
+        <div class="cert-border-inner">
+          <div class="cert-logo" style="font-size: 64px; margin-bottom: 20px; color: #c89a38; text-shadow: 0 0 20px rgba(200, 154, 56, 0.5);">♛</div>
+          <div class="cert-academy-name" style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #1a1a1a; margin-bottom: 8px;">
+            Chess<span style="color: #c89a38;">Kidoo</span>
+          </div>
+          <div class="cert-title" style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #c89a38; text-transform: uppercase; letter-spacing: 4px; margin: 24px 0 16px; border-bottom: 2px solid #e8b84b; display: inline-block; padding-bottom: 12px;">
+            Certificate of Achievement
+          </div>
+          <div class="cert-subtitle" style="font-size: 14px; color: #888; margin-bottom: 24px; font-style: italic; letter-spacing: 1px;">
+            AI Challenge Arena
+          </div>
+          
+          <div class="cert-input-section" style="margin: 24px 0; padding: 20px; background: rgba(232, 184, 75, 0.08); border-radius: 16px; border: 1px dashed rgba(200, 154, 56, 0.4);">
+            <input type="text" id="cert-player-name" placeholder="Enter your name" value="${savedName}" style="width: 70%; max-width: 300px; padding: 14px 20px; border-radius: 10px; border: 2px solid #e8b84b; font-size: 16px; margin-bottom: 12px; background: #fff; font-family: inherit;">
+            <div class="cert-presented" style="font-size: 13px; color: #666; margin-bottom: 10px; letter-spacing: 0.5px;">This certificate is proudly presented to</div>
+            <div class="cert-player-name" id="cert-display-name" style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #1a1a1a; min-height: 40px; display: flex; align-items: center; justify-content: center; letter-spacing: -0.5px;">${savedName || '---'}</div>
+          </div>
+          
+          <div class="cert-details-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 440px; margin: 24px auto; text-align: left;">
+            <div class="cert-detail-item" style="display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-bottom: 1px dotted #ddd;">
+              <span class="cert-detail-label" style="color: #888; font-weight: 500;">Difficulty</span>
+              <span class="cert-detail-value" style="color: #1a1a1a; font-weight: 700;">${currentDifficulty}</span>
             </div>
-            <div class="cert-grade ${gradeClass}">${grade}</div>
-            <div class="cert-id">Certificate ID: ${certId}</div>
-            <div class="cert-date">${dateStr}</div>
-            <div class="cert-actions">
-              <button class="cert-btn cert-btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
-              <button class="cert-btn cert-btn-close" onclick="CK.arena.closeCertificate()">Close</button>
+            <div class="cert-detail-item" style="display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-bottom: 1px dotted #ddd;">
+              <span class="cert-detail-label" style="color: #888; font-weight: 500;">Result</span>
+              <span class="cert-detail-value" style="color: #1a1a1a; font-weight: 700;">${result === 'win' ? 'Victory' : result === 'loss' ? 'Defeat' : 'Draw'}</span>
             </div>
+            <div class="cert-detail-item" style="display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-bottom: 1px dotted #ddd;">
+              <span class="cert-detail-label" style="color: #888; font-weight: 500;">Accuracy</span>
+              <span class="cert-detail-value" style="color: #1a1a1a; font-weight: 700;">${accuracy}%</span>
+            </div>
+            <div class="cert-detail-item" style="display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-bottom: 1px dotted #ddd;">
+              <span class="cert-detail-label" style="color: #888; font-weight: 500;">Moves</span>
+              <span class="cert-detail-value" style="color: #1a1a1a; font-weight: 700;">${moveHistory.length}</span>
+            </div>
+          </div>
+          
+          <div class="cert-grade ${gradeClass}" style="font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 900; margin: 20px 0; line-height: 1;">${grade}</div>
+          
+          <div class="cert-signature-area" style="display: flex; justify-content: center; align-items: center; gap: 50px; margin-top: 30px; padding-top: 20px; border-top: 1px dashed rgba(200, 154, 56, 0.4);">
+            <div class="cert-signature" style="text-align: center;">
+              <div style="width: 140px; height: 1px; background: #333; margin: 0 auto 10px;"></div>
+              <div style="font-size: 12px; color: #666; font-style: italic; letter-spacing: 0.5px;">ChessKidoo AI</div>
+            </div>
+          </div>
+          
+          <div class="cert-id" style="font-family: monospace; font-size: 12px; color: #aaa; margin-top: 20px; letter-spacing: 0.5px;">Certificate ID: CK-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}</div>
+          <div class="cert-date" style="font-size: 12px; color: #888; margin-top: 6px;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          
+          <div class="cert-actions" style="display: flex; gap: 16px; justify-content: center; margin-top: 28px;">
+            <button class="cert-btn cert-btn-print" id="cert-download-btn" ${savedName.length >= 2 ? '' : 'disabled'} style="padding: 14px 32px; background: #c89a38; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; ${savedName.length >= 2 ? '' : 'opacity: 0.5; cursor: not-allowed;'}">🖨️ Download Certificate</button>
+            <button class="cert-btn cert-btn-close" onclick="CK.arena.closeCertificate()" style="padding: 14px 32px; background: #f1f5f9; color: #333; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid #ddd;">Close</button>
           </div>
         </div>
       </div>
-    `;
+    </div>
+  `;
 
-    overlay.classList.add('active');
+  overlay.classList.add('active');
+  
+  const nameInput = document.getElementById('cert-player-name');
+  const displayName = document.getElementById('cert-display-name');
+  const downloadBtn = document.getElementById('cert-download-btn');
+  
+  nameInput.addEventListener('input', function() {
+    const name = this.value.trim();
+    displayName.textContent = name || '---';
+    downloadBtn.disabled = name.length < 2;
+    if (name.length >= 2) {
+      downloadBtn.style.opacity = '1';
+      downloadBtn.style.cursor = 'pointer';
+    } else {
+      downloadBtn.style.opacity = '0.5';
+      downloadBtn.style.cursor = 'not-allowed';
+    }
+  });
+  
+  downloadBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    if (name.length < 2) return;
+    localStorage.setItem('ck_player_name', name);
+    downloadCertificateAsImage();
   };
+  
+  function downloadCertificateAsImage() {
+    const name = nameInput.value.trim();
+    const certId = 'CK-' + new Date().getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    const printWindow = window.open('', '_blank');
+    const doc = printWindow.document;
+    doc.open();
+    doc.write(`
+      <html>
+      <head>
+        <title>ChessKidoo Certificate</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+          body { 
+            font-family: 'DM Sans', sans-serif; 
+            margin: 0; 
+            padding: 30px; 
+            background: #fffdf5;
+            color: #1a1a1a;
+          }
+          .cert-container { 
+            max-width: 780px; 
+            margin: 0 auto; 
+            background: #fffdf5;
+            border: 3px solid #c89a38;
+            padding: 20px;
+            position: relative;
+          }
+          .cert-inner { 
+            border: 1px solid #e8b84b; 
+            padding: 50px; 
+            text-align: center; 
+            background: radial-gradient(circle at center top, #fffdf5 0%, #fef9e7 100%);
+            position: relative;
+            min-height: 600px;
+          }
+          .cert-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 180px;
+            color: rgba(200, 154, 56, 0.05);
+            z-index: 0;
+            font-family: serif;
+          }
+          .cert-logo { 
+            font-size: 64px; 
+            margin-bottom: 20px; 
+            color: #c89a38; 
+            text-shadow: 0 0 20px rgba(200, 154, 56, 0.5);
+            position: relative;
+            z-index: 1;
+          }
+          .cert-academy-name { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 28px; 
+            font-weight: 900; 
+            color: #1a1a1a; 
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-title { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 28px; 
+            font-weight: 900; 
+            color: #c89a38; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            margin: 24px 0 16px; 
+            border-bottom: 2px solid #e8b84b; 
+            display: inline-block; 
+            padding-bottom: 12px;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-subtitle { 
+            font-size: 14px; 
+            color: #888; 
+            margin-bottom: 24px; 
+            font-style: italic; 
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-presented { 
+            font-size: 13px; 
+            color: #666; 
+            margin-bottom: 10px; 
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-player-name { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 32px; 
+            font-weight: 900; 
+            color: #1a1a1a; 
+            margin: 12px 0 24px; 
+            border-bottom: 1px solid #ddd; 
+            display: inline-block; 
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-details-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 16px; 
+            max-width: 440px; 
+            margin: 24px auto; 
+            text-align: left;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-detail-item { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            padding: 10px 0; 
+            border-bottom: 1px dotted #ddd; 
+          }
+          .cert-detail-label { color: #888; font-weight: 500; }
+          .cert-detail-value { color: #1a1a1a; font-weight: 700; }
+          .cert-grade { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 56px; 
+            font-weight: 900; 
+            margin: 20px 0; 
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+          }
+          .cert-grade.grade-s { color: #c89a38; }
+          .cert-grade.grade-a { color: #10B981; }
+          .cert-grade.grade-b { color: #5b96f6; }
+          .cert-grade.grade-c { color: #F59E0B; }
+          .cert-grade.grade-d { color: #EF5350; }
+          .cert-signature-area { 
+            display: flex; 
+            justify-content: center; 
+            gap: 50px; 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px dashed rgba(200, 154, 56, 0.4);
+            position: relative;
+            z-index: 1;
+          }
+          .cert-signature { text-align: center; }
+          .cert-signature-line { width: 140px; height: 1px; background: #333; margin: 0 auto 10px; }
+          .cert-signature-label { font-size: 12px; color: #666; font-style: italic; letter-spacing: 0.5px; }
+          .cert-id { font-family: monospace; font-size: 12px; color: #aaa; margin-top: 20px; letter-spacing: 0.5px; position: relative; z-index: 1; }
+          .cert-date { font-size: 12px; color: #888; margin-top: 6px; position: relative; z-index: 1; }
+        </style>
+      </head>
+      <body>
+        <div class="cert-container">
+          <div class="cert-inner">
+            <div class="cert-watermark">♛</div>
+            <div class="cert-logo">♛</div>
+            <div class="cert-academy-name">Chess<span style="color: #c89a38;">Kidoo</span></div>
+            <div class="cert-title">Certificate of Achievement</div>
+            <div class="cert-subtitle">AI Challenge Arena</div>
+            <div class="cert-presented">This certificate is proudly presented to</div>
+            <div class="cert-player-name">${name}</div>
+            <div class="cert-details-grid">
+              <div class="cert-detail-item"><span class="cert-detail-label">Difficulty</span><span class="cert-detail-value">${currentDifficulty}</span></div>
+              <div class="cert-detail-item"><span class="cert-detail-label">Result</span><span class="cert-detail-value">${result === 'win' ? 'Victory' : result === 'loss' ? 'Defeat' : 'Draw'}</span></div>
+              <div class="cert-detail-item"><span class="cert-detail-label">Accuracy</span><span class="cert-detail-value">${accuracy}%</span></div>
+              <div class="cert-detail-item"><span class="cert-detail-label">Moves</span><span class="cert-detail-value">${moveHistory.length}</span></div>
+            </div>
+            <div class="cert-grade grade-${grade.toLowerCase()}">${grade}</div>
+            <div class="cert-signature-area">
+              <div class="cert-signature">
+                <div class="cert-signature-line"></div>
+                <div class="cert-signature-label">ChessKidoo AI</div>
+              </div>
+            </div>
+            <div class="cert-id">Certificate ID: ${certId}</div>
+            <div class="cert-date">${dateStr}</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    doc.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+};
 
   A.closeCertificate = () => {
     const overlay = document.getElementById('cert-overlay');
     if (overlay) overlay.classList.remove('active');
   };
 
-  /* ─── Game Controls ─── */
-  A.resignGame = () => {
-    if (isGameOver) return;
-    isGameOver = true;
-    isThinking = false;
-    if (clockInterval) clearInterval(clockInterval);
-    updateStatus('You resigned — AI Wins', 'gameover');
-    setTimeout(() => showPostGameReport('loss'), 800);
-  };
+/* ─── Game Controls ─── */
+A.resignGame = () => {
+  if (isGameOver) return;
+  isGameOver = true;
+  isThinking = false;
+  if (clockInterval) clearInterval(clockInterval);
+  updateStatus('You resigned — AI Wins', 'gameover');
+  setTimeout(() => showPostGameReport('loss'), 800);
+};
 
-  A.offerDraw = () => {
-    if (isGameOver) return;
-    isGameOver = true;
-    isThinking = false;
-    if (clockInterval) clearInterval(clockInterval);
-    updateStatus('Game Drawn by agreement', 'gameover');
-    setTimeout(() => showPostGameReport('draw'), 800);
-  };
+A.offerDraw = () => {
+  if (isGameOver) return;
+  isGameOver = true;
+  isThinking = false;
+  if (clockInterval) clearInterval(clockInterval);
+  updateStatus('Game Drawn by agreement', 'gameover');
+  setTimeout(() => showPostGameReport('draw'), 800);
+};
 
-  A.newGame = () => {
-    if (clockInterval) clearInterval(clockInterval);
-    A.closeReport();
-    A.closeCertificate();
-    A.init();
-  };
+A.newGame = () => {
+  if (clockInterval) clearInterval(clockInterval);
+  A.closeReport();
+  A.closeCertificate();
+  A.init();
+};
 
-  A.setDifficulty = (level) => {
-    currentDifficulty = level;
-    document.querySelectorAll('.diff-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.level === level);
-    });
-  };
+A.setDifficulty = (level) => {
+  currentDifficulty = level;
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.level === level);
+  });
+};
 
-  /* ─── Navigate back to home ─── */
+/* ─── Hint System ─── */
+A.showHint = () => {
+  if (isGameOver || isThinking || !isPlayerTurn) return;
+  
+  const depth = DIFFICULTY_DEPTH[currentDifficulty] || 2;
+  const bestMove = getBestMoveMinimax(depth);
+  
+  if (bestMove) {
+    const fromEl = document.querySelector(`.a-sq[data-square="${bestMove.from}"]`);
+    const toEl = document.querySelector(`.a-sq[data-square="${bestMove.to}"]`);
+    
+    if (fromEl) {
+      fromEl.style.animation = 'hintPulse 1.5s ease-in-out 3';
+    }
+    if (toEl) {
+      toEl.style.animation = 'hintPulse 1.5s ease-in-out 3';
+    }
+    
+    CK.showToast(`Hint: Play ${bestMove.san}`, 'info');
+  }
+};
+
+/* ─── Puzzle Database ─── */
+const PUZZLES = [
+  { id: 1, name: 'Scholar\'s Mate', fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4', solution: 'f7#', difficulty: 'Beginner', type: 'mate' },
+  { id: 2, name: 'Back Rank Mate', fen: '6k1/5ppp/8/8/8/8/8/R3K3 w Q - - 0 1', solution: 'Rh8#', difficulty: 'Intermediate', type: 'mate' },
+  { id: 3, name: 'Fork Practice', fen: '8/8/8/4N3/8/8/4P3/4K2k w - - 0 1', solution: 'Nf5+', difficulty: 'Beginner', type: 'tactics' },
+  { id: 4, name: 'Pin Challenge', fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4', solution: 'Bc4', difficulty: 'Intermediate', type: 'tactics' },
+  { id: 5, name: 'Deflection', fen: '3qk3/8/3b4/8/8/8/3K4/3Q4 w - - 0 1', solution: 'Qd1+', difficulty: 'Advanced', type: 'tactics' },
+];
+
+let currentPuzzle = null;
+let puzzleMoves = [];
+
+/* ─── Puzzle Mode ─── */
+A.startPuzzle = (puzzleId = null) => {
+  if (puzzleId) {
+    currentPuzzle = PUZZLES.find(p => p.id === puzzleId);
+  } else {
+    currentPuzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  }
+  
+  game = new Chess(currentPuzzle.fen);
+  moveHistory = [];
+  evalHistory = [];
+  classificationHistory = [];
+  capturedWhite = [];
+  capturedBlack = [];
+  selectedSq = null;
+  isPlayerTurn = true;
+  isGameOver = false;
+  isThinking = false;
+  gameStartTime = Date.now();
+  whiteClock = 600;
+  blackClock = 600;
+  activeClock = 'w';
+  achievements = JSON.parse(localStorage.getItem('ck_achievements') || '[]');
+  engineReady = true;
+  useWasm = false;
+  
+  renderBoard();
+  renderAnalysisPanel();
+  updateStatus(`Puzzle: ${currentPuzzle.name} — Find the best move!`);
+  initEvalChart();
+};
+
+A.checkPuzzleSolution = (moveStr) => {
+  if (!currentPuzzle) return false;
+  
+  const correctMove = currentPuzzle.solution;
+  const isCorrect = moveStr === correctMove || moveStr.includes(correctMove.substring(0, 2) + correctMove.substring(2, 4));
+  
+  if (isCorrect) {
+    updateStatus('Correct! Well done!', 'gameover');
+    CK.showToast('Puzzle solved! Excellent!', 'success');
+    setTimeout(() => A.startPuzzle(), 1500);
+    return true;
+  } else {
+    updateStatus('Incorrect — Try again!', 'check');
+    CK.showToast('That is not the correct move. Think again!', 'error');
+    return false;
+  }
+};
+
+/* ─── Mini-Games ─── */
+let miniGameActive = null;
+let miniGameScore = 0;
+
+A.startMiniGame = (gameType) => {
+  miniGameActive = gameType;
+  miniGameScore = 0;
+  
+  if (gameType === 'piece-assembly') {
+    startPieceAssembly();
+  } else if (gameType === 'find-move') {
+    startFindMove();
+  }
+};
+
+function startPieceAssembly() {
+  updateStatus('Mini-Game: Arrange the pieces! Drag and drop to form a checkmate.');
+  CK.showToast('Drag pieces to form checkmate!', 'info');
+}
+
+function startFindMove() {
+  const positions = [
+    { pos: 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 2', goal: 'e5' },
+    { pos: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1', goal: 'e6' },
+    { pos: 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 2', goal: 'Qh5' },
+  ];
+  const pos = positions[Math.floor(Math.random() * positions.length)];
+  game = new Chess(pos.pos);
+  renderBoard();
+  updateStatus(`Mini-Game: Find the best move for White! Goal: ${pos.goal}`);
+}
+
+function checkMiniGameMove(move) {
+  if (!miniGameActive) return true;
+  const moveObj = game.move(move);
+  if (!moveObj) return false;
+  
+  miniGameScore += 10;
+  updateStatus(`Score: ${miniGameScore}`, 'gameover');
+  return true;
+}
+
+/* ─── More Games ─── */
+let memoryGameState = null;
+let quickMoveState = null;
+let gameTimer = null;
+
+A.startMemoryGame = () => {
+  if (!game) game = new Chess();
+  const moves = game.moves().slice(0, 6);
+  memoryGameState = {
+    sequence: moves,
+    index: 0,
+    playerSequence: []
+  };
+  updateStatus('Memory Game: Watch the sequence...');
+  CK.showToast('Watch the moves and repeat them!', 'info');
+  playMemorySequence();
+};
+
+function playMemorySequence() {
+  if (!memoryGameState) return;
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= memoryGameState.sequence.length) {
+      clearInterval(interval);
+      updateStatus('Your turn - repeat the sequence!');
+      return;
+    }
+    highlightSquare(memoryGameState.sequence[i].from);
+    setTimeout(() => highlightSquare(memoryGameState.sequence[i].to), 300);
+    i++;
+  }, 700);
+}
+
+function highlightSquare(sq) {
+  const el = document.querySelector(`.a-sq[data-square="${sq}"]`);
+  if (el) {
+    el.style.transition = 'all 0.3s';
+    el.style.transform = 'scale(1.2)';
+    el.style.background = 'rgba(232, 184, 75, 0.5)';
+    setTimeout(() => {
+      el.style.transform = 'scale(1)';
+      el.style.background = '';
+    }, 250);
+  }
+}
+
+A.startQuickMove = () => {
+  if (gameTimer) clearInterval(gameTimer);
+  const positions = [
+    { pos: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 2', goal: 'e5' },
+    { pos: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1', goal: 'e6' },
+  ];
+  const pos = positions[Math.floor(Math.random() * positions.length)];
+  game = new Chess(pos.pos);
+  quickMoveState = { goal: pos.goal, timeLeft: 30, solved: false };
+  renderBoard();
+  updateStatus(`Quick Move: Find ${pos.goal}! Time: 30s`);
+  startQuickMoveTimer();
+};
+
+function startQuickMoveTimer() {
+  if (gameTimer) clearInterval(gameTimer);
+  gameTimer = setInterval(() => {
+    if (!quickMoveState) return;
+    quickMoveState.timeLeft--;
+    updateStatus(`Time: ${quickMoveState.timeLeft}s - Find ${quickMoveState.goal}!`);
+    if (quickMoveState.timeLeft <= 0) {
+      clearInterval(gameTimer);
+      updateStatus('Time\'s up!', 'check');
+      setTimeout(() => A.startQuickMove(), 1500);
+    }
+  }, 1000);
+}
+
+  /* ─── Toast Notifications ─── */
+A.showToast = (msg, type = 'info') => {
+  let toast = document.getElementById('arena-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'arena-toast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: opacity 0.3s;
+    `;
+    document.body.appendChild(toast);
+  }
+  
+  const colors = { info: '#3b82f6', success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
+  toast.style.background = colors[type] || colors.info;
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 3000);
+};
   A.goHome = () => {
     if (stockfish) {
       try { stockfish.terminate(); } catch(e) {}

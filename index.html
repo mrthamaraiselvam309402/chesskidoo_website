@@ -8,12 +8,12 @@
   <title>ChessKidoo | India's Premier Chess Academy</title>
   
   <!-- Professional Chess Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23D97706%22/><text y=%22.85em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2270%22 fill=%22white%22>♛</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23D97706%22/><text y=%22.85em%22 x=%2250%%22 text-anchor=%22middle%22 font-size=%2270%22 fill=%22white%22>♘</text></svg>">
 
   <!-- Fonts & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/portals.css">
   
@@ -53,20 +53,20 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <div class="logo-icon-box">
-          <span class="logo-icon-symbol">♛</span>
+          <span class="logo-icon-symbol">♘</span>
         </div>
         <span class="logo-text">Chess<span>Kidoo</span></span>
       </a>
       <nav class="nav-links" id="navLinks">
-        <button class="nav-link" data-section="home" onclick="CK.navigate('home')">Home</button>
-        <button class="nav-link" data-section="features" onclick="CK.navigate('features')">Features</button>
-        <button class="nav-link" data-section="levels" onclick="CK.navigate('levels')">Curriculum</button>
-        <button class="nav-link" data-section="coaches" onclick="CK.navigate('coaches')">Coaches</button>
-        <button class="nav-link" data-section="pricing" onclick="CK.navigate('pricing')">Pricing</button>
-        <button class="nav-link" data-section="faq" onclick="CK.navigate('faq')">Faq</button>
+        <button class="nav-link" data-section="home" data-translate="home" onclick="CK.navigate('home')">Home</button>
+        <button class="nav-link" data-section="features" data-translate="features" onclick="CK.navigate('features')">Features</button>
+        <button class="nav-link" data-section="levels" data-translate="curriculum" onclick="CK.navigate('levels')">Curriculum</button>
+        <button class="nav-link" data-section="coaches" data-translate="coaches" onclick="CK.navigate('coaches')">Coaches</button>
+        <button class="nav-link" data-section="achievements" data-translate="achievements" onclick="CK.navigate('achievements')">Achievements</button>
+        <button class="nav-link" data-section="pricing" data-translate="pricing" onclick="CK.navigate('pricing')">Pricing</button>
+        <button class="nav-link" data-section="faq" data-translate="faq" onclick="CK.navigate('faq')">Faq</button>
         <div class="nav-spacer"></div>
-        <button class="nav-link btn btn-primary nav-cta" onclick="CK.openModal('contactModal')">Book Demo</button>
-        <button id="loginNavBtn" class="nav-link btn btn-ghost nav-login" onclick="CK.showPage('login-page')">Log In</button>
+        <button id="loginNavBtn" class="nav-link btn btn-ghost nav-login" data-translate="login" onclick="CK.showPage('login-page')" style="padding: 8px 16px; font-size: 0.9rem;">Log In</button>
       </nav>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
         <span class="hamburger-line"></span>
@@ -87,8 +87,8 @@
         <div class="hero-content-wrap">
           <div class="hero-grid">
             <div class="hero-content">
-              <div class="hero-badge"><span>♟</span> CHESS ACADEMY FOR YOUNG MINDS</div>
-              <h1 class="hero-title">Where kids learn to<br><em>think two moves</em><br>ahead.</h1>
+              <div class="hero-badge"><span style="font-size: 1.3em; margin-right: 4px;">♟</span> <span data-translate="hero_badge" style="font-style: italic; font-family: 'Dancing Script', cursive;">India's #1 Student Tracking System</span></div>
+              <h1 class="hero-title" data-translate="hero_title">Where kids learn to<br><em>think two moves</em><br>ahead.</h1>
               <div class="hero-btns">
                 <button class="btn hero-btn-demo" onclick="CK.openDemoModal()">🗓️ Book Free Demo</button>
                 <a href="https://wa.me/919025846663" target="_blank" class="btn hero-btn-wa">
@@ -101,21 +101,82 @@
               <div class="hero-stats">
                 <div class="stat-item">
                   <div class="hero-stat-num">200+</div>
-                  <div class="hero-stat-label">Active Students</div>
+                  <div class="hero-stat-label" data-translate="hero_stat_students">Active Students</div>
                 </div>
                 <div class="stat-item">
                   <div class="hero-stat-num">8+</div>
-                  <div class="stat-item-label hero-stat-label">FIDE Coaches</div>
+                  <div class="stat-item-label hero-stat-label" data-translate="hero_stat_coaches">FIDE Coaches</div>
                 </div>
                 <div class="stat-item">
                   <div class="hero-stat-num">12+</div>
-                  <div class="stat-item-label hero-stat-label">Championships</div>
+                  <div class="stat-item-label hero-stat-label" data-translate="hero_stat_championships">Championships</div>
                 </div>
                 <div class="stat-item">
                   <div class="hero-stat-num">4.9★</div>
-                  <div class="stat-item-label hero-stat-label">Parent Rating</div>
-</div>
+                  <div class="stat-item-label hero-stat-label" data-translate="hero_stat_rating">Parent Rating</div>
+                </div>
+              </div>
             </div>
+            <div class="hero-visual">
+              <div class="board-panel reveal">
+                <!-- Players bar (immortal game) -->
+                <div class="players-bar">
+                  <div class="player-chip">
+                    <div class="avatar av-white">♔</div>
+                    <div>
+                      <div class="pname">Adolf Anderssen</div>
+                      <div class="pelo">White · ELO ~2600</div>
+                    </div>
+                  </div>
+                  <div class="match-center">
+                    <div class="live-pill"><div class="live-pill-dot"></div>LIVE</div>
+                    <div class="match-loc">London, 1851 · Immortal Game</div>
+                  </div>
+                  <div class="player-chip right">
+                    <div class="avatar av-black">♚</div>
+                    <div style="text-align:right">
+                      <div class="pname">L. Kieseritzky</div>
+                      <div class="pelo">Black · ELO ~2400</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Board + move list (side by side) -->
+                <div class="board-section">
+                  <!-- rank labels + board -->
+                  <div style="display: flex; align-items: flex-start; gap: 0;">
+                    <div class="coords-col" id="ranks-col"></div>
+                    <div>
+                      <div id="board"></div>
+                      <div class="coords-row" id="files-row"></div>
+                    </div>
+                  </div>
+
+                  <!-- Move notation panel (side panel) -->
+                  <div class="moves-panel">
+                    <div class="panel-head">♜ The Immortal Game · Move list</div>
+                    <div id="move-list"></div>
+                  </div>
+                </div>
+
+                <!-- Controls: navigation + inline "Check Ur Level" CTA -->
+                <div class="board-controls">
+                  <div class="ctrl-group">
+                    <button class="cb" id="b-start" title="First move">⏮️</button>
+                    <button class="cb" id="b-prev" title="Previous move">◀️</button>
+                    <button class="cb cb-pause" id="b-pause">⏸️ Pause</button>
+                    <button class="cb" id="b-next" title="Next move">▶️</button>
+                    <button class="cb" id="b-end" title="Last move">⏭️</button>
+                  </div>
+                  <button class="check-level-btn" id="checkLevelBtn" onclick="CK.navigate('arena')">
+                    <span>📈</span> Check Ur Level
+                  </button>
+                </div>
+              </div>
+            </div>
+
+
+
           </div>
         </div>
       </section>
@@ -129,7 +190,7 @@
           <div class="trust-item">⭐ 4.9/5 Parent Rating</div><div class="trust-divider"></div>
           <div class="trust-item">🇮🇳 AICF Affiliate</div><div class="trust-divider"></div>
           <div class="trust-item">🏆 12+ Championships Won</div><div class="trust-divider"></div>
-          <div class="trust-item">🎯 India's #1 Chess Tracking System</div>
+          <div class="trust-item">🎯 India's #1 Student Tracking System</div>
         </div>
       </div>
 
@@ -137,34 +198,34 @@
       <section id="features" class="section-padding">
         <div class="section-head reveal">
           <div class="eyebrow">Key Features</div>
-          <h2>Everything Your Child Needs to Excel</h2>
-          <p class="lead">One-stop solution for kids learning chess - tracking, coaching, tournaments and more.</p>
+          <h2 data-translate="features_title">Everything Your Child Needs to Excel</h2>
+          <p class="lead" data-translate="features_lead">One-stop solution for kids learning chess - tracking, coaching, tournaments and more.</p>
         </div>
         
         <div class="feat-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">📊</div><h3>Smart Student Tracking</h3>
-            <p>Manage profiles, game history, and ratings for every student in one clean dashboard.</p>
+            <div class="feat-icon-wrap">📊</div><h3 data-translate="feature_tracking">Smart Student Tracking</h3>
+            <p data-translate="feature_tracking_desc">Manage profiles, game history, and ratings for every student in one clean dashboard.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">📈</div><h3>Progress Analytics</h3>
-            <p>Visual insights into each student's performance trends and learning velocity over time.</p>
+            <div class="feat-icon-wrap">📈</div><h3 data-translate="feature_progress">Progress Analytics</h3>
+            <p data-translate="feature_progress_desc">Visual insights into each student's performance trends and learning velocity over time.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🏆</div><h3>Tournament Ready</h3>
-            <p>Manage tournaments, match pairings, and leaderboards with professional efficiency.</p>
+            <div class="feat-icon-wrap">🏆</div><h3 data-translate="feature_tournament">Tournament Ready</h3>
+            <p data-translate="feature_tournament_desc">Manage tournaments, match pairings, and leaderboards with professional efficiency.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🌍</div><h3>Certified Coaches</h3>
-            <p>Learn from professionals trained under FIDE's rigorous global standards.</p>
+            <div class="feat-icon-wrap">🌍</div><h3 data-translate="feature_coaches">Certified Coaches</h3>
+            <p data-translate="feature_coaches_desc">Learn from professionals trained under FIDE's rigorous global standards.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">♟️</div><h3>Advanced Curriculum</h3>
-            <p>Openings, middlegame tactics, endgames, and mental prep - all on one platform.</p>
+            <div class="feat-icon-wrap">♟️</div><h3 data-translate="feature_curriculum">Advanced Curriculum</h3>
+            <p data-translate="feature_curriculum_desc">Openings, middlegame tactics, endgames, and mental prep - all on one platform.</p>
           </div>
           <div class="feat-card reveal">
-            <div class="feat-icon-wrap">🗣️</div><h3>Personalized Feedback</h3>
-            <p>Every game is reviewed and discussed with the coach for continuous improvement.</p>
+            <div class="feat-icon-wrap">🗣️</div><h3 data-translate="feature_feedback">Personalized Feedback</h3>
+            <p data-translate="feature_feedback_desc">Every game is reviewed and discussed with the coach for continuous improvement.</p>
           </div>
         </div>
         
@@ -172,26 +233,22 @@
         <div style="display: flex; justify-content: center; margin-top: 30px;">
           <div class="feat-card reveal" style="max-width: 400px; width: 100%; margin: 0; text-align: center;">
             <div class="feat-icon-wrap" style="margin: 0 auto 20px;">🇮🇳</div>
-            <h3>Bilingual Support</h3>
-            <p>Clear communication for students and parents in English & Tamil.</p>
+            <h3 data-translate="feature_bilingual">Bilingual Support</h3>
+            <p data-translate="feature_bilingual_desc">Clear communication for students and parents in English & Tamil.</p>
           </div>
         </div>
       </section>
 
       <!-- Curriculum -->
-      <section id="levels" class="section-padding" style="overflow: hidden; background: linear-gradient(135deg, #fdf6ec 0%, #f5ecd8 100%);">
-        <div class="container" style="position: relative;">
+      <section id="levels" class="section-padding" style="overflow: hidden;">
+        <div class="container">
           <div class="section-head reveal" style="text-align: center; margin-bottom: 60px;">
             <div class="eyebrow" style="color: var(--amber); text-transform: uppercase; letter-spacing: 2px;">Student Levels</div>
-            <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-top: 8px; color: var(--navy);">Three Levels – One Journey</h2>
-            <p class="lead" style="color: var(--muted); max-width: 600px; margin: 12px auto 0;">Progress from total beginner to tournament-ready competitor with our structured curriculum.</p>
+            <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-top: 8px; color: var(--navy);" data-translate="levels_title">Three Levels – One Journey</h2>
+            <p class="lead" style="color: var(--muted); max-width: 600px; margin: 12px auto 0;" data-translate="levels_lead">Progress from total beginner to tournament-ready competitor with our structured curriculum.</p>
           </div>
           
-          <div class="level-cover-wrapper" style="position: relative; padding: 40px; background: rgba(232, 160, 32, 0.03); border-radius: 32px; border: 1px solid rgba(232, 160, 32, 0.1); overflow: hidden;">
-            <div class="level-cover-piece" style="position: absolute; top: -30px; left: -30px; font-size: 12rem; color: rgba(217, 119, 6, 0.05); transform: rotate(-15deg); pointer-events: none;">♔</div>
-            <div class="level-cover-piece" style="position: absolute; top: -20px; right: -35px; font-size: 14rem; color: rgba(217, 119, 6, 0.04); transform: rotate(20deg); pointer-events: none;">♛</div>
-            <div class="level-cover-piece" style="position: absolute; bottom: -40px; right: 10%; font-size: 16rem; color: rgba(217, 119, 6, 0.03); transform: rotate(-10deg); pointer-events: none;">♗</div>
-            <div class="level-grid reveal" style="position: relative; z-index: 2;">
+          <div class="level-grid reveal">
             <!-- Beginner Card -->
             <div class="level-card level-beginner" onclick="CK.openDemoModal()">
               <div class="level-rank">Beginner</div>
@@ -201,7 +258,7 @@
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(232, 160, 32, 0.08); border:1px solid rgba(232, 160, 32, 0.2); color:#c27c00; padding:4px 10px; border-radius:12px; font-weight:700;">🎯 Rating: Unrated - 800</span>
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(15, 23, 42, 0.04); border:1px solid rgba(15, 23, 42, 0.08); color:var(--navy); padding:4px 10px; border-radius:12px; font-weight:700;">👶 Age: 5 - 12 Years</span>
               </div>
-              <p>Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
+              <p data-translate="level_beginner_desc">Ideal for students new to chess. Focuses on basic moves, opening principles, and board control fundamentals.</p>
               <ul>
                 <li>Piece movements & rules</li>
                 <li>Basic tactics & checkmates</li>
@@ -220,7 +277,7 @@
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(37, 99, 235, 0.06); border:1px solid rgba(37, 99, 235, 0.2); color:#2563eb; padding:4px 10px; border-radius:12px; font-weight:700;">🎯 Rating: 800 - 1400</span>
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(15, 23, 42, 0.04); border:1px solid rgba(15, 23, 42, 0.08); color:var(--navy); padding:4px 10px; border-radius:12px; font-weight:700;">👶 Age: 7 - 15 Years</span>
               </div>
-              <p>Designed for players with a solid foundation. Develops tactical awareness, middle-game strategy, and endgame mastery.</p>
+              <p data-translate="level_intermediate_desc">Designed for players with a solid foundation. Develops tactical awareness, middle-game strategy, and endgame mastery.</p>
               <ul>
                 <li>Advanced combinations</li>
                 <li>Opening repertoire building</li>
@@ -239,7 +296,7 @@
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(217, 119, 6, 0.06); border:1px solid rgba(217, 119, 6, 0.2); color:#d97706; padding:4px 10px; border-radius:12px; font-weight:700;">🎯 Rating: 1400 - 2200+</span>
                 <span class="meta-pill" style="font-size:0.75rem; background:rgba(15, 23, 42, 0.04); border:1px solid rgba(15, 23, 42, 0.08); color:var(--navy); padding:4px 10px; border-radius:12px; font-weight:700;">👶 Age: 8 - 18 Years</span>
               </div>
-              <p>For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
+              <p data-translate="level_advanced_desc">For competitive players targeting tournaments. Deep analysis, advanced openings, and psychological gameplay mastery.</p>
               <ul>
                 <li>Opening theory mastery</li>
                 <li>Endgame precision</li>
@@ -256,8 +313,8 @@
       <section id="coaches" class="section-padding">
         <div class="section-head reveal">
           <div class="eyebrow">Our Expert Faculty</div>
-          <h2>Meet the Minds Behind the Moves</h2>
-          <p class="lead">8+ FIDE-certified coaches with international ratings and state-championship experience.</p>
+          <h2 data-translate="coaches_title">Meet the Minds Behind the Moves</h2>
+          <p class="lead" data-translate="coaches_lead">8+ FIDE-certified coaches with international ratings and state-championship experience.</p>
         </div>
         <div class="coach-grid">
           
@@ -299,7 +356,7 @@
 
           <!-- Gyansurya -->
           <div class="reveal" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; position:relative; transition:transform 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition-delay:0.3s;">
-            <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Beginner, Intermediate</div>
+            <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Intermediate</div>
             <div style="height:320px; overflow:hidden; background:#f8fafc;">
               <img src="assets/img/gyansurya.jpeg" alt="Gyansurya" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;">
             </div>
@@ -311,7 +368,7 @@
 
           <!-- Saran -->
           <div class="reveal" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; position:relative; transition:transform 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition-delay:0.4s;">
-            <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Beginner, Intermediate</div>
+            <div style="position:absolute; top:12px; right:12px; background:#000; color:#fff; font-size:0.7rem; padding:4px 10px; border-radius:20px; font-weight:700; z-index:10; letter-spacing:0.5px;">Intermediate</div>
             <div style="height:320px; overflow:hidden; background:#f8fafc;">
               <img src="assets/img/saran.jpg" alt="Saran" style="width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;">
             </div>
@@ -360,11 +417,37 @@
         </div>
       </section>
 
+      <!-- Achievements Section -->
+      <section id="achievements" class="section-padding">
+        <div class="section-head reveal">
+          <div class="eyebrow">Our Achievements</div>
+          <h2 data-translate="achievements_title">Milestones & Accolades</h2>
+          <p class="lead" data-translate="achievements_lead">Recognizing the excellence of our students, coaches, and institution.</p>
+        </div>
+        <div class="achievements-grid">
+          <div class="achievement-card reveal">
+            <div class="achievement-icon">🏆</div>
+            <h3 data-translate="achievement_championships">12+ Championships</h3>
+            <p data-translate="achievement_championships_desc">Students and teams winning state and national level tournaments.</p>
+          </div>
+          <div class="achievement-card reveal">
+            <div class="achievement-icon">♟️</div>
+            <h3 data-translate="achievement_students">200+ Active Students</h3>
+            <p data-translate="achievement_students_desc">Young chess enthusiasts actively learning and competing.</p>
+          </div>
+          <div class="achievement-card reveal">
+            <div class="achievement-icon">⭐</div>
+            <h3 data-translate="achievement_rating">4.9/5 Rating</h3>
+            <p data-translate="achievement_rating_desc">Highest parent satisfaction rating among chess academies.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Global Certifications / About -->
       <section id="about" class="section-padding" style="background: #fdfcf9; border-top: 1px solid #eee;">
         <div class="section-head reveal">
           <div class="eyebrow">Global Certifications</div>
-          <h2 style="font-size: 3rem;">Global Certifications</h2>
+          <h2 style="font-size: 3rem;" data-translate="about_title">Global Certifications</h2>
         </div>
         <div class="container">
           <div style="display: flex; gap: 60px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 30px;">
@@ -383,8 +466,8 @@
       <section id="reviews" class="section-padding" style="background: var(--cream-dark);">
         <div class="section-head reveal">
           <div class="eyebrow">Parent Reviews</div>
-          <h2>Real Stories, Real Results</h2>
-          <p class="lead">From families across India who chose ChessKidoo for their children.</p>
+          <h2 data-translate="reviews_title">Real Stories, Real Results</h2>
+          <p class="lead" data-translate="reviews_lead">From families across India who chose ChessKidoo for their children.</p>
         </div>
         <div class="feat-grid">
           <div class="feat-card reveal" style="background:#fff; text-align:left;">
@@ -478,7 +561,7 @@
     font-size: 2.2rem;
     font-weight: 800;
     margin-bottom: 12px;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Poppins', sans-serif;
   }
   .price-desc {
     font-size: 1rem;
@@ -565,8 +648,8 @@
 <section id="pricing" class="section-padding">
         <div class="section-head reveal">
           <div class="eyebrow">Transparent Pricing</div>
-          <h2>Simple, Affordable Plans</h2>
-          <p class="lead">No hidden fees. Every plan includes a free demo class to start.</p>
+          <h2 data-translate="pricing_title">Simple, Affordable Plans</h2>
+          <p class="lead" data-translate="pricing_lead">No hidden fees. Every plan includes a free demo class to start.</p>
         </div>
         <div class="pricing-grid">
           <!-- Pawn Plan -->
@@ -629,113 +712,99 @@
         <div class="container">
           <div class="section-head reveal" style="text-align: center; margin-bottom: 50px;">
             <div class="eyebrow">FAQ</div>
-            <h2 style="font-family: var(--font-display); font-size: 2.5rem; color: var(--navy); margin-bottom: 12px;">Frequently Asked Questions</h2>
-            <p class="lead" style="color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Everything parents want to know before booking a demo class.</p>
+            <h2 style="font-family: var(--font-display); font-size: 2.5rem; color: var(--navy); margin-bottom: 12px;" data-translate="faq_title">Frequently Asked Questions</h2>
+            <p class="lead" style="color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;" data-translate="faq_lead">Everything parents want to know before booking a demo class.</p>
           </div>
           
           <div class="faq-accordion-wrap reveal">
             <!-- Item 1 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">What is the minimum age to join ChessKidoo?</span>
+                <span class="faq-question" data-translate="faq_q1">What is the minimum age to join ChessKidoo?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  We welcome young minds starting from age 5 and up. Our coaches specialize in teaching early learners with playful, interactive, and gamified methods that make learning chess an absolute joy!
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a1">We welcome young minds starting from age 5 and up. Our coaches specialize in teaching early learners with playful, interactive, and gamified methods that make learning chess an absolute joy!</div>
               </div>
             </div>
 
             <!-- Item 2 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">Are the classes online or offline?</span>
+                <span class="faq-question" data-translate="faq_q2">Are the classes online or offline?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  All our classes are held online via premium, high-definition Google Meet sessions. Every session is highly interactive and live with FIDE-certified coaches, combined with automated game reviews on our custom student portal.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a2">All our classes are held online via premium, high-definition Google Meet sessions. Every session is highly interactive and live with FIDE-certified coaches, combined with automated game reviews on our custom student portal.</div>
               </div>
             </div>
 
             <!-- Item 3 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">Does my child need prior chess knowledge?</span>
+                <span class="faq-question" data-translate="faq_q3">Does my child need prior chess knowledge?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  Not at all! Our Beginner level starts from absolute scratch, covering how the pieces move, simple piece captures, and essential fundamentals. We build their knowledge step-by-step up to advanced tactics.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a3">Not at all! Our Beginner level starts from absolute scratch, covering how the pieces move, simple piece captures, and essential fundamentals. We build their knowledge step-by-step up to advanced tactics.</div>
               </div>
             </div>
 
             <!-- Item 4 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">How does the free demo class work?</span>
+                <span class="faq-question" data-translate="faq_q4">How does the free demo class work?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  The free demo is a private 45-minute live interactive session with a senior FIDE-certified coach. The coach assesses your child's current logical thinking, maps their skill level, and guides them through their first mini-game.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a4">The free demo is a private 45-minute live interactive session with a senior FIDE-certified coach. The coach assesses your child's current logical thinking, maps their skill level, and guides them through their first mini-game.</div>
               </div>
             </div>
 
             <!-- Item 5 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">Will my child be prepared for FIDE-rated tournaments?</span>
+                <span class="faq-question" data-translate="faq_q5">Will my child be prepared for FIDE-rated tournaments?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  Yes, absolutely! Our Advanced and elite coaching modules are specifically tailored around state, national, and FIDE-rated tournament schedules, covering advanced chess psychology, professional opening theory, and end-game mastery.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a5">Yes, absolutely! Our Advanced and elite coaching modules are specifically tailored around state, national, and FIDE-rated tournament schedules, covering advanced chess psychology, professional opening theory, and end-game mastery.</div>
               </div>
             </div>
 
             <!-- Item 6 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">Can I track my child's progress?</span>
+                <span class="faq-question" data-translate="faq_q6">Can I track my child's progress?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  Yes! Parents get access to our real-time Student Portal. Here, you can monitor classroom attendance, homework completion grades, tournament standings, FIDE rating progression charts, and direct coach feedback notes.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a6">Yes! Parents get access to our real-time Student Portal. Here, you can monitor classroom attendance, homework completion grades, tournament standings, FIDE rating progression charts, and direct coach feedback notes.</div>
               </div>
             </div>
 
             <!-- Item 7 -->
             <div class="faq-item">
               <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question">Can I change or cancel my plan?</span>
+                <span class="faq-question" data-translate="faq_q7">Can I change or cancel my plan?</span>
                 <span class="faq-icon-arrow">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner">
-                  Our learning plans are highly flexible. You can upgrade, downgrade, or suspend your child's subscription plan at any time without any hidden cancellation fees or long-term commitments.
-                </div>
+                <div class="faq-content-inner" data-translate="faq_a7">Our learning plans are highly flexible. You can upgrade, downgrade, or suspend your child's subscription plan at any time without any hidden cancellation fees or long-term commitments.</div>
               </div>
             </div>
           </div>
@@ -746,8 +815,8 @@
       <section id="cta" class="section-padding" style="background: var(--ink); color: white; text-align: center; margin-top:80px;">
         <div class="container reveal">
           <div style="font-size:3rem; margin-bottom:16px; color:var(--amber);">♛</div>
-          <h2>Your child's first move<br>starts with a free class.</h2>
-          <p style="opacity: 0.7; margin: 20px auto 40px; max-width:600px; font-size:1.1rem; line-height:1.6;">Join 200+ students and families who chose ChessKidoo. No experience needed – just curiosity.</p>
+          <h2 data-translate="cta_title">Your child's first move<br>starts with a free class.</h2>
+          <p style="opacity: 0.7; margin: 20px auto 40px; max-width:600px; font-size:1.1rem; line-height:1.6;" data-translate="cta_lead">Join 200+ students and families who chose ChessKidoo. No experience needed – just curiosity.</p>
           <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
             <button class="btn btn-primary" onclick="CK.openDemoModal()">📅 Book Free Demo</button>
             <a href="https://wa.me/919025846663" target="_blank" class="btn btn-ghost" style="color:#fff; border-color:rgba(255,255,255,0.3);">💬 Chat on WhatsApp</a>
@@ -756,18 +825,18 @@
       </section>
 
       <!-- Global Footer -->
-      <footer style="background:#0D0905; color:#fff; padding:80px 0 40px; border-top: 1px solid rgba(255,255,255,0.04);">
+<footer style="background:#0D0905; color:#fff; padding:80px 0 40px; border-top: 1px solid rgba(255,255,255,0.04);">
         <div class="container">
           <div class="footer-grid" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap:50px;">
             <div>
               <div class="logo" style="margin-bottom:20px; display:flex; align-items:center; gap:12px;">
                 <div class="logo-icon-box">
-                  <div class="logo-icon-symbol">♛</div>
+                  <div class="logo-icon-symbol">♘</div>
                 </div>
                 <span class="logo-text" style="color:#fff;">Chess<span style="color:var(--amber);">Kidoo</span></span>
               </div>
-              <p style="opacity:0.6; line-height:1.7; font-size:0.95rem; max-width:320px; margin-bottom:24px;">
-                India’s #1 FIDE-certified chess academy for students aged 6-18. Building champions, one move at a time.
+              <p style="opacity:0.6; line-height:1.7; font-size:0.95rem; max-width:320px; margin-bottom:24px;" data-translate="footer_about">
+                India's #1 FIDE-certified chess academy for students aged 6-18. Building champions, one move at a time.
               </p>
               <div class="footer-socials" style="display:flex; gap:12px;">
                 <a href="https://www.instagram.com/chesskidoo/" target="_blank" class="social-icon-btn" aria-label="Instagram">
@@ -786,26 +855,26 @@
             </div>
             
             <div>
-              <h5 class="footer-col-title">LEARN</h5>
+              <h5 class="footer-col-title" data-translate="footer_learn">LEARN</h5>
               <div style="display:flex; flex-direction:column; gap:14px;">
-                <button class="footer-link-btn" onclick="CK.navigate('features')">Features</button>
-                <button class="footer-link-btn" onclick="CK.navigate('coaches')">Our Coaches</button>
-                <button class="footer-link-btn" onclick="CK.navigate('levels')">Curriculum</button>
-                <button class="footer-link-btn" onclick="CK.navigate('pricing')">Pricing</button>
+                <button class="footer-link-btn" onclick="CK.navigate('features')" data-translate="footer_features">Features</button>
+                <button class="footer-link-btn" onclick="CK.navigate('coaches')" data-translate="footer_coaches">Our Coaches</button>
+                <button class="footer-link-btn" onclick="CK.navigate('levels')" data-translate="footer_curriculum">Curriculum</button>
+                <button class="footer-link-btn" onclick="CK.navigate('pricing')" data-translate="footer_pricing">Pricing</button>
               </div>
             </div>
 
             <div>
-              <h5 class="footer-col-title">COMPANY</h5>
+              <h5 class="footer-col-title" data-translate="footer_company">COMPANY</h5>
               <div style="display:flex; flex-direction:column; gap:14px;">
-                <button class="footer-link-btn" onclick="CK.navigate('about')">About Us</button>
-                <button class="footer-link-btn" onclick="CK.navigate('reviews')">Reviews</button>
-                <button class="footer-link-btn" onclick="CK.navigate('faq')">FAQ</button>
+                <button class="footer-link-btn" onclick="CK.navigate('about')" data-translate="footer_about_us">About Us</button>
+                <button class="footer-link-btn" onclick="CK.navigate('reviews')" data-translate="footer_reviews">Reviews</button>
+                <button class="footer-link-btn" onclick="CK.navigate('faq')" data-translate="footer_faq">FAQ</button>
               </div>
             </div>
 
             <div>
-              <h5 class="footer-col-title">CONTACT</h5>
+              <h5 class="footer-col-title" data-translate="footer_contact">CONTACT</h5>
               <div class="footer-contact-details">
                 <a href="tel:+919025846663" class="footer-contact-item">
                   <span class="contact-icon">📞</span> +919025846663
@@ -827,7 +896,7 @@
           </div>
           
           <div style="margin-top: 60px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; font-size: 0.85rem; opacity: 0.5; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px;">
-            <div>© 2026 ChessKidoo, Inc. All rights reserved. - FIDE Certified - ISO 9001:2015 - AICF Affiliate</div>
+            <div data-translate="footer_copyright">© 2026 ChessKidoo, Inc. All rights reserved. - FIDE Certified - ISO 9001:2015 - AICF Affiliate</div>
             <div>Made with ♟️ in India</div>
           </div>
         </div>
@@ -1358,7 +1427,7 @@
               <div class="p-card" style="border-color:rgba(91,156,246,.3)">
                 <div style="background:linear-gradient(135deg,rgba(91,156,246,.08),rgba(171,130,255,.05));padding:28px;text-align:center">
                   <div style="font-size:3rem;margin-bottom:12px">♟</div>
-                  <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px" id="studentSessionTitle">No active session</div>
+                  <div style="font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:8px" id="studentSessionTitle">No active session</div>
                   <button class="p-btn p-btn-blue" id="studentJoinBtn" onclick="CK.student.joinClass()">▶ Join Class Now</button>
                 </div>
               </div>
@@ -1438,10 +1507,10 @@
               <div class="session-live" style="background:var(--p-surface); border:2px solid rgba(0,201,167,.3); border-radius:14px; padding:22px; position:relative; overflow:hidden">
                 <div class="session-header" style="display:flex; align-items:center; gap:14px; margin-bottom:18px">
                   <div style="flex:1">
-                    <div class="session-title" id="coachSessionName" style="font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700">No active session</div>
+                    <div class="session-title" id="coachSessionName" style="font-family:'Poppins',sans-serif; font-size:1.1rem; font-weight:700">No active session</div>
                     <div id="coachSessionSub" style="font-size:.78rem; color:var(--p-text-muted)">--</div>
                   </div>
-                  <div class="session-timer" id="coachSessionTimer" style="font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--p-teal)">00:00</div>
+                  <div class="session-timer" id="coachSessionTimer" style="font-family:'Poppins',sans-serif; font-size:2rem; font-weight:700; color:var(--p-teal)">00:00</div>
                 </div>
                 <div class="session-controls" style="display:flex; gap:10px; flex-wrap:wrap">
                   <button class="p-btn p-btn-teal" id="coachStartBtn" onclick="CK.coach.toggleSession()">▶ Start Session</button>
@@ -1492,6 +1561,7 @@
           <button class="diff-btn" data-level="Expert" onclick="CK.arena.setDifficulty('Expert')">Expert</button>
         </div>
         <div class="arena-header-right">
+          <button class="btn-more-games" onclick="CK.navigate('more-games')">🎮 More Games</button>
           <div class="arena-player-info">
             <div class="arena-player-avatar">P</div>
             <span class="arena-player-name">Player</span>
@@ -1541,13 +1611,13 @@
 
           <!-- Status -->
           <div class="arena-status" id="arena-status">Your turn — play as White</div>
-          <div class="opening-display" id="arena-opening">Opening: Unknown</div>
 
           <!-- Controls -->
           <div class="arena-controls">
-            <button class="arena-ctrl-btn primary" onclick="CK.arena.newGame()">&#x1F504; New Game</button>
-            <button class="arena-ctrl-btn" onclick="CK.arena.offerDraw()">&#x1F91D; Offer Draw</button>
-            <button class="arena-ctrl-btn danger" onclick="CK.arena.resignGame()">&#x1F3F3; Resign</button>
+            <button class="arena-ctrl-btn hint" onclick="CK.arena.showHint()">💡 Hint</button>
+            <button class="arena-ctrl-btn primary" onclick="CK.arena.newGame()">🔄 New Game</button>
+            <button class="arena-ctrl-btn" onclick="CK.arena.offerDraw()">🤝 Draw</button>
+            <button class="arena-ctrl-btn danger" onclick="CK.arena.resignGame()">🏁 Resign</button>
           </div>
         </div>
 
@@ -1603,6 +1673,112 @@
       <div class="cert-overlay" id="cert-overlay"></div>
     </div>
     <!-- /ARENA PAGE -->
+
+    <!-- ======================== MORE GAMES PAGE ======================== -->
+    <div id="more-games-page" class="page">
+      <div class="more-games-particles" id="game-particles"></div>
+      <div class="more-games-overlay"></div>
+      <section class="more-games-section">
+        <div class="more-games-container">
+          <div class="more-games-header">
+            <button class="btn-back-home" onclick="CK.showPage('arena-page'); setTimeout(() => CK.arena.init(), 100)">&larr; Back to Arena</button>
+            <h1 class="more-games-title">
+              <span class="title-gradient">🎮 Brain Booster Games</span>
+            </h1>
+            <p class="more-games-subtitle">Challenge your mind with these fun chess-based games!</p>
+          </div>
+          
+          <div class="games-grid">
+            <!-- Puzzle Challenge -->
+            <div class="game-card puzzle-card" onclick="CK.showPage('arena-page'); setTimeout(() => { CK.arena.init(); setTimeout(() => CK.arena.startPuzzle(), 500); }, 300)">
+              <div class="card-glow"></div>
+              <div class="game-icon">🧩</div>
+              <h3 class="card-title">Puzzle Challenge</h3>
+              <p class="card-desc">Solve tactical puzzles and improve your pattern recognition.</p>
+              <div class="card-badges">
+                <span class="badge badge-puzzle">5 Puzzles</span>
+                <span class="badge badge-level">Beginner+</span>
+              </div>
+            </div>
+            
+            <!-- Guess Grandmaster -->
+            <div class="game-card gm-card" onclick="CK.startGMGame()">
+              <div class="card-glow"></div>
+              <div class="game-icon">🤔</div>
+              <h3 class="card-title">Guess Grandmaster</h3>
+              <p class="card-desc">Guess the famous chess player from the clues!</p>
+              <div class="card-badges">
+                <span class="badge badge-gm">7 GMs</span>
+                <span class="badge badge-all">All Levels</span>
+              </div>
+            </div>
+            
+            <!-- Memory Master -->
+            <div class="game-card memory-card" onclick="CK.showPage('arena-page'); setTimeout(() => { CK.arena.init(); setTimeout(() => CK.startMemoryGame(), 500); }, 300)">
+              <div class="card-glow"></div>
+              <div class="game-icon">🎯</div>
+              <h3 class="card-title">Memory Master</h3>
+              <p class="card-desc">Remember and replay chess moves in sequence!</p>
+              <div class="card-badges">
+                <span class="badge badge-memory">6 Levels</span>
+                <span class="badge badge-beginner">Beginner+</span>
+              </div>
+            </div>
+            
+            <!-- Quick Move -->
+            <div class="game-card quick-card" onclick="CK.showPage('arena-page'); setTimeout(() => { CK.arena.init(); setTimeout(() => CK.startQuickMove(), 500); }, 300)">
+              <div class="card-glow"></div>
+              <div class="game-icon">⚡</div>
+              <h3 class="card-title">Quick Move</h3>
+              <p class="card-desc">Find the best move before the timer runs out!</p>
+              <div class="card-badges">
+                <span class="badge badge-quick">30 sec</span>
+                <span class="badge badge-speed">Speed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open Source Games Section -->
+          <div class="opensource-section">
+            <h2 class="opensource-title"><span style="color: var(--arena-cyan);">🌐</span> Open Source Chess Projects</h2>
+            <p class="opensource-subtitle">Built with open source libraries powering ChessKidoo</p>
+            <div class="games-grid games-grid--oss">
+              <a href="https://chess.js.org/" target="_blank" class="game-card oss-card" style="--card-color: var(--arena-cyan);">
+                <div class="card-glow"></div>
+                <div class="game-icon">♟️</div>
+                <h3 class="card-title">chess.js</h3>
+                <p class="card-desc">Open source chess library for move validation, FEN/PGN handling, game state.</p>
+                <div class="card-badges">
+                  <span class="badge badge-mit">MIT License</span>
+                  <span class="badge badge-github">GitHub</span>
+                </div>
+              </a>
+              <a href="https://github.com/niklasf/stockfish.js" target="_blank" class="game-card oss-card" style="--card-color: var(--arena-purple);">
+                <div class="card-glow"></div>
+                <div class="game-icon">⚙️</div>
+                <h3 class="card-title">Stockfish.js</h3>
+                <p class="card-desc">Powerful chess engine compiled to WebAssembly for browser play.</p>
+                <div class="card-badges">
+                  <span class="badge badge-gpl">GPL License</span>
+                  <span class="badge badge-open">Open Source</span>
+                </div>
+              </a>
+              <a href="https://chessboardjs.com/" target="_blank" class="game-card oss-card" style="--card-color: var(--arena-indigo);">
+                <div class="card-glow"></div>
+                <div class="game-icon">📋</div>
+                <h3 class="card-title">Chessboard.js</h3>
+                <p class="card-desc">Simple, elegant drag-and-drop chess board for JavaScript.</p>
+                <div class="card-badges">
+                  <span class="badge badge-mit">MIT License</span>
+                  <span class="badge badge-lib">Library</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- /MORE GAMES PAGE -->
 
   </div>
 

@@ -23,7 +23,7 @@
 }
 
 .portal-body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: radial-gradient(circle at 50% 50%, #161c24 0%, #080a0d 100%);
   color: var(--p-text);
   display: flex;
@@ -94,7 +94,7 @@
   box-shadow: 0 4px 16px var(--p-gold-glow);
 }
 .p-brand-name {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--p-text);
@@ -224,7 +224,7 @@
   gap: 16px;
 }
 .p-topbar-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 1.15rem;
   font-weight: 700;
   flex: 1;
@@ -239,7 +239,7 @@
   padding: 8px 14px 8px 36px;
   color: var(--p-text);
   font-size: .82rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   width: 230px;
   outline: none;
   transition: var(--p-transition);
@@ -258,7 +258,7 @@
   gap: 7px;
   padding: 8px 18px;
   border-radius: 10px;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: .82rem;
   cursor: pointer;
@@ -317,7 +317,7 @@
 .p-stat-icon.teal { background: rgba(0,201,167,.1); border: 1px solid rgba(0,201,167,.2); box-shadow: 0 0 12px rgba(0,201,167,0.1); }
 .p-stat-icon.blue { background: rgba(91,156,246,.1); border: 1px solid rgba(91,156,246,.2); box-shadow: 0 0 12px rgba(91,156,246,0.1); }
 .p-stat-icon.rose { background: rgba(240,98,146,.1); border: 1px solid rgba(240,98,146,.2); box-shadow: 0 0 12px rgba(240,98,146,0.1); }
-.p-stat-val { font-size: 2rem; font-weight: 700; line-height: 1; color: var(--p-text); font-family: 'Playfair Display', serif }
+.p-stat-val { font-size: 2rem; font-weight: 700; line-height: 1; color: var(--p-text); font-family: 'Poppins', sans-serif }
 .p-stat-label { font-size: .75rem; color: var(--p-text-muted); margin-top: 6px; font-weight: 500; letter-spacing: .04em }
 .p-stat-change {
   display: inline-flex; align-items: center; gap: 4px;
@@ -350,7 +350,7 @@
   border-bottom: 1px solid var(--p-border);
 }
 .p-card-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   flex: 1;
@@ -458,7 +458,7 @@
   padding: 22px 24px;
   border-bottom: 1px solid var(--p-border);
 }
-.p-modal-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; flex: 1 }
+.p-modal-title { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700; flex: 1 }
 .p-modal-close {
   background: none; border: none; cursor: pointer;
   color: var(--p-text-muted); font-size: 1.2rem;
@@ -475,7 +475,7 @@
   border-radius: 10px;
   padding: 10px 14px;
   color: var(--p-text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: .85rem;
   outline: none;
   transition: var(--p-transition);
@@ -567,7 +567,7 @@
   overflow: hidden;
 }
 .rating-hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(91,156,246,0.12), transparent 70%); pointer-events: none }
-.rating-num { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; color: var(--p-blue); line-height: 1 }
+.rating-num { font-family: 'Poppins', sans-serif; font-size: 3.5rem; font-weight: 900; color: var(--p-blue); line-height: 1 }
 
 /* ══════════════════════════════════════════════════════════════════════════
    PORTAL 3D ANIMATION LAYER
