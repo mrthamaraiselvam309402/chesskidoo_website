@@ -352,10 +352,9 @@
 
         const piece = game.get(sq);
         if (piece) {
-          const svgContent = PIECE_SVG[piece.color][piece.type];
           const pieceEl = document.createElement('div');
           pieceEl.className = `a-piece piece-${piece.color}`;
-          pieceEl.innerHTML = svgContent;
+          pieceEl.innerHTML = `<img src="https://lichess1.org/assets/piece/cburnett/${piece.color}${piece.type.toUpperCase()}.svg" style="width: 92%; height: 92%; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.4)); pointer-events: none;" alt="${piece.type}">`;
           sqEl.appendChild(pieceEl);
         }
 
