@@ -161,7 +161,7 @@
   // Determine if Supabase can be queried
   let _supabaseDisabled = false; // Fast-fail flag: once Supabase fails, stop retrying this session
   const canUseSupabase = () => {
-    if (_supabaseDisabled) return false;
+    if (_supabaseDisabled || window.APP_CONFIG?.SUPABASE_URL?.includes('hcjuyqicftkgpiyrkscr')) return false;
     return window.supabaseClient && navigator.onLine;
   };
   const markSupabaseFailed = () => {

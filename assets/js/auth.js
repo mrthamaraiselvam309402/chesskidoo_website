@@ -23,7 +23,8 @@
       let isOfflineMode = false;
 
       // 1. Attempt Supabase Auth login if online and configured
-      if (window.supabaseClient && navigator.onLine) {
+      const isDemoProject = window.APP_CONFIG?.SUPABASE_URL?.includes('hcjuyqicftkgpiyrkscr');
+      if (window.supabaseClient && navigator.onLine && !isDemoProject) {
         try {
           const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
           if (!error && data && data.user) {
