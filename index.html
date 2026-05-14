@@ -4426,20 +4426,15 @@
 
     // Animated number counters for hero stats
     function animateCounter(el, target, duration) {
-      const isDecimal = target % 1 !== 0;
-      const suffix = el.dataset.suffix || '';
-      if (window.navigator && window.navigator.webdriver) {
-        el.textContent = isDecimal ? target.toFixed(1) + '★' : Math.floor(target) + suffix;
-        return;
-      }
       const start = 0;
       const startTime = performance.now();
+      const isDecimal = target % 1 !== 0;
       function step(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         const current = start + (target - start) * eased;
-        el.textContent = isDecimal ? current.toFixed(1) + '★' : Math.floor(current) + suffix;
+        el.textContent = isDecimal ? current.toFixed(1) + '★' : Math.floor(current) + (el.dataset.suffix || '');
         if (progress < 1) requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
@@ -4457,12 +4452,12 @@
               const num = parseFloat(text.replace(/[^0-9.]/g, ''));
               const suffix = text.includes('+') ? '+' : '';
               el.dataset.suffix = suffix;
-              if (!isNaN(num)) animateCounter(el, num, 400);
+              if (!isNaN(num)) animateCounter(el, num, 1400);
             });
             counterObs.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.1 });
+      }, { threshold: 0.5 });
       counterObs.observe(heroStats);
     }
 
