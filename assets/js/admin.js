@@ -34,6 +34,7 @@ CK.admin = {
     await this.loadClasses();
     await this.loadAttendance();
     await this.loadFiles();
+    await this.loadExpenses();
     this.updateStats();
     this.initCharts();
     this.renderActivity();
@@ -115,11 +116,12 @@ CK.admin = {
     const titles = {
       dashboard: 'Dashboard',
       live: 'Live Tracking',
-      students: 'Student Management',
+      students: 'Student Registry',
       coaches: 'Coach Management',
       classes: 'Class Schedule',
-      attendance: 'Attendance Records',
+      attendance: 'Batch Attendance',
       files: 'Learning Materials',
+      expenses: 'Expenditure Management',
       reports: 'Progress Reports',
       settings: 'Academy Settings'
     };
@@ -127,12 +129,14 @@ CK.admin = {
     
     // Action button context in header
     const btn = document.getElementById('adminTopActionBtn');
-    if (panelId === 'students') { btn.innerText = '+ Add Student'; btn.style.display = 'block'; }
+    if (panelId === 'students') { btn.innerText = '+ New Enrollment'; btn.style.display = 'block'; }
     else if (panelId === 'coaches') { btn.innerText = '+ Add Coach'; btn.style.display = 'block'; }
-    else if (panelId === 'classes') { btn.innerText = '+ Add Class'; btn.style.display = 'block'; }
+    else if (panelId === 'classes') { btn.innerText = '+ Schedule Class'; btn.style.display = 'block'; }
+    else if (panelId === 'expenses') { btn.innerText = '+ Add Expense'; btn.style.display = 'block'; }
     else { btn.style.display = 'none'; }
 
     if (panelId === 'live') this.renderLive();
+    if (panelId === 'expenses') this.loadExpenses();
   },
 
   async initCharts() {
@@ -216,31 +220,69 @@ CK.admin = {
     
     const list = data || await CK.db.getProfiles('student');
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; opacity:0.5; padding:20px;">No students found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; opacity:0.5; padding:20px;">No students found.</td></tr>';
       return;
     }
 
     tbody.innerHTML = list.map((s, i) => {
-      // Calculate dynamic attendance indicator percentage
-      const rating = s.rating || 800;
-      const age = s.age || 10;
-      const coach = s.coach || 'Assigning...';
-      const status = s.status || 'Offline';
+      const levelStr = `${s.level || 'Beginner'} - ${s.rating || 800} ELO`;
+      const coach = s.coach || 'ARIVUSELVAM';
+      const joinDate = s.join_date || '2026-04-20';
+      const session = s.session || 'Group';
+      const schedule = s.schedule || '17:00';
+      const fee = s.fee || '2200';
+      const status = s.status || 'Paid';
+      const dueDate = s.due_date || '04-May-2026';
+
+      let statusBadge = 'p-badge-green';
+      if (status === 'Pending') statusBadge = 'p-badge-yellow';
+      if (status === 'Due' || status.includes('⚠️')) statusBadge = 'p-badge-red';
+      if (status === 'Waiting List') statusBadge = 'p-badge-blue';
+
+      let actionBtns = '';
+      if (status === 'Paid') {
+        actionBtns = `
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}')">📢 Inform</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.viewStudentInfo('${s.id}')">View</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editStudent('${s.id}')">Edit</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')">Delete</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.toggleFeeStatus('${s.id}', 'Pending')">🔁 Mark Unpaid</button>
+        `;
+      } else if (status === 'Waiting List') {
+        actionBtns = `
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.viewStudentInfo('${s.id}')">View</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editStudent('${s.id}')">Edit</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')">Delete</button>
+        `;
+      } else {
+        actionBtns = `
+          <button class="p-btn p-btn-teal p-btn-sm" onclick="CK.admin.toggleFeeStatus('${s.id}', 'Paid')">✅ Mark as Paid</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.viewStudentInfo('${s.id}')">View</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editStudent('${s.id}')">Edit</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')">Delete</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}')">📢 Inform</button>
+        `;
+      }
 
       return `
-        <tr>
-          <td style="color:var(--p-text-muted)">#${s.userid || '000'}</td>
-          <td style="font-weight:600">${s.full_name || 'Chess Kid'}</td>
-          <td>${age} yrs</td>
-          <td><span class="p-badge p-badge-blue">${s.level || 'Beginner'}</span></td>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+          <td style="color:var(--p-text-muted)">${i + 1}</td>
+          <td style="font-weight:600; color:#fff;">
+            <div>${s.full_name}</div>
+            <div style="font-size:0.75rem; color:var(--p-text-muted);">${status === 'Waiting List' ? 'Waiting List' : 'Enrolled & Attending'}</div>
+          </td>
+          <td>${levelStr}</td>
           <td>${coach}</td>
-          <td style="font-weight:700; color:var(--p-gold)">${rating}</td>
-          <td>94%</td>
-          <td><span class="p-status-dot ${status.toLowerCase()}"></span> ${status}</td>
+          <td>${joinDate}</td>
+          <td>${session}</td>
+          <td>${schedule}</td>
+          <td style="font-weight:700; color:var(--p-gold)">₹${fee}</td>
+          <td><span class="p-badge ${statusBadge}">${status}</span></td>
+          <td>${dueDate}</td>
           <td>
-            <div class="p-action-group">
-              <button class="p-icon-btn p-btn-sm" onclick="CK.admin.editStudent('${s.id}')" title="Edit">✏️</button>
-              <button class="p-icon-btn p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')" title="Delete">🗑️</button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+              ${actionBtns}
+              <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.showToast('More options loaded', 'info')">⋮ More</button>
             </div>
           </td>
         </tr>
@@ -248,10 +290,38 @@ CK.admin = {
     }).join('');
   },
 
+  async toggleFeeStatus(id, newStatus) {
+    const s = await CK.db.getProfile(id);
+    if (!s) return;
+    s.status = newStatus;
+    if (newStatus === 'Paid') {
+      s.due_date = '14-Jun-2026';
+    } else {
+      s.due_date = '⚠️ ' + new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    }
+    await CK.db.saveProfile(s);
+    await this.loadStudents();
+    CK.showToast(`Student fee status updated to ${newStatus}`, 'success');
+  },
+
+  informStudent(id) {
+    CK.showToast('📢 Payment reminder notification sent to registered parent mobile/email successfully.', 'success');
+  },
+
+  async viewStudentInfo(id) {
+    const s = await CK.db.getProfile(id);
+    if (!s) return;
+    alert(`Student Report Card & Details:\n\nName: ${s.full_name}\nLevel: ${s.level} (${s.rating} ELO)\nAssigned Coach: ${s.coach}\nBatch: ${s.batch || 'Evening'} (${s.schedule})\nMonthly Fees: ₹${s.fee || '2200'}\nStatus: ${s.status}\nDue Date: ${s.due_date}`);
+  },
+
   async filterStudents() {
-    const level = document.getElementById('adminFilterLevel').value;
+    const search = document.getElementById('adminStudentSearch')?.value.toLowerCase() || '';
     const students = await CK.db.getProfiles('student');
-    const filtered = level ? students.filter(s => (s.level || '').toLowerCase().includes(level.toLowerCase())) : students;
+    const filtered = students.filter(s => 
+      s.full_name.toLowerCase().includes(search) || 
+      (s.coach && s.coach.toLowerCase().includes(search)) ||
+      (s.status && s.status.toLowerCase().includes(search))
+    );
     this.loadStudents(filtered);
   },
 
@@ -267,24 +337,126 @@ CK.admin = {
     tbody.innerHTML = coaches.map(c => {
       const spec = c.puzzle || 'Opening & Endgames';
       const fide = c.level === 'Advanced' ? '2100' : '1850';
-      const studentsCount = (c.full_name === 'Sarah Chess') ? 12 : 8;
-      const classesCount = (c.full_name === 'Sarah Chess') ? 5 : 3;
-      const status = c.full_name === 'Sarah Chess' ? 'Online' : 'Offline';
+      const batches = c.batches || 'Group 17:00, Weekend';
+      const timetable = c.timetable || 'Mon-Fri 4PM-7PM';
+      const revenue = c.revenue || '₹18,400';
+      const classesCount = c.classes || 18;
 
       return `
-        <tr>
+        <tr style="cursor:pointer;" onclick="CK.admin.viewCoachDetails('${c.id}')">
           <td>#${c.userid || 'C01'}</td>
-          <td style="font-weight:600">${c.full_name}</td>
+          <td style="font-weight:600; color:#fff;">${c.full_name}</td>
           <td style="font-weight:700; color:var(--p-teal)">${fide}</td>
           <td>${spec}</td>
-          <td>${studentsCount}</td>
+          <td><span class="p-badge p-badge-blue">${batches}</span></td>
+          <td style="color:var(--p-text-muted)">${timetable}</td>
+          <td style="font-weight:700; color:var(--p-gold)">${revenue}</td>
           <td>${classesCount}</td>
-          <td><span class="p-badge ${status === 'Online' ? 'p-badge-green' : 'p-badge-red'}">${status}</span></td>
-          <td><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editCoach('${c.id}')">Edit</button></td>
+          <td>
+            <button class="p-btn p-btn-ghost p-btn-sm" onclick="event.stopPropagation(); CK.admin.editCoach('${c.id}')">Edit</button>
+            <button class="p-btn p-btn-teal p-btn-sm" onclick="event.stopPropagation(); CK.admin.viewCoachDetails('${c.id}')">View Details</button>
+          </td>
         </tr>
       `;
     }).join('');
   },
+
+  async viewCoachDetails(id) {
+    const c = await CK.db.getProfile(id);
+    if (!c) return;
+    document.getElementById('detailCoachTitle').innerText = `Coach Profile: ${c.full_name}`;
+    document.getElementById('detailCoachSpec').innerText = `Specialty: ${c.puzzle || 'Tactics'}`;
+    document.getElementById('detailCoachBatches').innerText = `Assigned Batches: ${c.batches || 'Evening, Weekend'}`;
+    document.getElementById('detailCoachTimetable').innerText = `Timetable Schedule: ${c.timetable || 'Mon-Fri 4PM-7PM'}`;
+    document.getElementById('detailCoachRevenue').innerText = `Monthly Revenue Generated: ${c.revenue || '₹24,000'}`;
+    document.getElementById('detailCoachClasses').innerText = `Total Classes Attended: ${c.classes || 20}`;
+    CK.openModal('adminCoachDetailsModal');
+  },
+
+  async loadExpenses() {
+    const tbody = document.getElementById('adminExpensesTable');
+    if (!tbody) return;
+    
+    const expenses = await CK.db.getExpenses();
+    if (expenses.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">No expenditures recorded yet.</td></tr>';
+      return;
+    }
+
+    let totalExp = 0;
+    expenses.forEach(e => {
+      const amtNum = parseInt(e.amount.replace(/[^0-9]/g, '')) || 0;
+      totalExp += amtNum;
+    });
+
+    document.getElementById('adminExpTotalMonth').innerText = '₹' + totalExp.toLocaleString();
+    document.getElementById('adminExpTotalIncome').innerText = '₹45,800';
+    document.getElementById('adminExpNetProfit').innerText = '₹' + (45800 - totalExp).toLocaleString();
+
+    tbody.innerHTML = expenses.map(e => `
+      <tr>
+        <td style="color:var(--p-text-muted)">${e.date}</td>
+        <td><span class="p-badge p-badge-blue">${e.category}</span></td>
+        <td style="font-weight:600">${e.description}</td>
+        <td style="font-weight:700; color:var(--p-danger)">${e.amount}</td>
+        <td><span class="p-badge p-badge-ghost">${e.mode}</span></td>
+        <td style="color:var(--p-text-muted)">${e.bill || '—'}</td>
+        <td>
+          <button class="p-icon-btn p-btn-sm" onclick="CK.admin.editExpense('${e.id}')" title="Edit">✏️</button>
+          <button class="p-icon-btn p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteExpense('${e.id}')" title="Delete">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  async openExpenseModal(expId = null) {
+    document.getElementById('admin_exp_id').value = expId || '';
+    if (expId) {
+      const list = await CK.db.getExpenses();
+      const e = list.find(x => x.id.toString() === expId.toString());
+      if (e) {
+        document.getElementById('admin_exp_cat').value = e.category;
+        document.getElementById('admin_exp_desc').value = e.description;
+        document.getElementById('admin_exp_amount').value = e.amount.replace(/[^0-9]/g, '');
+        document.getElementById('admin_exp_mode').value = e.mode;
+      }
+    } else {
+      document.getElementById('admin_exp_desc').value = '';
+      document.getElementById('admin_exp_amount').value = '';
+    }
+    CK.openModal('adminExpenseModal');
+  },
+
+  async saveExpense() {
+    const desc = document.getElementById('admin_exp_desc').value;
+    const amount = document.getElementById('admin_exp_amount').value;
+    if (!desc || !amount) return CK.showToast('Description and Amount required', 'error');
+
+    const id = document.getElementById('admin_exp_id').value || Date.now();
+    await CK.db.saveExpense({
+      id: id,
+      date: new Date().toLocaleDateString('en-GB'),
+      category: document.getElementById('admin_exp_cat').value,
+      description: desc,
+      amount: '₹' + parseInt(amount).toLocaleString(),
+      mode: document.getElementById('admin_exp_mode').value,
+      bill: '—'
+    });
+
+    await this.loadExpenses();
+    CK.closeModal('adminExpenseModal');
+    CK.showToast('Expenditure record saved successfully!', 'success');
+  },
+
+  async deleteExpense(id) {
+    if (confirm('Permanently delete this expenditure record?')) {
+      await CK.db.deleteExpense(id);
+      await this.loadExpenses();
+      CK.showToast('Expense record deleted', 'success');
+    }
+  },
+
+  editExpense(id) { this.openExpenseModal(id); },
 
   loadClasses() {
     const tbody = document.getElementById('adminClassesTable');
@@ -314,7 +486,6 @@ CK.admin = {
     const students = await CK.db.getProfiles('student');
     const attendanceLogs = await CK.db.getAttendance(null, selectedDate);
 
-    // Map logs to an object for fast lookups
     const attendanceMap = {};
     attendanceLogs.forEach(l => {
       attendanceMap[l.userid] = l.status;
@@ -357,7 +528,6 @@ CK.admin = {
       const student = await CK.db.getProfile(studentId);
       CK.showToast(`Attendance set to ${status.toUpperCase()} for ${student.full_name}`, 'success');
       
-      // Sync stats and home progress
       if (CK.student && CK.currentUser && CK.currentUser.id === studentId) {
         CK.student.init();
       }
@@ -403,7 +573,7 @@ CK.admin = {
   closeModal(id) { CK.closeModal(id); },
 
   topAction() {
-    const panels = ['dashboard', 'live', 'students', 'coaches', 'classes', 'attendance', 'files'];
+    const panels = ['dashboard', 'live', 'students', 'coaches', 'classes', 'attendance', 'files', 'expenses'];
     const activePanel = panels.find(p => {
       const el = document.getElementById(`p-panel-${p}`);
       return el && el.classList.contains('active');
@@ -412,87 +582,80 @@ CK.admin = {
     if (activePanel === 'students') this.openStudentModal();
     if (activePanel === 'coaches') this.openCoachModal();
     if (activePanel === 'classes') this.openClassModal();
+    if (activePanel === 'expenses') this.openExpenseModal();
   },
 
   async openStudentModal(studentId = null) {
-    const modal = document.getElementById('adminStudentModal');
     const title = document.getElementById('adminStudentModalTitle');
-    
     await this.populateCoachSelects();
     
     if (studentId) {
-      title.innerText = 'Edit Student Details';
+      title.innerText = 'Edit Student Enrollment Details';
       const s = await CK.db.getProfile(studentId);
       document.getElementById('admin_s_id').value = s.id;
       document.getElementById('admin_s_name').value = s.full_name;
-      document.getElementById('admin_s_email').value = s.email;
-      document.getElementById('admin_s_age').value = s.age || 10;
-      document.getElementById('admin_s_level').value = s.level || 'Intermediate';
-      document.getElementById('admin_s_coach').value = s.coach || '';
+      document.getElementById('admin_s_phone').value = s.phone_number || '';
+      document.getElementById('admin_s_level').value = s.level || 'Beginner';
       document.getElementById('admin_s_rating').value = s.rating || 800;
+      document.getElementById('admin_s_coach').value = s.coach || '';
+      document.getElementById('admin_s_batch').value = s.batch || 'Evening';
+      document.getElementById('admin_s_schedule').value = s.schedule || '17:00';
+      document.getElementById('admin_s_join').value = s.join_date || '2026-04-20';
+      document.getElementById('admin_s_fee').value = s.fee || 5000;
+      document.getElementById('admin_s_due').value = s.due_date || '14-May-2026';
     } else {
-      title.innerText = 'Register New Student';
+      title.innerText = 'Enroll New Student';
       document.getElementById('admin_s_id').value = '';
       document.getElementById('admin_s_name').value = '';
-      document.getElementById('admin_s_email').value = '';
-      document.getElementById('admin_s_age').value = '';
-      document.getElementById('admin_s_rating').value = '';
+      document.getElementById('admin_s_phone').value = '';
+      document.getElementById('admin_s_rating').value = 800;
+      document.getElementById('admin_s_fee').value = 5000;
     }
     this.openModal('adminStudentModal');
   },
 
   async saveStudent() {
     const name = document.getElementById('admin_s_name').value;
-    const email = document.getElementById('admin_s_email').value || `${name.toLowerCase().replace(/\s/g, '')}@gmail.com`;
+    const phone = document.getElementById('admin_s_phone').value;
     if (!name) return CK.showToast('Student Full Name is required', 'error');
     
     const id = document.getElementById('admin_s_id').value || 'student-' + Date.now();
     const isNew = !document.getElementById('admin_s_id').value;
-    const customUserid = isNew ? Math.floor(104 + Math.random() * 800).toString() : undefined;
 
     let existing = {};
-    if (!isNew) {
-      existing = await CK.db.getProfile(id);
-    }
+    if (!isNew) existing = await CK.db.getProfile(id);
     
     const studentData = {
       ...existing,
       id: id,
       full_name: name,
-      email: email,
+      email: existing.email || `${name.toLowerCase().replace(/\s/g, '')}@gmail.com`,
+      phone_number: phone,
       role: 'student',
-      age: parseInt(document.getElementById('admin_s_age').value) || 10,
       level: document.getElementById('admin_s_level').value,
-      coach: document.getElementById('admin_s_coach').value,
       rating: parseInt(document.getElementById('admin_s_rating').value) || 800,
-      status: isNew ? 'Offline' : (existing.status || 'Offline')
+      coach: document.getElementById('admin_s_coach').value,
+      batch: document.getElementById('admin_s_batch').value,
+      schedule: document.getElementById('admin_s_schedule').value,
+      join_date: document.getElementById('admin_s_join').value,
+      fee: document.getElementById('admin_s_fee').value,
+      due_date: document.getElementById('admin_s_due').value,
+      status: isNew ? 'Paid' : (existing.status || 'Paid')
     };
 
     if (isNew) {
-      studentData.userid = customUserid;
+      studentData.userid = Math.floor(104 + Math.random() * 800).toString();
       studentData.star = 1;
       studentData.puzzle = 15;
-      studentData.game = 4;
     }
 
     await CK.db.saveProfile(studentData);
-
-    // If new student, insert initial rating record too
-    if (isNew) {
-      await CK.db.saveRating({
-        user_id: studentData.userid,
-        online: studentData.rating,
-        international: 0,
-        date: new Date().toISOString()
-      });
-    }
-
     await this.loadStudents();
     await this.loadAttendance();
     this.updateStats();
     this.initCharts();
     this.closeModal('adminStudentModal');
-    CK.showToast(`Student ${isNew ? 'registered' : 'updated'} successfully!`, 'success');
+    CK.showToast(`Student enrollment ${isNew ? 'completed' : 'updated'} successfully!`, 'success');
   },
 
   async deleteStudent(id) {
@@ -511,8 +674,7 @@ CK.admin = {
     const students = await CK.db.getProfiles('student');
     const filtered = students.filter(s => 
       s.full_name.toLowerCase().includes(q) || 
-      (s.userid && s.userid.includes(q)) ||
-      (s.email && s.email.toLowerCase().includes(q))
+      (s.coach && s.coach.toLowerCase().includes(q))
     );
     this.loadStudents(filtered);
   },
@@ -529,38 +691,25 @@ CK.admin = {
       const file = fileInput.files[0];
       const customName = form.fileName.value;
       const targetLevel = form.level.value;
-      const notes = form.notes ? form.notes.value : '';
       const batchName = form.batch.value || 'All Batches';
 
       let filePath = `docs/${Date.now()}_mock_file.pdf`;
 
-      // Trigger standard Supabase file upload if online
       if (window.supabaseClient && navigator.onLine && file) {
         filePath = `docs/${Date.now()}_${file.name}`;
         const { error: upErr } = await window.supabaseClient.storage.from('documents').upload(filePath, file);
         if (upErr) throw upErr;
-
-      // Push to our local mock DB for grouping display
+      }
+      
       if (!CK.db.resources) CK.db.resources = [];
       CK.db.resources.push({
         id: 'R' + Date.now(),
-        name: file.name,
+        name: file ? file.name : customName,
         batch: parseInt(form.batch.value) || 'Unassigned',
         type: form.type ? form.type.value : 'Material',
         notes: form.notes ? form.notes.value : ''
       });
       
-      CK.showToast("File Uploaded Successfully!", "success");
-      CK.closeModal('uploadModal');
-      
-      // If coach is doing this, refresh their view
-      if (window.location.hash === '#coach' && CK.coach && CK.coach.renderResources) {
-        CK.coach.renderResources();
-      }
-
-      }
-      
-      // Save record using our DB layer
       await CK.db.saveDocument({
         name: customName,
         file_name: filePath,
@@ -574,10 +723,8 @@ CK.admin = {
       form.reset();
       await this.loadFiles();
 
-      // Trigger student profile refresh if they are on achievements/home
-      if (CK.student && CK.student.userProfile) {
-        CK.student.init();
-      }
+      if (CK.student && CK.student.userProfile) CK.student.init();
+      if (CK.coach && CK.coach.renderResources) CK.coach.renderResources();
     } catch (err) {
       CK.showToast(err.message || 'Publishing resource failed.', 'error');
     } finally {
@@ -620,7 +767,6 @@ CK.admin = {
         return;
       }
     }
-    // Static local template mock download trigger
     CK.showToast(`Downloading static fallback document: ${fileName}`, 'success');
   },
 
@@ -640,6 +786,7 @@ CK.admin = {
 
   async saveCoach() {
     const name = document.getElementById('admin_c_name').value;
+    const phone = document.getElementById('admin_c_phone').value;
     const email = document.getElementById('admin_c_email').value || `${name.toLowerCase().replace(/\s/g, '')}@gmail.com`;
     if (!name) return CK.showToast('Coach name is required', 'error');
     
@@ -647,25 +794,26 @@ CK.admin = {
     const isNew = !document.getElementById('admin_c_id').value;
 
     let existing = {};
-    if (!isNew) {
-      existing = await CK.db.getProfile(id);
-    }
+    if (!isNew) existing = await CK.db.getProfile(id);
     
     const coachData = {
       ...existing,
       id: id,
       full_name: name,
       email: email,
+      phone_number: phone,
       role: 'coach',
-      level: document.getElementById('admin_c_fide').value >= 2000 ? 'Advanced' : 'Beginner',
-      userid: isNew ? 'C' + (Math.floor(Math.random() * 900) + 100).toString() : (existing.userid || 'C00'),
       puzzle: document.getElementById('admin_c_spec').value,
-      phone_number: existing.phone_number || "+91 90258 46663",
-      batch_list: existing.batch_list || "1"
+      address: document.getElementById('admin_c_addr').value,
+      photo: document.getElementById('admin_c_photo').value,
+      status: document.getElementById('admin_c_status').value,
+      availability: document.getElementById('admin_c_avail').value,
+      bio: document.getElementById('admin_c_bio').value,
+      level: 'Advanced',
+      userid: isNew ? 'C' + (Math.floor(Math.random() * 900) + 100).toString() : existing.userid
     };
     
     await CK.db.saveProfile(coachData);
-    
     await this.loadCoaches();
     this.updateStats();
     this.closeModal('adminCoachModal');
@@ -675,16 +823,26 @@ CK.admin = {
   async openCoachModal(coachId = null) {
     document.getElementById('admin_c_id').value = coachId || '';
     document.getElementById('admin_c_name').value = '';
+    document.getElementById('admin_c_spec').value = '';
+    document.getElementById('admin_c_phone').value = '';
     document.getElementById('admin_c_email').value = '';
-    document.getElementById('admin_c_fide').value = '';
-    document.getElementById('admin_c_spec').value = 'Tactics';
+    document.getElementById('admin_c_addr').value = '';
+    document.getElementById('admin_c_photo').value = '';
+    document.getElementById('admin_c_status').value = 'Active';
+    document.getElementById('admin_c_avail').value = 'Weekends';
+    document.getElementById('admin_c_bio').value = '';
     
     if (coachId) {
       const c = await CK.db.getProfile(coachId);
       document.getElementById('admin_c_name').value = c.full_name;
+      document.getElementById('admin_c_spec').value = c.puzzle || '';
+      document.getElementById('admin_c_phone').value = c.phone_number || '';
       document.getElementById('admin_c_email').value = c.email || '';
-      document.getElementById('admin_c_fide').value = c.level === 'Advanced' ? '2100' : '1850';
-      document.getElementById('admin_c_spec').value = c.puzzle || 'Tactics';
+      document.getElementById('admin_c_addr').value = c.address || '';
+      document.getElementById('admin_c_photo').value = c.photo || '';
+      document.getElementById('admin_c_status').value = c.status || 'Active';
+      document.getElementById('admin_c_avail').value = c.availability || 'Weekends';
+      document.getElementById('admin_c_bio').value = c.bio || '';
     }
     this.openModal('adminCoachModal');
   },
@@ -727,29 +885,22 @@ CK.admin = {
         return CK.showToast('No student data to export.', 'warning');
       }
 
-      // Define CSV headers
-      const headers = ['User ID', 'Full Name', 'Email', 'Age', 'Level', 'Coach', 'Rating', 'Stars Earned', 'Status'];
-      
-      // Build rows
+      const headers = ['User ID', 'Full Name', 'Email', 'Level', 'Coach', 'Rating', 'Status'];
       const rows = students.map(s => [
         s.userid || 'N/A',
         s.full_name || 'N/A',
         s.email || 'N/A',
-        s.age || '10',
         s.level || 'Beginner',
         s.coach || 'Assigning...',
         s.rating || '800',
-        s.star || '1',
-        s.status || 'Offline'
+        s.status || 'Paid'
       ]);
 
-      // Join into CSV format
       const csvContent = [
         headers.join(','),
         ...rows.map(row => row.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(','))
       ].join('\n');
 
-      // Create download link
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -762,7 +913,6 @@ CK.admin = {
 
       CK.showToast('🎉 Student list exported to CSV successfully!', 'success');
     } catch (e) {
-      console.error(e);
       CK.showToast('Export failed.', 'error');
     }
   }

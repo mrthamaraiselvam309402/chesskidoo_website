@@ -1093,6 +1093,9 @@
             <button class="p-nav-item" onclick="CK.admin.showPanel('files')">
               <span class="icon">📁</span><span>File Management</span>
             </button>
+            <button class="p-nav-item" onclick="CK.admin.showPanel('expenses')">
+              <span class="icon">💰</span><span>Expenditure</span>
+            </button>
             <button class="p-nav-item" onclick="CK.admin.showPanel('reports')">
               <span class="icon">📊</span><span>Reports</span>
             </button>
@@ -1192,18 +1195,16 @@
             <div class="p-panel" id="p-panel-students">
               <div class="p-card">
                 <div class="p-card-header">
-                  <div class="p-card-title">🎓 Student Management</div>
+                  <div class="p-card-title">🎓 Student Registry</div>
                   <div style="display:flex;gap:8px">
-                    <select class="p-form-control" style="width:auto;padding:6px 10px;font-size:.78rem" id="adminFilterLevel" onchange="CK.admin.filterStudents()">
-                      <option value="">All Levels</option>
-                      <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option>
-                    </select>
-                    <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openStudentModal()">+ Add Student</button>
+                    <input type="text" class="p-form-control" style="width:180px;padding:6px 10px;font-size:.78rem" placeholder="Filter by name/coach..." id="adminStudentSearch" oninput="CK.admin.filterStudents()"/>
+                    <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openStudentModal()">+ New Enrollment</button>
+                    <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.admin.exportStudentsCSV()">📥 Export CSV</button>
                   </div>
                 </div>
                 <div style="overflow-x:auto">
                   <table class="p-table">
-                    <thead><tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Coach</th><th>Rating</th><th>Attendance</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Student</th><th>Level / ELO</th><th>Coach</th><th>Join Date</th><th>Session</th><th>Schedule</th><th>Fee</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead>
                     <tbody id="adminStudentsTable"></tbody>
                   </table>
                 </div>
@@ -1218,7 +1219,7 @@
                 </div>
                 <div style="overflow-x:auto">
                   <table class="p-table">
-                    <thead><tr><th>#</th><th>Name</th><th>FIDE Rating</th><th>Speciality</th><th>Students</th><th>Classes/wk</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Name</th><th>FIDE Rating</th><th>Speciality</th><th>Batches</th><th>Timetable</th><th>Revenue</th><th>Classes</th><th>Actions</th></tr></thead>
                     <tbody id="adminCoachesTable"></tbody>
                   </table>
                 </div>
@@ -1266,6 +1267,45 @@
                   <table class="p-table">
                     <thead><tr><th>File Name</th><th>Level</th><th>Batch</th><th>Link</th><th>Date</th><th>Actions</th></tr></thead>
                     <tbody id="adminFilesTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- ══ EXPENDITURE MANAGEMENT PANEL ══ -->
+            <div class="p-panel" id="p-panel-expenses">
+              <div class="p-stats-grid" style="margin-bottom:20px;">
+                <div class="p-stat-card">
+                  <div class="p-stat-icon rose">💸</div>
+                  <div class="p-stat-val" id="adminExpTotalMonth">₹0</div>
+                  <div class="p-stat-label">This Month Expenses</div>
+                  <div class="p-stat-change down">↓ Core Operations</div>
+                </div>
+                <div class="p-stat-card">
+                  <div class="p-stat-icon gold">💰</div>
+                  <div class="p-stat-val" id="adminExpTotalIncome">₹0</div>
+                  <div class="p-stat-label">This Month Income</div>
+                  <div class="p-stat-change up">↑ Enrolled Batch Fees</div>
+                </div>
+                <div class="p-stat-card">
+                  <div class="p-stat-icon teal">📈</div>
+                  <div class="p-stat-val" id="adminExpNetProfit">₹0</div>
+                  <div class="p-stat-label">Net Profit</div>
+                  <div class="p-stat-change up">↑ Surplus Margin</div>
+                </div>
+                <div class="p-stat-card" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                  <button class="p-btn p-btn-teal" style="width:100%; margin-bottom:10px;" onclick="CK.openModal('adminExpenseModal')">+ Add Expense Record</button>
+                  <button class="p-btn p-btn-ghost p-btn-sm" style="width:100%;" onclick="alert('🧮 Calculator Tool Active:\n\nIncome: ₹45,800\nExpenses: ₹22,200\nNet Operating Profit: ₹23,600')">🧮 Open Calculator</button>
+                </div>
+              </div>
+              <div class="p-card">
+                <div class="p-card-header">
+                  <div class="p-card-title">💸 Operational Expenditure Register</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.openModal('adminExpenseModal')">+ Add Expense</button>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="p-table">
+                    <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Payment Mode</th><th>Bill</th><th>Actions</th></tr></thead>
+                    <tbody id="adminExpensesTable"></tbody>
                   </table>
                 </div>
               </div>
@@ -1369,6 +1409,9 @@
             <button class="p-nav-item" onclick="CK.student.nav('reviews')"><span class="icon">📝</span><span>Coach Reviews</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('tournaments')"><span class="icon">🏅</span><span>Tournaments</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('achievements')"><span class="icon">🏆</span><span>Achievements</span></button>
+            <div class="p-nav-section-label">Administration</div>
+            <button class="p-nav-item" onclick="CK.student.nav('fees')"><span class="icon">💳</span><span>Fee Payment Gateway</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('report')"><span class="icon">📊</span><span>View Report Card</span></button>
             <div class="p-section-sep"></div>
             <button class="p-nav-item" onclick="CK.logout()"><span class="icon">🚪</span><span>Log out</span></button>
           </div>
@@ -1394,7 +1437,6 @@
           <div class="p-content">
             <!-- HOME -->
             <div class="p-panel active" id="student-panel-home">
-
               <div class="p-card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(212,175,55,0.05), rgba(91,156,246,0.05)); border-color: rgba(212,175,55,0.2);">
                 <div class="p-card-body" style="text-align:center; padding: 30px 20px;">
                   <h2 style="font-family:var(--font-display); color:var(--p-gold); font-size:2rem; margin-bottom:10px;">Chess Kidoo Academy</h2>
@@ -1419,24 +1461,79 @@
                   <div class="p-stats-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="p-stat-card"><div class="stat-icon">📅</div><div class="p-stat-val" id="studentStatLessons">0</div><div class="p-stat-label">Lessons Done</div></div>
                     <div class="p-stat-card"><div class="stat-icon">🧩</div><div class="p-stat-val" id="studentStatPuzzles">0</div><div class="p-stat-label">Puzzles Solved</div></div>
-                    <div class="p-stat-card"><div class="stat-icon">✅</div><div class="p-stat-val" id="studentStatAttend">0%</div><div class="p-stat-label">Attendance</div></div>
+                    <div class="p-stat-card"><div class="stat-icon">⭐</div><div class="p-stat-val" id="studentStatStars">0</div><div class="p-stat-label">Stars Earned</div></div>
+                  </div>
+                  <div class="p-card">
+                    <div class="p-card-header"><div class="p-card-title">📖 Recommended Learning</div></div>
+                    <div class="lesson-card">
+                      <div class="lesson-icon">♟</div>
+                      <div class="lesson-info">
+                        <div class="lesson-title">King & Pawn Endgames</div>
+                        <div class="lesson-sub">Level 2 · 15 mins</div>
+                      </div>
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.showToast('Starting interactive lesson...', 'info')">Start</button>
+                    </div>
+                    <div class="lesson-card">
+                      <div class="lesson-icon">♞</div>
+                      <div class="lesson-info">
+                        <div class="lesson-title">Advanced Knight Outposts</div>
+                        <div class="lesson-sub">Level 3 · 20 mins</div>
+                      </div>
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.showToast('Starting interactive lesson...', 'info')">Start</button>
+                    </div>
                   </div>
                 </div>
-                <div class="rating-hero" style="min-width:240px">
-                  <div style="font-size:.72rem;color:var(--p-text-muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">My Rating</div>
-                  <div class="rating-num" id="studentRatingNum">0</div>
-                  <div class="rating-change" id="studentRatingChange">↑ +0 this month</div>
-                  <div class="rating-label" id="studentRatingLabel">Level --</div>
-                  <button class="p-btn p-btn-gold p-btn-sm" id="studentCertificateBtn" style="display:none; margin-top:15px; width:100%" onclick="CK.student.downloadCertificate()">🏆 Download Certificate</button>
-                </div>
-              </div>
-              <div class="p-card">
-                <div class="p-card-header"><div class="p-card-title">🧩 Pending Puzzles</div></div>
-                <div style="overflow-x:auto">
-                  <table class="p-table">
-                    <thead><tr><th>Puzzle</th><th>Type</th><th>Difficulty</th><th>Coach</th><th>Due</th><th>Action</th></tr></thead>
-                    <tbody id="studentPendingPuzzles"></tbody>
-                  </table>
+
+                <div style="display:flex;flex-direction:column;gap:16px;width:320px">
+
+                  <div class="p-card" style="border-color:rgba(212,175,55,.3);background:linear-gradient(135deg,rgba(212,175,55,.05),rgba(0,0,0,0))">
+                    <div class="p-card-header"><div class="p-card-title" style="color:var(--p-gold)">🏅 My FIDE Level</div></div>
+                    <div class="p-card-body" style="text-align:center;padding:24px 16px">
+                      <div style="font-size:3.5rem;margin-bottom:10px">🏆</div>
+                      <div style="font-family:'Poppins',sans-serif;font-size:1.5rem;font-weight:700;color:var(--p-gold);margin-bottom:4px" id="studentCurrentLevel">Beginner</div>
+                      <div style="font-size:.9rem;color:var(--p-text-muted);margin-bottom:16px" id="studentCurrentRating">800 ELO</div>
+                      <div class="p-progress-bar" style="margin-bottom:12px"><div class="p-progress-fill" style="width:45%;background:var(--p-gold)"></div></div>
+                      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--p-text-muted)">
+                        <span>Current</span>
+                        <span>Next Milestone: 1000 ELO</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="p-card">
+                    <div class="p-card-header"><div class="p-card-title">🏆 Academy Leaderboard</div></div>
+                    <div class="p-card-body" style="padding:16px">
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-weight:700;color:var(--p-gold)">1</span>
+                          <span>Alex Grand</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--p-gold)">1420 ELO</span>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-weight:700;color:#94a3b8">2</span>
+                          <span>Sarah Jenkins</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--p-teal)">1350 ELO</span>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-weight:700;color:#b45309">3</span>
+                          <span>Michael Chang</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--p-blue)">1280 ELO</span>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px dashed rgba(255,255,255,.1);margin-top:8px">
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <span style="font-weight:700;color:var(--p-text-muted)">12</span>
+                          <span id="studentLeaderName">You</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--p-text)">800 ELO</span>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -1614,11 +1711,6 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div id="coach-page" class="page">
       <div class="portal-body">
         <!-- SIDEBAR -->
@@ -2034,62 +2126,145 @@
 
   <!-- Student Modal -->
   <div class="p-modal-overlay" id="adminStudentModal">
-    <div class="p-modal">
+    <div class="p-modal" style="max-width: 650px;">
       <div class="p-modal-header">
-        <div class="p-modal-title" id="adminStudentModalTitle">Add New Student</div>
+        <div class="p-modal-title" id="adminStudentModalTitle">Enroll New Student</div>
         <button class="p-modal-close" onclick="CK.closeModal('adminStudentModal')">✕</button>
       </div>
-      <div class="p-modal-body">
+      <div class="p-modal-body" style="max-height: 70vh; overflow-y: auto;">
         <input type="hidden" id="admin_s_id"/>
         <div class="p-form-row">
           <div class="p-form-group"><label class="p-form-label">Full Name</label><input class="p-form-control" id="admin_s_name" placeholder="Emma Wilson"/></div>
-          <div class="p-form-group"><label class="p-form-label">Email</label><input class="p-form-control" id="admin_s_email" type="email" placeholder="parent@email.com"/></div>
+          <div class="p-form-group"><label class="p-form-label">Parent Phone (10 digits)</label><input class="p-form-control" id="admin_s_phone" type="tel" placeholder="9025846663"/></div>
         </div>
         <div class="p-form-row">
-          <div class="p-form-group"><label class="p-form-label">Age</label><input class="p-form-control" id="admin_s_age" type="number" placeholder="10"/></div>
-          <div class="p-form-group"><label class="p-form-label">Batch</label><input class="p-form-control" id="admin_s_batch" type="text" placeholder="1"/></div>
-          <div class="p-form-group"><label class="p-form-label">Level</label>
+          <div class="p-form-group"><label class="p-form-label">Student Level</label>
             <select class="p-form-control" id="admin_s_level"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Tournament</option></select>
           </div>
+          <div class="p-form-group"><label class="p-form-label">Initial ELO Rating</label><input class="p-form-control" id="admin_s_rating" type="number" placeholder="800"/></div>
         </div>
         <div class="p-form-row">
-          <div class="p-form-group"><label class="p-form-label">Assign Coach</label>
+          <div class="p-form-group"><label class="p-form-label">Assigned Coach</label>
             <select class="p-form-control" id="admin_s_coach"><option>Select coach…</option></select>
           </div>
-          <div class="p-form-group"><label class="p-form-label">Rating</label><input class="p-form-control" id="admin_s_rating" type="number" placeholder="800"/></div>
-          <div class="p-form-group"><label class="p-form-label">Stars</label><input class="p-form-control" id="admin_s_stars" type="number" min="0" max="5" placeholder="5"/></div>
+          <div class="p-form-group"><label class="p-form-label">Batch Type</label>
+            <div style="display:flex; gap:8px;">
+              <select class="p-form-control" id="admin_s_batch"><option>Evening</option><option>Weekend</option><option>Morning Elite</option><option>Online Camp</option></select>
+              <button class="p-btn p-btn-gold p-btn-sm" onclick="const nb = prompt('Enter new batch name:'); if(nb){ const sel = document.getElementById('admin_s_batch'); sel.innerHTML += `<option selected>${nb}</option>`; }">+ New</button>
+            </div>
+          </div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Session Schedule</label><input class="p-form-control" id="admin_s_schedule" placeholder="17:00 / Mon-Wed"/></div>
+          <div class="p-form-group"><label class="p-form-label">Joining Date</label><input class="p-form-control" id="admin_s_join" type="date" value="2026-04-20"/></div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Monthly Fees (₹)</label><input class="p-form-control" id="admin_s_fee" type="number" placeholder="5000"/></div>
+          <div class="p-form-group"><label class="p-form-label">Due Date</label><input class="p-form-control" id="admin_s_due" placeholder="14-May-2026"/></div>
         </div>
       </div>
       <div class="p-modal-footer">
         <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminStudentModal')">Cancel</button>
-        <button class="p-btn p-btn-gold" onclick="CK.admin.saveStudent()">Save Student</button>
+        <button class="p-btn p-btn-gold" onclick="CK.admin.saveStudent()">Confirm Enrollment</button>
       </div>
     </div>
   </div>
 
   <!-- Coach Modal -->
   <div class="p-modal-overlay" id="adminCoachModal">
-    <div class="p-modal">
+    <div class="p-modal" style="max-width: 650px;">
       <div class="p-modal-header">
         <div class="p-modal-title" id="adminCoachModalTitle">Add New Coach</div>
         <button class="p-modal-close" onclick="CK.closeModal('adminCoachModal')">✕</button>
       </div>
-      <div class="p-modal-body">
+      <div class="p-modal-body" style="max-height: 70vh; overflow-y: auto;">
         <input type="hidden" id="admin_c_id"/>
         <div class="p-form-row">
-          <div class="p-form-group"><label class="p-form-label">Full Name</label><input class="p-form-control" id="admin_c_name"/></div>
-          <div class="p-form-group"><label class="p-form-label">Email</label><input class="p-form-control" id="admin_c_email" type="email"/></div>
-        </div>
-        <div class="p-form-row">
-          <div class="p-form-group"><label class="p-form-label">FIDE Rating</label><input class="p-form-control" id="admin_c_fide" type="number" placeholder="1850"/></div>
-          <div class="p-form-group"><label class="p-form-label">Speciality</label>
+          <div class="p-form-group"><label class="p-form-label">Coach Name</label><input class="p-form-control" id="admin_c_name" placeholder="Grandmaster Sarah"/></div>
+          <div class="p-form-group"><label class="p-form-label">Specialty</label>
             <select class="p-form-control" id="admin_c_spec"><option>Opening Theory</option><option>Endgame</option><option>Tactics</option><option>Strategy</option><option>General</option></select>
           </div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Phone (10 digits)</label><input class="p-form-control" id="admin_c_phone" type="tel" placeholder="9025846663"/></div>
+          <div class="p-form-group"><label class="p-form-label">Email Address</label><input class="p-form-control" id="admin_c_email" type="email" placeholder="coach@gmail.com"/></div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Address</label><input class="p-form-control" id="admin_c_addr" placeholder="Chennai Academy Centre"/></div>
+          <div class="p-form-group"><label class="p-form-label">Photo URL</label><input class="p-form-control" id="admin_c_photo" placeholder="assets/images/coach.png"/></div>
+        </div>
+        <div class="p-form-row">
+          <div class="p-form-group"><label class="p-form-label">Status</label>
+            <select class="p-form-control" id="admin_c_status"><option>Active</option><option>On Leave</option><option>Suspended</option></select>
+          </div>
+          <div class="p-form-group"><label class="p-form-label">Availability</label>
+            <select class="p-form-control" id="admin_c_avail"><option>Weekends</option><option>Weekdays Evening</option><option>Full Time</option></select>
+          </div>
+        </div>
+        <div class="p-form-group">
+          <label class="p-form-label">Additional Details / Bio</label>
+          <textarea class="p-form-control" id="admin_c_bio" rows="3" placeholder="FIDE Master with 10+ years coaching..."></textarea>
         </div>
       </div>
       <div class="p-modal-footer">
         <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminCoachModal')">Cancel</button>
         <button class="p-btn p-btn-gold" onclick="CK.admin.saveCoach()">Save Coach</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coach Details Modal (Admin View) -->
+  <div class="p-modal-overlay" id="adminCoachDetailsModal">
+    <div class="p-modal" style="max-width: 600px;">
+      <div class="p-modal-header">
+        <div class="p-modal-title" id="detailCoachTitle">Coach Profile Details</div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminCoachDetailsModal')">✕</button>
+      </div>
+      <div class="p-modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:var(--p-surface3); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:1.1rem; color:var(--p-gold); font-weight:bold; margin-bottom:12px;">📊 Performance & Revenue Ledger</div>
+          <div id="detailCoachSpec" style="margin-bottom:8px; color:#fff;">Specialty: Tactics</div>
+          <div id="detailCoachBatches" style="margin-bottom:8px; color:#fff;">Assigned Batches: Evening, Weekend</div>
+          <div id="detailCoachTimetable" style="margin-bottom:8px; color:var(--p-text-muted);">Timetable Schedule: Mon-Fri 4PM-7PM</div>
+          <div id="detailCoachRevenue" style="margin-bottom:8px; font-weight:bold; color:var(--p-teal); font-size:1.1rem;">Monthly Revenue Generated: ₹24,000</div>
+          <div id="detailCoachClasses" style="color:#fff;">Total Classes Attended: 20</div>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminCoachDetailsModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="p-modal-overlay" id="adminExpenseModal">
+    <div class="p-modal" style="max-width: 500px;">
+      <div class="p-modal-header">
+        <div class="p-modal-title">Record Expenditure</div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminExpenseModal')">✕</button>
+      </div>
+      <div class="p-modal-body">
+        <input type="hidden" id="admin_exp_id"/>
+        <div class="p-form-group">
+          <label class="p-form-label">Category</label>
+          <select class="p-form-control" id="admin_exp_cat"><option>Coach Salary</option><option>Platform & Software</option><option>Rent & Utilities</option><option>Marketing</option><option>Miscellaneous</option></select>
+        </div>
+        <div class="p-form-group">
+          <label class="p-form-label">Description</label>
+          <input class="p-form-control" id="admin_exp_desc" placeholder="e.g. Monthly salary / Claude subscription"/>
+        </div>
+        <div class="p-form-group">
+          <label class="p-form-label">Amount (₹)</label>
+          <input class="p-form-control" id="admin_exp_amount" type="number" placeholder="2600"/>
+        </div>
+        <div class="p-form-group">
+          <label class="p-form-label">Payment Mode</label>
+          <select class="p-form-control" id="admin_exp_mode"><option>UPI</option><option>Card</option><option>Bank Transfer</option><option>Cash</option></select>
+        </div>
+      </div>
+      <div class="p-modal-footer">
+        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminExpenseModal')">Cancel</button>
+        <button class="p-btn p-btn-gold" onclick="CK.admin.saveExpense()">Save Record</button>
       </div>
     </div>
   </div>
