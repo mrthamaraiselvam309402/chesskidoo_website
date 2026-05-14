@@ -655,7 +655,7 @@ CK.student = {
           </div>
           ${status === 'Paid' ? `
             <div style="padding:15px; background:rgba(0,201,167,0.1); border:1px solid var(--p-teal); color:var(--p-teal); border-radius:8px; font-weight:bold; margin-bottom:15px;">✅ Fee Paid Successfully for Current Term</div>
-            <button class="p-btn p-btn-ghost" style="width:100%; font-size:1.1rem; padding:12px;" onclick="alert('📥 Official Fee Receipt:\\n\\nTransaction ID: CK_TXN_984712093\\nStudent: ${p.full_name || 'Emma Wilson'}\\nAmount: ₹${feeAmount}\\nStatus: PAID SUCCESSFULLY\\nDate: ' + new Date().toLocaleDateString())">📥 Download Payment Receipt</button>
+            <button class="p-btn p-btn-ghost" style="width:100%; font-size:1.1rem; padding:12px;" onclick="CK.student.downloadReceipt()">📥 Download Payment Receipt</button>
           ` : `
             <button class="p-btn p-btn-gold" style="width:100%; font-size:1.1rem; padding:12px;" onclick="CK.student.processPayment()">💳 Pay Securely via Razorpay</button>
           `}
@@ -678,6 +678,220 @@ CK.student = {
         CK.admin.loadStudents();
       }
     }, 1500);
+  },
+
+  downloadReceipt() {
+    const p = this.userProfile || {};
+    const name = p.full_name ? p.full_name.toUpperCase() : 'SAI';
+    const level = p.level || 'Beginner';
+    const rating = p.rating || 800;
+    const coach = p.coach ? p.coach.toUpperCase() : 'YOGESH';
+    const feeAmount = p.fee || 1600;
+    const dateStr = new Date().toLocaleDateString('en-GB');
+
+    const words = feeAmount === 1600 ? 'One Thousand Six Hundred Rupees Only' :
+                  feeAmount === 2200 ? 'Two Thousand Two Hundred Rupees Only' :
+                  feeAmount === 4500 ? 'Four Thousand Five Hundred Rupees Only' :
+                  `${feeAmount} Rupees Only`;
+
+    const receiptWin = window.open('', '_blank', 'width=800,height=950');
+    receiptWin.document.write(`
+      <html>
+        <head>
+          <title>ChessKidoo Official Payment Receipt</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+          <style>
+            body {
+              font-family: 'Montserrat', sans-serif;
+              color: #1e293b;
+              margin: 0;
+              padding: 0;
+              background: #fff;
+              -webkit-print-color-adjust: exact;
+              color-adjust: exact;
+            }
+            .receipt-container {
+              max-width: 720px;
+              margin: 0 auto;
+              background: #fff;
+              border: 1px solid #e2e8f0;
+              box-sizing: border-box;
+              position: relative;
+              overflow: hidden;
+            }
+            .r-header {
+              background: #b4831f !important;
+              color: #000;
+              padding: 35px 20px 25px 20px;
+              text-align: center;
+            }
+            .r-title-brand {
+              font-family: 'Cinzel', serif;
+              font-size: 2.4rem;
+              font-weight: 700;
+              letter-spacing: 5px;
+              margin: 0 0 8px 0;
+            }
+            .r-slogan {
+              font-style: italic;
+              font-family: serif;
+              font-size: 1.1rem;
+              margin: 0 0 15px 0;
+            }
+            .r-contact {
+              font-size: 0.9rem;
+              font-weight: 600;
+              display: flex;
+              justify-content: center;
+              gap: 25px;
+            }
+            .r-subhead {
+              background: #f8fafc;
+              text-align: center;
+              padding: 16px;
+              font-family: 'Cinzel', serif;
+              font-size: 1.4rem;
+              font-weight: 700;
+              letter-spacing: 8px;
+              border-bottom: 1px solid #cbd5e1;
+            }
+            .r-meta {
+              display: flex;
+              justify-content: space-between;
+              padding: 16px 30px;
+              font-size: 0.95rem;
+              border-bottom: 1px solid #cbd5e1;
+            }
+            .r-body {
+              padding: 30px;
+              position: relative;
+            }
+            .watermark {
+              position: absolute;
+              top: 15%;
+              right: 10%;
+              font-size: 8rem;
+              font-weight: 900;
+              color: rgba(0, 201, 167, 0.08);
+              border: 8px solid rgba(0, 201, 167, 0.08);
+              border-radius: 16px;
+              padding: 10px 40px;
+              transform: rotate(-15deg);
+              pointer-events: none;
+              letter-spacing: 15px;
+            }
+            .sec-title {
+              font-size: 1rem;
+              font-weight: 700;
+              color: #b4831f;
+              letter-spacing: 2px;
+              margin-bottom: 15px;
+              text-transform: uppercase;
+            }
+            .r-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 35px;
+            }
+            .r-table td {
+              padding: 10px 0;
+              font-size: 0.95rem;
+              border-bottom: 1px dashed #cbd5e1;
+            }
+            .r-table td.lbl {
+              color: #64748b;
+            }
+            .r-table td.val {
+              text-align: right;
+              font-weight: 700;
+              color: #0f172a;
+            }
+            .total-box {
+              border-top: 2px solid #b4831f;
+              border-bottom: 2px solid #b4831f;
+              padding: 20px 30px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin: 10px 0 30px 0;
+            }
+            .total-lbl {
+              font-size: 1.2rem;
+              font-weight: 700;
+            }
+            .total-val {
+              font-size: 2rem;
+              font-weight: 700;
+              color: #0f172a;
+            }
+            .words {
+              font-style: italic;
+              color: #475569;
+              font-size: 0.95rem;
+              margin-top: -15px;
+              padding-left: 30px;
+              margin-bottom: 40px;
+            }
+            .r-footer {
+              text-align: center;
+              padding: 30px;
+              font-size: 0.85rem;
+              color: #64748b;
+              border-top: 1px solid #cbd5e1;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            <div class="r-header">
+              <div class="r-title-brand">CHESSKIDOO ACADEMY</div>
+              <div class="r-slogan">Building Champions, One Move at a Time</div>
+              <div class="r-contact"><span>📞 +91 88257 31470</span><span>✉️ Chesskidoo37@gmail.com</span></div>
+            </div>
+            <div class="r-subhead">OFFICIAL RECEIPT</div>
+            <div class="r-meta">
+              <div>Receipt No: <strong>CK-8C1561</strong></div>
+              <div>Date: <strong>${dateStr}</strong></div>
+            </div>
+            <div class="r-body">
+              <div class="watermark">PAID</div>
+              
+              <div class="sec-title">STUDENT DETAILS</div>
+              <table class="r-table">
+                <tr><td class="lbl">Name</td><td class="val">${name}</td></tr>
+                <tr><td class="lbl">Level</td><td class="val">${level}</td></tr>
+                <tr><td class="lbl">ELO Rating</td><td class="val">${rating}</td></tr>
+                <tr><td class="lbl">Coach</td><td class="val">${coach}</td></tr>
+              </table>
+
+              <div class="sec-title">PAYMENT DETAILS</div>
+              <table class="r-table">
+                <tr><td class="lbl">Tuition Fee</td><td class="val">₹ ${feeAmount.toLocaleString()}</td></tr>
+                <tr><td class="lbl">Payment Mode</td><td class="val">Online</td></tr>
+                <tr><td class="lbl">Status</td><td class="val" style="color:#16a34a;">✓ SUCCESS</td></tr>
+              </table>
+
+              <div class="total-box">
+                <div class="total-lbl">Total Amount Paid</div>
+                <div class="total-val">₹ ${feeAmount.toLocaleString()}</div>
+              </div>
+              <div class="words">${words}</div>
+            </div>
+            <div class="r-footer">
+              <p style="margin:0 0 5px 0;">This is a computer-generated receipt. No signature required.</p>
+              <p style="margin:0 0 15px 0;">For queries, contact Chesskidoo37@gmail.com</p>
+              <div style="font-family:'Cinzel',serif; font-weight:700; color:#b4831f; font-size:1.1rem; font-style:italic;">♟ Thank you for your patronage! ♟</div>
+            </div>
+          </div>
+          <script>
+            setTimeout(() => window.print(), 500);
+          </script>
+        </body>
+      </html>
+    `);
+    receiptWin.document.close();
   },
 
   downloadCertificate() {
