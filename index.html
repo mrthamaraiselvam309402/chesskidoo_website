@@ -4426,7 +4426,7 @@
 
     // Animated number counters for hero stats
     function animateCounter(el, target, duration) {
-      const start = 0;
+      const start = target;
       const startTime = performance.now();
       const isDecimal = target % 1 !== 0;
       function step(currentTime) {
