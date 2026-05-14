@@ -365,12 +365,9 @@ CK.student = {
     const container = document.getElementById('studentReviewsContainer');
     if (!container) return;
 
-    const defaultReviews = [
-      { coach: "Sarah Chess (FIDE Instructor)", date: "May 6, 2026", text: "Emma shows fantastic calculation skills in open tactical lines. Focus on rook endgames and pawn structures in the coming week. Keep up the high puzzle count!" },
-      { coach: "Michael Knight (Academy Coach)", date: "April 28, 2026", text: "Excellent concentration during our class match. Make sure to review basic opening concepts, specifically the Italian game sidelines." }
-    ];
+    const myReviews = CK.tracker.getReviews(this.userProfile ? this.userProfile.full_name : 'Emma Wilson');
 
-    container.innerHTML = defaultReviews.map(r => `
+    container.innerHTML = myReviews.map(r => `
       <div style="background:var(--p-surface2); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--p-gold);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <h4 style="margin:0; font-family:var(--font-display);">${r.coach}</h4>

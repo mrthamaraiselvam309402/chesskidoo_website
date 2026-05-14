@@ -490,4 +490,46 @@
     }
   };
 
+  // --- STUDENT TRACKING SYSTEM (Admin / Coach / Student Integration) ---
+  CK.tracker = {
+    async addReview(reviewObj) {
+      const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
+      notes.push({
+        student: reviewObj.student,
+        coach: reviewObj.coach || 'Sarah Chess',
+        text: reviewObj.text,
+        date: reviewObj.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      });
+      localStorage.setItem('ck_coach_notes', JSON.stringify(notes));
+
+      const students = await CK.db.getProfiles('student');
+      const s = students.find(u => u.full_name.toLowerCase() === reviewObj.student.toLowerCase());
+      if (s) {
+        s.last_note = reviewObj.text;
+        s.rating = (s.rating || 800) + 15;
+        await CK.db.saveProfile(s);
+      }
+
+      if (window.CK && CK.student && typeof CK.student.renderCoachReviews === 'function') {
+        CK.student.renderCoachReviews();
+      }
+      if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
+        CK.admin.loadStudents();
+      }
+    },
+
+    getReviews(studentName) {
+      if (!studentName) studentName = 'Emma Wilson';
+      const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
+      const myNotes = notes.filter(n => n.student.toLowerCase() === studentName.toLowerCase());
+      if (myNotes.length === 0) {
+        return [
+          { coach: "Sarah Chess (FIDE Instructor)", date: "May 6, 2026", text: "Emma shows fantastic calculation skills in open tactical lines. Focus on rook endgames and pawn structures in the coming week. Keep up the high puzzle count!" },
+          { coach: "Michael Knight (Academy Coach)", date: "April 28, 2026", text: "Excellent concentration during our class match. Make sure to review basic opening concepts, specifically the Italian game sidelines." }
+        ];
+      }
+      return myNotes.reverse();
+    }
+  };
+
 })();

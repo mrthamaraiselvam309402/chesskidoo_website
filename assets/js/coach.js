@@ -247,11 +247,13 @@ CK.coach = {
     const text = document.getElementById('coach_note_text').value;
     if (!text) return CK.showToast("Note content is required", "error");
     
-    const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
-    notes.push({ student: name, text: text, date: new Date().toLocaleDateString() });
-    localStorage.setItem('ck_coach_notes', JSON.stringify(notes));
+    CK.tracker.addReview({
+      student: name,
+      text: text,
+      coach: this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess'
+    });
 
-    CK.showToast("Game assessment note saved successfully!", "success");
+    CK.showToast("Game assessment note saved successfully! ELO accuracy updated.", "success");
     CK.closeModal('coachNoteModal');
     document.getElementById('coach_note_text').value = '';
   }

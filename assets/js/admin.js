@@ -312,7 +312,8 @@ CK.admin = {
   async viewStudentInfo(id) {
     const s = await CK.db.getProfile(id);
     if (!s) return;
-    alert(`Student Report Card & Details:\n\nName: ${s.full_name}\nLevel: ${s.level} (${s.rating} ELO)\nAssigned Coach: ${s.coach}\nBatch: ${s.batch || 'Evening'} (${s.schedule})\nMonthly Fees: ₹${s.fee || '2200'}\nStatus: ${s.status}\nDue Date: ${s.due_date}`);
+    const note = s.last_note || "No assessment notes logged yet.";
+    alert(`Student Tracking Report & Details:\n\nName: ${s.full_name}\nLevel: ${s.level} (${s.rating} ELO)\nAssigned Coach: ${s.coach}\nBatch: ${s.batch || 'Evening'} (${s.schedule})\nMonthly Fees: ₹${s.fee || '2200'}\nStatus: ${s.status}\nDue Date: ${s.due_date}\n\n📝 Latest Coach Note & Assessment:\n"${note}"`);
   },
 
   async moreStudentOptions(id) {
