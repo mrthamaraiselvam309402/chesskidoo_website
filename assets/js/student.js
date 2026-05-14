@@ -301,41 +301,52 @@ CK.student = {
     document.getElementById('puzzleTitle').innerText = p.title;
     document.getElementById('puzzleInstructions').innerHTML = `
       <span class="p-badge p-badge-blue" style="margin-bottom:8px;">${p.type} (${p.diff})</span>
-      <p style="margin:5px 0;">${p.instruction}</p>
+      <p style="margin:5px 0; font-size:1.05rem;">${p.instruction}</p>
+      <div style="margin-top:10px; padding:10px; background:rgba(232,184,75,0.1); border:1px solid var(--p-gold); border-radius:8px; font-size:0.9rem; color:var(--p-gold);">
+        💡 Click on the correct destination square to execute the winning tactical move!
+      </div>
     `;
 
-    // Render puzzle board view
     const boardEl = document.getElementById('studentPuzzleBoardContainer');
     if (boardEl) {
-      boardEl.innerHTML = '';
       boardEl.style.display = 'block';
       boardEl.style.width = '100%';
-      boardEl.style.border = 'none';
+      boardEl.style.maxWidth = '360px';
+      boardEl.style.margin = '0 auto';
 
-      let positionFen = 'start';
-      if (p.id === 'P1') positionFen = '5k2/6pp/8/8/8/8/8/3R4 w - - 0 1'; // Back-Rank
-      else if (p.id === 'P2') positionFen = 'r3k3/8/8/3N4/8/8/8/8 w - - 0 1';
-      else if (p.id === 'P3') positionFen = '6rk/5ppp/5N2/8/8/8/8/8 w - - 0 1';
-
-      if (window.studentBoard) {
-        window.studentBoard.destroy();
+      let setup = {};
+      if (p.id === 'P1') {
+        setup = { 'f8': '♚', 'g7': '♟', 'h7': '♟', 'd1': '♖' };
+      } else if (p.id === 'P2') {
+        setup = { 'e8': '♚', 'a8': '♜', 'd5': '♘' };
+      } else if (p.id === 'P3') {
+        setup = { 'h8': '♚', 'g8': '♜', 'h7': '♟', 'g7': '♟', 'f7': '♟', 'f5': '♘' };
       }
 
-      window.studentBoard = Chessboard('studentPuzzleBoardContainer', {
-        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-        position: positionFen,
-        draggable: true,
-        onDrop: (source, target) => {
-          // Check if solved
-          if (target === p.solution) {
-            CK.student.onSquareClick(target);
-            return;
-          } else {
-            CK.showToast("Incorrect move. Try again!", "error");
-            return 'snapback';
-          }
+      const files = ['a','b','c','d','e','f','g','h'];
+      let html = `<div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:0; border:2px solid var(--p-border); border-radius:8px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.5);">`;
+      
+      for (let r = 8; r >= 1; r--) {
+        for (let f = 0; f < 8; f++) {
+          const sqName = files[f] + r;
+          const isDark = (r + f) % 2 === 0;
+          const bg = isDark ? '#1e293b' : '#3b82f6';
+          const piece = setup[sqName] || '';
+          
+          html += `
+            <div style="aspect-ratio:1; background:${bg}; display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer; user-select:none; position:relative; transition:filter 0.2s;"
+                 onclick="CK.student.onSquareClick('${sqName}')"
+                 onmouseover="this.style.filter='brightness(1.3)'"
+                 onmouseout="this.style.filter='none'"
+                 title="Square ${sqName}">
+              ${piece}
+              <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; opacity:0.4; color:#fff;">${sqName}</span>
+            </div>
+          `;
         }
-      });
+      }
+      html += `</div>`;
+      boardEl.innerHTML = html;
     }
   },
 
