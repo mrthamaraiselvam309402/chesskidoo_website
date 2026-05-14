@@ -257,7 +257,8 @@ CK.coach = {
     const select = document.getElementById('coach_note_student');
     if (select) {
       const students = await CK.db.getProfiles('student');
-      const myStudents = students.filter(s => s.coach === this.coachProfile.full_name);
+      const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
+      const myStudents = students.filter(s => s.coach === coachName || !s.coach);
       select.innerHTML = myStudents.map(s => `<option value="${s.full_name}">${s.full_name}</option>`).join('');
     }
     CK.openModal('coachNoteModal');
