@@ -59,7 +59,8 @@ CK.coach = {
       schedule: 'My Schedule',
       notes: 'Game Notes',
       puzzles: 'Assign Puzzles',
-      resources: 'Homework & Notes'
+      resources: 'Homework & Notes',
+      lab: 'PGN Teaching Studio'
     };
     document.getElementById('coachPanelTitle').innerText = titles[panelId] || 'Dashboard';
     

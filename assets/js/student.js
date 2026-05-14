@@ -67,6 +67,7 @@ CK.student = {
     if (panelId === 'report') this.renderReportCard();
     if (panelId === 'fees') this.renderFeesGateway();
     if (panelId === 'reviews') this.renderCoachReviews();
+    if (panelId === 'resources') this.renderResources();
     
     const titles = {
       home: 'My Dashboard',
@@ -79,7 +80,10 @@ CK.student = {
       path: 'Adaptive Mastery Skill Tree',
       vault: 'The Replay Vault',
       fees: 'Fee Payment Gateway',
-      report: 'Official Student Report Card'
+      report: 'Official Student Report Card',
+      resources: 'Learning Resources',
+      lab: 'PGN Stockfish Lab',
+      tournaments: 'Tournaments'
     };
     document.getElementById('studentPanelTitle').innerText = titles[panelId] || 'Dashboard';
   },

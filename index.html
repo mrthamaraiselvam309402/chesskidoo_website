@@ -1602,9 +1602,7 @@
               <div class="p-card">
                 <div class="p-card-header">
                   <div class="p-card-title">📅 Class Schedule</div>
-                  <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.openModal('adminClassModal')">+ Schedule
-                    Class</button>
-                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openClassModal()">+ Add Class</button>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.admin.openClassModal()">+ Schedule Class</button>
                 </div>
                 <div style="overflow-x:auto">
                   <table class="p-table">
@@ -1734,7 +1732,7 @@
               <div class="p-card">
                 <div class="p-card-header">
                   <div class="p-card-title">🏆 Tournament Management</div>
-                  <button class="p-btn p-btn-gold p-btn-sm">+ Create Tournament</button>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.showToast('Tournament creation wizard launched!','success')">+ Create Tournament</button>
                 </div>
                 <div class="p-card-body">
                   <table class="p-table">
