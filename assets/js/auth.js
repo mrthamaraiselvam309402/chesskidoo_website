@@ -68,11 +68,11 @@
       if (!profile) {
         // Fetch profiles from our local DB layer
         const profiles = await CK.db.getProfiles();
-        const found = profiles.find(p => p.email.toLowerCase() === email || (email.includes('@ck') && p.email.toLowerCase().startsWith(email.split('@')[0])));
+        const found = profiles.find(p => p && p.email && (p.email.toLowerCase() === email || (email.includes('@ck') && p.email.toLowerCase().startsWith(email.split('@')[0]))));
         
         if (found) {
           // Simple offline credential check: accepts 'admin', 'coach', 'student', or passwords matching README instructions
-          const role = found.role.toLowerCase();
+          const role = (found.role || 'student').toLowerCase();
           const isValidPass = 
             (role === 'admin' && (password === 'admin' || password === 'admin123' || password === 'Admin123$')) ||
             (role === 'coach' && (password === 'coach' || password === 'Coach123')) ||
