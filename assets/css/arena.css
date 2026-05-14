@@ -609,26 +609,31 @@
 }
 
 .a-piece {
-  font-size: clamp(24px, 5vmin, 42px);
-  line-height: 1;
+  width: 85%;
+  height: 85%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
   z-index: 2;
   position: relative;
   transition: transform 0.18s ease;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
   cursor: grab;
+}
+.a-piece svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .a-piece:active { cursor: grabbing; }
 
 /* Custom premium pieces colors */
 .a-piece.piece-w {
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 0 1px rgba(0,0,0,0.8);
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.7));
 }
 .a-piece.piece-b {
-  color: #171007 !important; /* Premium dark wood espresso */
-  text-shadow: 0 0 2px #ffd880, 0 0 4px rgba(232, 160, 32, 0.7); /* Gorgeous warm gold outline for peak contrast */
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.9));
 }
 
 /* Coordinate labels */
@@ -810,8 +815,18 @@
   min-height: 28px;
 }
 .captured-piece {
-  font-size: 1.1rem;
-  opacity: 0.6;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+.captured-piece svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* Clock display */
