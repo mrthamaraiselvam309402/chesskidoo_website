@@ -35,6 +35,7 @@ CK.coach = {
     // 2. Load UI elements
     await this.updateProfile();
     await this.renderDashboard();
+    this.nav('home');
   },
 
   nav(panelId) {
@@ -67,21 +68,27 @@ CK.coach = {
   },
 
   async updateProfile() {
-    const cp = this.coachProfile;
+    const cp = this.coachProfile || {};
     const initial = cp.full_name ? cp.full_name.split(' ').map(n => n[0]).join('') : 'CH';
     
     // Sidebar values
-    document.getElementById('coachSidebarName').innerText = cp.full_name || 'Sarah Chess';
-    document.getElementById('coachSidebarSub').innerText = `${cp.puzzle || 'Tactics Specialist'} · FIDE 2100`;
-    document.getElementById('coachSidebarAvatar').innerText = initial;
+    const elName = document.getElementById('coachSidebarName');
+    const elSub = document.getElementById('coachSidebarSub');
+    const elAvatar = document.getElementById('coachSidebarAvatar');
+    if (elName) elName.innerText = cp.full_name || 'Sarah Chess';
+    if (elSub) elSub.innerText = `${cp.puzzle || 'Tactics Specialist'} · FIDE 2100`;
+    if (elAvatar) elAvatar.innerText = initial;
     
     // Stats counters
     const students = await CK.db.getProfiles('student');
     const myStudents = students.filter(s => s.coach === cp.full_name);
 
-    document.getElementById('coachStatStudents').innerText = myStudents.length || 0;
-    document.getElementById('coachStatAttend').innerText = '96%';
-    document.getElementById('coachStatClasses').innerText = '5';
+    const stStud = document.getElementById('coachStatStudents');
+    const stAtt = document.getElementById('coachStatAttend');
+    const stClass = document.getElementById('coachStatClasses');
+    if (stStud) stStud.innerText = myStudents.length || 0;
+    if (stAtt) stAtt.innerText = '96%';
+    if (stClass) stClass.innerText = '5';
   },
 
   renderResources() {
