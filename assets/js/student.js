@@ -42,6 +42,8 @@ CK.student = {
     this.renderPuzzlesList();
     this.renderCoachReviews();
     this.renderAchievementsTab();
+    this.renderFeesGateway();
+    this.renderReportCard();
     this.initCharts();
     this.startCountdown();
   },
@@ -75,7 +77,9 @@ CK.student = {
       reviews: 'Coach Reviews',
       achievements: 'Achievements',
       path: 'Adaptive Mastery Skill Tree',
-      vault: 'The Replay Vault'
+      vault: 'The Replay Vault',
+      fees: 'Fee Payment Gateway',
+      report: 'Official Student Report Card'
     };
     document.getElementById('studentPanelTitle').innerText = titles[panelId] || 'Dashboard';
   },
