@@ -408,7 +408,7 @@
       if (hasDecimal) {
         const numPart = parseFloat(text.replace(/[^\d.]/g, ''));
         if (isNaN(numPart)) return;
-        let count = 0.0;
+        let count = numPart;
         const suffix = text.replace(/[\d.]/g, '');
         const step = numPart / 60;
         const timer = setInterval(() => {
@@ -422,7 +422,7 @@
       } else {
         const target = parseInt(text.replace(/\D/g,''), 10);
         if (isNaN(target)) return;
-        let count = 0;
+        let count = target;
         const suffix = text.replace(/[0-9]/g,'');
         const step = Math.ceil(target / 60);
         const timer = setInterval(() => {
