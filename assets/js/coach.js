@@ -192,22 +192,37 @@ CK.coach = {
     this.nav('session');
     document.getElementById('coachSessionName').innerText = c.class;
     document.getElementById('coachSessionSub').innerText = `${c.level} · ${c.students} Students Connected`;
-    CK.showToast("Session environment ready", "success");
+    document.getElementById('coachCommandCenter').style.display = 'grid';
+    if (CK.renderVaultBoard) CK.renderVaultBoard();
+    CK.showToast("Triple-Pane session environment ready", "success");
   },
 
   toggleSession() {
     const btn = document.getElementById('coachStartBtn');
-    if (btn.innerText.includes('Start')) {
-      btn.innerText = '⏸ Pause Session';
+    if (btn.innerText.includes('Start') || btn.innerText.includes('Resume')) {
+      btn.innerText = '⏸ Pause Command Center';
       btn.classList.remove('p-btn-teal');
       btn.classList.add('p-btn-ghost');
-      CK.showToast("Interactive board session started", "success");
+      document.getElementById('coachCommandCenter').style.display = 'grid';
+      if (CK.renderVaultBoard) CK.renderVaultBoard();
+      CK.showToast("Interactive Triple-Pane Command Center started!", "success");
     } else {
-      btn.innerText = '▶ Resume Session';
+      btn.innerText = '▶ Resume Command Center';
       btn.classList.remove('p-btn-ghost');
       btn.classList.add('p-btn-teal');
-      CK.showToast("Session paused", "info");
+      CK.showToast("Command Center paused", "info");
     }
+  },
+
+  endSession() {
+    document.getElementById('coachCommandCenter').style.display = 'none';
+    const btn = document.getElementById('coachStartBtn');
+    if (btn) {
+      btn.innerText = '▶ Start Live Command Center';
+      btn.classList.remove('p-btn-ghost');
+      btn.classList.add('p-btn-teal');
+    }
+    CK.showToast("Live session ended successfully", "info");
   },
 
   async topAction() {

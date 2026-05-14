@@ -70,7 +70,9 @@ CK.student = {
       session: 'Join Class',
       puzzles: 'My Puzzles',
       reviews: 'Coach Reviews',
-      achievements: 'Achievements'
+      achievements: 'Achievements',
+      path: 'Adaptive Mastery Skill Tree',
+      vault: 'The Replay Vault'
     };
     document.getElementById('studentPanelTitle').innerText = titles[panelId] || 'Dashboard';
   },
