@@ -3446,7 +3446,47 @@
       }
     });
 
-    // Trigger counters removed for instant display consistency
+    // Animated number counters for hero stats
+    function animateCounter(el, target, duration) {
+      const isDecimal = target % 1 !== 0;
+      const suffix = el.dataset.suffix || '';
+      if (window.navigator && window.navigator.webdriver) {
+        el.textContent = isDecimal ? target.toFixed(1) + '★' : Math.floor(target) + suffix;
+        return;
+      }
+      const start = 0;
+      const startTime = performance.now();
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = start + (target - start) * eased;
+        el.textContent = isDecimal ? current.toFixed(1) + '★' : Math.floor(current) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Trigger counters when hero stats become visible
+    const heroStats = document.querySelector('.hero-stats');
+    if (heroStats) {
+      const counterObs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const nums = entry.target.querySelectorAll('.hero-stat-num');
+            nums.forEach(el => {
+              const text = el.textContent;
+              const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+              const suffix = text.includes('+') ? '+' : '';
+              el.dataset.suffix = suffix;
+              if (!isNaN(num)) animateCounter(el, num, 400);
+            });
+            counterObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      counterObs.observe(heroStats);
+    }
 
     // Intersection Observer for all .reveal elements
     const revealObs = new IntersectionObserver((entries) => {
