@@ -2672,6 +2672,16 @@
   font-family: 'Space Grotesk', monospace;
 }
 
+/* Portal Multi-Device Auto-Size Layer */
+@media (min-width: 1600px) {
+  .p-content { max-width: 1550px; margin: 0 auto; width: 100%; }
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+  .p-sidebar { width: 220px; min-width: 220px; }
+  .p-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .p-charts-row, .p-form-row { grid-template-columns: 1fr; }
+}
+
 /* ==========================================================================
    PORTAL MOBILE ENHANCEMENT LAYER
    ========================================================================== */

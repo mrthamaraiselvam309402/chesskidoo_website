@@ -2183,6 +2183,16 @@
   box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
 }
 
+/* Arena Multi-Device Auto-Size Layer */
+@media (min-width: 1600px) {
+  .arena-wrapper { max-width: 1550px; margin: 0 auto; width: 100%; }
+  .arena-board { width: 560px !important; height: 560px !important; }
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+  .arena-grid { grid-template-columns: 1fr !important; gap: 32px; }
+  .arena-board { width: 440px !important; height: 440px !important; margin: 0 auto; }
+}
+
 @media (max-width: 768px) {
   .arcade-promo-content {
     flex-direction: column;

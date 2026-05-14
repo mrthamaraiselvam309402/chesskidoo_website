@@ -2795,6 +2795,27 @@ button, input, textarea, select, a {
   transition: all .25s ease;
 }
 
+/* Multi-Device Universal Auto-Size & UI/UX Optimization Layer */
+@media (min-width: 1600px) {
+  .header-inner, .reviews-grid, .hero-content-wrap, .section-padding {
+    max-width: 1550px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+@media (max-width: 1440px) and (min-width: 1025px) {
+  .hero-title { font-size: clamp(2.8rem, 5vw, 4rem); }
+  .header-inner { padding: 16px 32px; }
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+  .hero-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+  .hero-btns { justify-content: center; }
+  .reviews-grid, .feat-grid, .pricing-grid, .level-grid, .coach-grid, .achievements-grid, .showcase-gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .price-card.gold-card { transform: none; }
+}
+
 /* Mobile */
 @media (max-width:768px) {
   .reviews-grid { grid-template-columns:1fr; padding:0 16px; }
