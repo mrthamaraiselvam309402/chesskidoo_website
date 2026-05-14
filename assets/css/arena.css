@@ -2194,6 +2194,20 @@
   .arcade-promo-btn {
     width: 100%;
   }
+  .arena-board {
+    width: min(360px, 92vw) !important;
+    height: min(360px, 92vw) !important;
+  }
+  .arena-panel {
+    padding: 16px !important;
+  }
+  .diff-btn {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+  }
+  .arena-header {
+    padding: 14px 16px !important;
+  }
 }
 
 /* Force Poppins Font on Arena Page Elements */

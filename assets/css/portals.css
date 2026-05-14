@@ -2672,3 +2672,49 @@
   font-family: 'Space Grotesk', monospace;
 }
 
+/* ==========================================================================
+   PORTAL MOBILE ENHANCEMENT LAYER
+   ========================================================================== */
+@media (max-width: 768px) {
+  .portal-body {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+  .p-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--p-border);
+  }
+  .p-main {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+  .p-topbar {
+    padding: 0 16px !important;
+    height: 56px !important;
+  }
+  .p-topbar-search input {
+    width: 160px !important;
+  }
+  .p-content {
+    padding: 16px !important;
+    gap: 16px !important;
+  }
+  .p-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .report-card-wrapper {
+    padding: 20px !important;
+    border-width: 6px !important;
+    outline-width: 2px !important;
+  }
+  .rc-title {
+    font-size: 1.8rem !important;
+  }
+}
+
