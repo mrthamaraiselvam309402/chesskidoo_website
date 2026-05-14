@@ -1519,21 +1519,19 @@ body {
 
 /* ─── Smooth Page Transition ─── */
 .page {
-  display: none;
-  opacity: 0;
+  animation: pageTransition3D 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .page.active {
-  display: block;
-  animation: pageFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageTransitionIn3D 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes pageFadeIn {
+@keyframes pageTransitionIn3D {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: perspective(1000px) translateZ(-50px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(1000px) translateZ(0);
   }
 }
 
@@ -2506,6 +2504,14 @@ button, input, textarea, select, a {
   }
   .login-card-v2 {
     padding: 32px 24px;
+  }
+  .login-bg-section {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding-bottom: 40px !important;
+    justify-content: flex-start !important;
   }
 }
 
