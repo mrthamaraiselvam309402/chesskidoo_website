@@ -338,7 +338,7 @@
 
   /* ─── Scroll Effects + Active Nav Highlighting ─── */
   const header = document.getElementById('header');
-  const sections = ['home', 'features', 'levels', 'coaches', 'about', 'reviews', 'pricing', 'faq'];
+  const sections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'pricing', 'faq'];
   const navLinkEls = document.querySelectorAll('.nav-link[data-section]');
 
   function updateActiveNav() {
