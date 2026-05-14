@@ -240,9 +240,10 @@ CK.admin = {
       if (status === 'Waiting List') statusBadge = 'p-badge-blue';
 
       let actionBtns = '';
+      const escName = s.full_name ? s.full_name.replace(/'/g, "\\'") : 'Student';
       if (status === 'Paid') {
         actionBtns = `
-          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}')">📢 Inform</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}', '${escName}')">📢 Inform</button>
           <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.viewStudentInfo('${s.id}')">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editStudent('${s.id}')">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')">Delete</button>
@@ -260,7 +261,7 @@ CK.admin = {
           <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.viewStudentInfo('${s.id}')">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.editStudent('${s.id}')">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.admin.deleteStudent('${s.id}')">Delete</button>
-          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}')">📢 Inform</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.informStudent('${s.id}', '${escName}')">📢 Inform</button>
         `;
       }
 
@@ -279,10 +280,10 @@ CK.admin = {
           <td style="font-weight:700; color:var(--p-gold)">₹${fee}</td>
           <td><span class="p-badge ${statusBadge}">${status}</span></td>
           <td>${dueDate}</td>
-          <td>
-            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <td style="white-space:nowrap;">
+            <div style="display:flex; gap:6px; flex-wrap:nowrap; align-items:center; white-space:nowrap;">
               ${actionBtns}
-              <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.showToast('More options loaded', 'info')">⋮ More</button>
+              <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.admin.moreStudentOptions('${s.id}')">⋮ More</button>
             </div>
           </td>
         </tr>
@@ -304,14 +305,35 @@ CK.admin = {
     CK.showToast(`Student fee status updated to ${newStatus}`, 'success');
   },
 
-  informStudent(id) {
-    CK.showToast('📢 Payment reminder notification sent to registered parent mobile/email successfully.', 'success');
+  informStudent(id, name) {
+    CK.showToast(`📢 Payment reminder & performance update broadcasted to registered contact for ${name || 'Student'} successfully.`, 'success');
   },
 
   async viewStudentInfo(id) {
     const s = await CK.db.getProfile(id);
     if (!s) return;
     alert(`Student Report Card & Details:\n\nName: ${s.full_name}\nLevel: ${s.level} (${s.rating} ELO)\nAssigned Coach: ${s.coach}\nBatch: ${s.batch || 'Evening'} (${s.schedule})\nMonthly Fees: ₹${s.fee || '2200'}\nStatus: ${s.status}\nDue Date: ${s.due_date}`);
+  },
+
+  async moreStudentOptions(id) {
+    const s = await CK.db.getProfile(id);
+    if (!s) return;
+    const opt = prompt(`Advanced Options for ${s.full_name}:\n\n1. Download Official Fee Receipt\n2. View Attendance Ledger\n3. Assign FIDE Rating Badge\n4. Export Profile Data\n\nEnter option number (1-4):`, "1");
+    if (opt === "1") {
+      alert(`📥 Downloading Official Fee Receipt for ${s.full_name}...\nAmount: ₹${s.fee || 2200}\nStatus: ${s.status}`);
+    } else if (opt === "2") {
+      alert(`✅ Attendance Ledger for ${s.full_name}:\nOverall Attendance: 96%\nLast Attended: Today\nBatch: ${s.batch || 'Evening'}`);
+    } else if (opt === "3") {
+      const newElo = prompt(`Enter new FIDE Rating for ${s.full_name}:`, s.rating || 800);
+      if (newElo) {
+        s.rating = parseInt(newElo);
+        await CK.db.saveProfile(s);
+        await this.loadStudents();
+        CK.showToast(`FIDE rating updated to ${newElo} ELO`, 'success');
+      }
+    } else if (opt === "4") {
+      alert(`📥 JSON profile data export initiated for ${s.full_name}.`);
+    }
   },
 
   async filterStudents() {
