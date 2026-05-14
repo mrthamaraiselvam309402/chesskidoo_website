@@ -532,4 +532,26 @@
     }
   };
 
+  // --- BATCH CLASS & ROOM LINK MANAGEMENT ---
+  CK.batchManager = {
+    getLinks() {
+      return JSON.parse(localStorage.getItem('ck_batch_links')) || {
+        'Beginner': 'https://meet.google.com/beg-inner-room',
+        'Intermediate': 'https://meet.google.com/int-strategy-abc',
+        'Advanced': 'https://meet.google.com/adv-endgames-xyz'
+      };
+    },
+    saveLink(batchLevel, link) {
+      const links = this.getLinks();
+      links[batchLevel] = link;
+      localStorage.setItem('ck_batch_links', JSON.stringify(links));
+      if (window.CK && CK.showToast) {
+        CK.showToast(`Updated Google Meet link for ${batchLevel} Batch!`, 'success');
+      }
+      if (window.CK && CK.coach && typeof CK.coach.renderSchedule === 'function') {
+        CK.coach.renderSchedule();
+      }
+    }
+  };
+
 })();

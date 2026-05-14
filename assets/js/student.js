@@ -62,6 +62,9 @@ CK.student = {
     // Re-render dynamic panels when navigated to
     if (panelId === 'achievements') this.renderAchievementsTab();
     if (panelId === 'progress') this.initCharts();
+    if (panelId === 'report') this.renderReportCard();
+    if (panelId === 'fees') this.renderFeesGateway();
+    if (panelId === 'reviews') this.renderCoachReviews();
     
     const titles = {
       home: 'My Dashboard',
@@ -536,7 +539,7 @@ CK.student = {
 
   joinClass() {
     CK.showToast("Opening secure class session with Coach...", "success");
-    document.getElementById('studentSessionTitle').innerText = `Connecting to '${this.userProfile.level || 'Intermediate'} Strategy' Meeting...`;
+    document.getElementById('studentSessionTitle').innerText = `Connecting to '${this.userProfile ? this.userProfile.level : 'Intermediate'} Strategy' Meeting...`;
     
     const joinBtn = document.getElementById('studentJoinBtn');
     joinBtn.innerText = "Connecting...";
@@ -546,8 +549,8 @@ CK.student = {
       CK.showToast("Successfully connected! Opening Google Meet class room.", "success");
       joinBtn.innerText = "Connected";
       
-      // Dynamically load class URL fallback
-      const meetUrl = "https://meet.google.com/abc-defg-hij";
+      const links = window.CK && CK.batchManager ? CK.batchManager.getLinks() : {};
+      const meetUrl = links[this.userProfile ? this.userProfile.level : 'Intermediate'] || "https://meet.google.com/abc-defg-hij";
       window.open(meetUrl, '_blank');
       
       setTimeout(() => {
@@ -555,6 +558,110 @@ CK.student = {
         joinBtn.disabled = false;
         document.getElementById('studentSessionTitle').innerText = "Class session is currently active!";
       }, 3000);
+    }, 1500);
+  },
+
+  renderReportCard() {
+    const p = this.userProfile || {};
+    const notes = window.CK && CK.tracker ? CK.tracker.getReviews(p.full_name || 'Emma Wilson') : [];
+    const latestFeedback = notes.length > 0 ? notes[0].text : "Outstanding tactical vision and calculation accuracy. Ready for next semester FIDE Masterclass.";
+
+    const elBody = document.querySelector('#student-panel-report .p-card-body');
+    if (elBody) {
+      elBody.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--p-blue); padding-bottom:20px; margin-bottom:25px;">
+          <div>
+            <h2 style="font-family:var(--font-display); color:#fff; margin:0 0 5px;">ChessKidoo Evaluation Report</h2>
+            <div style="color:var(--p-text-muted); font-size:0.9rem;">Student: ${p.full_name || 'Emma Wilson'} · Term: Q2 2026</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.2rem; font-weight:bold; color:var(--p-blue);">FIDE Standard Assessment</div>
+            <div style="color:var(--p-text-muted); font-size:0.9rem;">Coach: ${p.coach || 'Sarah Chess'}</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
+          <div style="background:var(--p-surface3); padding:20px; border-radius:10px;">
+            <h4 style="margin:0 0 15px; color:var(--p-gold);">Tactical Metrics</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Calculation Accuracy:</span><span style="font-weight:bold;">94%</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Puzzles Solved:</span><span style="font-weight:bold;">${p.puzzle || 45}</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Blunder Rate:</span><span style="font-weight:bold; color:var(--p-teal);">Low (3%)</span></div>
+          </div>
+          <div style="background:var(--p-surface3); padding:20px; border-radius:10px;">
+            <h4 style="margin:0 0 15px; color:var(--p-gold);">Overall Performance</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Attendance:</span><span style="font-weight:bold;">96%</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Current Rating:</span><span style="font-weight:bold;">${p.rating || 1120} ELO</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Batch Level:</span><span style="font-weight:bold; color:var(--p-gold);">${p.level || 'Intermediate'}</span></div>
+          </div>
+        </div>
+
+        <div style="background:var(--p-surface2); border-left:4px solid var(--p-blue); padding:20px; border-radius:8px;">
+          <h4 style="margin:0 0 10px; color:var(--p-text);">Coach Diagnostic Feedback</h4>
+          <p style="margin:0; color:var(--p-text-muted); line-height:1.6; font-style:italic;">"${latestFeedback}"</p>
+          <div style="margin-top:15px; text-align:right; font-weight:bold; color:var(--p-blue);">— Coach ${p.coach || 'Sarah Chess'}</div>
+        </div>
+      `;
+    }
+  },
+
+  renderFeesGateway() {
+    const p = this.userProfile || {};
+    const status = p.status || 'Pending';
+    const feeAmount = p.fee || 2200;
+
+    const elBody = document.querySelector('#student-panel-fees .p-card');
+    if (elBody) {
+      elBody.innerHTML = `
+        <div style="background:linear-gradient(135deg,rgba(232,184,75,0.1),rgba(0,0,0,0)); padding:30px; text-align:center;">
+          <div style="font-size:3.5rem; margin-bottom:15px;">💳</div>
+          <h3 style="font-family:var(--font-display); font-size:1.6rem; color:var(--p-gold); margin-bottom:10px;">Fee Payment Gateway</h3>
+          <p style="color:var(--p-text-muted); font-size:0.95rem; margin-bottom:25px;">Pay your upcoming academy batch fees securely via Razorpay / Stripe gateway integration.</p>
+          <div style="background:var(--p-surface3); padding:20px; border-radius:10px; text-align:left; margin-bottom:25px; border:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+              <span style="color:var(--p-text-muted);">Student Name:</span>
+              <span style="font-weight:bold; color:#fff;">${p.full_name || 'Emma Wilson'}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+              <span style="color:var(--p-text-muted);">Assigned Batch:</span>
+              <span style="font-weight:bold; color:#fff;">${p.batch || 'Advanced FIDE Masterclass'} (${p.level || 'Intermediate'})</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+              <span style="color:var(--p-text-muted);">Billing Period:</span>
+              <span style="font-weight:bold; color:#fff;">May 2026 - July 2026</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
+              <span style="color:var(--p-text-muted);">Status:</span>
+              <span style="font-weight:bold; color:${status === 'Paid' ? 'var(--p-teal)' : 'var(--p-warn)'};">${status}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; margin-top:10px; font-size:1.1rem;">
+              <span style="color:var(--p-text-muted);">Total Fee:</span>
+              <span style="font-weight:bold; color:var(--p-gold);">₹${feeAmount}</span>
+            </div>
+          </div>
+          ${status === 'Paid' ? `
+            <div style="padding:15px; background:rgba(0,201,167,0.1); border:1px solid var(--p-teal); color:var(--p-teal); border-radius:8px; font-weight:bold; margin-bottom:15px;">✅ Fee Paid Successfully for Current Term</div>
+            <button class="p-btn p-btn-ghost" style="width:100%; font-size:1.1rem; padding:12px;" onclick="alert('📥 Official Fee Receipt:\\n\\nTransaction ID: CK_TXN_984712093\\nStudent: ${p.full_name || 'Emma Wilson'}\\nAmount: ₹${feeAmount}\\nStatus: PAID SUCCESSFULLY\\nDate: ' + new Date().toLocaleDateString())">📥 Download Payment Receipt</button>
+          ` : `
+            <button class="p-btn p-btn-gold" style="width:100%; font-size:1.1rem; padding:12px;" onclick="CK.student.processPayment()">💳 Pay Securely via Razorpay</button>
+          `}
+        </div>
+      `;
+    }
+  },
+
+  async processPayment() {
+    CK.showToast('Initiating secure Razorpay checkout gateway...', 'success');
+    setTimeout(async () => {
+      alert('💳 Razorpay Checkout Integration:\\n\\nPayment Processed Successfully!\\nTransaction ID: CK_TXN_' + Math.floor(100000000 + Math.random() * 900000000) + '\\nAmount: ₹' + (this.userProfile ? this.userProfile.fee || 2200 : 2200) + '\\n\\nYour profile status has been marked as PAID in the Admin Ledger.');
+      if (this.userProfile) {
+        this.userProfile.status = 'Paid';
+        this.userProfile.due_date = '14-Jun-2026';
+        await CK.db.saveProfile(this.userProfile);
+      }
+      this.renderFeesGateway();
+      if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
+        CK.admin.loadStudents();
+      }
     }, 1500);
   },
 

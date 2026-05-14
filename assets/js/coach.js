@@ -65,6 +65,27 @@ CK.coach = {
     
     document.getElementById('coachTopBtn').style.display = (panelId === 'notes') ? 'block' : 'none';
     if(panelId === 'resources') this.renderResources();
+    if(panelId === 'schedule') this.renderSchedule();
+  },
+
+  renderSchedule() {
+    const links = window.CK && CK.batchManager ? CK.batchManager.getLinks() : {};
+    const tbody = document.querySelector('#coach-panel-schedule tbody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr><td>Monday</td><td>4:00 PM - 5:00 PM</td><td>Intermediate Strategy</td><td><span class="p-badge p-badge-blue">Intermediate</span></td><td><div style="font-family:monospace; margin-bottom:4px; color:var(--p-teal);">${links['Intermediate'] || 'https://meet.google.com/int-strategy-abc'}</div><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.coach.editBatchLink('Intermediate')">✏️ Edit Room Link</button></td></tr>
+        <tr><td>Tuesday</td><td>5:00 PM - 6:00 PM</td><td>Advanced Endgames</td><td><span class="p-badge p-badge-gold">Advanced</span></td><td><div style="font-family:monospace; margin-bottom:4px; color:var(--p-gold);">${links['Advanced'] || 'https://meet.google.com/adv-endgames-xyz'}</div><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.coach.editBatchLink('Advanced')">✏️ Edit Room Link</button></td></tr>
+        <tr><td>Friday</td><td>6:30 PM - 8:00 PM</td><td>Beginner Fundamentals</td><td><span class="p-badge p-badge-green">Beginner</span></td><td><div style="font-family:monospace; margin-bottom:4px; color:var(--p-green);">${links['Beginner'] || 'https://meet.google.com/beg-inner-room'}</div><button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.coach.editBatchLink('Beginner')">✏️ Edit Room Link</button></td></tr>
+      `;
+    }
+  },
+
+  editBatchLink(batchLevel) {
+    const links = window.CK && CK.batchManager ? CK.batchManager.getLinks() : {};
+    const newLink = prompt(`Enter Google Meet Class Room URL for ${batchLevel} Batch:`, links[batchLevel] || '');
+    if (newLink && window.CK && CK.batchManager) {
+      CK.batchManager.saveLink(batchLevel, newLink);
+    }
   },
 
   async updateProfile() {
