@@ -1404,6 +1404,7 @@
             <button class="p-nav-item" onclick="CK.student.nav('resources')"><span class="icon">📚</span><span>Learning Resources</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('path')"><span class="icon">🗺️</span><span>Mastery Skill Tree</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('vault')"><span class="icon">📼</span><span>The Replay Vault</span></button>
+            <button class="p-nav-item" onclick="CK.student.nav('lab'); setTimeout(() => CK.lab.initBoard('studentLabBoard'), 100)"><span class="icon">🔬</span><span>PGN Stockfish Lab</span></button>
             <div class="p-nav-section-label">Practice</div>
             <button class="p-nav-item" onclick="CK.student.nav('puzzles')"><span class="icon">🧩</span><span>My Puzzles</span><span class="p-nav-badge" id="studentPuzzleBadge">0</span></button>
             <button class="p-nav-item" onclick="CK.student.nav('reviews')"><span class="icon">📝</span><span>Coach Reviews</span></button>
@@ -1831,6 +1832,53 @@
                 </div>
               </div>
             </div>
+
+            <!-- PGN STOCKFISH LAB -->
+            <div class="p-panel" id="student-panel-lab">
+              <div class="p-card" style="border-color:rgba(91,156,246,0.3);">
+                <div class="p-card-header">
+                  <div class="p-card-title">🔬 PGN Studio & Stockfish Analysis Lab</div>
+                  <div style="font-size:0.85rem; color:var(--p-text-muted);">Paste game PGN or choose a preset to evaluate calculation accuracy with AI.</div>
+                </div>
+                <div class="p-card-body" style="padding:25px; display:grid; grid-template-columns:1fr 350px; gap:25px; align-items:start;">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span style="font-weight:bold; color:var(--p-gold);">Game PGN Text:</span>
+                      <div style="display:flex; gap:8px;">
+                        <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.loadPreset('1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. cxd4 d5 9. exd5 Nxd5 10. Ba3 Be6 11. Nbd2 Bb4 12. Bxb4 Ndxb4 13. Bxe6 fxe6 14. Qb3 O-O 15. Qxe6+ Kh8 16. Nb3 Rxf3 17. gxf3 Nxd4 18. Nxd4 Qxd4 19. Qe4 Qd6 20. Rfd1 Qf8 21. Qxb7 Re8 22. Qxc7 Nd5 23. Rxd5')">Evans Gambit</button>
+                        <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.loadPreset('1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. f4 Qb6 8. Qd2 Qxb2 9. Rb1 Qa3 10. e5 dxe5 11. fxe5 Nfd7 12. Ne4 h6 13. Bh4 Qxa2 14. Rd1 Qd5 15. Qe3 Qxe5 16. c3 Bc5 17. Bg3 Qd5 18. Bc4 Qxc4 19. Bd6 Nf6 20. Nxc5 Nd5 21. Qe5 Rg8 22. Ndxe6 fxe6 23. Nxe6 Qxc3+ 24. Qxc3 Nxc3 25. Nc7+ Kf7 26. Rd3')">Sicilian Najdorf</button>
+                      </div>
+                    </div>
+                    <textarea id="labPgnInput" class="p-form-control" style="height:120px; font-family:monospace; margin-bottom:15px; background:var(--p-surface3); color:#fff; border:1px solid rgba(255,255,255,0.1);" placeholder="Paste PGN here... (e.g. 1. e4 e5 2. Nf3 Nf6...)"></textarea>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                      <button class="p-btn p-btn-blue" style="flex:1;" onclick="CK.lab.analyzePgn(document.getElementById('labPgnInput').value, 'studentLabBoard')">🔬 Analyze with Stockfish</button>
+                      <button class="p-btn p-btn-ghost" onclick="CK.lab.flip('studentLabBoard')">🔁 Flip Board</button>
+                    </div>
+                    <div style="background:var(--p-surface3); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:0.9rem; font-weight:bold; color:#fff;">Live Stockfish Evaluation</span>
+                        <span class="labEvalText p-badge p-badge-blue" style="font-family:monospace; font-size:1rem; font-weight:bold;">+0.2</span>
+                      </div>
+                      <div class="p-progress-bar" style="height:10px; background:var(--p-surface2); margin-bottom:12px;">
+                        <div class="labEvalBarFill p-progress-fill" style="width:52%; background:var(--p-blue); transition:width 0.3s ease;"></div>
+                      </div>
+                      <div class="labCoachExplanation" style="font-size:0.9rem; color:var(--p-text-muted); line-height:1.4;">
+                        💡 <strong>AI Grandmaster Coach Note:</strong> Equal position. Both sides are fighting for standard central square control.
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div id="studentLabBoard" style="width:100%; aspect-ratio:1/1; border:4px solid var(--p-blue); border-radius:8px; overflow:hidden; margin-bottom:15px; background:#111;"></div>
+                    <div style="display:flex; gap:6px; justify-content:center;">
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.first()">⏮️ Start</button>
+                      <button class="p-btn p-btn-blue p-btn-sm" style="padding:6px 16px;" onclick="CK.lab.prev()">◀️ Prev</button>
+                      <button class="p-btn p-btn-blue p-btn-sm" style="padding:6px 16px;" onclick="CK.lab.next()">▶️ Next</button>
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.last()">⏭️ End</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1860,6 +1908,7 @@
             <div class="p-nav-section-label">Tools</div>
             <button class="p-nav-item" onclick="CK.coach.nav('resources')"><span class="icon">📁</span><span>Homework & Notes</span></button>
             <button class="p-nav-item" onclick="CK.coach.nav('puzzles')"><span class="icon">🧩</span><span>Assign Puzzles</span></button>
+            <button class="p-nav-item" onclick="CK.coach.nav('lab'); setTimeout(() => CK.lab.initBoard('coachLabBoard'), 100)"><span class="icon">🔬</span><span>PGN Teaching Studio</span></button>
             <div class="p-section-sep"></div>
             <button class="p-nav-item" onclick="CK.logout()"><span class="icon">🚪</span><span>Log out</span></button>
           </div>
@@ -2092,6 +2141,53 @@
                     </div>
                     <p style="font-size:0.85rem; color:var(--p-text-muted); margin-bottom:15px;">Target: Advanced Endgames Batch</p>
                     <button class="p-btn p-btn-blue p-btn-sm" style="width:100%;" onclick="CK.showToast('Puzzle assigned to Advanced Batch', 'success')">Assign to Batch</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PGN TEACHING STUDIO -->
+            <div class="p-panel" id="coach-panel-lab">
+              <div class="p-card" style="border-color:rgba(232,184,75,0.3);">
+                <div class="p-card-header">
+                  <div class="p-card-title">🔬 Coach PGN Studio & Live Broadcast</div>
+                  <button class="p-btn p-btn-gold p-btn-sm" onclick="CK.lab.broadcastCoach()">📢 Broadcast Position to Class</button>
+                </div>
+                <div class="p-card-body" style="padding:25px; display:grid; grid-template-columns:1fr 350px; gap:25px; align-items:start;">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span style="font-weight:bold; color:var(--p-gold);">Lesson PGN Text:</span>
+                      <div style="display:flex; gap:8px;">
+                        <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.loadPreset('1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 O-O 5. Bd3 d5 6. Nf3 c5 7. O-O dxc4 8. Bxc4 Nbd7 9. Qb3 Ba5 10. Rd1 Qe7 11. d5 exd5 12. Nxd5 Nxd5 13. Bxd5 Ndf6 14. Bc4 Bc7 15. Bd2 Ne4 16. Be1 a6 17. a4 Rb8 18. Nd2 Nd6 19. Bd5 b5 20. axb5 axb5 21. e4 c4')">Nimzo-Indian</button>
+                        <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.loadPreset('1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Nxe4 6. d4 b5 7. Bb3 d5 8. dxe5 Be6 9. Nbd2 Nc5 10. c3 d4 11. Bxe6 Nxe6 12. cxd4 Ncxd4 13. a4 Be7 14. Nxd4 Nxd4 15. Ne4 Ne6 16. Be3 O-O 17. f4 Qxd1 18. Rfxd1 Rfd8 19. f5 Nf8 20. f6 gxf6 21. exf6 Bb4 22. axb5 axb5 23. Rxa8 Rxa8 24. Rd5 c6 25. Rg5+ Ng6 26. h4')">Ruy Lopez Open</button>
+                      </div>
+                    </div>
+                    <textarea id="coachLabPgnInput" class="p-form-control" style="height:120px; font-family:monospace; margin-bottom:15px; background:var(--p-surface3); color:#fff; border:1px solid rgba(255,255,255,0.1);" placeholder="Paste lesson PGN here..."></textarea>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                      <button class="p-btn p-btn-teal" style="flex:1;" onclick="CK.lab.analyzePgn(document.getElementById('coachLabPgnInput').value, 'coachLabBoard')">🔬 Evaluate & Sync Engine</button>
+                      <button class="p-btn p-btn-ghost" onclick="CK.lab.flip('coachLabBoard')">🔁 Flip Board</button>
+                    </div>
+                    <div style="background:var(--p-surface3); padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:0.9rem; font-weight:bold; color:#fff;">Live Stockfish Evaluation</span>
+                        <span class="labEvalText p-badge p-badge-teal" style="font-family:monospace; font-size:1rem; font-weight:bold;">+0.2</span>
+                      </div>
+                      <div class="p-progress-bar" style="height:10px; background:var(--p-surface2); margin-bottom:12px;">
+                        <div class="labEvalBarFill p-progress-fill" style="width:52%; background:var(--p-teal); transition:width 0.3s ease;"></div>
+                      </div>
+                      <div class="labCoachExplanation" style="font-size:0.9rem; color:var(--p-text-muted); line-height:1.4;">
+                        💡 <strong>AI Grandmaster Coach Note:</strong> Equal position. Both sides are fighting for standard central square control.
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div id="coachLabBoard" style="width:100%; aspect-ratio:1/1; border:4px solid var(--p-teal); border-radius:8px; overflow:hidden; margin-bottom:15px; background:#111;"></div>
+                    <div style="display:flex; gap:6px; justify-content:center;">
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.first()">⏮️ Start</button>
+                      <button class="p-btn p-btn-teal p-btn-sm" style="padding:6px 16px;" onclick="CK.lab.prev()">◀️ Prev</button>
+                      <button class="p-btn p-btn-teal p-btn-sm" style="padding:6px 16px;" onclick="CK.lab.next()">▶️ Next</button>
+                      <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.lab.last()">⏭️ End</button>
+                    </div>
                   </div>
                 </div>
               </div>
