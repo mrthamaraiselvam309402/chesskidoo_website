@@ -82,17 +82,32 @@ CK.student = {
     const initial = p.full_name ? p.full_name.charAt(0).toUpperCase() : '♛';
     
     // Sidebar details
-    document.getElementById('studentSidebarName').innerText = p.full_name || 'Chess Student';
-    document.getElementById('studentSidebarSub').innerText = `${p.level || 'Beginner'} · ELO ${p.rating}`;
-    document.getElementById('studentSidebarAvatar').innerText = initial;
+    const sbName = document.getElementById('studentSidebarName');
+    const sbSub = document.getElementById('studentSidebarSub');
+    const sbAvatar = document.getElementById('studentSidebarAvatar');
+    if (sbName) sbName.innerText = p.full_name || 'Chess Student';
+    if (sbSub) sbSub.innerText = `${p.level || 'Beginner'} · ELO ${p.rating || 800}`;
+    if (sbAvatar) sbAvatar.innerText = initial;
     
-    // Main profile banner ELO details
-    document.getElementById('studentRatingNum').innerText = p.rating;
-    document.getElementById('studentRatingLabel').innerText = `Level: ${p.level || 'Beginner'}`;
+    // Main profile banner / FIDE level card details
+    const ratNum = document.getElementById('studentRatingNum');
+    const ratLbl = document.getElementById('studentRatingLabel');
+    const curRat = document.getElementById('studentCurrentRating');
+    const curLvl = document.getElementById('studentCurrentLevel');
+    
+    if (ratNum) ratNum.innerText = p.rating || 800;
+    if (ratLbl) ratLbl.innerText = `Level: ${p.level || 'Beginner'}`;
+    if (curRat) curRat.innerText = `${p.rating || 800} ELO`;
+    if (curLvl) curLvl.innerText = p.level || 'Beginner';
     
     // Stats counters
-    document.getElementById('studentStatLessons').innerText = p.game || '0';
-    document.getElementById('studentStatPuzzles').innerText = p.puzzle || '0';
+    const stLess = document.getElementById('studentStatLessons');
+    const stPuz = document.getElementById('studentStatPuzzles');
+    const stStar = document.getElementById('studentStatStars');
+    
+    if (stLess) stLess.innerText = p.game || '12';
+    if (stPuz) stPuz.innerText = p.puzzle || '45';
+    if (stStar) stStar.innerText = p.star || '8';
     
     // Calculate attendance percentage dynamically
     this.updateAttendanceStats();
@@ -104,8 +119,10 @@ CK.student = {
     const totalCount = logs.length;
     const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 100;
     
-    document.getElementById('studentStatAttend').innerText = percentage + '%';
-    document.getElementById('attendanceSummaryText').innerText = `Present: ${presentCount} of ${totalCount} recorded sessions (${percentage}%)`;
+    const elAtt = document.getElementById('studentStatAttend');
+    const elSum = document.getElementById('attendanceSummaryText');
+    if (elAtt) elAtt.innerText = percentage + '%';
+    if (elSum) elSum.innerText = `Present: ${presentCount} of ${totalCount} recorded sessions (${percentage}%)`;
   },
 
   renderDashboard() {
