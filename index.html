@@ -3868,6 +3868,58 @@
   </div>
 
 
+  <!-- Live Tracking Feed Modal -->
+  <div class="p-modal-overlay" id="adminLiveFeedModal">
+    <div class="p-modal" style="max-width: 780px;">
+      <div class="p-modal-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="p-modal-title" id="liveFeedModalTitle">Live Board Tracking</div>
+          <span class="p-live-indicator"><span class="p-live-dot"></span>LIVE FEED</span>
+        </div>
+        <button class="p-modal-close" onclick="CK.closeModal('adminLiveFeedModal')">✕</button>
+      </div>
+      <div class="p-modal-body" style="display:flex; flex-direction:column; gap:20px; padding:24px;">
+        <div style="display:grid; grid-template-columns: 1fr 280px; gap:24px; align-items:start;" class="p-charts-row">
+          <div style="background:var(--p-surface3); border:1px solid var(--p-border); border-radius:12px; padding:20px; text-align:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-weight:700; color:var(--p-text);">
+              <span>Black (Stockfish AI)</span>
+              <span style="background:rgba(239,83,80,0.2); color:var(--p-danger); padding:2px 8px; border-radius:6px; font-size:0.75rem;">15:00</span>
+            </div>
+            <div id="liveTrackingChessboard" style="width:min(100%, 360px); height:min(100%, 360px); margin:0 auto; aspect-ratio:1; background:#E8B84B; border:6px solid #181C22; border-radius:8px; display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+              <!-- Chessboard grid auto-rendered -->
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-weight:700; color:var(--p-gold);">
+              <span id="liveFeedStudentName">Student</span>
+              <span style="background:rgba(34,209,160,0.2); color:var(--p-online); padding:2px 8px; border-radius:6px; font-size:0.75rem;">14:42</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="background:var(--p-surface3); border:1px solid var(--p-border); border-radius:12px; padding:16px;">
+              <div style="font-weight:700; font-size:0.85rem; color:var(--p-text-muted); text-transform:uppercase; margin-bottom:10px; letter-spacing:1px;">Evaluation Bar</div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="flex:1; height:8px; background:#111418; border-radius:4px; overflow:hidden; position:relative;">
+                  <div style="width:68%; height:100%; background:var(--p-online); border-radius:4px;"></div>
+                </div>
+                <span style="font-weight:800; color:var(--p-online); font-size:0.9rem;">+1.4</span>
+              </div>
+            </div>
+            <div style="background:var(--p-surface3); border:1px solid var(--p-border); border-radius:12px; padding:16px; flex:1;">
+              <div style="font-weight:700; font-size:0.85rem; color:var(--p-text-muted); text-transform:uppercase; margin-bottom:10px; letter-spacing:1px;">Live Move Log</div>
+              <div id="liveMoveLogBox" style="font-family:'Courier New', monospace; font-size:0.85rem; color:var(--p-text); line-height:1.8; max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;">
+                <div>1. e4 c5 (Sicilian Defense)</div>
+                <div>2. Nf3 d6</div>
+                <div>3. d4 cxd4</div>
+                <div>4. Nxd4 Nf6</div>
+                <div style="color:var(--p-gold); font-weight:700;">5. Nc3 a6 (Najdorf Variation)</div>
+              </div>
+            </div>
+            <button class="p-btn p-btn-gold" style="width:100%; justify-content:center;" onclick="CK.admin.broadcastLiveTip()"><span class="icon">💡</span>Send Live Coach Tip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Student Modal -->
   <div class="p-modal-overlay" id="adminStudentModal">
     <div class="p-modal" style="max-width: 650px;">

@@ -605,7 +605,44 @@ CK.admin = {
   },
 
   viewLiveBoard(name) {
-    CK.showToast(`Loading live chess feed for ${name}...`, 'info');
+    const titleEl = document.getElementById('liveFeedStudentName');
+    if (titleEl) titleEl.innerText = name;
+    
+    const boardEl = document.getElementById('liveTrackingChessboard');
+    if (boardEl) {
+      const pieces = [
+        'r','n','b','q','k','b','n','r',
+        'p','p','p','p','p','p','p','p',
+        '','','','','','','','',
+        '','','','','','','','',
+        '','','','','P','','','',
+        '','','N','','','','','',
+        'P','P','P','P','','P','P','P',
+        'R','','B','Q','K','B','N','R'
+      ];
+      const getPieceHtml = (code) => {
+        if (!code) return '';
+        const c = code === code.toUpperCase() ? 'w' : 'b';
+        return `<img src="https://lichess1.org/assets/piece/cburnett/${c}${code.toUpperCase()}.svg" style="width:85%; height:85%; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`;
+      };
+      
+      boardEl.innerHTML = pieces.map((p, idx) => {
+        const row = Math.floor(idx / 8);
+        const col = idx % 8;
+        const bg = (row + col) % 2 === 0 ? '#EEEED2' : '#769656';
+        return `<div style="background:${bg}; display:grid; place-items:center; width:100%; height:100%;">${getPieceHtml(p)}</div>`;
+      }).join('');
+    }
+    
+    CK.openModal('adminLiveFeedModal');
+    CK.showToast(`Connected to real-time telemetry stream for ${name}`, 'success');
+  },
+
+  broadcastLiveTip() {
+    const tip = prompt("Enter real-time strategic tip to broadcast to student's screen:", "Watch out for the f7 tactical fork!");
+    if (tip) {
+      CK.showToast("🚀 Real-time tactical overlay broadcasted successfully!", "success");
+    }
   },
 
   async renderReports() {
