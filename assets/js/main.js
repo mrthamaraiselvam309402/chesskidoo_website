@@ -65,7 +65,17 @@
     // Route to more games page
     if (section === 'more-games') {
       CK.showPage('more-games-page');
-      setTimeout(() => CK.initGameParticles(), 100);
+      setTimeout(() => {
+        CK.initGameParticles();
+        if (CK.arcade && CK.arcade.renderScoreBadges) CK.arcade.renderScoreBadges();
+        // populate per-card best scores
+        const gameMap = { puzzle: 'puzzle', gm: 'gm', memory: 'memory', timing: 'timing', opening: 'opening', queenquest: 'queenquest', quiz: 'quiz' };
+        const scores = JSON.parse(localStorage.getItem('ck_game_scores') || '{}');
+        Object.entries(gameMap).forEach(([key, id]) => {
+          const el = document.getElementById(`score-display-${key}`);
+          if (el) el.textContent = scores[id] || '—';
+        });
+      }, 100);
       return;
     }
 
@@ -677,6 +687,50 @@ ta: {
   CK.currentLanguage = localStorage.getItem('ck_language') || 'en';
   CK.applyTranslations();
 
+  // Batch Manager — stores editable Google Meet links per level
+  CK.batchManager = {
+    _key: 'ck_batch_links',
+    getLinks() {
+      return JSON.parse(localStorage.getItem(this._key) || '{}');
+    },
+    saveLink(level, url) {
+      const links = this.getLinks();
+      links[level] = url;
+      localStorage.setItem(this._key, JSON.stringify(links));
+      CK.showToast(`Class room link for ${level} updated!`, 'success');
+    }
+  };
+
+  // Vault Board — renders a simple chess board in the coach session triple-pane
+  CK.renderVaultBoard = () => {
+    const container = document.getElementById('coachVaultBoard');
+    if (!container) return;
+    if (container.dataset.init) return;
+    container.dataset.init = '1';
+
+    const startPos = [
+      ['♜','♞','♝','♛','♚','♝','♞','♜'],
+      ['♟','♟','♟','♟','♟','♟','♟','♟'],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['♙','♙','♙','♙','♙','♙','♙','♙'],
+      ['♖','♘','♗','♕','♔','♗','♘','♖']
+    ];
+
+    let html = '<div style="display:inline-grid;grid-template-columns:repeat(8,44px);grid-template-rows:repeat(8,44px);border:2px solid var(--p-gold-dim);border-radius:4px;overflow:hidden;">';
+    startPos.forEach((row, r) => {
+      row.forEach((piece, c) => {
+        const light = (r + c) % 2 === 0;
+        const bg = light ? '#f0d9b5' : '#b58863';
+        html += `<div style="width:44px;height:44px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;user-select:none;" title="${String.fromCharCode(97+c)}${8-r}">${piece}</div>`;
+      });
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  };
+
   // Run on page load
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     initLevelCards3D();
@@ -684,18 +738,19 @@ ta: {
     document.addEventListener('DOMContentLoaded', initLevelCards3D);
   }
 
-  // Unified PGN & Stockfish Analysis Lab
+  // Unified PGN & Stockfish Analysis Lab — v2.0
   CK.lab = {
     board: null,
     game: null,
     history: [],
     currentMove: 0,
     orientation: 'white',
+    annotations: {},
+    _activeBoardId: 'studentLabBoard',
 
     initBoard(containerId) {
-      if (this.board) {
-        this.board.destroy();
-      }
+      this._activeBoardId = containerId;
+      if (this.board) { this.board.destroy(); this.board = null; }
       this.game = new Chess();
       this.board = Chessboard(containerId, {
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
@@ -704,119 +759,220 @@ ta: {
       });
       this.history = [];
       this.currentMove = 0;
+      this.annotations = {};
+      this.renderMoveList();
       this.updateAnalysis();
     },
 
-    loadPreset(pgnText) {
-      const pgnInput = document.getElementById('labPgnInput') || document.getElementById('coachLabPgnInput');
-      if (pgnInput) {
-        pgnInput.value = pgnText.trim();
-        this.analyzePgn(pgnInput.value, pgnInput.id.startsWith('coach') ? 'coachLabBoard' : 'studentLabBoard');
-      }
+    loadPreset(pgnText, boardId) {
+      const isCoach = (boardId || this._activeBoardId || '').startsWith('coach');
+      const inputId = isCoach ? 'coachLabPgnInput' : 'labPgnInput';
+      const targetBoard = boardId || (isCoach ? 'coachLabBoard' : 'studentLabBoard');
+      const pgnInput = document.getElementById(inputId);
+      if (pgnInput) pgnInput.value = pgnText.trim();
+      this.analyzePgn(pgnText.trim(), targetBoard);
     },
 
     analyzePgn(pgnText, boardId) {
+      this._activeBoardId = boardId;
       if (!this.game) this.game = new Chess();
       const success = this.game.load_pgn(pgnText);
       if (!success) {
-        CK.showToast("Invalid PGN format. Loading starting position instead.", "warning");
+        CK.showToast('Invalid PGN format — check the notation and try again.', 'warning');
         this.game.reset();
       } else {
-        CK.showToast("PGN loaded successfully! Initializing Stockfish evaluation...", "success");
+        CK.showToast('PGN loaded! Stockfish engine is analyzing…', 'success');
       }
-
       this.history = this.game.history({ verbose: true });
       this.currentMove = this.history.length;
-      
-      if (this.board) this.board.destroy();
+      this.annotations = {};
+      this._autoAnnotate();
+
+      if (this.board) { this.board.destroy(); this.board = null; }
       this.board = Chessboard(boardId, {
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         position: this.game.fen(),
         orientation: this.orientation
       });
-
+      this.renderMoveList();
       this.updateAnalysis(this.game.fen(), this.history[this.history.length - 1]);
     },
 
-    flip(boardId) {
-      this.orientation = (this.orientation === 'white') ? 'black' : 'white';
+    _autoAnnotate() {
+      const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+      this.history.forEach((mv, i) => {
+        const san = mv.san;
+        if (san.includes('#')) { this.annotations[i] = '!!'; }
+        else if (mv.captured) {
+          const gain = (VAL[mv.captured] || 0) - (VAL[mv.piece] || 0);
+          if (gain >= 2) this.annotations[i] = '!!';
+          else if (gain >= 1) this.annotations[i] = '!';
+          else if (gain <= -2) this.annotations[i] = '??';
+          else if (gain <= -1) this.annotations[i] = '?';
+        } else if (san.includes('+') && !san.includes('x')) {
+          this.annotations[i] = '!';
+        } else if (mv.flags && mv.flags.includes('e')) {
+          this.annotations[i] = '!';
+        }
+      });
+    },
+
+    renderMoveList() {
+      const isCoach = this._activeBoardId && this._activeBoardId.startsWith('coach');
+      const containerId = isCoach ? 'coachLabMoveList' : 'studentLabMoveList';
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (!this.history.length) {
+        container.innerHTML = '<div class="lab-ml-empty">Load a PGN to see the move list</div>';
+        this._updateMoveCounter();
+        return;
+      }
+
+      let html = '';
+      for (let i = 0; i < this.history.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const wMv = this.history[i];
+        const bMv = this.history[i + 1];
+        const wAnnot = this.annotations[i] ? `<span class="lab-annot">${this.annotations[i]}</span>` : '';
+        const bAnnot = bMv && this.annotations[i + 1] ? `<span class="lab-annot">${this.annotations[i + 1]}</span>` : '';
+        const wActive = this.currentMove === i + 1 ? ' active' : '';
+        const bActive = bMv && this.currentMove === i + 2 ? ' active' : '';
+
+        html += `<div class="lab-move-row">
+          <span class="lab-move-num">${moveNum}.</span>
+          <span class="lab-move-san${wActive}" onclick="CK.lab.goToMove(${i + 1})">${wMv.san}${wAnnot}</span>
+          ${bMv
+            ? `<span class="lab-move-san${bActive}" onclick="CK.lab.goToMove(${i + 2})">${bMv.san}${bAnnot}</span>`
+            : '<span class="lab-move-san"></span>'}
+        </div>`;
+      }
+      container.innerHTML = html;
+
+      const activeEl = container.querySelector('.lab-move-san.active');
+      if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      this._updateMoveCounter();
+    },
+
+    _updateMoveCounter() {
+      document.querySelectorAll('.labMoveCounter').forEach(el => {
+        el.textContent = this.history.length
+          ? `Move ${this.currentMove} / ${this.history.length}`
+          : 'No game loaded';
+      });
+    },
+
+    goToMove(idx) {
+      this.currentMove = Math.max(0, Math.min(idx, this.history.length));
+      this._applyAndRefresh();
+    },
+
+    flip() {
+      this.orientation = this.orientation === 'white' ? 'black' : 'white';
       if (this.board) this.board.orientation(this.orientation);
     },
 
-    first() {
-      this.currentMove = 0;
-      this.applyMoveFen();
-    },
-    prev() {
-      if (this.currentMove > 0) {
-        this.currentMove--;
-        this.applyMoveFen();
-      }
-    },
-    next() {
-      if (this.currentMove < this.history.length) {
-        this.currentMove++;
-        this.applyMoveFen();
-      }
-    },
-    last() {
-      this.currentMove = this.history.length;
-      this.applyMoveFen();
+    first() { this.currentMove = 0; this._applyAndRefresh(); },
+    prev()  { if (this.currentMove > 0) { this.currentMove--; this._applyAndRefresh(); } },
+    next()  { if (this.currentMove < this.history.length) { this.currentMove++; this._applyAndRefresh(); } },
+    last()  { this.currentMove = this.history.length; this._applyAndRefresh(); },
+
+    _applyAndRefresh() {
+      const g = new Chess();
+      for (let i = 0; i < this.currentMove; i++) g.move(this.history[i]);
+      if (this.board) this.board.position(g.fen(), false);
+      this.renderMoveList();
+      this.updateAnalysis(g.fen(), this.history[this.currentMove - 1]);
     },
 
-    applyMoveFen() {
-      const tempGame = new Chess();
-      for (let i = 0; i < this.currentMove; i++) {
-        tempGame.move(this.history[i]);
-      }
-      if (this.board) this.board.position(tempGame.fen());
-      this.updateAnalysis(tempGame.fen(), this.history[this.currentMove - 1]);
-    },
+    updateAnalysis(fen, lastMoveObj) {
+      let score, barPct, explanation;
 
-    updateAnalysis(fen = 'start', lastMoveObj = null) {
-      let score = "+0.2";
-      let explanation = "Equal position. Both sides are fighting for standard central square control.";
-      let barWidth = "52%";
-
-      if (this.currentMove === 0) {
-        score = "+0.3";
-        explanation = "Starting position. White has the slight first-move initiative. Recommended opening: 1. e4 (King's Pawn) or 1. d4 (Queen's Pawn).";
-        barWidth = "53%";
+      if (!this.history.length || this.currentMove === 0) {
+        score = '+0.3'; barPct = 53;
+        explanation = 'Starting position. White holds the slight first-move initiative. Classical options: <b>1. e4</b> (Open Game), <b>1. d4</b> (Queen\'s Pawn), <b>1. Nf3</b> (Réti), <b>1. c4</b> (English). Fight for the center from move one.';
       } else if (lastMoveObj) {
-        const move = lastMoveObj.san;
-        if (move.includes('#')) {
-          score = lastMoveObj.color === 'w' ? "M1" : "-M1";
-          barWidth = lastMoveObj.color === 'w' ? "100%" : "0%";
-          explanation = `Checkmate! ${lastMoveObj.color === 'w' ? 'White' : 'Black'} delivers the decisive winning blow. Excellent tactical geometry.`;
-        } else if (move.includes('+')) {
-          score = lastMoveObj.color === 'w' ? "+2.8" : "-2.8";
-          barWidth = lastMoveObj.color === 'w' ? "75%" : "25%";
-          explanation = `Check! ${lastMoveObj.color === 'w' ? 'White' : 'Black'} forces the opponent's king to react. Gaining key tempo in the attack.`;
-        } else if (move.includes('x')) {
-          score = lastMoveObj.color === 'w' ? "+1.5" : "-1.5";
-          barWidth = lastMoveObj.color === 'w' ? "65%" : "35%";
-          explanation = `Material exchange: ${move}. ${lastMoveObj.color === 'w' ? 'White' : 'Black'} captures a piece to alter the pawn structure and open attacking lines.`;
+        const san = lastMoveObj.san;
+        const isW = lastMoveObj.color === 'w';
+        const side = isW ? 'White' : 'Black';
+
+        if (san.includes('#')) {
+          score = isW ? 'M0' : '-M0'; barPct = isW ? 100 : 0;
+          explanation = `<b>Checkmate!</b> ${side} delivers the final decisive blow with <b>${san}</b>. The king has no legal escape — a perfect tactical finish. Game over.`;
+        } else if (san.startsWith('O-O-O')) {
+          score = isW ? '+0.5' : '-0.5'; barPct = isW ? 55 : 45;
+          explanation = `<b>Queenside castling!</b> ${side} connects the rooks and shelters the king behind the queenside pawns. Prepares a central or kingside pawn storm while activating the a-file rook.`;
+        } else if (san.startsWith('O-O')) {
+          score = isW ? '+0.4' : '-0.4'; barPct = isW ? 54 : 46;
+          explanation = `<b>Kingside castling!</b> ${side} tucks the king to safety and activates the h-file rook. A critical milestone — now focus on piece coordination and opening the center.`;
+        } else if (san.includes('x') && san.includes('+')) {
+          score = isW ? '+3.2' : '-3.2'; barPct = isW ? 78 : 22;
+          explanation = `<b>Capture with check: ${san}!</b> ${side} wins material AND forces the king to react — a devastating combination of tempo and material gain. The opponent's position crumbles under dual pressure.`;
+        } else if (san.includes('+')) {
+          score = isW ? '+1.8' : '-1.8'; barPct = isW ? 66 : 34;
+          explanation = `<b>Check: ${san}.</b> The king is forced to respond, burning a critical tempo. ${side} maintains the initiative and keeps the pressure on. Watch for follow-up forcing sequences.`;
+        } else if (san.includes('=')) {
+          score = isW ? '+2.5' : '-2.5'; barPct = isW ? 72 : 28;
+          const promoteTo = san.slice(-1);
+          const pieceNames = { Q: 'Queen', R: 'Rook', B: 'Bishop', N: 'Knight' };
+          explanation = `<b>Pawn promotion!</b> ${side} promotes to a <b>${pieceNames[promoteTo] || promoteTo}</b> — a monumental game-changing moment. The passed pawn finally reaches its destination and transforms into a powerful piece.`;
+        } else if (san.startsWith('R') && san.includes('x')) {
+          score = isW ? '+1.4' : '-1.4'; barPct = isW ? 63 : 37;
+          explanation = `<b>Rook captures: ${san}.</b> ${side} eliminates a key defender or winning material with the rook. Rooks thrive on open files and the 7th rank — this exchange may open critical lines for future pressure.`;
+        } else if (san.startsWith('Q') && san.includes('x')) {
+          score = isW ? '+2.0' : '-2.0'; barPct = isW ? 68 : 32;
+          explanation = `<b>Queen captures: ${san}.</b> ${side} snaps off material with the queen. A powerful forcing move — but be mindful of exposing the queen to counterattack after the exchange.`;
+        } else if (san.includes('x')) {
+          const p = san[0];
+          const names = { N: 'Knight', B: 'Bishop', R: 'Rook', Q: 'Queen', K: 'King' };
+          const pname = names[p] || 'Pawn';
+          score = isW ? '+1.2' : '-1.2'; barPct = isW ? 62 : 38;
+          explanation = `<b>${pname} captures: ${san}.</b> ${side} wins material or opens attacking lines. Evaluate the resulting pawn structure — captures often define the strategic landscape for the next 10-15 moves.`;
+        } else if (san.startsWith('N')) {
+          score = isW ? '+0.6' : '-0.5'; barPct = isW ? 56 : 46;
+          explanation = `<b>Knight maneuver: ${san}.</b> Knights shine in closed positions and on strong outpost squares. ${side} improves piece activity, potentially eyeing a fork or central outpost. Remember: knights need at least 2 moves to switch flanks.`;
+        } else if (san.startsWith('B')) {
+          score = isW ? '+0.5' : '-0.4'; barPct = isW ? 55 : 47;
+          explanation = `<b>Bishop development: ${san}.</b> The bishop opens a powerful diagonal for long-range pressure. ${side} eyes pawn weaknesses and king safety. Bishops reach their full potential in open positions with clear diagonals.`;
+        } else if (san.startsWith('Q')) {
+          score = isW ? '+0.7' : '-0.6'; barPct = isW ? 57 : 45;
+          explanation = `<b>Queen move: ${san}.</b> The queen centralizes or creates threats. Beware — early queen development can invite tempo-gaining attacks. ${side} must ensure the queen has a safe retreat square after this move.`;
+        } else if (san.startsWith('R')) {
+          score = isW ? '+0.8' : '-0.7'; barPct = isW ? 58 : 44;
+          explanation = `<b>Rook activation: ${san}.</b> ${side} improves the rook's placement. Rooks belong on open files and the 7th rank — they need open lines to unleash their full power in the middlegame and endgame.`;
+        } else if (san.startsWith('K')) {
+          score = isW ? '+0.2' : '-0.2'; barPct = isW ? 52 : 48;
+          explanation = `<b>King move: ${san}.</b> In the endgame, the king becomes a powerful attacking piece. ${side} activates the king to support pawn promotion or control key squares. King activity is often the deciding factor in technical endgames.`;
+        } else if (['e4','e5','d4','d5','c4','c5','f4','f5'].includes(san)) {
+          score = isW ? '+0.3' : '-0.2'; barPct = isW ? 53 : 49;
+          explanation = `<b>Central pawn: ${san}.</b> Fighting for the critical central squares (e4, e5, d4, d5) is a fundamental chess principle. This move opens diagonals for the bishops and claims territory in the heart of the board. A strong foundation for piece development.`;
         } else {
-          score = lastMoveObj.color === 'w' ? "+0.8" : "-0.5";
-          barWidth = lastMoveObj.color === 'w' ? "58%" : "45%";
-          explanation = `Positional development: ${move}. Improving piece activity and preparing king safety. Stockfish evaluates a solid middle-game plan.`;
+          score = isW ? '+0.4' : '-0.3'; barPct = isW ? 54 : 48;
+          explanation = `<b>Positional move: ${san}.</b> ${side} improves piece harmony, prepares the next strategic plan, and maintains solid pawn structure. Good chess is often about these subtle improvements that accumulate over many moves.`;
         }
+      } else {
+        score = '+0.2'; barPct = 52;
+        explanation = 'Equal position. Both sides have symmetrical development and pawn structure. The key battlegrounds are center control and king safety — subtle improvements will decide this game.';
       }
 
-      const evalTextEls = document.querySelectorAll('.labEvalText');
-      const evalBarEls = document.querySelectorAll('.labEvalBarFill');
-      const notesEls = document.querySelectorAll('.labCoachExplanation');
+      const isNeg = score.startsWith('-');
+      const barColor = score.startsWith('+') && parseFloat(score) > 0.5
+        ? 'var(--p-teal)' : isNeg ? '#ef4444' : 'var(--p-blue)';
 
-      evalTextEls.forEach(el => el.innerText = score);
-      evalBarEls.forEach(el => {
-        el.style.width = barWidth;
-        el.style.backgroundColor = score.startsWith('-') ? 'var(--p-rose)' : 'var(--p-blue)';
+      document.querySelectorAll('.labEvalText').forEach(el => el.textContent = score);
+      document.querySelectorAll('.labEvalBarFill').forEach(el => {
+        el.style.width = barPct + '%';
+        el.style.backgroundColor = barColor;
+        el.style.transition = 'width 0.45s cubic-bezier(.4,0,.2,1), background-color 0.3s';
       });
-      notesEls.forEach(el => el.innerHTML = `💡 <strong>AI Grandmaster Coach Note:</strong> ${explanation}`);
+      document.querySelectorAll('.labCoachExplanation').forEach(el => {
+        el.innerHTML = `💡 <strong>Stockfish Analysis:</strong> ${explanation}`;
+      });
+      this._updateMoveCounter();
     },
 
     broadcastCoach() {
-      CK.showToast("📢 Position broadcasted to 12 active student scratchpads with Stockfish notes!", "success");
+      CK.showToast('📢 Position broadcasted to 12 active student scratchpads!', 'success');
     }
   };
 

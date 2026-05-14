@@ -353,19 +353,7 @@ CK.arcade = (() => {
   };
 
   function renderPuzzleComplete() {
-    const content = document.getElementById('arcade-cabinet-content');
-    if (!content) return;
-    content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">🏆</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">All Puzzles Solved!</h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">Incredible tactics skill! You have scored ${score} points in the Puzzle Challenge.</p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startPuzzleGame()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
-        </div>
-      </div>
-    `;
+    gameComplete('puzzle', score, 'All Puzzles Solved!', `Incredible tactics! You solved all ${PUZZLES.length} puzzles and scored ${score} points. Your pattern recognition is elite.`, 'CK.arcade.startPuzzleGame()');
   }
 
   /* ==========================================
@@ -546,19 +534,7 @@ CK.arcade = (() => {
   };
 
   function renderGMComplete() {
-    const content = document.getElementById('arcade-cabinet-content');
-    if (!content) return;
-    content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">🏆</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">Trivia Complete!</h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">You are a true Chess Historian! You finished the Grandmaster challenge with ${score} points.</p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startGuessGMGame()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
-        </div>
-      </div>
-    `;
+    gameComplete('gm', score, 'Trivia Complete!', `You are a true Chess Historian! Finished the Grandmaster Challenge with ${score} points.`, 'CK.arcade.startGuessGMGame()');
   }
 
   /* ==========================================
@@ -724,23 +700,12 @@ CK.arcade = (() => {
   };
 
   function renderMemoryComplete(win) {
-    const content = document.getElementById('arcade-cabinet-content');
-    if (!content) return;
-    content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">${win ? '🏆' : '⏰'}</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">
-          ${win ? 'Memory Champion!' : "Time's Up!"}
-        </h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">
-          ${win ? `Splendid memory cells! You matched all pairs in ${state.moves} moves and won ${score} points.` : 'Better luck next time! Keep training your memory cards.'}
-        </p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startMemoryMatchGame()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
-        </div>
-      </div>
-    `;
+    if (win) {
+      gameComplete('memory', score, 'Memory Champion!', `Perfect recall! You matched all 6 pairs in ${state.moves} moves and scored ${score} points.`, 'CK.arcade.startMemoryMatchGame()');
+    } else {
+      const content = document.getElementById('arcade-cabinet-content');
+      if (content) content.innerHTML = `<div style="text-align:center;padding:40px 20px;"><div style="font-size:4rem;">⏱️</div><h2 style="color:#fff;font-family:Poppins,sans-serif;font-size:2rem;font-weight:800;margin:16px 0;">Time's Up!</h2><p style="color:rgba(255,255,255,.55);font-size:1rem;">You scored ${score} pts. Try again!</p><div style="display:flex;justify-content:center;gap:12px;margin-top:24px;"><button class="arcade-action-btn primary" onclick="CK.arcade.startMemoryMatchGame()">Try Again</button><button class="arcade-action-btn" onclick="CK.arcade.exitGame()">Exit</button></div></div>`;
+    }
   }
 
   /* ==========================================
@@ -933,19 +898,7 @@ CK.arcade = (() => {
   }
 
   function renderKnightComplete() {
-    const content = document.getElementById('arcade-cabinet-content');
-    if (!content) return;
-    content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">🏆</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">All Stars Collected!</h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">Excellent Knight maneuvers! You collected all 5 stars in ${state.moves} moves and scored ${score} points.</p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startKnightStarCatcher()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
-        </div>
-      </div>
-    `;
+    gameComplete('timing', score, 'All Stars Collected!', `Excellent Knight maneuvers! You collected all 5 stars in ${state.moves} moves and scored ${score} points.`, 'CK.arcade.startKnightStarCatcher()');
   }
 
   
@@ -1134,19 +1087,7 @@ CK.arcade = (() => {
   }
 
   function renderPawnStormComplete() {
-    const content = document.getElementById('arcade-cabinet-content');
-    if (!content) return;
-    content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">🌧️</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">King Caught!</h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">The pawn storm caught your King! You survived for ${Math.floor(state.survivalTicks * 0.75)} seconds and earned ${score} points.</p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startPawnStormGame()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
-        </div>
-      </div>
-    `;
+    gameComplete('opening', score, 'King Caught!', `The pawn storm overwhelmed your King! You survived ${Math.floor((state.survivalTicks || 0) * 0.75)}s and scored ${score} points. Dodge faster next time!`, 'CK.arcade.startPawnStormGame()');
   }
 
   /* ==========================================
@@ -1343,19 +1284,214 @@ CK.arcade = (() => {
   }
 
   function renderQueenQuestComplete() {
+    gameComplete('queenquest', score, 'Quest Cleared!', `Incredible Queen maneuverability! You swept the board clean of all targets in only ${state.moves} moves and scored ${score} points.`, 'CK.arcade.startQueenQuestGame()');
+  }
+
+  /* ==========================================
+     HIGH SCORE SYSTEM (localStorage)
+     ========================================== */
+  const HS_KEY = 'ck_game_scores';
+
+  function getScores() {
+    try { return JSON.parse(localStorage.getItem(HS_KEY)) || {}; } catch { return {}; }
+  }
+
+  function saveScore(gameId, newScore) {
+    const scores = getScores();
+    if (!scores[gameId] || newScore > scores[gameId]) {
+      scores[gameId] = newScore;
+      localStorage.setItem(HS_KEY, JSON.stringify(scores));
+      return true; // new high score
+    }
+    return false;
+  }
+
+  ARC.getBestScore = (gameId) => {
+    const scores = getScores();
+    return scores[gameId] || 0;
+  };
+
+  ARC.renderScoreBadges = () => {
+    const games = [
+      { id: 'puzzle', el: 'score-badge-puzzle' },
+      { id: 'gm', el: 'score-badge-gm' },
+      { id: 'memory', el: 'score-badge-memory' },
+      { id: 'timing', el: 'score-badge-timing' },
+      { id: 'opening', el: 'score-badge-opening' },
+      { id: 'queenquest', el: 'score-badge-queenquest' },
+      { id: 'quiz', el: 'score-badge-quiz' },
+    ];
+    const scores = getScores();
+    games.forEach(({ id, el }) => {
+      const badge = document.getElementById(el);
+      if (badge) badge.textContent = scores[id] ? `Best: ${scores[id]}` : 'Not played';
+    });
+  };
+
+  function gameComplete(gameId, finalScore, title, desc, restartFn) {
+    const isNewHigh = saveScore(gameId, finalScore);
+    const best = ARC.getBestScore(gameId);
+    playSFX('win');
     const content = document.getElementById('arcade-cabinet-content');
     if (!content) return;
     content.innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <div style="font-size: 5rem;">🏆</div>
-        <h2 style="font-family:'Poppins', sans-serif; font-size:2.5rem; font-weight:800; color:#fff; margin: 16px 0;">Quest Cleared!</h2>
-        <p style="color:var(--arena-text-muted); font-size:1.1rem; max-width:540px; margin: 0 auto 32px;">Incredible Queen maneuverability! You swept the board clean of all targets in only ${state.moves} moves and gained ${score} points.</p>
-        <div style="display:flex; justify-content:center; gap:16px;">
-          <button class="arcade-action-btn primary" style="max-width:240px;" onclick="CK.arcade.startQueenQuestGame()">Play Again</button>
-          <button class="arcade-action-btn" style="max-width:200px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
+      <div style="text-align:center; padding:40px 20px; max-width:600px; margin:0 auto;">
+        <div style="font-size:4.5rem; margin-bottom:8px;">${isNewHigh ? '🏆' : '🎉'}</div>
+        <h2 style="font-family:'Poppins',sans-serif; font-size:2.2rem; font-weight:800; color:#fff; margin:0 0 10px;">${title}</h2>
+        <p style="color:var(--arena-text-muted); font-size:1rem; max-width:480px; margin:0 auto 24px; line-height:1.6;">${desc}</p>
+        <div style="display:flex; gap:16px; justify-content:center; margin-bottom:28px; flex-wrap:wrap;">
+          <div style="background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); border-radius:12px; padding:16px 28px; min-width:120px;">
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.45); margin-bottom:4px;">YOUR SCORE</div>
+            <div style="font-size:2rem; font-weight:800; color:#fbbf24;">${finalScore}</div>
+          </div>
+          <div style="background:rgba(45,212,191,0.12); border:1px solid rgba(45,212,191,0.3); border-radius:12px; padding:16px 28px; min-width:120px;">
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.45); margin-bottom:4px;">${isNewHigh ? '⭐ NEW BEST!' : 'BEST SCORE'}</div>
+            <div style="font-size:2rem; font-weight:800; color:#2dd4bf;">${best}</div>
+          </div>
+        </div>
+        ${isNewHigh ? '<div style="color:#fbbf24; font-weight:700; font-size:0.95rem; margin-bottom:20px; letter-spacing:.05em;">🌟 NEW PERSONAL BEST — Outstanding!</div>' : ''}
+        <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <button class="arcade-action-btn primary" style="min-width:180px;" onclick="${restartFn}">Play Again</button>
+          <button class="arcade-action-btn" style="min-width:160px;" onclick="CK.arcade.exitGame()">Exit Arcade</button>
         </div>
       </div>
     `;
+  }
+
+  /* ==========================================
+     GAME 7: CHESS QUIZ BLITZ
+     ========================================== */
+  const QUIZ_QUESTIONS = [
+    { q: "How many squares does a Knight threaten from the center of the board?", opts: ["4", "6", "8", "12"], correct: 2, exp: "From a central square, a knight can reach up to 8 different squares." },
+    { q: "Which piece is worth approximately 3 pawns?", opts: ["Rook", "Bishop", "Queen", "King"], correct: 1, exp: "Bishops and Knights are each worth approximately 3 pawns." },
+    { q: "What is 'en passant'?", opts: ["A queen sacrifice", "A special pawn capture", "Kingside castling", "Stalemate condition"], correct: 1, exp: "En passant is a special pawn capture that can occur when a pawn moves two squares forward and passes an opposing pawn." },
+    { q: "In which direction can pawns capture?", opts: ["Straight forward", "Diagonally forward", "Diagonally backward", "Sideways"], correct: 1, exp: "Pawns always capture diagonally forward — one square to the left or right diagonally." },
+    { q: "What does 'castling kingside' mean?", opts: ["King moves 3 squares left", "King moves 2 squares right, Rook jumps over", "King and Queen swap", "King moves to h1"], correct: 1, exp: "Kingside castling: the king moves 2 squares toward the h-file rook, and the rook jumps to the other side of the king." },
+    { q: "What is 'stalemate'?", opts: ["King in check with no moves", "No legal moves but king not in check", "Queen trapped", "Both kings face each other"], correct: 1, exp: "Stalemate occurs when the player to move has no legal moves but their king is NOT in check. It results in a draw." },
+    { q: "Which piece can jump over other pieces?", opts: ["Bishop", "Queen", "Knight", "Rook"], correct: 2, exp: "Only the Knight can jump over other pieces — its L-shaped move goes over any piece in the way." },
+    { q: "How many total pawns are on the board at the start of a game?", opts: ["8", "12", "16", "20"], correct: 2, exp: "Each player starts with 8 pawns, making 16 total pawns at the start of every game." },
+    { q: "What is 'discovered check'?", opts: ["Finding a check move", "Moving a piece to reveal check from another", "Queen check from far away", "A check by two pieces at once"], correct: 1, exp: "A discovered check happens when you move one piece, uncovering an attack on the enemy king by another piece behind it." },
+    { q: "A player wins the game when their opponent is in…", opts: ["Stalemate", "Perpetual check", "Checkmate", "Zugzwang"], correct: 2, exp: "Checkmate: the king is in check and has no legal way to escape. The player whose king is mated loses." },
+    { q: "What is the value of the Rook?", opts: ["3 points", "4 points", "5 points", "9 points"], correct: 2, exp: "The Rook is typically valued at 5 pawns — more valuable than a bishop or knight but less than a queen." },
+    { q: "What happens when a pawn reaches the 8th rank?", opts: ["It disappears", "It becomes a King", "It promotes to any piece except King", "It returns to start"], correct: 2, exp: "Pawn promotion: when a pawn reaches the opponent's back rank, it must be promoted to a queen, rook, bishop, or knight." },
+    { q: "Which player moves first in chess?", opts: ["Black", "White", "Whoever is older", "Decided by coin toss"], correct: 1, exp: "White always moves first in chess. This gives White a slight statistical advantage in tournament games." },
+    { q: "What is a 'fork' in chess?", opts: ["A trap for the queen", "One piece attacks two pieces simultaneously", "A pawn chain", "Exchanging pieces"], correct: 1, exp: "A fork is a powerful tactic where one piece attacks two or more enemy pieces at the same time, winning material." },
+    { q: "What is 'Zugzwang'?", opts: ["An opening trap", "Forced to move but any move worsens your position", "Winning with pawns only", "Piece coordination"], correct: 1, exp: "Zugzwang: a German chess term for a position where ANY move you make will worsen your situation. Common in endgames." },
+  ];
+
+  ARC.startChessQuiz = () => {
+    currentGameType = 'quiz';
+    score = 0;
+    level = 1;
+    const shuffled = [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10);
+    state = {
+      questions: shuffled,
+      qIndex: 0,
+      answered: false,
+      correct: 0,
+      timeLeft: 20,
+      timerInterval: null
+    };
+    showOverlay();
+    renderQuiz();
+  };
+
+  function startQuizTimer() {
+    if (state.timerInterval) clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+      state.timeLeft--;
+      const bar = document.getElementById('quiz-timer-bar');
+      const label = document.getElementById('quiz-timer-label');
+      if (bar) bar.style.width = (state.timeLeft / 20 * 100) + '%';
+      if (label) label.textContent = state.timeLeft + 's';
+      if (state.timeLeft <= 0) {
+        clearInterval(state.timerInterval);
+        if (!state.answered) {
+          state.answered = true;
+          highlightQuizAnswer(-1);
+        }
+      }
+    }, 1000);
+  }
+
+  function renderQuiz() {
+    const q = state.questions[state.qIndex];
+    if (!q) { gameComplete('quiz', score, 'Quiz Complete!', `You answered ${state.correct} / ${state.questions.length} correctly and scored ${score} points. Chess knowledge is power!`, 'CK.arcade.startChessQuiz()'); return; }
+
+    state.answered = false;
+    state.timeLeft = 20;
+    const content = document.getElementById('arcade-cabinet-content');
+    if (!content) return;
+
+    const optHTML = q.opts.map((opt, i) => `
+      <button class="quiz-opt-btn" id="quiz-opt-${i}" onclick="CK.arcade.submitQuizAnswer(${i})">${opt}</button>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="arcade-header">
+        <div class="arcade-title-area">
+          <span class="arcade-game-icon">🧠</span>
+          <div class="arcade-title">Chess Quiz <span>Blitz</span></div>
+        </div>
+        <button class="arcade-exit-btn" onclick="CK.arcade.exitGame()">✕ Exit</button>
+      </div>
+      <div class="arcade-main" style="align-items:center; justify-content:center;">
+        <div class="quiz-wrapper">
+          <div class="quiz-meta">
+            <span>Question ${state.qIndex + 1} / ${state.questions.length}</span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span id="quiz-timer-label" style="font-weight:700; color:#fbbf24;">${state.timeLeft}s</span>
+              <span>Score: <strong>${score}</strong></span>
+            </span>
+          </div>
+          <div class="quiz-timer-track"><div class="quiz-timer-bar" id="quiz-timer-bar"></div></div>
+          <div class="quiz-question">${q.q}</div>
+          <div class="quiz-options">${optHTML}</div>
+          <div class="quiz-explanation" id="quiz-explanation" style="display:none;"></div>
+        </div>
+      </div>
+    `;
+    if (state.timerInterval) clearInterval(state.timerInterval);
+    startQuizTimer();
+  }
+
+  ARC.submitQuizAnswer = (idx) => {
+    if (state.answered) return;
+    state.answered = true;
+    clearInterval(state.timerInterval);
+    highlightQuizAnswer(idx);
+  };
+
+  function highlightQuizAnswer(chosen) {
+    const q = state.questions[state.qIndex];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) {
+      playSFX('coin');
+      state.correct++;
+      score += 10 + Math.max(0, state.timeLeft);
+    } else {
+      playSFX('buzz');
+    }
+
+    for (let i = 0; i < q.opts.length; i++) {
+      const btn = document.getElementById(`quiz-opt-${i}`);
+      if (!btn) continue;
+      if (i === q.correct) btn.classList.add('correct');
+      else if (i === chosen) btn.classList.add('wrong');
+      btn.disabled = true;
+    }
+
+    const expEl = document.getElementById('quiz-explanation');
+    if (expEl) {
+      expEl.style.display = 'block';
+      expEl.innerHTML = `${isCorrect ? '✅' : '❌'} <strong>${isCorrect ? 'Correct!' : 'Wrong.'}</strong> ${q.exp}`;
+      expEl.style.borderLeftColor = isCorrect ? '#22c55e' : '#ef4444';
+    }
+
+    setTimeout(() => {
+      state.qIndex++;
+      renderQuiz();
+    }, 2200);
   }
 
   return ARC;

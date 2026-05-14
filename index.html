@@ -3446,42 +3446,7 @@
       }
     });
 
-    // Animated number counters for hero stats
-    function animateCounter(el, target, duration) {
-      const start = 0;
-      const startTime = performance.now();
-      const isDecimal = target % 1 !== 0;
-      function step(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const current = start + (target - start) * eased;
-        el.textContent = isDecimal ? current.toFixed(1) + '★' : Math.floor(current) + (el.dataset.suffix || '');
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    // Trigger counters when hero stats become visible
-    const heroStats = document.querySelector('.hero-stats');
-    if (heroStats) {
-      const counterObs = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const nums = entry.target.querySelectorAll('.hero-stat-num');
-            nums.forEach(el => {
-              const text = el.textContent;
-              const num = parseFloat(text.replace(/[^0-9.]/g, ''));
-              const suffix = text.includes('+') ? '+' : '';
-              el.dataset.suffix = suffix;
-              if (!isNaN(num)) animateCounter(el, num, 1400);
-            });
-            counterObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.5 });
-      counterObs.observe(heroStats);
-    }
+    // Trigger counters removed for instant display consistency
 
     // Intersection Observer for all .reveal elements
     const revealObs = new IntersectionObserver((entries) => {

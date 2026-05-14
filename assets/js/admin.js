@@ -57,7 +57,7 @@ CK.admin = {
   async updateStats() {
     const students = await CK.db.getProfiles('student');
     const coaches = await CK.db.getProfiles('coach');
-    
+
     const s = {
       students: students.length,
       coaches: coaches.length,
@@ -76,24 +76,37 @@ CK.admin = {
     if (elCl) elCl.innerText = s.classes;
     if (elR) elR.innerText = s.revenue;
     if (elB) elB.innerText = s.students;
+
+    // Welcome banner sub
+    const welcome = document.getElementById('adminWelcomeSub');
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    if (welcome) welcome.textContent = `${greeting}! You have ${s.students} enrolled students across ${s.coaches} coaches and ${s.classes} active classes running this week.`;
   },
 
   renderActivity() {
     const tbody = document.getElementById('adminActivityTable');
     if (!tbody) return;
-    
+
     const activities = [
-      { time: '2 mins ago', event: 'Student Attendance Marked', user: 'Admin', status: 'p-badge-green', label: 'Success' },
-      { time: '15 mins ago', event: 'File Uploaded to Learning Assets', user: 'Admin', status: 'p-badge-blue', label: 'Info' },
-      { time: '1 hour ago', event: 'FIDE Certificate Assigned', user: 'Sarah Chess', status: 'p-badge-gold', label: 'Award' },
-      { time: '3 hours ago', event: 'New Student Profile Enrolled', user: 'Admin', status: 'p-badge-blue', label: 'New' }
+      { time: '2 mins ago', event: 'Batch attendance marked for Intermediate Strategy', user: 'Admin', icon: '✅', status: 'p-badge-green', label: 'Success' },
+      { time: '18 mins ago', event: 'Learning material uploaded: Endgame_Basics.pdf', user: 'Admin', icon: '📁', status: 'p-badge-blue', label: 'Upload' },
+      { time: '1 hr ago', event: 'FIDE Certificate issued to Emma Wilson', user: 'Sarah Chess', icon: '🏅', status: 'p-badge-gold', label: 'Award' },
+      { time: '2 hrs ago', event: 'New student enrolled: Arjun Mehta', user: 'Admin', icon: '🎓', status: 'p-badge-blue', label: 'New' },
+      { time: '3 hrs ago', event: 'Tournament registration: Summer Open 2026', user: 'Admin', icon: '🏆', status: 'p-badge-gold', label: 'Event' },
+      { time: 'Yesterday', event: 'Monthly fee collected from 14 students', user: 'Admin', icon: '💳', status: 'p-badge-green', label: 'Revenue' }
     ];
 
     tbody.innerHTML = activities.map(a => `
-      <tr>
-        <td style="color:var(--p-text-muted)">${a.time}</td>
-        <td style="font-weight:600">${a.event}</td>
-        <td>${a.user}</td>
+      <tr class="p-activity-row">
+        <td style="color:var(--p-text-muted); white-space:nowrap; font-size:0.82rem;">${a.time}</td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="p-activity-icon" style="background:rgba(255,255,255,0.05);">${a.icon}</div>
+            <span style="font-weight:600; font-size:0.9rem;">${a.event}</span>
+          </div>
+        </td>
+        <td style="color:var(--p-text-muted); font-size:0.88rem;">${a.user}</td>
         <td><span class="p-badge ${a.status}">${a.label}</span></td>
       </tr>
     `).join('');
@@ -123,7 +136,9 @@ CK.admin = {
       files: 'Learning Materials',
       expenses: 'Expenditure Management',
       reports: 'Progress Reports',
-      settings: 'Academy Settings'
+      settings: 'Academy Settings',
+      tournaments: 'Tournament Management',
+      achievements: 'Academy Achievements'
     };
     document.getElementById('adminPanelTitle').innerText = titles[panelId] || 'Admin';
     
@@ -137,6 +152,7 @@ CK.admin = {
 
     if (panelId === 'live') this.renderLive();
     if (panelId === 'expenses') this.loadExpenses();
+    if (panelId === 'reports') this.renderReports();
   },
 
   async initCharts() {
@@ -590,6 +606,33 @@ CK.admin = {
 
   viewLiveBoard(name) {
     CK.showToast(`Loading live chess feed for ${name}...`, 'info');
+  },
+
+  async renderReports() {
+    const tbody = document.getElementById('adminReportsTable');
+    if (!tbody) return;
+    const students = await CK.db.getProfiles('student');
+    if (!students.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5; padding:20px;">No student data found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = students.map(s => {
+      const note = s.last_note ? `"${s.last_note.slice(0, 60)}..."` : '—';
+      const statusBadge = s.status === 'Paid' ? 'p-badge-green' : s.status === 'Pending' ? 'p-badge-yellow' : 'p-badge-red';
+      const rating = s.rating || 800;
+      const ratingColor = rating >= 1200 ? 'var(--p-gold)' : rating >= 900 ? 'var(--p-teal)' : 'var(--p-text-muted)';
+      return `
+        <tr>
+          <td style="font-weight:700;">${s.full_name}</td>
+          <td><span class="p-badge p-badge-blue" style="font-size:0.75rem;">${s.level || 'Beginner'}</span></td>
+          <td style="font-weight:700; color:${ratingColor};">${rating} ELO</td>
+          <td style="color:var(--p-teal); font-weight:600;">96%</td>
+          <td style="color:var(--p-text-muted);">${s.puzzle || 15}</td>
+          <td><span class="p-badge ${statusBadge}">${s.status || 'Paid'}</span></td>
+          <td style="font-size:0.82rem; color:var(--p-text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${note}</td>
+        </tr>
+      `;
+    }).join('');
   },
 
   openModal(id) { CK.openModal(id); },
