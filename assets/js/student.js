@@ -86,8 +86,9 @@ CK.student = {
 
   updateProfile() {
     const p = this.userProfile;
+    const firstName = p.full_name ? p.full_name.split(' ')[0] : 'Champion';
     const initial = p.full_name ? p.full_name.charAt(0).toUpperCase() : '♛';
-    
+
     // Sidebar details
     const sbName = document.getElementById('studentSidebarName');
     const sbSub = document.getElementById('studentSidebarSub');
@@ -95,6 +96,14 @@ CK.student = {
     if (sbName) sbName.innerText = p.full_name || 'Chess Student';
     if (sbSub) sbSub.innerText = `${p.level || 'Beginner'} · ELO ${p.rating || 800}`;
     if (sbAvatar) sbAvatar.innerText = initial;
+
+    // Welcome banner
+    const welcomeName = document.getElementById('studentWelcomeName');
+    const welcomeSub = document.getElementById('studentWelcomeSub');
+    if (welcomeName) welcomeName.textContent = firstName;
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    if (welcomeSub) welcomeSub.textContent = `${greeting}! You have ${p.puzzle || 3} puzzles pending and a class scheduled today. Keep pushing!`;
     
     // Main profile banner / FIDE level card details
     const ratNum = document.getElementById('studentRatingNum');
@@ -177,47 +186,47 @@ CK.student = {
     const calendar = document.getElementById('studentAttendanceCalendar');
     if (!calendar) return;
 
-    const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    let html = daysOfWeek.map(d => `<div style="font-weight:800; color:var(--p-text-muted); font-size:0.8rem; padding-bottom:5px;">${d}</div>`).join('');
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
 
-    // Let's render May 2026. May 1st, 2026 is a Friday (index 5)
-    const firstDayIndex = 5;
-    const totalDays = 31;
+    const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    let html = `<div style="grid-column:1/-1; font-family:var(--font-display); font-size:0.92rem; font-weight:700; color:var(--p-gold); margin-bottom:4px;">${monthName}</div>`;
+    html += daysOfWeek.map(d => `<div class="p-cal-cell header">${d}</div>`).join('');
 
     // Fetch attendance from DB
     const logs = await CK.db.getAttendance(this.userProfile.id);
     const attendanceMap = {};
     logs.forEach(l => {
-      const day = new Date(l.date).getDate();
-      attendanceMap[day] = l.status;
+      const d = new Date(l.date);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        attendanceMap[d.getDate()] = l.status;
+      }
     });
 
-    // Empty spaces for first week
     for (let i = 0; i < firstDayIndex; i++) {
       html += `<div></div>`;
     }
 
-    // Days cells
     for (let day = 1; day <= totalDays; day++) {
-      let bgStyle = 'background:var(--p-surface2); border:1px solid rgba(255,255,255,0.05);';
-      let content = `${day}`;
+      const status = attendanceMap[day];
+      let cls = 'p-cal-cell';
+      let content = `<div>${day}</div>`;
       let tooltip = '';
-
-      if (attendanceMap[day] === 'present') {
-        bgStyle = 'background:rgba(0,201,167,0.15); border:1px solid var(--p-teal); color:var(--p-teal); font-weight:bold;';
-        content += `<div style="font-size:0.6rem; margin-top:2px;">✅</div>`;
+      if (status === 'present') {
+        cls += ' present';
+        content += `<div style="font-size:0.55rem; margin-top:1px;">✅</div>`;
         tooltip = 'Present';
-      } else if (attendanceMap[day] === 'absent') {
-        bgStyle = 'background:rgba(255,107,107,0.15); border:1px solid var(--p-danger); color:var(--p-danger); font-weight:bold;';
-        content += `<div style="font-size:0.6rem; margin-top:2px;">❌</div>`;
+      } else if (status === 'absent') {
+        cls += ' absent';
+        content += `<div style="font-size:0.55rem; margin-top:1px;">❌</div>`;
         tooltip = 'Absent';
       }
-
-      html += `
-        <div style="${bgStyle} border-radius:8px; padding:8px 4px; font-size:0.9rem;" title="${tooltip}">
-          ${content}
-        </div>
-      `;
+      html += `<div class="${cls}" title="${tooltip}">${content}</div>`;
     }
 
     calendar.innerHTML = html;
@@ -243,54 +252,64 @@ CK.student = {
   },
 
   
-  renderResources() {
+  async renderResources() {
     const list = document.getElementById('studentResourcesList');
     if (!list) return;
-    
-    const myBatch = this.userProfile.batch || 1;
-    // Mock files from db or hardcode for demo
-    const mockFiles = [
-      { name: 'Mating_Puzzles.pdf', batch: 1, notes: 'Review before Friday' },
-      { name: 'Endgame_Basics.pdf', batch: 2, notes: 'Read chapter 1' },
-      { name: 'Opening_Traps.pdf', batch: 1, notes: 'Memorize lines' }
-    ];
-    
-    const myFiles = mockFiles.filter(f => f.batch === myBatch);
-    if(myFiles.length === 0) {
-      list.innerHTML = '<div style="opacity:0.6; padding:20px; text-align:center;">No resources assigned to your batch.</div>';
+
+    const myLevel = this.userProfile.level || 'Beginner';
+    const docs = await CK.db.getDocuments(myLevel);
+
+    if (!docs || docs.length === 0) {
+      list.innerHTML = '<div style="opacity:0.6; padding:20px; text-align:center;">No resources assigned to your level yet. Check back soon!</div>';
       return;
     }
-    
-    list.innerHTML = myFiles.map(f => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:var(--p-surface3); border-radius:8px; margin-bottom:10px;">
+
+    list.innerHTML = docs.map(f => `
+      <div class="p-resource-item">
         <div>
-          <div style="font-weight:600; color:var(--p-blue)">📄 ${f.name}</div>
-          <div style="font-size:0.85rem; color:var(--p-text-muted); margin-top:4px;">📝 Note: ${f.notes}</div>
+          <div class="p-resource-name">📄 ${f.name}</div>
+          <div class="p-resource-note">📝 ${f.level} · Added by ${f.coach || 'Coach'}</div>
         </div>
         <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.showToast('Downloading ${f.name}...', 'success')">Download</button>
       </div>
     `).join('');
   },
 
+  _PUZZLE_SETUPS: {
+    P1: { 'f8': '♚', 'g7': '♟', 'h7': '♟', 'd1': '♖' },
+    P2: { 'e8': '♚', 'a8': '♜', 'd5': '♘' },
+    P3: { 'h8': '♚', 'g8': '♜', 'h7': '♟', 'g7': '♟', 'f7': '♟', 'f5': '♘' },
+  },
+
+  _solvedPuzzles: new Set(),
+
   renderPuzzlesList() {
     const container = document.getElementById('puzzlesListPanel');
     if (!container) return;
+    const diffColor = { Easy: 'p-badge-green', Medium: 'p-badge-yellow', Hard: 'p-badge-red' };
+    container.innerHTML = this.puzzlesDb.map(p => {
+      const solved = this._solvedPuzzles.has(p.id);
+      return `
+        <div class="p-puzzle-card ${this.activePuzzleId === p.id ? 'active' : ''}" onclick="CK.student.loadPuzzle('${p.id}')">
+          <div class="p-puzzle-icon">${solved ? '✅' : '🧩'}</div>
+          <div class="p-puzzle-info">
+            <div class="p-puzzle-title">${p.title}</div>
+            <div class="p-puzzle-sub">${p.type} · <span class="p-badge ${diffColor[p.diff] || 'p-badge-blue'}" style="font-size:0.7rem; padding:1px 6px;">${p.diff}</span></div>
+          </div>
+          <button class="p-btn ${solved ? 'p-btn-ghost' : 'p-btn-gold'} p-btn-sm">${solved ? 'Redo' : 'Solve'}</button>
+        </div>`;
+    }).join('');
 
-    container.innerHTML = this.puzzlesDb.map(p => `
-      <div class="p-live-card" style="cursor:pointer; background:var(--p-surface2); transition:transform 0.2s;" onclick="CK.student.loadPuzzle('${p.id}')">
-        <div class="p-live-avatar" style="background:var(--p-surface3); color:var(--p-gold); font-size:1.3rem;">🧩</div>
-        <div class="p-live-info">
-          <div class="p-live-name" style="font-size:0.95rem;">${p.title}</div>
-          <div class="p-live-sub">${p.type} · <span style="color:var(--p-gold); font-weight:700;">${p.diff}</span></div>
-        </div>
-        <button class="p-btn p-btn-ghost p-btn-sm" style="padding:4px 8px;">Load</button>
-      </div>
-    `).join('');
+    // Update stats bar
+    const pzSolvedEl = document.getElementById('pzStatSolved');
+    if (pzSolvedEl) pzSolvedEl.textContent = `${this._solvedPuzzles.size}/${this.puzzlesDb.length}`;
+    const pzStarEl = document.getElementById('pzStatStars');
+    if (pzStarEl && this.userProfile) pzStarEl.textContent = `${this.userProfile.star || 0}/5`;
   },
 
   loadAndGoToPuzzle(id) {
     this.nav('puzzles');
-    this.loadPuzzle(id);
+    setTimeout(() => this.loadPuzzle(id), 80);
   },
 
   loadPuzzle(id) {
@@ -298,55 +317,92 @@ CK.student = {
     if (!p) return;
 
     this.activePuzzleId = id;
-    document.getElementById('puzzleTitle').innerText = p.title;
-    document.getElementById('puzzleInstructions').innerHTML = `
-      <span class="p-badge p-badge-blue" style="margin-bottom:8px;">${p.type} (${p.diff})</span>
-      <p style="margin:5px 0; font-size:1.05rem;">${p.instruction}</p>
-      <div style="margin-top:10px; padding:10px; background:rgba(232,184,75,0.1); border:1px solid var(--p-gold); border-radius:8px; font-size:0.9rem; color:var(--p-gold);">
-        💡 Click on the correct destination square to execute the winning tactical move!
-      </div>
+
+    // Show active area, hide placeholder
+    const placeholder = document.getElementById('pzPlaceholder');
+    const activeArea = document.getElementById('pzActiveArea');
+    if (placeholder) placeholder.style.display = 'none';
+    if (activeArea) activeArea.style.display = 'flex';
+
+    // Highlight active puzzle in list
+    document.querySelectorAll('#puzzlesListPanel .p-puzzle-card').forEach(el => el.classList.remove('active'));
+    const matchEl = [...document.querySelectorAll('#puzzlesListPanel .p-puzzle-card')].find(el => el.onclick && el.getAttribute('onclick') && el.getAttribute('onclick').includes(id));
+    if (matchEl) matchEl.classList.add('active');
+
+    // Update title
+    const titleEl = document.getElementById('puzzleTitle');
+    if (titleEl) titleEl.textContent = p.title;
+
+    // Update instructions
+    const instrEl = document.getElementById('puzzleInstructions');
+    if (instrEl) instrEl.innerHTML = `
+      <span class="p-badge ${p.diff === 'Easy' ? 'p-badge-green' : p.diff === 'Hard' ? 'p-badge-red' : 'p-badge-yellow'}" style="font-size:0.72rem; padding:2px 8px;">${p.type} · ${p.diff}</span>
+      <p style="margin:8px 0 0; color:rgba(255,255,255,0.7);">${p.instruction}</p>
     `;
 
+    // Hide previous feedback
+    const fb = document.getElementById('puzzleFeedback');
+    if (fb) { fb.style.display = 'none'; fb.className = 'pz-feedback'; fb.textContent = ''; }
+
+    // Render board
     const boardEl = document.getElementById('studentPuzzleBoardContainer');
-    if (boardEl) {
-      boardEl.style.display = 'block';
-      boardEl.style.width = '100%';
-      boardEl.style.maxWidth = '360px';
-      boardEl.style.margin = '0 auto';
+    if (!boardEl) return;
 
-      let setup = {};
-      if (p.id === 'P1') {
-        setup = { 'f8': '♚', 'g7': '♟', 'h7': '♟', 'd1': '♖' };
-      } else if (p.id === 'P2') {
-        setup = { 'e8': '♚', 'a8': '♜', 'd5': '♘' };
-      } else if (p.id === 'P3') {
-        setup = { 'h8': '♚', 'g8': '♜', 'h7': '♟', 'g7': '♟', 'f7': '♟', 'f5': '♘' };
+    const setup = this._PUZZLE_SETUPS[id] || {};
+    const files = ['a','b','c','d','e','f','g','h'];
+    let html = `<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:0;border:3px solid rgba(232,184,75,0.35);border-radius:10px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 0 1px rgba(232,184,75,0.12);">`;
+    for (let r = 8; r >= 1; r--) {
+      for (let f = 0; f < 8; f++) {
+        const sq = files[f] + r;
+        const isDark = (r + f) % 2 === 0;
+        const bg = isDark ? '#b58863' : '#f0d9b5';
+        const tc = isDark ? 'rgba(240,217,181,0.55)' : 'rgba(181,136,99,0.55)';
+        const piece = setup[sq] || '';
+        const isBlack = piece === '♚' || piece === '♜' || piece === '♟';
+        const pc = isBlack ? '#0d0d1a' : (piece ? '#fff' : '');
+        html += `<div style="aspect-ratio:1;background:${bg};display:flex;align-items:center;justify-content:center;font-size:clamp(1.4rem,2.5vw,2.4rem);cursor:pointer;user-select:none;position:relative;transition:filter 0.15s,transform 0.15s;" onclick="CK.student.onSquareClick('${sq}')" onmouseover="this.style.filter='brightness(1.2)';this.style.transform='scale(1.05)';" onmouseout="this.style.filter='';this.style.transform='';" title="${sq}">
+          <span style="text-shadow:0 2px 5px rgba(0,0,0,0.55);color:${pc};line-height:1;">${piece}</span>
+          <span style="position:absolute;bottom:1px;left:2px;font-size:0.52rem;opacity:0.5;color:${tc};font-weight:700;">${f === 0 ? r : ''}</span>
+          <span style="position:absolute;bottom:1px;right:2px;font-size:0.52rem;opacity:0.5;color:${tc};font-weight:700;">${r === 1 ? files[f] : ''}</span>
+        </div>`;
       }
+    }
+    html += `</div>`;
+    boardEl.innerHTML = html;
+  },
 
-      const files = ['a','b','c','d','e','f','g','h'];
-      let html = `<div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:0; border:2px solid var(--p-border); border-radius:8px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.5);">`;
-      
-      for (let r = 8; r >= 1; r--) {
-        for (let f = 0; f < 8; f++) {
-          const sqName = files[f] + r;
-          const isDark = (r + f) % 2 === 0;
-          const bg = isDark ? '#1e293b' : '#3b82f6';
-          const piece = setup[sqName] || '';
-          
-          html += `
-            <div style="aspect-ratio:1; background:${bg}; display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer; user-select:none; position:relative; transition:filter 0.2s;"
-                 onclick="CK.student.onSquareClick('${sqName}')"
-                 onmouseover="this.style.filter='brightness(1.3)'"
-                 onmouseout="this.style.filter='none'"
-                 title="Square ${sqName}">
-              ${piece}
-              <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; opacity:0.4; color:#fff;">${sqName}</span>
-            </div>
-          `;
-        }
-      }
-      html += `</div>`;
-      boardEl.innerHTML = html;
+  showPuzzleHint() {
+    const p = this.puzzlesDb.find(x => x.id === this.activePuzzleId);
+    if (!p) return;
+    const fb = document.getElementById('puzzleFeedback');
+    if (!fb) return;
+    const hints = {
+      P1: '💡 Hint: Your rook can slide all the way up the d-file to the back rank!',
+      P2: '💡 Hint: Your knight jumps in an L-shape. Look for a square that attacks both the king and rook.',
+      P3: '💡 Hint: The black king is trapped in the corner by its own pieces. A knight jump can end the game!'
+    };
+    fb.style.display = 'block';
+    fb.className = 'pz-feedback hint';
+    fb.textContent = hints[p.id] || '💡 Look for forcing moves — checks, captures, and threats!';
+  },
+
+  showPuzzleSolution() {
+    const p = this.puzzlesDb.find(x => x.id === this.activePuzzleId);
+    if (!p) return;
+    const fb = document.getElementById('puzzleFeedback');
+    if (!fb) return;
+    fb.style.display = 'block';
+    fb.className = 'pz-feedback hint';
+    fb.innerHTML = `👁 <strong>Solution:</strong> Click square <strong>${p.solution.toUpperCase()}</strong>. ${p.desc}`;
+  },
+
+  nextPuzzle() {
+    const idx = this.puzzlesDb.findIndex(x => x.id === this.activePuzzleId);
+    const next = this.puzzlesDb[idx + 1];
+    if (next) {
+      this.loadPuzzle(next.id);
+    } else {
+      CK.showToast('🏆 All puzzles completed! Great work!', 'success');
     }
   },
 
@@ -354,28 +410,44 @@ CK.student = {
     const p = this.puzzlesDb.find(x => x.id === this.activePuzzleId);
     if (!p) return;
 
+    const fb = document.getElementById('puzzleFeedback');
+
     if (squareId === p.solution) {
-      // Puzzle solved successfully!
-      CK.showToast("🎉 Correct Move! Puzzle Solved!", "success");
-      
-      // Update puzzle count score
-      this.userProfile.puzzle += 1;
-      
-      // Increment star count on every solved puzzle (up to max 5)
-      if (this.userProfile.star < 5) {
-        this.userProfile.star += 1;
-        CK.showToast(`⭐ Star progress updated to ${this.userProfile.star}/5!`, "info");
+      CK.showToast('🎉 Brilliant! Puzzle Solved!', 'success');
+      this._solvedPuzzles.add(p.id);
+
+      if (fb) {
+        fb.style.display = 'block';
+        fb.className = 'pz-feedback success';
+        fb.innerHTML = `✅ <strong>Correct! ${p.title} solved!</strong><br><span style="font-size:0.85rem;opacity:0.85;">${p.desc}</span>`;
       }
 
+      // Flash the solution square green
+      const sqs = document.querySelectorAll('#studentPuzzleBoardContainer [title="' + squareId + '"]');
+      sqs.forEach(el => { el.style.boxShadow = 'inset 0 0 0 3px #22c55e'; el.style.background = '#15803d'; });
+
+      this.userProfile.puzzle = (parseInt(this.userProfile.puzzle) || 0) + 1;
+      if ((this.userProfile.star || 0) < 5) {
+        this.userProfile.star = (this.userProfile.star || 0) + 1;
+      }
       await CK.db.saveProfile(this.userProfile);
-      
-      // Refresh UI
       this.updateProfile();
       this.renderDashboard();
-      this.loadPuzzle(this.activePuzzleId); // refresh puzzle display
-      this.renderAchievementsTab(); // refresh trophies
+      this.renderPuzzlesList();
+      this.renderAchievementsTab();
     } else {
-      CK.showToast("❌ Try again! That move is not the best solution.", "warning");
+      CK.showToast('❌ Not quite — try again!', 'warning');
+      if (fb) {
+        fb.style.display = 'block';
+        fb.className = 'pz-feedback error';
+        fb.textContent = '❌ Incorrect square. Think carefully — look for the move that forces an immediate decisive result.';
+      }
+      // Flash the wrong square red briefly
+      const sqs = document.querySelectorAll('#studentPuzzleBoardContainer [title="' + squareId + '"]');
+      sqs.forEach(el => {
+        el.style.boxShadow = 'inset 0 0 0 3px #ef4444';
+        setTimeout(() => { el.style.boxShadow = ''; }, 600);
+      });
     }
   },
 
@@ -385,13 +457,18 @@ CK.student = {
 
     const myReviews = CK.tracker.getReviews(this.userProfile ? this.userProfile.full_name : 'Emma Wilson');
 
+    if (!myReviews.length) {
+      container.innerHTML = '<div style="opacity:0.6; padding:30px; text-align:center;">No coach reviews posted yet. Keep attending classes!</div>';
+      return;
+    }
+
     container.innerHTML = myReviews.map(r => `
-      <div style="background:var(--p-surface2); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--p-gold);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <h4 style="margin:0; font-family:var(--font-display);">${r.coach}</h4>
-          <span style="font-size:0.8rem; color:var(--p-text-muted);">${r.date}</span>
+      <div class="p-review-note">
+        <div class="p-review-note-header">
+          <span class="p-review-note-coach">🎓 ${r.coach}</span>
+          <span class="p-review-note-date">${r.date}</span>
         </div>
-        <p style="margin:0; font-size:0.92rem; line-height:1.5; color:rgba(255,255,255,0.85); font-style:italic;">"${r.text}"</p>
+        <p class="p-review-note-text">"${r.text}"</p>
       </div>
     `).join('');
   },
@@ -424,12 +501,13 @@ CK.student = {
       ];
 
       grid.innerHTML = achievements.map(a => `
-        <div style="background:${a.unlocked ? 'var(--p-surface2)' : 'rgba(255,255,255,0.02)'}; border:1px solid ${a.unlocked ? 'rgba(232,184,75,0.15)' : 'rgba(255,255,255,0.02)'}; padding:15px; border-radius:12px; display:flex; align-items:center; gap:12px; opacity:${a.unlocked ? 1 : 0.4};">
-          <div style="font-size:2rem; filter:${a.unlocked ? 'none' : 'grayscale(100%)'}">${a.icon}</div>
+        <div class="p-achievement-card ${a.unlocked ? 'unlocked' : 'locked'}">
+          <div class="p-achievement-icon" style="${!a.unlocked ? 'filter:grayscale(1)' : ''}">${a.icon}</div>
           <div>
-            <div style="font-weight:700; font-size:0.9rem; color:${a.unlocked ? 'var(--p-gold)' : '#fff'}">${a.title}</div>
-            <div style="font-size:0.75rem; color:var(--p-text-muted); line-height:1.3; margin-top:3px;">${a.desc}</div>
+            <div class="p-achievement-title">${a.title}</div>
+            <div class="p-achievement-desc">${a.desc}</div>
           </div>
+          ${a.unlocked ? '<span class="p-badge p-badge-gold" style="margin-left:auto; flex-shrink:0;">Unlocked</span>' : ''}
         </div>
       `).join('');
     }
@@ -534,22 +612,52 @@ CK.student = {
   startCountdown() {
     const el = document.getElementById('studentCountdown');
     if (!el) return;
-    
-    const nextClass = "4:00 PM";
-    document.getElementById('nextClassTime').innerText = nextClass;
-    document.getElementById('nextClassName').innerText = `${this.userProfile.level || 'Intermediate'} Strategy Session`;
-    document.getElementById('nextClassSub').innerText = `with Coach ${this.userProfile.coach || 'Sarah Chess'}`;
-    
-    let mins = 45;
-    if (window.studentCountdownTimer) clearInterval(window.studentCountdownTimer);
-    
-    window.studentCountdownTimer = setInterval(() => {
-      if (mins > 0) {
-        mins--;
-        el.innerText = `Starts in ${mins}m`;
+
+    const p = this.userProfile || {};
+    const scheduleRaw = p.schedule || '17:00';
+    const coach = p.coach || 'Sarah Chess';
+    const level = p.level || 'Intermediate';
+
+    // Parse schedule into a Date for today
+    const parseScheduleTime = (raw) => {
+      const match = raw.match(/(\d{1,2}):(\d{2})/);
+      if (!match) return null;
+      const d = new Date();
+      d.setHours(parseInt(match[1]), parseInt(match[2]), 0, 0);
+      return d;
+    };
+
+    const classTime = parseScheduleTime(scheduleRaw);
+    const now = new Date();
+
+    let displayTime = '5:00 PM';
+    let minsUntil = 45;
+
+    if (classTime) {
+      const diff = classTime - now;
+      if (diff > 0) {
+        minsUntil = Math.round(diff / 60000);
+      } else {
+        minsUntil = 0;
       }
-    }, 60000);
-    el.innerText = `Starts in ${mins}m`;
+      displayTime = classTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+
+    const nameEl = document.getElementById('nextClassTime');
+    const classEl = document.getElementById('nextClassName');
+    const subEl = document.getElementById('nextClassSub');
+    if (nameEl) nameEl.innerText = displayTime;
+    if (classEl) classEl.innerText = `${level} Strategy Session`;
+    if (subEl) subEl.innerText = `with Coach ${coach}`;
+
+    if (window.studentCountdownTimer) clearInterval(window.studentCountdownTimer);
+
+    const tick = () => {
+      const remaining = classTime ? Math.max(0, Math.round((classTime - new Date()) / 60000)) : minsUntil;
+      el.innerText = remaining > 0 ? `Starts in ${remaining}m` : 'Starting now!';
+    };
+    tick();
+    window.studentCountdownTimer = setInterval(tick, 60000);
   },
 
   joinClass() {
@@ -578,42 +686,136 @@ CK.student = {
 
   renderReportCard() {
     const p = this.userProfile || {};
-    const notes = window.CK && CK.tracker ? CK.tracker.getReviews(p.full_name || 'Emma Wilson') : [];
-    const latestFeedback = notes.length > 0 ? notes[0].text : "Outstanding tactical vision and calculation accuracy. Ready for next semester FIDE Masterclass.";
+    const rc = p.report_card || {
+      opening: 84,
+      middlegame: 76,
+      tactics: 88,
+      endgame: 62,
+      time: 71,
+      sports: 95,
+      remarks: "Excellent concentration and tactical calculation. Shows great promise when navigating complex middlegame positions. Focus on active rook placements in pawn endgames.",
+      goals: ["Participate in State Level Rapid U-14", "Master Lucena and Philidor Rook Endgames", "Maintain blunder rate under 3% in tournaments"]
+    };
+
+    const getGrade = (mark) => {
+      if (mark >= 90) return 'A+';
+      if (mark >= 80) return 'A';
+      if (mark >= 70) return 'B';
+      if (mark >= 60) return 'C';
+      return 'D';
+    };
 
     const elBody = document.querySelector('#student-panel-report .p-card-body');
     if (elBody) {
       elBody.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--p-blue); padding-bottom:20px; margin-bottom:25px;">
-          <div>
-            <h2 style="font-family:var(--font-display); color:#fff; margin:0 0 5px;">ChessKidoo Evaluation Report</h2>
-            <div style="color:var(--p-text-muted); font-size:0.9rem;">Student: ${p.full_name || 'Emma Wilson'} · Term: Q2 2026</div>
+        <div class="report-card-wrapper" id="printableReportCard">
+          <!-- Crest Header -->
+          <div class="rc-crest">
+            <div class="rc-crest-icon">♔</div>
+            <h1 class="rc-title">ChessKidoo Academy</h1>
+            <div class="rc-subtitle">Official Student Performance Report</div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:1.2rem; font-weight:bold; color:var(--p-blue);">FIDE Standard Assessment</div>
-            <div style="color:var(--p-text-muted); font-size:0.9rem;">Coach: ${p.coach || 'Sarah Chess'}</div>
-          </div>
-        </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px;">
-          <div style="background:var(--p-surface3); padding:20px; border-radius:10px;">
-            <h4 style="margin:0 0 15px; color:var(--p-gold);">Tactical Metrics</h4>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Calculation Accuracy:</span><span style="font-weight:bold;">94%</span></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Puzzles Solved:</span><span style="font-weight:bold;">${p.puzzle || 45}</span></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Blunder Rate:</span><span style="font-weight:bold; color:var(--p-teal);">Low (3%)</span></div>
+          <!-- Student Profile Block -->
+          <div class="rc-student-block">
+            <div class="rc-student-info">
+              <div class="rc-info-item">
+                <span class="rc-info-label">Student Name</span>
+                <span class="rc-info-val">${p.full_name || 'Emma Wilson'}</span>
+              </div>
+              <div class="rc-info-item">
+                <span class="rc-info-label">Current Level</span>
+                <span class="rc-info-val">${p.level || 'Intermediate'}</span>
+              </div>
+              <div class="rc-info-item">
+                <span class="rc-info-label">Assigned Coach</span>
+                <span class="rc-info-val">${p.coach || 'Sarah Chess'}</span>
+              </div>
+              <div class="rc-info-item">
+                <span class="rc-info-label">Academic Term</span>
+                <span class="rc-info-val">Summer Term 2026</span>
+              </div>
+            </div>
+            <div class="rc-rating-badge">
+              <div class="rc-rating-val">${p.rating || 1120}</div>
+              <div class="rc-rating-label">FIDE / ELO Rating</div>
+            </div>
           </div>
-          <div style="background:var(--p-surface3); padding:20px; border-radius:10px;">
-            <h4 style="margin:0 0 15px; color:var(--p-gold);">Overall Performance</h4>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Attendance:</span><span style="font-weight:bold;">96%</span></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Current Rating:</span><span style="font-weight:bold;">${p.rating || 1120} ELO</span></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--p-text-muted);">Batch Level:</span><span style="font-weight:bold; color:var(--p-gold);">${p.level || 'Intermediate'}</span></div>
-          </div>
-        </div>
 
-        <div style="background:var(--p-surface2); border-left:4px solid var(--p-blue); padding:20px; border-radius:8px;">
-          <h4 style="margin:0 0 10px; color:var(--p-text);">Coach Diagnostic Feedback</h4>
-          <p style="margin:0; color:var(--p-text-muted); line-height:1.6; font-style:italic;">"${latestFeedback}"</p>
-          <div style="margin-top:15px; text-align:right; font-weight:bold; color:var(--p-blue);">— Coach ${p.coach || 'Sarah Chess'}</div>
+          <!-- Subject-Wise Assessment -->
+          <div class="rc-section-title">Subject-Wise Assessment</div>
+          <table class="rc-table">
+            <thead>
+              <tr>
+                <th>Curriculum Subject</th>
+                <th>Proficiency Mini-Bar</th>
+                <th>Score</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Opening Theory & Repertoire</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.opening}%"></div></div></td>
+                <td>${rc.opening}/100</td>
+                <td class="rc-grade">${getGrade(rc.opening)}</td>
+              </tr>
+              <tr>
+                <td>Middlegame Strategy & Planning</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.middlegame}%"></div></div></td>
+                <td>${rc.middlegame}/100</td>
+                <td class="rc-grade">${getGrade(rc.middlegame)}</td>
+              </tr>
+              <tr>
+                <td>Tactical Awareness & Calculation</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.tactics}%"></div></div></td>
+                <td>${rc.tactics}/100</td>
+                <td class="rc-grade">${getGrade(rc.tactics)}</td>
+              </tr>
+              <tr>
+                <td>Endgame Technique & Precision</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.endgame}%"></div></div></td>
+                <td>${rc.endgame}/100</td>
+                <td class="rc-grade">${getGrade(rc.endgame)}</td>
+              </tr>
+              <tr>
+                <td>Time Management & Board Control</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.time}%"></div></div></td>
+                <td>${rc.time}/100</td>
+                <td class="rc-grade">${getGrade(rc.time)}</td>
+              </tr>
+              <tr>
+                <td>Sportsmanship & Tournament Etiquette</td>
+                <td><div class="rc-bar-wrap"><div class="rc-bar-fill" style="width:${rc.sports}%"></div></div></td>
+                <td>${rc.sports}/100</td>
+                <td class="rc-grade">${getGrade(rc.sports)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Coach's Remarks -->
+          <div class="rc-section-title">Coach's Diagnostic Remarks</div>
+          <div class="rc-remarks-box">
+            <div class="rc-remarks-content">"${rc.remarks}"</div>
+          </div>
+
+          <!-- Next Term Goals -->
+          <div class="rc-section-title">Goals for Next Term</div>
+          <div class="rc-goals-grid">
+            ${rc.goals.map(g => `<div class="rc-goal-item"><span class="rc-goal-check">✓</span><span>${g}</span></div>`).join('')}
+          </div>
+
+          <!-- Signatures -->
+          <div class="rc-signatures">
+            <div class="rc-sig-box">
+              <div class="rc-sig-line">${p.coach || 'Sarah Chess'}</div>
+              <div class="rc-sig-title">Master Coach Signature</div>
+            </div>
+            <div class="rc-sig-box">
+              <div class="rc-sig-line">Dr. V. Hariharan</div>
+              <div class="rc-sig-title">Academy Director</div>
+            </div>
+          </div>
         </div>
       `;
     }
@@ -622,62 +824,125 @@ CK.student = {
   renderFeesGateway() {
     const p = this.userProfile || {};
     const status = p.status || 'Pending';
-    const feeAmount = p.fee || 2200;
+    const tuition = parseInt(p.fee) || 4000;
+    const gst = Math.round(tuition * 0.18);
+    const total = tuition + gst;
+    const isPaid = status === 'Paid';
 
-    const elBody = document.querySelector('#student-panel-fees .p-card');
-    if (elBody) {
-      elBody.innerHTML = `
-        <div style="background:linear-gradient(135deg,rgba(232,184,75,0.1),rgba(0,0,0,0)); padding:30px; text-align:center;">
-          <div style="font-size:3.5rem; margin-bottom:15px;">💳</div>
-          <h3 style="font-family:var(--font-display); font-size:1.6rem; color:var(--p-gold); margin-bottom:10px;">Fee Payment Gateway</h3>
-          <p style="color:var(--p-text-muted); font-size:0.95rem; margin-bottom:25px;">Pay your upcoming academy batch fees securely via Razorpay / Stripe gateway integration.</p>
-          <div style="background:var(--p-surface3); padding:20px; border-radius:10px; text-align:left; margin-bottom:25px; border:1px solid rgba(255,255,255,0.05);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-              <span style="color:var(--p-text-muted);">Student Name:</span>
-              <span style="font-weight:bold; color:#fff;">${p.full_name || 'Emma Wilson'}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-              <span style="color:var(--p-text-muted);">Assigned Batch:</span>
-              <span style="font-weight:bold; color:#fff;">${p.batch || 'Advanced FIDE Masterclass'} (${p.level || 'Intermediate'})</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-              <span style="color:var(--p-text-muted);">Billing Period:</span>
-              <span style="font-weight:bold; color:#fff;">May 2026 - July 2026</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.95rem;">
-              <span style="color:var(--p-text-muted);">Status:</span>
-              <span style="font-weight:bold; color:${status === 'Paid' ? 'var(--p-teal)' : 'var(--p-warn)'};">${status}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; margin-top:10px; font-size:1.1rem;">
-              <span style="color:var(--p-text-muted);">Total Fee:</span>
-              <span style="font-weight:bold; color:var(--p-gold);">₹${feeAmount}</span>
-            </div>
-          </div>
-          ${status === 'Paid' ? `
-            <div style="padding:15px; background:rgba(0,201,167,0.1); border:1px solid var(--p-teal); color:var(--p-teal); border-radius:8px; font-weight:bold; margin-bottom:15px;">✅ Fee Paid Successfully for Current Term</div>
-            <button class="p-btn p-btn-ghost" style="width:100%; font-size:1.1rem; padding:12px;" onclick="CK.student.downloadReceipt()">📥 Download Payment Receipt</button>
-          ` : `
-            <button class="p-btn p-btn-gold" style="width:100%; font-size:1.1rem; padding:12px;" onclick="CK.student.processPayment()">💳 Pay Securely via Razorpay</button>
-          `}
-        </div>
-      `;
+    const fmt = n => '₹' + n.toLocaleString('en-IN');
+
+    // Populate order summary
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('payStudentName', 'Student: ' + (p.full_name || 'Chess Student'));
+    set('payBatch', p.batch || 'Advanced FIDE Masterclass');
+    set('payLevel', p.level || 'Intermediate');
+    set('payTuition', fmt(tuition));
+    set('payGst', fmt(gst));
+    set('payTotal', fmt(total));
+    set('payAmountDisplay', fmt(total));
+
+    const badge = document.getElementById('payStatusBadge');
+    if (badge) {
+      badge.textContent = isPaid ? '✅ Paid' : '⚡ Pending';
+      badge.className = 'pay-status-badge ' + (isPaid ? 'paid' : 'pending');
+    }
+
+    const formCard = document.getElementById('payFormCard');
+    const successCard = document.getElementById('paySuccessCard');
+
+    if (isPaid) {
+      if (formCard) formCard.style.display = 'none';
+      if (successCard) {
+        successCard.style.display = 'block';
+        const box = document.getElementById('payReceiptBox');
+        if (box && !box.dataset.filled) {
+          box.dataset.filled = '1';
+          box.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Txn ID</span><span>${p.last_txn_id || 'CK_TXN_—'}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Amount</span><span>${fmt(total)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Date</span><span>${p.paid_date || new Date().toLocaleDateString('en-GB')}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Method</span><span>${p.pay_method || 'Razorpay'}</span></div>
+          `;
+        }
+      }
+    } else {
+      if (formCard) formCard.style.display = 'block';
+      if (successCard) successCard.style.display = 'none';
     }
   },
 
+  selectPayMethod(el, method) {
+    document.querySelectorAll('#student-panel-fees .pay-method').forEach(m => m.classList.remove('active'));
+    if (el) el.classList.add('active');
+    this._selectedPayMethod = method;
+  },
+
   async processPayment() {
-    CK.showToast('Initiating secure Razorpay checkout gateway...', 'success');
-    setTimeout(async () => {
-      alert('💳 Razorpay Checkout Integration:\\n\\nPayment Processed Successfully!\\nTransaction ID: CK_TXN_' + Math.floor(100000000 + Math.random() * 900000000) + '\\nAmount: ₹' + (this.userProfile ? this.userProfile.fee || 2200 : 2200) + '\\n\\nYour profile status has been marked as PAID in the Admin Ledger.');
-      if (this.userProfile) {
-        this.userProfile.status = 'Paid';
-        this.userProfile.due_date = '14-Jun-2026';
-        await CK.db.saveProfile(this.userProfile);
+    const termsCheck = document.getElementById('payTermsCheck');
+    if (!termsCheck || !termsCheck.checked) {
+      CK.showToast('Please accept the Terms of Service before proceeding.', 'warning');
+      return;
+    }
+
+    if (!window.Razorpay) {
+      CK.showToast('Payment gateway is loading. Please try again in a moment.', 'warning');
+      return;
+    }
+
+    const p = this.userProfile || {};
+    const tuition = parseInt(p.fee) || 4000;
+    const gst = Math.round(tuition * 0.18);
+    const total = tuition + gst;
+
+    const options = {
+      key: window.CK_RAZORPAY_KEY || 'rzp_test_PLACEHOLDER',
+      amount: total * 100, // paise
+      currency: 'INR',
+      name: 'ChessKidoo Academy',
+      description: (p.batch || 'Chess Training') + ' — ' + (p.level || 'Intermediate') + ' Batch',
+      image: 'assets/img/logo.png',
+      handler: response => CK.student.onPaymentSuccess(response),
+      prefill: {
+        name: p.full_name || '',
+        email: p.email || '',
+        contact: p.phone_number || p.phone || ''
+      },
+      notes: {
+        student_id: p.id || '',
+        batch: p.batch || ''
+      },
+      theme: { color: '#D97706' },
+      modal: {
+        ondismiss: () => CK.showToast('Payment cancelled.', 'warning')
       }
-      this.renderFeesGateway();
-      if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
-        CK.admin.loadStudents();
-      }
-    }, 1500);
+    };
+
+    try {
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', err => {
+        CK.showToast('Payment failed: ' + (err.error?.description || 'Unknown error'), 'error');
+      });
+      rzp.open();
+    } catch (e) {
+      CK.showToast('Could not open payment gateway. Please refresh and try again.', 'error');
+    }
+  },
+
+  async onPaymentSuccess(response) {
+    const p = this.userProfile;
+    if (p) {
+      p.status = 'Paid';
+      p.last_txn_id = response.razorpay_payment_id || ('CK_TXN_' + Math.floor(1e8 + Math.random() * 9e8));
+      p.paid_date = new Date().toLocaleDateString('en-GB');
+      p.pay_method = this._selectedPayMethod || 'Razorpay';
+      p.due_date = '14-Jun-2026';
+      await CK.db.saveProfile(p);
+    }
+    CK.showToast('Payment successful! Your account has been updated.', 'success');
+    this.renderFeesGateway();
+    if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
+      CK.admin.loadStudents();
+    }
   },
 
   downloadReceipt() {

@@ -63,9 +63,12 @@ CK.coach = {
     };
     document.getElementById('coachPanelTitle').innerText = titles[panelId] || 'Dashboard';
     
-    document.getElementById('coachTopBtn').style.display = (panelId === 'notes') ? 'block' : 'none';
+    const topBtn = document.getElementById('coachTopBtn');
+    if (topBtn) topBtn.style.display = (panelId === 'notes') ? 'block' : 'none';
     if(panelId === 'resources') this.renderResources();
     if(panelId === 'schedule') this.renderSchedule();
+    if(panelId === 'notes') this.initReportEditor();
+    if(panelId === 'attendance') this.loadAttendance();
   },
 
   renderSchedule() {
@@ -90,8 +93,9 @@ CK.coach = {
 
   async updateProfile() {
     const cp = this.coachProfile || {};
+    const firstName = cp.full_name ? cp.full_name.split(' ')[0] : 'Coach';
     const initial = cp.full_name ? cp.full_name.split(' ').map(n => n[0]).join('') : 'CH';
-    
+
     // Sidebar values
     const elName = document.getElementById('coachSidebarName');
     const elSub = document.getElementById('coachSidebarSub');
@@ -99,7 +103,13 @@ CK.coach = {
     if (elName) elName.innerText = cp.full_name || 'Sarah Chess';
     if (elSub) elSub.innerText = `${cp.puzzle || 'Tactics Specialist'} · FIDE 2100`;
     if (elAvatar) elAvatar.innerText = initial;
-    
+
+    // Dynamic welcome banner greeting
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const welcomeEl = document.getElementById('coachWelcomeSub');
+    if (welcomeEl) welcomeEl.textContent = `${greeting}, ${firstName}! You have ${this.classesDb.length} classes scheduled today. Your students are ready to learn.`;
+
     // Stats counters
     const students = await CK.db.getProfiles('student');
     const myStudents = students.filter(s => s.coach === cp.full_name);
@@ -109,7 +119,7 @@ CK.coach = {
     const stClass = document.getElementById('coachStatClasses');
     if (stStud) stStud.innerText = myStudents.length || 0;
     if (stAtt) stAtt.innerText = '96%';
-    if (stClass) stClass.innerText = '5';
+    if (stClass) stClass.innerText = this.classesDb.length || 0;
   },
 
   renderResources() {
@@ -167,14 +177,15 @@ CK.coach = {
     // 1. Load today's class schedule
     const tbody = document.getElementById('coachTodayClasses');
     if (tbody) {
+      const levelBadge = { Beginner: 'p-badge-green', Intermediate: 'p-badge-blue', Advanced: 'p-badge-gold' };
       tbody.innerHTML = this.classesDb.map(c => `
         <tr>
-          <td style="font-weight:600">${c.class}</td>
-          <td><span class="p-badge p-badge-blue">${c.level}</span></td>
-          <td>${c.time}</td>
-          <td>${c.students} Students</td>
+          <td style="font-weight:700; color:var(--p-text);">${c.class}</td>
+          <td><span class="p-badge ${levelBadge[c.level] || 'p-badge-blue'}">${c.level}</span></td>
+          <td style="color:var(--p-gold); font-weight:600;">${c.time}</td>
+          <td><span style="font-size:0.85rem; color:var(--p-text-muted);">👥 ${c.students} students</span></td>
           <td><span class="p-badge p-badge-green">${c.status}</span></td>
-          <td><button class="p-btn p-btn-teal p-btn-sm" onclick="CK.coach.startSession('${c.id}')">Start</button></td>
+          <td><button class="p-btn p-btn-teal p-btn-sm" onclick="CK.coach.startSession('${c.id}')">▶ Start</button></td>
         </tr>
       `).join('');
     }
@@ -186,31 +197,125 @@ CK.coach = {
       const myStudents = students.filter(s => s.coach === this.coachProfile.full_name);
 
       if (myStudents.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; opacity:0.5;">No students currently assigned to you.</div>';
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; opacity:0.5;">No students currently assigned to you.</div>';
         return;
       }
 
-      grid.innerHTML = myStudents.map(s => {
-        const initial = s.full_name ? s.full_name.charAt(0) : '♟';
+      const colors = ['var(--p-teal)', 'var(--p-gold)', 'var(--p-blue)', 'var(--p-rose)'];
+      grid.innerHTML = myStudents.map((s, i) => {
+        const initial = s.full_name ? s.full_name.charAt(0).toUpperCase() : '♟';
         const status = s.status || 'Offline';
-
+        const color = colors[i % colors.length];
         return `
           <div class="p-live-card ${status.toLowerCase()}">
-            <div class="p-live-avatar" style="background:var(--p-surface3); color:var(--p-teal)">${initial}</div>
+            <div class="p-live-avatar" style="background:rgba(255,255,255,0.06); color:${color}; font-size:1.1rem; font-weight:700; border:2px solid ${color}20;">${initial}</div>
             <div class="p-live-info">
               <div class="p-live-name">${s.full_name}</div>
-              <div class="p-live-sub">${s.level || 'Beginner'}</div>
+              <div class="p-live-sub">${s.level || 'Beginner'} · ${s.rating || 800} ELO</div>
               <div class="p-live-status"><span class="p-status-dot ${status.toLowerCase()}"></span> ${status}</div>
             </div>
-            <button class="p-icon-btn" onclick="CK.coach.viewStudentMetrics('${s.id}')">📊</button>
+            <button class="p-icon-btn" onclick="CK.coach.viewStudentMetrics('${s.id}')" title="View Progress">📊</button>
           </div>
         `;
       }).join('');
     }
   },
 
-  viewStudentMetrics(studentId) {
-    CK.showToast("Loading student diagnostics graph...", "info");
+  async loadAttendance() {
+    const tbody = document.getElementById('coachAttendanceTable');
+    if (!tbody) return;
+
+    const dateInput = document.getElementById('coachAttendanceDate');
+    if (!dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    const selectedDate = dateInput.value;
+
+    const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
+    const students = await CK.db.getProfiles('student');
+    const myStudents = students.filter(s => s.coach === coachName || !s.coach);
+    const attendanceLogs = await CK.db.getAttendance(null, selectedDate);
+
+    const attendanceMap = {};
+    attendanceLogs.forEach(l => { attendanceMap[l.userid] = l.status; });
+
+    if (myStudents.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5; padding:20px;">No students assigned to you.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = myStudents.map(s => {
+      const currentStatus = attendanceMap[s.id] || 'pending';
+      const levelBatch = s.level === 'Beginner' ? 'Beginner Fundamentals' : s.level === 'Advanced' ? 'Advanced Endgames' : 'Intermediate Strategy';
+      const badgeCls = currentStatus === 'present' ? 'p-badge-green' : currentStatus === 'absent' ? 'p-badge-red' : 'p-badge-ghost';
+      return `
+        <tr>
+          <td style="font-weight:700;">${s.full_name}</td>
+          <td><span class="p-badge p-badge-blue" style="font-size:0.75rem;">${s.level || 'Beginner'}</span></td>
+          <td style="font-size:0.85rem; color:var(--p-text-muted);">${levelBatch}</td>
+          <td style="font-size:0.85rem; color:var(--p-text-muted);">${selectedDate}</td>
+          <td><span class="p-badge ${badgeCls}" id="coach_att_${s.id}">${currentStatus === 'present' ? '✅ Present' : currentStatus === 'absent' ? '❌ Absent' : '⏳ Pending'}</span></td>
+          <td>
+            <select class="p-form-control" style="width:auto; padding:4px 8px; font-size:0.8rem; height:auto;"
+                    onchange="CK.admin && CK.admin.saveAttendanceRecord ? CK.admin.saveAttendanceRecord('${s.id}', '${selectedDate}', this.value) : CK.showToast('Admin not loaded','warning')">
+              <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+              <option value="present" ${currentStatus === 'present' ? 'selected' : ''}>✅ Present</option>
+              <option value="absent" ${currentStatus === 'absent' ? 'selected' : ''}>❌ Absent</option>
+            </select>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  async viewStudentMetrics(studentId) {
+    const students = await CK.db.getProfiles('student');
+    const s = students.find(u => u.id === studentId);
+    if (!s) return;
+
+    const rc = s.report_card || {};
+    const stats = [
+      { label: 'Opening', val: rc.opening ?? 84 },
+      { label: 'Middlegame', val: rc.middlegame ?? 76 },
+      { label: 'Tactics', val: rc.tactics ?? 88 },
+      { label: 'Endgame', val: rc.endgame ?? 62 },
+      { label: 'Time Mgmt', val: rc.time ?? 71 },
+      { label: 'Sportsmanship', val: rc.sports ?? 95 }
+    ];
+    const bars = stats.map(st => {
+      const color = st.val >= 85 ? 'var(--p-teal)' : st.val >= 70 ? 'var(--p-gold)' : 'var(--p-rose)';
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px;">
+          <span style="color:var(--p-text-muted)">${st.label}</span>
+          <span style="color:${color};font-weight:700">${st.val}%</span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${st.val}%;background:${color};border-radius:4px;transition:width .6s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const modal = document.getElementById('coachMetricsModal');
+    if (modal) {
+      const nameEl = modal.querySelector('#metricsStudentName');
+      const barsEl = modal.querySelector('#metricsBars');
+      const ratingEl = modal.querySelector('#metricsRating');
+      if (nameEl) nameEl.textContent = s.full_name;
+      if (ratingEl) ratingEl.textContent = `ELO ${s.rating || 800} · ${s.level || 'Beginner'} · ${s.puzzle || 0} puzzles solved`;
+      if (barsEl) barsEl.innerHTML = bars;
+      CK.openModal('coachMetricsModal');
+    } else {
+      CK.showToast(`${s.full_name}: Rating ${s.rating || 800} · Puzzles ${s.puzzle || 0} · Level ${s.level || 'Beginner'}`, 'info');
+    }
+  },
+
+  getGrade(mark) {
+    const n = parseInt(mark) || 0;
+    if (n >= 90) return 'A+';
+    if (n >= 80) return 'A';
+    if (n >= 70) return 'B';
+    if (n >= 60) return 'C';
+    return 'D';
   },
 
   startSession(classId) {
@@ -278,5 +383,63 @@ CK.coach = {
     CK.showToast("Game assessment note saved successfully! ELO accuracy updated.", "success");
     CK.closeModal('coachNoteModal');
     document.getElementById('coach_note_text').value = '';
+  },
+
+  async initReportEditor() {
+    const select = document.getElementById('coachReportStudentSelect');
+    if (!select) return;
+    const students = await CK.db.getProfiles('student');
+    const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
+    const myStudents = students.filter(s => s.coach === coachName || !s.coach);
+    select.innerHTML = myStudents.map(s => `<option value="${s.full_name}">${s.full_name}</option>`).join('');
+    if (myStudents.length > 0) {
+      this.loadStudentReport(myStudents[0].full_name);
+    }
+  },
+
+  async loadStudentReport(studentName) {
+    const students = await CK.db.getProfiles('student');
+    const s = students.find(u => u.full_name === studentName);
+    if (!s) return;
+    const rc = s.report_card || {
+      opening: 84,
+      middlegame: 76,
+      tactics: 88,
+      endgame: 62,
+      time: 71,
+      sports: 95,
+      remarks: "Excellent concentration and tactical calculation. Shows great promise when navigating complex middlegame positions.",
+      goals: ["Participate in State Level Rapid U-14", "Master Lucena and Philidor Rook Endgames", "Maintain blunder rate under 3% in tournaments"]
+    };
+    document.getElementById('rep_opening').value = rc.opening;
+    document.getElementById('rep_middlegame').value = rc.middlegame;
+    document.getElementById('rep_tactics').value = rc.tactics;
+    document.getElementById('rep_endgame').value = rc.endgame;
+    document.getElementById('rep_time').value = rc.time;
+    document.getElementById('rep_sports').value = rc.sports;
+    document.getElementById('rep_remarks').value = rc.remarks;
+    document.getElementById('rep_goals').value = Array.isArray(rc.goals) ? rc.goals.join(', ') : rc.goals;
+  },
+
+  async saveStudentReport() {
+    const studentName = document.getElementById('coachReportStudentSelect').value;
+    const students = await CK.db.getProfiles('student');
+    const s = students.find(u => u.full_name === studentName);
+    if (!s) return CK.showToast("Student profile not found", "error");
+
+    const goalsVal = document.getElementById('rep_goals').value;
+    s.report_card = {
+      opening: Number(document.getElementById('rep_opening').value) || 0,
+      middlegame: Number(document.getElementById('rep_middlegame').value) || 0,
+      tactics: Number(document.getElementById('rep_tactics').value) || 0,
+      endgame: Number(document.getElementById('rep_endgame').value) || 0,
+      time: Number(document.getElementById('rep_time').value) || 0,
+      sports: Number(document.getElementById('rep_sports').value) || 0,
+      remarks: document.getElementById('rep_remarks').value || '',
+      goals: goalsVal ? goalsVal.split(',').map(x => x.trim()) : []
+    };
+
+    await CK.db.saveProfile(s);
+    CK.showToast(`Weekly Report Card saved for ${studentName}!`, "success");
   }
 };
