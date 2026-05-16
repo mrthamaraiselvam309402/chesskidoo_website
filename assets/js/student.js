@@ -31,12 +31,20 @@ CK.student = {
     }
 
     this.userProfile = await CK.db.getProfile(currentUser.id) || currentUser;
-    
+
     // Ensure numeric values and proper defaults
     this.userProfile.rating = parseInt(this.userProfile.rating) || 800;
     this.userProfile.star = parseInt(this.userProfile.star) || 0;
     this.userProfile.puzzle = parseInt(this.userProfile.puzzle) || 0;
     this.userProfile.game = parseInt(this.userProfile.game) || 0;
+
+    // Restore SRS data from Supabase profile if available
+    if (this.userProfile.srs_data) {
+      try {
+        const cloudSRS = JSON.parse(this.userProfile.srs_data);
+        localStorage.setItem('ck_srs_v2', JSON.stringify(cloudSRS));
+      } catch(e) {}
+    }
 
     // 2. Load UI elements
     this.updateProfile();
@@ -799,6 +807,11 @@ CK.student = {
   /* ── Streak System ── */
   getStreak(userId) {
     const key = `ck_streak_${userId || 'anon'}`;
+    // Prefer data stored on the user profile (set by updateStreak)
+    const p = this.userProfile;
+    if (p && p.streak_count !== undefined) {
+      return { count: p.streak_count || 0, lastDate: p.streak_last_date || '' };
+    }
     return JSON.parse(localStorage.getItem(key) || '{"count":0,"lastDate":""}');
   },
 
@@ -806,11 +819,18 @@ CK.student = {
     const key = `ck_streak_${userId || 'anon'}`;
     const today = new Date().toDateString();
     const data = this.getStreak(userId);
-    if (data.lastDate === today) return data.count; // already counted today
+    if (data.lastDate === today) return data.count;
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     const newCount = data.lastDate === yesterday ? data.count + 1 : 1;
     const updated = { count: newCount, lastDate: today };
     localStorage.setItem(key, JSON.stringify(updated));
+    // Persist to Supabase via user profile
+    if (this.userProfile && this.userProfile.id && typeof CK !== 'undefined' && CK.db) {
+      const profilePatch = Object.assign({}, this.userProfile, { streak_count: newCount, streak_last_date: today });
+      CK.db.saveProfile(profilePatch).catch(() => {});
+      this.userProfile.streak_count = newCount;
+      this.userProfile.streak_last_date = today;
+    }
     this._renderStreakBadge(newCount);
     if (newCount > 0 && newCount % 7 === 0 && typeof CK !== 'undefined' && CK.notifs) {
       CK.notifs.push('puzzle_streak', `🔥 ${newCount}-Day Streak!`, `You've practised ${newCount} days in a row. Keep the fire going!`, userId, 'student');
@@ -920,8 +940,21 @@ CK.student = {
   /* ── Spaced Repetition System ── */
   _srs: {
     _key: 'ck_srs_v2',
+    _getLog() {
+      return JSON.parse(localStorage.getItem(this._key) || '{}');
+    },
+    _saveLog(log) {
+      localStorage.setItem(this._key, JSON.stringify(log));
+      // Also persist to Supabase via user profile srs_data field
+      const st = window.CK && CK.student;
+      if (st && st.userProfile && st.userProfile.id && CK.db) {
+        const patch = Object.assign({}, st.userProfile, { srs_data: JSON.stringify(log) });
+        CK.db.saveProfile(patch).catch(() => {});
+        st.userProfile.srs_data = JSON.stringify(log);
+      }
+    },
     record(puzzleId, success) {
-      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const log = this._getLog();
       const e = log[puzzleId] || { attempts: 0, successes: 0, interval: 1, nextReview: Date.now() };
       e.attempts++;
       if (success) {
@@ -933,15 +966,15 @@ CK.student = {
       e.nextReview = Date.now() + e.interval * 86400000;
       e.lastAttempt = Date.now();
       log[puzzleId] = e;
-      localStorage.setItem(this._key, JSON.stringify(log));
+      this._saveLog(log);
     },
     getDue(puzzlesDb) {
-      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const log = this._getLog();
       const now = Date.now();
       return puzzlesDb.filter(p => log[p.id] && log[p.id].nextReview <= now);
     },
     getStats(puzzlesDb) {
-      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const log = this._getLog();
       const now = Date.now();
       const entries = Object.values(log);
       return {

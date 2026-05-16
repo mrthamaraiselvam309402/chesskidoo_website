@@ -172,6 +172,18 @@ CREATE TABLE IF NOT EXISTS public.classes (
 );
 
 -- ==============================================================================
+-- SCHEMA ADDITIONS — Run these if you already have the tables created above.
+-- These are safe to re-run (uses ADD COLUMN IF NOT EXISTS).
+-- ==============================================================================
+
+-- Streak tracking columns on users
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS streak_count INTEGER DEFAULT 0;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS streak_last_date TEXT;
+
+-- Spaced Repetition System data (JSON string, per student)
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS srs_data TEXT;
+
+-- ==============================================================================
 -- SECURITY & ACCESS POLICIES
 -- Since the frontend handles its own mock-auth and accesses Supabase directly,
 -- we will disable Row Level Security (RLS) to ensure the API calls don't get blocked.

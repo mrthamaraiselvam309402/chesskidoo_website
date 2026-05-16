@@ -4525,3 +4525,40 @@
   .adm-coach-card { flex-wrap: wrap; }
   .adm-coach-stats { width: 100%; justify-content: space-around; }
 }
+
+/* ════════════════════════════════════════════════
+   CHESSBOARD.JS LIBRARY — Green/White Color Override
+   Overrides the default brown/beige squares used by
+   @chrisoakman/chessboardjs in PGN Lab & Play vs AI
+   ════════════════════════════════════════════════ */
+.white-1 { background-color: #ffffff !important; }
+.black-3 { background-color: #4a7c40 !important; }
+/* Highlight squares keep a translucent overlay */
+.highlight1-32417 { box-shadow: inset 0 0 3px 3px rgba(255,255,100,0.6) !important; }
+.highlight2-9c5d2 { box-shadow: inset 0 0 3px 3px rgba(255,255,100,0.6) !important; }
+
+/* ════════════════════════════════════════════════
+   PUZZLE SECTION — Responsive Layout Fixes
+   ════════════════════════════════════════════════ */
+.pz-board-col {
+  align-items: flex-start !important;
+}
+#pzActiveArea {
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .pz-layout {
+    grid-template-columns: 240px 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .pz-layout {
+    grid-template-columns: 1fr;
+  }
+  .pz-list-col {
+    max-height: 280px;
+  }
+  .pz-board-col {
+    min-height: unset;
+  }
+}

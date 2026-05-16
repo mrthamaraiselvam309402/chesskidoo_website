@@ -689,19 +689,7 @@ ta: {
   CK.currentLanguage = localStorage.getItem('ck_language') || 'en';
   CK.applyTranslations();
 
-  // Batch Manager — stores editable Google Meet links per level
-  CK.batchManager = {
-    _key: 'ck_batch_links',
-    getLinks() {
-      return JSON.parse(localStorage.getItem(this._key) || '{}');
-    },
-    saveLink(level, url) {
-      const links = this.getLinks();
-      links[level] = url;
-      localStorage.setItem(this._key, JSON.stringify(links));
-      CK.showToast(`Class room link for ${level} updated!`, 'success');
-    }
-  };
+  // Batch Manager is defined in db.js with full Supabase support — do not redefine here.
 
   // Vault Board — renders a simple chess board in the coach session triple-pane
   CK.renderVaultBoard = () => {
@@ -725,7 +713,7 @@ ta: {
     startPos.forEach((row, r) => {
       row.forEach((piece, c) => {
         const light = (r + c) % 2 === 0;
-        const bg = light ? '#f0d9b5' : '#b58863';
+        const bg = light ? '#ffffff' : '#4a7c40';
         html += `<div style="width:44px;height:44px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;user-select:none;" title="${String.fromCharCode(97+c)}${8-r}">${piece}</div>`;
       });
     });
@@ -773,6 +761,7 @@ ta: {
       this._resetModeBtns();
       this.renderMoveList();
       this.updateAnalysis(this.game.fen(), null);
+      setTimeout(() => { if (this.board) this.board.resize(); }, 80);
     },
 
     loadPreset(pgnText, boardId) {
@@ -815,6 +804,7 @@ ta: {
       });
       this.renderMoveList();
       this.updateAnalysis(this.game.fen(), this.history[this.history.length - 1] || null);
+      setTimeout(() => { if (this.board) this.board.resize(); }, 80);
     },
 
     _autoAnnotate() {

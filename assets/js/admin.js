@@ -368,10 +368,11 @@ CK.admin = {
 
     const coaches  = (await CK.db.getProfiles('coach'))   || [];
     const students = (await CK.db.getProfiles('student')) || [];
-    const reports  = JSON.parse(localStorage.getItem('ck_monthly_reports') || '[]');
+    const allNotes  = (await CK.db.getReviews()) || [];
     const attnLogs = (await CK.db.getAttendance()) || [];
     const thisMonth = new Date().getMonth() + 1;
     const thisYear  = new Date().getFullYear();
+    const thisMonthPrefix = `${thisYear}-${String(thisMonth).padStart(2, '0')}`;
 
     if (!coaches.length) {
       el.innerHTML = '<div class="cls-empty">?? No coaches registered yet.</div>';
@@ -380,11 +381,13 @@ CK.admin = {
 
     el.innerHTML = coaches.map(c => {
       const myStudents   = students.filter(s => s.coach === c.full_name);
-      const monthReports = reports.filter(r => r.coachId === c.id && r.month === thisMonth && r.year === thisYear);
-      const reportsPct   = myStudents.length > 0 ? Math.round(monthReports.length / myStudents.length * 100) : 0;
+      // Count unique students that received a coach note this month
+      const monthNotes   = allNotes.filter(n => n.coach === c.full_name && (n.date || '').startsWith(thisMonthPrefix));
+      const notedStudents = new Set(monthNotes.map(n => n.student)).size;
+      const reportsPct   = myStudents.length > 0 ? Math.round(notedStudents / myStudents.length * 100) : 0;
 
       // Attendance rate for classes this coach taught this month
-      const myLogs = attnLogs.filter(l => l.coachId === c.id || l.coachName === c.full_name);
+      const myLogs = attnLogs.filter(l => l.userid === c.id || l.coachName === c.full_name);
       const presentLogs = myLogs.filter(l => l.status === 'present');
       const attendancePct = myLogs.length > 0 ? Math.round(presentLogs.length / myLogs.length * 100) : 0;
 
@@ -902,7 +905,9 @@ CK.admin = {
     };
 
     const todayStr = new Date().toISOString().split('T')[0];
-    const coachAttn = JSON.parse(localStorage.getItem('ck_coach_attendance') || '[]');
+    const allCoachAttn = (await CK.db.getAttendance()) || [];
+    // Normalise to {coachId, date} shape expected by attendedToday check below
+    const coachAttn = allCoachAttn.map(a => ({ coachId: a.userid, date: a.date }));
 
     // Summary bar
     const summaryHtml = `
