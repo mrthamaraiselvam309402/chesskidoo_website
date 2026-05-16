@@ -835,10 +835,10 @@ body {
   transition: filter 0.05s;
 }
 .sq.light {
-  background: #F0D9B5;
+  background: #ffffff;
 }
 .sq.dark {
-  background: #B58863;
+  background: #4a7c40;
 }
 .sq.hl-from {
   background: rgba(255, 220, 100, 0.7) !important;

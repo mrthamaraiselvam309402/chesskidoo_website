@@ -27,10 +27,10 @@
   --arena-indigo: #6366f1;
   --arena-text: #f1f5f9;
   --arena-text-muted: #94a3b8;
-  --arena-board-light: #f5f5e8;
-  --arena-board-dark: #556b2f;
-  --arcade-board-light: #f5f5e8;
-  --arcade-board-dark: #556b2f;
+  --arena-board-light: #ffffff;
+  --arena-board-dark: #4a7c40;
+  --arcade-board-light: #ffffff;
+  --arcade-board-dark: #4a7c40;
   --arena-shadow: rgba(0, 0, 0, 0.4);
   --arena-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   --card-puzzle: #f59e0b;

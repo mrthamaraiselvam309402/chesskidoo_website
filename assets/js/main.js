@@ -1340,7 +1340,7 @@ ta: {
       const row = Math.floor(idx / 8);
       const col = idx % 8;
       const light = (row + col) % 2 === 0;
-      const bg = light ? '#EEEED2' : '#769656';
+      const bg = light ? '#ffffff' : '#4a7c40';
       const glyph = pieceGlyphs[p] || '';
       const color = p && p === p.toUpperCase() ? '#fff' : '#1a1a1a';
       return `<div style="background:${bg};display:flex;align-items:center;justify-content:center;font-size:clamp(14px,3vw,22px);color:${color};text-shadow:0 1px 3px rgba(0,0,0,0.5);">${glyph}</div>`;

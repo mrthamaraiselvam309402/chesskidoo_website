@@ -582,11 +582,10 @@ CK.student = {
 
     const setup = this._PUZZLE_SETUPS[id] || {};
     const files = ['a','b','c','d','e','f','g','h'];
-    // Olive-green / ivory board — dark squares: olive, light squares: warm white
-    const SQ_DARK  = '#556b2f';  // olive green (dark squares)
-    const SQ_LIGHT = '#f5f5e8';  // ivory white (light squares)
-    const COORD_DARK  = 'rgba(245,245,232,0.5)';
-    const COORD_LIGHT = 'rgba(85,107,47,0.5)';
+    const SQ_DARK  = '#4a7c40';  // green (dark squares)
+    const SQ_LIGHT = '#ffffff';  // white (light squares)
+    const COORD_DARK  = 'rgba(255,255,255,0.5)';
+    const COORD_LIGHT = 'rgba(74,124,64,0.5)';
     const BLACK_PIECES = new Set(['♚','♜','♝','♛','♞','♟']);
     const WHITE_PIECES = new Set(['♔','♖','♗','♕','♘','♙']);
     // isDark: a1 (f=0,r=1) must be dark → (f+r)%2===1

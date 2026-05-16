@@ -1020,7 +1020,7 @@ CK.admin = {
       boardEl.innerHTML = pieces.map((p, idx) => {
         const row = Math.floor(idx / 8);
         const col = idx % 8;
-        const bg = (row + col) % 2 === 0 ? '#EEEED2' : '#769656';
+        const bg = (row + col) % 2 === 0 ? '#ffffff' : '#4a7c40';
         return `<div style="background:${bg}; display:grid; place-items:center; width:100%; height:100%;">${getPieceHtml(p)}</div>`;
       }).join('');
     }
