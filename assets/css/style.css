@@ -403,7 +403,7 @@ body {
 }
 
 /* --- Hero Visual / Chess Board (Premium Match Interface) --- */
-.hero-visual { position: relative; perspective: 1500px; margin-top: -170px; }
+.hero-visual { position: relative; perspective: 1500px; margin-top: -227px; margin-left: -38px; }
 .hero-board-frame {
   background: #1a1a1a;
   border-radius: 24px;
