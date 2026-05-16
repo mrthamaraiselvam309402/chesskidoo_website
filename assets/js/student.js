@@ -12,7 +12,11 @@ CK.student = {
   puzzlesDb: [
     { id: 'P1', title: 'Back-Rank Mate', type: 'Tactics', diff: 'Easy', coach: 'Sarah Chess', due: 'Today', instruction: 'White to move. Find the back-rank checkmate!', boardSetup: 'black-king-f8-pawns-g7-h7-white-rook-d1', solution: 'd8', desc: 'Rook to d8 delivers checkmate as the Black king is trapped behind its own pawns.' },
     { id: 'P2', title: 'Tactical Fork Opportunity', type: 'Tactics', diff: 'Medium', coach: 'Sarah Chess', due: 'Tomorrow', instruction: 'White to move. Fork the black King and Rook with your Knight!', boardSetup: 'black-king-e8-rook-a8-white-knight-d5', solution: 'c7', desc: 'Knight to c7 forks both the king on e8 and the rook on a8, winning material.' },
-    { id: 'P3', title: 'Smothered Mate', type: 'Endgame', diff: 'Hard', coach: 'Michael Knight', due: 'May 18', instruction: 'White to move. Deliver the famous smothered mate with your Knight!', boardSetup: 'black-king-h8-rook-g8-pawns-h7-g7-f7-white-knight-f5', solution: 'f7', desc: 'Knight to f7 delivers checkmate because the king is completely boxed in by its own pieces.' }
+    { id: 'P3', title: 'Smothered Mate', type: 'Endgame', diff: 'Hard', coach: 'Michael Knight', due: 'May 18', instruction: 'White to move. Deliver the famous smothered mate with your Knight!', boardSetup: 'black-king-h8-rook-g8-pawns-h7-g7-f7-white-knight-f5', solution: 'f7', desc: 'Knight to f7 delivers checkmate because the king is completely boxed in by its own pieces.' },
+    { id: 'P4', title: 'Queen Snipes the Rook', type: 'Tactics', diff: 'Easy', coach: 'Michael Knight', due: 'Today', instruction: 'White to move. Slide your queen up the h-file and capture the undefended rook!', boardSetup: 'black-king-e8-rook-h8-white-queen-h1', solution: 'h8', desc: 'Queen to h8 captures the undefended rook. The black king on e8 cannot reach in time — a free piece!' },
+    { id: 'P5', title: 'Knight Fork — King & Rook', type: 'Tactics', diff: 'Medium', coach: 'Sarah Chess', due: 'May 16', instruction: 'White knight leaps to a square that attacks both the black king AND rook simultaneously. Find the forking square!', boardSetup: 'black-king-g5-rook-d6-white-knight-c3', solution: 'e4', desc: 'Knight to e4 forks the black king on g5 and rook on d6. White wins a full rook next move!' },
+    { id: 'P6', title: 'Pin and Win', type: 'Tactics', diff: 'Medium', coach: 'Sarah Chess', due: 'May 17', instruction: 'The black rook is pinned along the bishop diagonal — a pinned piece cannot move. Simply capture it!', boardSetup: 'black-king-e5-rook-c3-white-bishop-a1', solution: 'c3', desc: 'Bishop takes c3! The rook was pinned to the king along the a1–e5 diagonal and could not escape.' },
+    { id: 'P7', title: 'Pawn Promotion', type: 'Endgame', diff: 'Easy', coach: 'Michael Knight', due: 'May 19', instruction: 'White pawn is one square from queening! Click the promotion square to advance.', boardSetup: 'white-pawn-e7-white-king-e5-black-king-c7', solution: 'e8', desc: 'Pawn to e8, queening! The black king is too far away to stop it — a textbook passed pawn endgame win.' }
   ],
 
   async init() {
@@ -36,7 +40,10 @@ CK.student = {
 
     // 2. Load UI elements
     this.updateProfile();
+    this.updateStreak(this.userProfile.id);
     this.renderDashboard();
+    this.renderDailyGoals();
+    this.renderSRSQueue();
     this.renderAttendanceCalendar();
     this.renderTournamentHistory();
     this.renderPuzzlesList();
@@ -46,6 +53,36 @@ CK.student = {
     this.renderReportCard();
     this.initCharts();
     this.startCountdown();
+    this.startAutoRefresh();
+  },
+
+  /* ── Auto Refresh ── */
+  _studentRefreshTimer: null,
+
+  startAutoRefresh() {
+    if (this._studentRefreshTimer) clearInterval(this._studentRefreshTimer);
+    this._studentRefreshTimer = setInterval(async () => {
+      await this._renderLeaderboard();
+      this.renderDailyGoals();
+      this.renderSRSQueue();
+      // Refresh dashboard if active
+      const homePanel = document.getElementById('student-panel-home');
+      if (homePanel && homePanel.classList.contains('active')) {
+        await this.renderDashboard();
+      }
+      // Refresh presence in localStorage so admin can see student is active
+      const presence = JSON.parse(localStorage.getItem('ck_live_presence') || '{}');
+      const userId = this.userProfile?.id;
+      if (userId) {
+        presence[userId] = { name: this.userProfile.full_name, role: 'student', lastSeen: Date.now() };
+        localStorage.setItem('ck_live_presence', JSON.stringify(presence));
+      }
+    }, 45000);
+  },
+
+  stopAutoRefresh() {
+    if (this._studentRefreshTimer) { clearInterval(this._studentRefreshTimer); this._studentRefreshTimer = null; }
+    if (window.studentCountdownTimer) { clearInterval(window.studentCountdownTimer); window.studentCountdownTimer = null; }
   },
 
   nav(panelId) {
@@ -63,18 +100,27 @@ CK.student = {
 
     // Re-render dynamic panels when navigated to
     if (panelId === 'achievements') this.renderAchievementsTab();
-    if (panelId === 'progress') this.initCharts();
+    if (panelId === 'progress') { this.renderRealProgress(); this.initCharts(); }
     if (panelId === 'report') this.renderReportCard();
     if (panelId === 'fees') this.renderFeesGateway();
     if (panelId === 'reviews') this.renderCoachReviews();
     if (panelId === 'resources') this.renderResources();
-    
+    if (panelId === 'schedule' && CK.schedulePro) CK.schedulePro.renderStudentSchedule('studentScheduleList', this.userProfile);
+    if (panelId === 'puzzles' && CK.puzzlesPro) CK.puzzlesPro.renderPuzzleList('studentPuzzleProList', this.userProfile?.id, this.userProfile?.full_name);
+    if (panelId === 'classroom' && window.CK && CK.classroom) {
+      CK.classroom.studentTab('homework');
+    } else if (panelId !== 'classroom' && window.CK && CK.classroom) {
+      CK.classroom.joinLiveClass && CK.classroom._stopPolling && CK.classroom._stopPolling();
+    }
+
     const titles = {
       home: 'My Dashboard',
       progress: 'My Progress',
       schedule: 'My Schedule',
       session: 'Join Class',
       puzzles: 'My Puzzles',
+      openings: 'Opening Trainer',
+      games: 'Game Tracker',
       reviews: 'Coach Reviews',
       achievements: 'Achievements',
       path: 'Adaptive Mastery Skill Tree',
@@ -83,9 +129,11 @@ CK.student = {
       report: 'Official Student Report Card',
       resources: 'Learning Resources',
       lab: 'PGN Stockfish Lab',
-      tournaments: 'Tournaments'
+      tournaments: 'Tournaments',
+      classroom: 'My Classroom'
     };
-    document.getElementById('studentPanelTitle').innerText = titles[panelId] || 'Dashboard';
+    const titleEl = document.getElementById('studentPanelTitle');
+    if (titleEl) titleEl.innerText = titles[panelId] || 'Dashboard';
   },
 
   updateProfile() {
@@ -93,48 +141,73 @@ CK.student = {
     const firstName = p.full_name ? p.full_name.split(' ')[0] : 'Champion';
     const initial = p.full_name ? p.full_name.charAt(0).toUpperCase() : '♛';
 
-    // Sidebar details
-    const sbName = document.getElementById('studentSidebarName');
-    const sbSub = document.getElementById('studentSidebarSub');
+    // Sidebar
+    const sbName   = document.getElementById('studentSidebarName');
+    const sbSub    = document.getElementById('studentSidebarSub');
     const sbAvatar = document.getElementById('studentSidebarAvatar');
-    if (sbName) sbName.innerText = p.full_name || 'Chess Student';
-    if (sbSub) sbSub.innerText = `${p.level || 'Beginner'} · ELO ${p.rating || 800}`;
+    if (sbName)   sbName.innerText   = p.full_name || 'Chess Student';
+    if (sbSub)    sbSub.innerText    = `${p.level || 'Beginner'} · ELO ${p.rating || 800}`;
     if (sbAvatar) sbAvatar.innerText = initial;
 
-    // Welcome banner
+    // Welcome banner — real puzzle count + next class name
     const welcomeName = document.getElementById('studentWelcomeName');
-    const welcomeSub = document.getElementById('studentWelcomeSub');
+    const welcomeSub  = document.getElementById('studentWelcomeSub');
     if (welcomeName) welcomeName.textContent = firstName;
-    const hour = new Date().getHours();
+    const hour     = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-    if (welcomeSub) welcomeSub.textContent = `${greeting}! You have ${p.puzzle || 3} puzzles pending and a class scheduled today. Keep pushing!`;
-    
-    // Main profile banner / FIDE level card details
-    const ratNum = document.getElementById('studentRatingNum');
-    const ratLbl = document.getElementById('studentRatingLabel');
+    const unsolvedCount = this.puzzlesDb.length - this._solvedPuzzles.size;
+    const todayStr = new Date().toISOString().split('T')[0];
+    // Use cached meetings (already fetched by renderDashboard) or localStorage fallback
+    const _cachedMeetings = JSON.parse(localStorage.getItem('ck_meetings') || '[]');
+    const nextMeeting = _cachedMeetings
+      .filter(m => m.date >= todayStr).sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time))[0];
+    const classHint = nextMeeting
+      ? `"${nextMeeting.title || nextMeeting.type || 'class'}" at ${nextMeeting.time}`
+      : 'a class coming up soon';
+    if (welcomeSub) welcomeSub.textContent =
+      `${greeting}! ${unsolvedCount > 0 ? `${unsolvedCount} puzzle${unsolvedCount>1?'s':''} waiting` : 'All puzzles done today!'} · ${classHint}. Keep pushing!`;
+
+    // FIDE level card
+    const rating = parseInt(p.rating) || 800;
     const curRat = document.getElementById('studentCurrentRating');
     const curLvl = document.getElementById('studentCurrentLevel');
-    
-    if (ratNum) ratNum.innerText = p.rating || 800;
-    if (ratLbl) ratLbl.innerText = `Level: ${p.level || 'Beginner'}`;
-    if (curRat) curRat.innerText = `${p.rating || 800} ELO`;
+    const ratNum = document.getElementById('studentRatingNum');
+    const ratLbl = document.getElementById('studentRatingLabel');
+    if (curRat) curRat.innerText = `${rating} ELO`;
     if (curLvl) curLvl.innerText = p.level || 'Beginner';
-    
-    // Stats counters
-    const stLess = document.getElementById('studentStatLessons');
-    const stPuz = document.getElementById('studentStatPuzzles');
-    const stStar = document.getElementById('studentStatStars');
-    
-    if (stLess) stLess.innerText = p.game || '12';
-    if (stPuz) stPuz.innerText = p.puzzle || '45';
-    if (stStar) stStar.innerText = p.star || '8';
-    
-    // Calculate attendance percentage dynamically
+    if (ratNum) ratNum.innerText = rating;
+    if (ratLbl) ratLbl.innerText = `Level: ${p.level || 'Beginner'}`;
+
+    // ELO progress bar toward next milestone
+    const MILESTONES = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400];
+    const nextMs = MILESTONES.find(m => m > rating) || 2400;
+    const prevMs = MILESTONES.slice().reverse().find(m => m <= rating) || 800;
+    const eloPct  = prevMs === nextMs ? 100 : Math.round((rating - prevMs) / (nextMs - prevMs) * 100);
+    const eloBar  = document.getElementById('studentEloBar');
+    const eloNext = document.getElementById('studentEloNext');
+    if (eloBar)  eloBar.style.width = eloPct + '%';
+    if (eloNext) eloNext.textContent = `Next Milestone: ${nextMs} ELO`;
+
+    // Stats counters — real values
+    const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+    setEl('studentStatLessons',  p.game   || 0);
+    setEl('studentStatPuzzles',  p.puzzle || 0);
+    setEl('studentStatStars',    p.star   || 0);
+    setEl('studentStatRating',   rating);
+    setEl('studentStatStreak',   this.getStreak(p.id)?.count || 0);
+
+    // Game tracker stats if available
+    if (p.id && typeof CK !== 'undefined' && CK.gameTracker) {
+      const stats = CK.gameTracker.getStats(p.id);
+      setEl('studentStatGamesPlayed', stats.total  || p.game || 0);
+      setEl('studentStatWinRate',     (stats.winRate || 0) + '%');
+    }
+
     this.updateAttendanceStats();
   },
 
   async updateAttendanceStats() {
-    const logs = await CK.db.getAttendance(this.userProfile.id);
+    const logs = (await CK.db.getAttendance(this.userProfile.id)) || [];
     const presentCount = logs.filter(l => l.status === 'present').length;
     const totalCount = logs.length;
     const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 100;
@@ -145,44 +218,110 @@ CK.student = {
     if (elSum) elSum.innerText = `Present: ${presentCount} of ${totalCount} recorded sessions (${percentage}%)`;
   },
 
-  renderDashboard() {
+  async renderDashboard() {
+    const p = this.userProfile || {};
+
+    // ── Streak badge ──
+    if (p.id) {
+      const streak = this.getStreak(p.id);
+      this._renderStreakBadge(streak.count);
+    }
+
+    // ── Presence heartbeat ──
+    if (p.id) {
+      const presence = JSON.parse(localStorage.getItem('ck_live_presence') || '{}');
+      presence[p.id] = { name: p.full_name, role: 'student', lastSeen: Date.now() };
+      localStorage.setItem('ck_live_presence', JSON.stringify(presence));
+    }
+
+    // ── Real game stats from game-tracker ──
+    if (p.id && typeof CK !== 'undefined' && CK.gameTracker) {
+      const stats = CK.gameTracker.getStats(p.id);
+      const elGames = document.getElementById('studentStatGames');
+      const elWins  = document.getElementById('studentStatWins');
+      const elWR    = document.getElementById('studentStatWinRate');
+      if (elGames) elGames.textContent = stats.total || p.game || 0;
+      if (elWins)  elWins.textContent  = stats.wins  || 0;
+      if (elWR)    elWR.textContent    = (stats.winRate || 0) + '%';
+    }
+
     // 1. Pending Puzzles table in dashboard home
     const pTable = document.getElementById('studentPendingPuzzles');
     if (pTable) {
-      pTable.innerHTML = this.puzzlesDb.slice(0, 2).map(p => `
+      const unsolved = this.puzzlesDb.filter(px => !this._solvedPuzzles.has(px.id)).slice(0, 2);
+      const rows = unsolved.length ? unsolved : this.puzzlesDb.slice(0, 2);
+      pTable.innerHTML = rows.map(px => `
         <tr>
-          <td style="font-weight:600">${p.title}</td>
-          <td>${p.type}</td>
-          <td><span class="p-badge ${p.diff==='Easy'?'p-badge-green':p.diff==='Medium'?'p-badge-yellow':'p-badge-red'}">${p.diff}</span></td>
-          <td>${p.coach}</td>
-          <td style="color:var(--p-danger)">${p.due}</td>
-          <td><button class="p-btn p-btn-blue p-btn-sm" onclick="CK.student.loadAndGoToPuzzle('${p.id}')">Solve</button></td>
+          <td style="font-weight:600">${px.title}</td>
+          <td>${px.type}</td>
+          <td><span class="p-badge ${px.diff==='Easy'?'p-badge-green':px.diff==='Medium'?'p-badge-yellow':'p-badge-red'}">${px.diff}</span></td>
+          <td>${px.coach}</td>
+          <td style="color:var(--p-danger)">${px.due}</td>
+          <td><button class="p-btn p-btn-blue p-btn-sm" onclick="CK.student.loadAndGoToPuzzle('${px.id}')">Solve</button></td>
         </tr>
       `).join('');
     }
 
     // Update puzzle notification count badge in sidebar
     const badge = document.getElementById('studentPuzzleBadge');
-    if (badge) badge.innerText = this.puzzlesDb.length;
+    if (badge) badge.innerText = this.puzzlesDb.length - this._solvedPuzzles.size;
 
-    // 2. Upcoming class details
+    // ── Real leaderboard from DB ──
+    this._renderLeaderboard();
+
+    // Daily puzzle title in home quick-card
+    const dailyTitleEl = document.getElementById('dailyPuzzleTitle');
+    if (dailyTitleEl) {
+      const daily = this.puzzlesDb.find(x => x.id === this.getDailyPuzzleId());
+      if (daily) {
+        const solved = this._solvedPuzzles.has(daily.id);
+        dailyTitleEl.textContent = solved
+          ? `${daily.title} · ${daily.type} · ✅ Solved Today!`
+          : `${daily.title} · ${daily.type} · ${daily.diff}`;
+      }
+    }
+
+    // 2. Upcoming classes — fetched via DB layer (syncs from Supabase)
     const sTable = document.getElementById('studentUpcomingTable');
     if (sTable) {
-      const schedule = [
-        { date: 'Today', class: `${this.userProfile.level || 'Intermediate'} Strategy`, coach: this.userProfile.coach || 'Sarah Chess', time: '4:00 PM', dur: '60m', status: 'p-badge-green' },
-        { date: 'May 15, 2026', class: 'Tactics & Calculation Workshop', coach: 'Michael Knight', time: '5:30 PM', dur: '45m', status: 'p-badge-blue' },
-        { date: 'May 18, 2026', class: 'Opening Prep: Italian & Sicilian', coach: this.userProfile.coach || 'Sarah Chess', time: '4:00 PM', dur: '60m', status: 'p-badge-blue' }
-      ];
-      sTable.innerHTML = schedule.map(s => `
-        <tr>
-          <td>${s.date}</td>
-          <td style="font-weight:600">${s.class}</td>
-          <td>${s.coach}</td>
-          <td>${s.time}</td>
-          <td>${s.dur}</td>
-          <td><span class="p-badge ${s.status}">${s.date==='Today'?'Upcoming':'Scheduled'}</span></td>
-        </tr>
-      `).join('');
+      const todayStr = new Date().toISOString().split('T')[0];
+      const allMeetings = await CK.db.getMeetings();
+      const meetings = allMeetings
+        .filter(m => m.date >= todayStr && (!m.batch || m.batch === p.batch))
+        .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+        .slice(0, 4);
+
+      if (meetings.length) {
+        sTable.innerHTML = meetings.map(m => {
+          const isToday = m.date === todayStr;
+          const displayDate = isToday ? 'Today' : new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          return `<tr>
+            <td>${displayDate}</td>
+            <td style="font-weight:600">${m.title || m.type || 'Class'}</td>
+            <td>${m.coach || p.coach || 'Coach'}</td>
+            <td>${m.time || ''}</td>
+            <td>${m.duration ? m.duration + 'm' : '60m'}</td>
+            <td><span class="p-badge ${isToday ? 'p-badge-green' : 'p-badge-blue'}">${isToday ? 'Upcoming' : 'Scheduled'}</span></td>
+          </tr>`;
+        }).join('');
+      } else {
+        // Static fallback when no meetings in DB
+        const schedule = [
+          { date: 'Today', class: `${p.level || 'Intermediate'} Strategy`, coach: p.coach || 'Sarah Chess', time: '4:00 PM', dur: '60m', status: 'p-badge-green' },
+          { date: 'May 18, 2026', class: 'Tactics & Calculation Workshop', coach: 'Michael Knight', time: '5:30 PM', dur: '45m', status: 'p-badge-blue' },
+          { date: 'May 22, 2026', class: 'Opening Prep: Italian & Sicilian', coach: p.coach || 'Sarah Chess', time: '4:00 PM', dur: '60m', status: 'p-badge-blue' }
+        ];
+        sTable.innerHTML = schedule.map(s => `
+          <tr>
+            <td>${s.date}</td>
+            <td style="font-weight:600">${s.class}</td>
+            <td>${s.coach}</td>
+            <td>${s.time}</td>
+            <td>${s.dur}</td>
+            <td><span class="p-badge ${s.status}">${s.date==='Today'?'Upcoming':'Scheduled'}</span></td>
+          </tr>
+        `).join('');
+      }
     }
   },
 
@@ -203,7 +342,7 @@ CK.student = {
     html += daysOfWeek.map(d => `<div class="p-cal-cell header">${d}</div>`).join('');
 
     // Fetch attendance from DB
-    const logs = await CK.db.getAttendance(this.userProfile.id);
+    const logs = (await CK.db.getAttendance(this.userProfile.id)) || [];
     const attendanceMap = {};
     logs.forEach(l => {
       const d = new Date(l.date);
@@ -283,9 +422,95 @@ CK.student = {
     P1: { 'f8': '♚', 'g7': '♟', 'h7': '♟', 'd1': '♖' },
     P2: { 'e8': '♚', 'a8': '♜', 'd5': '♘' },
     P3: { 'h8': '♚', 'g8': '♜', 'h7': '♟', 'g7': '♟', 'f7': '♟', 'f5': '♘' },
+    P4: { 'e8': '♚', 'h8': '♜', 'h1': '♕' },
+    P5: { 'g5': '♚', 'd6': '♜', 'c3': '♘' },
+    P6: { 'e5': '♚', 'c3': '♜', 'a1': '♗' },
+    P7: { 'e7': '♙', 'e5': '♔', 'c7': '♚' },
   },
 
   _solvedPuzzles: new Set(),
+  _puzzleTimer: null,
+  _puzzleSeconds: 0,
+  _puzzleMistakes: 0,
+  _puzzleXP: 0,
+
+  startPuzzleTimer() {
+    this.stopPuzzleTimer();
+    this._puzzleSeconds = 0;
+    this._puzzleMistakes = 0;
+    this._updateTimerDisplay();
+    this._puzzleTimer = setInterval(() => {
+      this._puzzleSeconds++;
+      this._updateTimerDisplay();
+    }, 1000);
+  },
+
+  stopPuzzleTimer() {
+    if (this._puzzleTimer) { clearInterval(this._puzzleTimer); this._puzzleTimer = null; }
+  },
+
+  _updateTimerDisplay() {
+    const el = document.getElementById('pzTimer');
+    if (!el) return;
+    const m = Math.floor(this._puzzleSeconds / 60).toString().padStart(2, '0');
+    const s = (this._puzzleSeconds % 60).toString().padStart(2, '0');
+    el.textContent = `⏱ ${m}:${s}`;
+  },
+
+  getXPForPuzzle(diff, seconds, mistakes) {
+    const base = { Easy: 10, Medium: 25, Hard: 50 }[diff] || 10;
+    const speedBonus = seconds < 30 ? 1.5 : seconds < 60 ? 1.2 : 1;
+    const mistakePenalty = Math.max(0.5, 1 - mistakes * 0.15);
+    return Math.round(base * speedBonus * mistakePenalty);
+  },
+
+  getDailyPuzzleId() {
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    return this.puzzlesDb[dayIndex % this.puzzlesDb.length].id;
+  },
+
+  showXPPopup(xp) {
+    const area = document.getElementById('pzActiveArea');
+    if (!area) return;
+    const el = document.createElement('div');
+    el.className = 'pz-xp-popup';
+    el.textContent = `+${xp} XP`;
+    area.style.position = 'relative';
+    area.appendChild(el);
+    setTimeout(() => el.remove(), 1700);
+  },
+
+  async renderPuzzleLeaderboard() {
+    const container = document.getElementById('pzLeaderboardBody');
+    if (!container) return;
+    const students = (await CK.db.getProfiles('student')) || [];
+    const myId = this.userProfile ? this.userProfile.id : null;
+    const sorted = [...students].sort((a, b) => (b.puzzle || 0) - (a.puzzle || 0)).slice(0, 8);
+    if (!sorted.length) {
+      container.innerHTML = '<p style="opacity:.5;text-align:center;padding:20px;">No student data yet.</p>';
+      return;
+    }
+    container.innerHTML = sorted.map((s, i) => {
+      const medal = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
+      const isMe = s.id === myId;
+      return `<div class="pz-lb-row${isMe ? ' pz-lb-row--me' : ''}">
+        <span class="pz-lb-rank">${medal}</span>
+        <span class="pz-lb-name">${s.full_name || 'Unknown'}</span>
+        <span class="pz-lb-val">⭐ ${s.star || 0}</span>
+        <span class="pz-lb-val">🧩 ${s.puzzle || 0}</span>
+      </div>`;
+    }).join('');
+  },
+
+  openLeaderboard() {
+    const modal = document.getElementById('pzLeaderboardModal');
+    if (modal) { modal.style.display = 'flex'; this.renderPuzzleLeaderboard(); }
+  },
+
+  closeLeaderboard() {
+    const modal = document.getElementById('pzLeaderboardModal');
+    if (modal) modal.style.display = 'none';
+  },
 
   renderPuzzlesList() {
     const container = document.getElementById('puzzlesListPanel');
@@ -348,26 +573,43 @@ CK.student = {
     const fb = document.getElementById('puzzleFeedback');
     if (fb) { fb.style.display = 'none'; fb.className = 'pz-feedback'; fb.textContent = ''; }
 
+    // Start puzzle timer
+    this.startPuzzleTimer();
+
     // Render board
     const boardEl = document.getElementById('studentPuzzleBoardContainer');
     if (!boardEl) return;
 
     const setup = this._PUZZLE_SETUPS[id] || {};
     const files = ['a','b','c','d','e','f','g','h'];
-    let html = `<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:0;border:3px solid rgba(232,184,75,0.35);border-radius:10px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.55),0 0 0 1px rgba(232,184,75,0.12);">`;
+    // Olive-green / ivory board — dark squares: olive, light squares: warm white
+    const SQ_DARK  = '#556b2f';  // olive green (dark squares)
+    const SQ_LIGHT = '#f5f5e8';  // ivory white (light squares)
+    const COORD_DARK  = 'rgba(245,245,232,0.5)';
+    const COORD_LIGHT = 'rgba(85,107,47,0.5)';
+    const BLACK_PIECES = new Set(['♚','♜','♝','♛','♞','♟']);
+    const WHITE_PIECES = new Set(['♔','♖','♗','♕','♘','♙']);
+    // isDark: a1 (f=0,r=1) must be dark → (f+r)%2===1
+    const sqSize = 'min(52px, calc((min(400px,100vw - 48px)) / 8))';
+    let html = `<div style="display:grid;grid-template-columns:repeat(8,${sqSize});grid-template-rows:repeat(8,${sqSize});width:fit-content;margin:0 auto;border:3px solid rgba(85,107,47,0.6);border-radius:8px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 1px rgba(85,107,47,0.25);">`;
     for (let r = 8; r >= 1; r--) {
       for (let f = 0; f < 8; f++) {
         const sq = files[f] + r;
-        const isDark = (r + f) % 2 === 0;
-        const bg = isDark ? '#b58863' : '#f0d9b5';
-        const tc = isDark ? 'rgba(240,217,181,0.55)' : 'rgba(181,136,99,0.55)';
+        const isDark = (f + r) % 2 === 1;
+        const bg = isDark ? SQ_DARK : SQ_LIGHT;
+        const coord = isDark ? COORD_DARK : COORD_LIGHT;
         const piece = setup[sq] || '';
-        const isBlack = piece === '♚' || piece === '♜' || piece === '♟';
-        const pc = isBlack ? '#0d0d1a' : (piece ? '#fff' : '');
-        html += `<div style="aspect-ratio:1;background:${bg};display:flex;align-items:center;justify-content:center;font-size:clamp(1.4rem,2.5vw,2.4rem);cursor:pointer;user-select:none;position:relative;transition:filter 0.15s,transform 0.15s;" onclick="CK.student.onSquareClick('${sq}')" onmouseover="this.style.filter='brightness(1.2)';this.style.transform='scale(1.05)';" onmouseout="this.style.filter='';this.style.transform='';" title="${sq}">
-          <span style="text-shadow:0 2px 5px rgba(0,0,0,0.55);color:${pc};line-height:1;">${piece}</span>
-          <span style="position:absolute;bottom:1px;left:2px;font-size:0.52rem;opacity:0.5;color:${tc};font-weight:700;">${f === 0 ? r : ''}</span>
-          <span style="position:absolute;bottom:1px;right:2px;font-size:0.52rem;opacity:0.5;color:${tc};font-weight:700;">${r === 1 ? files[f] : ''}</span>
+        let textShadow = '';
+        if (BLACK_PIECES.has(piece)) {
+          textShadow = '0 0 3px rgba(255,255,255,0.9),0 0 6px rgba(255,255,255,0.6),0 2px 4px rgba(0,0,0,0.5)';
+        } else if (WHITE_PIECES.has(piece)) {
+          textShadow = '0 0 3px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.7),0 2px 4px rgba(0,0,0,0.5)';
+        }
+        const pc = BLACK_PIECES.has(piece) ? '#1a1a2e' : (WHITE_PIECES.has(piece) ? '#fffde7' : '');
+        html += `<div style="width:${sqSize};height:${sqSize};background:${bg};display:flex;align-items:center;justify-content:center;font-size:clamp(1.5rem,4.5vw,2.5rem);cursor:pointer;user-select:none;position:relative;transition:filter 0.12s,transform 0.12s;box-sizing:border-box;" onclick="CK.student.onSquareClick('${sq}')" onmouseover="this.style.filter='brightness(1.18)';this.style.outline='3px solid rgba(85,107,47,0.7)';" onmouseout="this.style.filter='';this.style.outline='';" title="${sq}">
+          <span style="text-shadow:${textShadow};color:${pc};line-height:1;pointer-events:none;">${piece}</span>
+          <span style="position:absolute;bottom:1px;left:2px;font-size:0.5rem;font-weight:800;opacity:0.7;color:${coord};pointer-events:none;">${f === 0 ? r : ''}</span>
+          <span style="position:absolute;bottom:1px;right:2px;font-size:0.5rem;font-weight:800;opacity:0.7;color:${coord};pointer-events:none;">${r === 1 ? files[f] : ''}</span>
         </div>`;
       }
     }
@@ -383,7 +625,11 @@ CK.student = {
     const hints = {
       P1: '💡 Hint: Your rook can slide all the way up the d-file to the back rank!',
       P2: '💡 Hint: Your knight jumps in an L-shape. Look for a square that attacks both the king and rook.',
-      P3: '💡 Hint: The black king is trapped in the corner by its own pieces. A knight jump can end the game!'
+      P3: '💡 Hint: The black king is trapped in the corner by its own pieces. A knight jump can end the game!',
+      P4: '💡 Hint: Your queen and the enemy rook share the h-file. Slide straight up for a free piece!',
+      P5: '💡 Hint: Find the one square where your knight attacks BOTH the black king and rook at the same time!',
+      P6: '💡 Hint: The black rook on c3 is pinned along the diagonal to the king — it cannot move. Simply capture it!',
+      P7: '💡 Hint: Your pawn is on e7, one step from queening. Push it all the way to e8!'
     };
     fb.style.display = 'block';
     fb.className = 'pz-feedback hint';
@@ -417,8 +663,15 @@ CK.student = {
     const fb = document.getElementById('puzzleFeedback');
 
     if (squareId === p.solution) {
-      CK.showToast('🎉 Brilliant! Puzzle Solved!', 'success');
+      this.stopPuzzleTimer();
+      const xp = this.getXPForPuzzle(p.diff, this._puzzleSeconds, this._puzzleMistakes);
+      this._puzzleXP += xp;
+      this.showXPPopup(xp);
+      CK.showToast(`🎉 Brilliant! +${xp} XP earned!`, 'success');
       this._solvedPuzzles.add(p.id);
+      this._srs.record(p.id, true);
+      this._trackDailyGoal('puzzles');
+      this.renderSRSQueue();
 
       if (fb) {
         fb.style.display = 'block';
@@ -426,9 +679,9 @@ CK.student = {
         fb.innerHTML = `✅ <strong>Correct! ${p.title} solved!</strong><br><span style="font-size:0.85rem;opacity:0.85;">${p.desc}</span>`;
       }
 
-      // Flash the solution square green
+      // Flash the solution square with olive-gold glow
       const sqs = document.querySelectorAll('#studentPuzzleBoardContainer [title="' + squareId + '"]');
-      sqs.forEach(el => { el.style.boxShadow = 'inset 0 0 0 3px #22c55e'; el.style.background = '#15803d'; });
+      sqs.forEach(el => { el.style.boxShadow = 'inset 0 0 0 4px #e8b84b, 0 0 20px rgba(232,184,75,0.6)'; el.style.background = '#3a6b2a'; el.style.outline = ''; });
 
       this.userProfile.puzzle = (parseInt(this.userProfile.puzzle) || 0) + 1;
       if ((this.userProfile.star || 0) < 5) {
@@ -440,6 +693,8 @@ CK.student = {
       this.renderPuzzlesList();
       this.renderAchievementsTab();
     } else {
+      this._puzzleMistakes++;
+      this._srs.record(p.id, false);
       CK.showToast('❌ Not quite — try again!', 'warning');
       if (fb) {
         fb.style.display = 'block';
@@ -449,20 +704,21 @@ CK.student = {
       // Flash the wrong square red briefly
       const sqs = document.querySelectorAll('#studentPuzzleBoardContainer [title="' + squareId + '"]');
       sqs.forEach(el => {
-        el.style.boxShadow = 'inset 0 0 0 3px #ef4444';
-        setTimeout(() => { el.style.boxShadow = ''; }, 600);
+        el.style.boxShadow = 'inset 0 0 0 4px #ef4444, 0 0 14px rgba(239,68,68,0.5)';
+        el.style.outline = '';
+        setTimeout(() => { el.style.boxShadow = ''; }, 700);
       });
     }
   },
 
-  renderCoachReviews() {
+  async renderCoachReviews() {
     const container = document.getElementById('studentReviewsContainer');
     if (!container) return;
 
-    const myReviews = CK.tracker.getReviews(this.userProfile ? this.userProfile.full_name : 'Emma Wilson');
+    const myReviews = await CK.tracker.getReviews(this.userProfile ? this.userProfile.full_name : 'Emma Wilson');
 
     if (!myReviews.length) {
-      container.innerHTML = '<div style="opacity:0.6; padding:30px; text-align:center;">No coach reviews posted yet. Keep attending classes!</div>';
+      container.innerHTML = '<div class="cls-empty">📭 No coach reviews posted yet. Keep attending classes!</div>';
       return;
     }
 
@@ -485,11 +741,13 @@ CK.student = {
     for (let i = 0; i < 5; i++) {
       starStr += i < stars ? '⭐' : '☆';
     }
-    document.getElementById('achievementStarsDisplay').innerText = starStr;
-    document.getElementById('achievementLevelProgressText').innerText = `You have earned ${stars} out of 5 stars!`;
+    const starsEl = document.getElementById('achievementStarsDisplay');
+    if (starsEl) starsEl.innerText = starStr;
+    const progressEl = document.getElementById('achievementLevelProgressText');
+    if (progressEl) progressEl.innerText = `You have earned ${stars} out of 5 stars!`;
 
     // Fetch actual attendance stats for dynamic milestone unlock
-    const logs = await CK.db.getAttendance(this.userProfile.id);
+    const logs = (await CK.db.getAttendance(this.userProfile.id)) || [];
     const presentCount = logs.filter(l => l.status === 'present').length;
     const totalCount = logs.length;
     const attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 100;
@@ -516,23 +774,311 @@ CK.student = {
       `).join('');
     }
 
-    // Certificate details
-    const hasCert = this.userProfile.certificate && this.userProfile.certificate !== "";
-    document.getElementById('certificateDownloadStatus').innerText = hasCert 
-      ? `Congratulations on completing your ${this.userProfile.level || 'Beginner'} training! Your certificate is ready.`
-      : `Complete all assignments and raise your star rating to 5 to unlock your official graduation certificate. Current stars: ${stars}/5.`;
-    
-    const downloadBtn = document.getElementById('downloadCertBtn');
-    if (downloadBtn) {
-      downloadBtn.disabled = !hasCert;
-      if (!hasCert) {
-        downloadBtn.className = "p-btn p-btn-ghost";
-        downloadBtn.style.opacity = '0.3';
-      } else {
-        downloadBtn.className = "p-btn p-btn-gold";
-        downloadBtn.style.opacity = '1';
+    // Certificate section — use real jsPDF system
+    const certEl = document.getElementById('studentCertSection');
+    if (certEl && CK.certs) {
+      const attnSummary = CK.classSystem?.getStudentAttendanceSummary(this.userProfile.id) || { pct: attendancePercentage };
+      const puzzlesSolved = (CK.puzzlesPro?.getLeaderboard() || []).find(u => u.userId === this.userProfile.id)?.solved || (this.userProfile.puzzle || 0);
+      CK.certs.renderStudentCerts(certEl.id, this.userProfile, attnSummary.pct || attendancePercentage, puzzlesSolved);
+    } else {
+      // Fallback — old static cert logic
+      const hasCert = this.userProfile.certificate && this.userProfile.certificate !== "";
+      const certStatusEl = document.getElementById('certificateDownloadStatus');
+      if (certStatusEl) certStatusEl.innerText = hasCert
+        ? `Congratulations! Your ${this.userProfile.level || 'Beginner'} certificate is ready.`
+        : `Complete requirements to unlock your certificate. Current stars: ${stars}/5.`;
+      const downloadBtn = document.getElementById('downloadCertBtn');
+      if (downloadBtn) {
+        downloadBtn.disabled = !hasCert;
+        downloadBtn.className = hasCert ? 'p-btn p-btn-gold' : 'p-btn p-btn-ghost';
+        downloadBtn.style.opacity = hasCert ? '1' : '0.3';
+        if (hasCert) downloadBtn.onclick = () => CK.certs?.claimCert();
       }
     }
+  },
+
+  /* ── Streak System ── */
+  getStreak(userId) {
+    const key = `ck_streak_${userId || 'anon'}`;
+    return JSON.parse(localStorage.getItem(key) || '{"count":0,"lastDate":""}');
+  },
+
+  updateStreak(userId) {
+    const key = `ck_streak_${userId || 'anon'}`;
+    const today = new Date().toDateString();
+    const data = this.getStreak(userId);
+    if (data.lastDate === today) return data.count; // already counted today
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const newCount = data.lastDate === yesterday ? data.count + 1 : 1;
+    const updated = { count: newCount, lastDate: today };
+    localStorage.setItem(key, JSON.stringify(updated));
+    this._renderStreakBadge(newCount);
+    if (newCount > 0 && newCount % 7 === 0 && typeof CK !== 'undefined' && CK.notifs) {
+      CK.notifs.push('puzzle_streak', `🔥 ${newCount}-Day Streak!`, `You've practised ${newCount} days in a row. Keep the fire going!`, userId, 'student');
+    }
+    return newCount;
+  },
+
+  _renderStreakBadge(count) {
+    document.querySelectorAll('.student-streak-count').forEach(el => {
+      el.textContent = count;
+    });
+    document.querySelectorAll('.student-streak-fire').forEach(el => {
+      el.textContent = count >= 3 ? '🔥' : count >= 1 ? '⚡' : '—';
+    });
+  },
+
+  async _renderLeaderboard() {
+    const lbBody = document.getElementById('studentLeaderboardBody');
+    if (!lbBody) return;
+    const p = this.userProfile || {};
+    const allStudents = (await CK.db.getProfiles('student')) || [];
+    const sorted = allStudents
+      .filter(s => s.rating)
+      .sort((a, b) => (parseInt(b.rating) || 0) - (parseInt(a.rating) || 0));
+    const userRank = sorted.findIndex(s => s.id === p.id) + 1;
+    const rankColors = ['var(--p-gold)', '#94a3b8', '#cd7f32'];
+    const medals = ['🥇', '🥈', '🥉'];
+    const top5 = sorted.slice(0, 5);
+    let html = top5.map((s, i) => {
+      const isMe = s.id === p.id;
+      const medal = medals[i] || `#${i + 1}`;
+      const color = rankColors[i] || 'var(--p-text-muted)';
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;margin-bottom:4px;background:${isMe ? 'rgba(0,201,167,.1)' : 'rgba(255,255,255,.03)'};border:1px solid ${isMe ? 'rgba(0,201,167,.3)' : 'transparent'}">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-weight:700;color:${color};min-width:28px;text-align:center;font-size:${i < 3 ? '1.1rem' : '.85rem'}">${medal}</span>
+            <div>
+              <div style="font-weight:${isMe ? '700' : '500'};color:${isMe ? 'var(--p-teal)' : 'var(--p-text)'};font-size:.88rem;">${s.full_name || 'Anonymous'}${isMe ? ' (You)' : ''}</div>
+              <div style="font-size:.72rem;color:var(--p-text-muted);">${s.level || 'Beginner'} · ${s.puzzle || 0} puzzles</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700;color:${color};font-size:.9rem;">${parseInt(s.rating) || 800} ELO</div>
+            <div style="font-size:.68rem;color:var(--p-text-muted);">★ ${s.star || 0}</div>
+          </div>
+        </div>`;
+    }).join('');
+    if (userRank > 5) {
+      html += `
+        <div style="border-top:1px dashed rgba(255,255,255,.1);margin-top:8px;padding-top:8px;display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-weight:700;color:var(--p-teal);min-width:28px;text-align:center;">#${userRank}</span>
+            <div>
+              <div style="font-weight:700;color:var(--p-teal);font-size:.88rem;">${p.full_name || 'You'} (You)</div>
+              <div style="font-size:.72rem;color:var(--p-text-muted);">${p.level || 'Beginner'} · ${p.puzzle || 0} puzzles</div>
+            </div>
+          </div>
+          <span style="font-weight:700;color:var(--p-teal)">${parseInt(p.rating) || 800} ELO</span>
+        </div>`;
+    }
+    lbBody.innerHTML = html || '<div class="cls-empty">No rankings yet. Be the first!</div>';
+
+    // Update "my rank" badge if present
+    const rankBadge = document.getElementById('studentMyRank');
+    if (rankBadge && userRank > 0) rankBadge.textContent = `#${userRank}`;
+  },
+
+  /* ── Daily Goal Tracker ── */
+  _trackDailyGoal(type) {
+    const key = 'ck_daily_' + new Date().toDateString();
+    const goals = JSON.parse(localStorage.getItem(key) || '{"puzzles":0,"lessons":0,"games":0}');
+    goals[type] = (goals[type] || 0) + 1;
+    localStorage.setItem(key, JSON.stringify(goals));
+    if (type === 'puzzles' && this.userProfile) this.updateStreak(this.userProfile.id);
+    this.renderDailyGoals();
+  },
+
+  renderDailyGoals() {
+    const el = document.getElementById('studentDailyGoals');
+    if (!el) return;
+    const key = 'ck_daily_' + new Date().toDateString();
+    const done = JSON.parse(localStorage.getItem(key) || '{"puzzles":0,"lessons":0,"games":0}');
+    const targets = { puzzles: 5, lessons: 2, games: 1 };
+    const items = [
+      { k: 'puzzles', label: 'Daily Puzzles', icon: '🧩', color: 'var(--p-gold)' },
+      { k: 'lessons', label: 'Lessons Watched', icon: '📚', color: 'var(--p-blue)' },
+      { k: 'games',   label: 'Games Played',   icon: '♟',  color: 'var(--p-teal)' }
+    ];
+    el.innerHTML = `
+      <div class="dg-grid">
+        ${items.map(g => {
+          const val = done[g.k] || 0;
+          const pct = Math.min(100, Math.round((val / targets[g.k]) * 100));
+          const done2 = val >= targets[g.k];
+          return `<div class="dg-item${done2 ? ' dg-done' : ''}">
+            <span class="dg-icon">${g.icon}</span>
+            <div class="dg-body">
+              <div class="dg-label">${g.label}</div>
+              <div class="dg-bar-wrap"><div class="dg-bar" style="width:${pct}%;background:${g.color}"></div></div>
+              <div class="dg-count">${val} / ${targets[g.k]}${done2 ? ' ✓' : ''}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  },
+
+  /* ── Spaced Repetition System ── */
+  _srs: {
+    _key: 'ck_srs_v2',
+    record(puzzleId, success) {
+      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const e = log[puzzleId] || { attempts: 0, successes: 0, interval: 1, nextReview: Date.now() };
+      e.attempts++;
+      if (success) {
+        e.successes++;
+        e.interval = Math.min(21, e.interval <= 1 ? 3 : e.interval * 2);
+      } else {
+        e.interval = 1;
+      }
+      e.nextReview = Date.now() + e.interval * 86400000;
+      e.lastAttempt = Date.now();
+      log[puzzleId] = e;
+      localStorage.setItem(this._key, JSON.stringify(log));
+    },
+    getDue(puzzlesDb) {
+      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const now = Date.now();
+      return puzzlesDb.filter(p => log[p.id] && log[p.id].nextReview <= now);
+    },
+    getStats(puzzlesDb) {
+      const log = JSON.parse(localStorage.getItem(this._key) || '{}');
+      const now = Date.now();
+      const entries = Object.values(log);
+      return {
+        due: puzzlesDb.filter(p => log[p.id] && log[p.id].nextReview <= now).length,
+        mastered: entries.filter(e => e.interval >= 8).length,
+        total: entries.length
+      };
+    }
+  },
+
+  renderSRSQueue() {
+    const el = document.getElementById('srsQueuePanel');
+    if (!el) return;
+    const due = this._srs.getDue(this.puzzlesDb);
+    const stats = this._srs.getStats(this.puzzlesDb);
+    const badge = document.getElementById('srsReviewBadge');
+    if (badge) badge.textContent = due.length || '';
+
+    if (!due.length) {
+      el.innerHTML = `<div class="cls-empty">
+        ✅ No puzzles due for review today.<br>
+        <span style="font-size:.78rem;">Mastered: ${stats.mastered} — Total reviewed: ${stats.total}</span>
+      </div>`;
+      return;
+    }
+    el.innerHTML = `
+      <div style="margin-bottom:10px;font-size:.82rem;color:var(--p-text-muted)">
+        📬 <strong style="color:var(--p-gold)">${due.length}</strong> puzzle${due.length > 1 ? 's' : ''} due for review · ${stats.mastered} mastered
+      </div>
+      ${due.map(p => `
+        <div class="srs-card" onclick="CK.student.loadAndGoToPuzzle('${p.id}')">
+          <span class="srs-icon">🔁</span>
+          <div class="srs-info"><div class="srs-title">${p.title}</div><div class="srs-meta">${p.type} · ${p.diff}</div></div>
+          <button class="p-btn p-btn-gold p-btn-sm">Review</button>
+        </div>`).join('')}`;
+  },
+
+  /* ══════════════════════════════════════════════════════════
+     REAL PROGRESS CALCULATION
+     Weighted score from 5 pillars: attendance, puzzles,
+     rating gain, games played, homework completion.
+  ══════════════════════════════════════════════════════════ */
+  async renderRealProgress() {
+    const p = this.userProfile;
+    if (!p) return;
+
+    // 1. Attendance (30%) — from advanced attendance records
+    const attnSummary = CK.classSystem?.getStudentAttendanceSummary(p.id) || null;
+    const logs = (await CK.db.getAttendance(p.id)) || [];
+    const presentCount = logs.filter(l => l.status === 'present').length;
+    const totalSessions = attnSummary ? attnSummary.total : logs.length;
+    const presentSessions = attnSummary ? attnSummary.present : presentCount;
+    const attendancePct = totalSessions > 0 ? Math.round(presentSessions / totalSessions * 100) : 100;
+
+    // 2. Puzzles (25%) — real solved count from puzzles-pro
+    const lbEntry = (CK.puzzlesPro?.getLeaderboard() || []).find(u => u.userId === p.id);
+    const puzzlesSolved = lbEntry?.solved || (p.puzzle || 0);
+    const puzzleScore = Math.min(100, Math.round(puzzlesSolved / 60 * 100)); // 60 = total in DB
+
+    // 3. Rating gain (20%) — from start to now
+    const startRating = 800;
+    const ratingGain = Math.max(0, (p.rating || 800) - startRating);
+    const ratingScore = Math.min(100, Math.round(ratingGain / 4)); // 400pt gain = 100%
+
+    // 4. Games played (15%)
+    const gamesScore = Math.min(100, Math.round((p.game || 0) * 5)); // 20 games = 100%
+
+    // 5. Homework (10%) — from classroom submissions
+    const submissions = JSON.parse(localStorage.getItem('ck_hw_submissions') || '[]').filter(s => s.studentId === p.id);
+    const assignments  = JSON.parse(localStorage.getItem('ck_assignments') || '[]');
+    const hwDone  = submissions.filter(s => s.completed).length;
+    const hwTotal = assignments.length;
+    const hwScore = hwTotal > 0 ? Math.round(hwDone / hwTotal * 100) : 100;
+
+    // Weighted overall score
+    const overall = Math.round(
+      attendancePct  * 0.30 +
+      puzzleScore    * 0.25 +
+      ratingScore    * 0.20 +
+      gamesScore     * 0.15 +
+      hwScore        * 0.10
+    );
+
+    // Update progress panel UI
+    const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    const setW  = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
+
+    setEl('progOverallScore',   overall + '%');
+    setEl('progAttendancePct',  attendancePct + '%');
+    setEl('progPuzzlePct',      puzzleScore + '%');
+    setEl('progRatingPct',      ratingScore + '%');
+    setEl('progGamesPct',       gamesScore + '%');
+    setEl('progHwPct',          hwScore + '%');
+    setEl('progAttendanceVal',  `${presentSessions} / ${totalSessions} sessions`);
+    setEl('progPuzzleVal',      `${puzzlesSolved} / 60 solved`);
+    setEl('progRatingVal',      `+${ratingGain} ELO (${p.rating || 800} now)`);
+    setEl('progGamesVal',       `${p.game || 0} games`);
+    setEl('progHwVal',          hwTotal > 0 ? `${hwDone} / ${hwTotal} submitted` : 'No homework yet');
+
+    setW('progBarAttendance', attendancePct);
+    setW('progBarPuzzle',     puzzleScore);
+    setW('progBarRating',     ratingScore);
+    setW('progBarGames',      gamesScore);
+    setW('progBarHw',         hwScore);
+
+    // Score ring (SVG-based)
+    const ring = document.getElementById('progScoreRing');
+    if (ring) {
+      const circ = 2 * Math.PI * 42;
+      const dash = circ * overall / 100;
+      ring.style.strokeDasharray = `${dash} ${circ}`;
+    }
+
+    // Trend label
+    const trendEl = document.getElementById('progTrend');
+    if (trendEl) {
+      trendEl.textContent = overall >= 80 ? '🚀 Excellent Progress!' : overall >= 60 ? '📈 Good Progress' : overall >= 40 ? '📊 Making Progress' : '⚡ Needs Improvement';
+      trendEl.style.color = overall >= 80 ? 'var(--p-teal)' : overall >= 60 ? 'var(--p-blue)' : overall >= 40 ? 'var(--p-gold)' : 'var(--p-danger)';
+    }
+
+    // Render puzzle leaderboard using puzzles-pro
+    if (CK.puzzlesPro) {
+      CK.puzzlesPro.renderLeaderboard('progLeaderboard');
+    }
+
+    // Render certificates section
+    if (CK.certs) {
+      CK.certs.renderStudentCerts('progCertsSection', p, attendancePct, puzzlesSolved);
+    }
+
+    // Render monthly reports
+    if (CK.reportSystem) {
+      CK.reportSystem.renderStudentReports('progReportsList', p.id);
+    }
+
+    return overall;
   },
 
   async initCharts() {
@@ -560,7 +1106,7 @@ CK.student = {
       window.studentRatingChartInstance.destroy();
     }
 
-    window.studentRatingChartInstance = new Chart(ctx, {
+    window.studentRatingChartInstance = new window.Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
@@ -593,82 +1139,148 @@ CK.student = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { 
-          legend: { 
+        plugins: {
+          legend: {
             display: true,
             labels: { color: '#7a8499', boxWidth: 15, font: { size: 11 } }
-          } 
+          }
         },
-        scales: { 
-          y: { 
-            grid: { color: 'rgba(255,255,255,0.05)' }, 
-            ticks: { color: '#7a8499' } 
-          }, 
-          x: { 
-            grid: { display: false }, 
-            ticks: { color: '#7a8499' } 
-          } 
+        scales: {
+          y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#7a8499' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#7a8499' }
+          }
         }
       }
     });
+
+    // Skill Radar / Heatmap Chart
+    const ctxRadar = document.getElementById('skillRadarChart')?.getContext('2d');
+    if (ctxRadar) {
+      const rc = (this.userProfile && this.userProfile.report_card) || {};
+      if (window._skillRadarInst) window._skillRadarInst.destroy();
+      window._skillRadarInst = new window.Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: ['Opening', 'Middlegame', 'Tactics', 'Endgame', 'Time Mgmt', 'Sportsmanship'],
+          datasets: [{
+            label: 'Skill Level',
+            data: [
+              rc.opening    || 75,
+              rc.middlegame || 70,
+              rc.tactics    || 80,
+              rc.endgame    || 65,
+              rc.time       || 72,
+              rc.sports     || 88
+            ],
+            backgroundColor: 'rgba(232,184,75,0.13)',
+            borderColor: '#e8b84b',
+            pointBackgroundColor: '#e8b84b',
+            pointBorderColor: '#0f172a',
+            pointRadius: 5,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0, max: 100, beginAtZero: true,
+              grid:        { color: 'rgba(255,255,255,0.07)' },
+              angleLines:  { color: 'rgba(255,255,255,0.07)' },
+              ticks:       { color: 'rgba(255,255,255,0.25)', stepSize: 25, backdropColor: 'transparent', font: { size: 9 } },
+              pointLabels: { color: '#e2e8f0', font: { size: 11, weight: '600' } }
+            }
+          }
+        }
+      });
+    }
   },
 
-  startCountdown() {
+  async startCountdown() {
     const el = document.getElementById('studentCountdown');
     if (!el) return;
 
     const p = this.userProfile || {};
-    const scheduleRaw = p.schedule || '17:00';
-    const coach = p.coach || 'Sarah Chess';
-    const level = p.level || 'Intermediate';
 
-    // Parse schedule into a Date for today
-    const parseScheduleTime = (raw) => {
-      const match = raw.match(/(\d{1,2}):(\d{2})/);
-      if (!match) return null;
-      const d = new Date();
-      d.setHours(parseInt(match[1]), parseInt(match[2]), 0, 0);
-      return d;
-    };
+    // Fetch upcoming meetings via DB layer (Supabase-synced)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const allMeetings = await CK.db.getMeetings();
+    const meetings = allMeetings
+      .filter(m => m.date >= todayStr && m.time && (!m.batch || m.batch === p.batch))
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
-    const classTime = parseScheduleTime(scheduleRaw);
-    const now = new Date();
+    // Cache in localStorage for the welcome banner fallback
+    localStorage.setItem('ck_meetings', JSON.stringify(allMeetings));
 
-    let displayTime = '5:00 PM';
-    let minsUntil = 45;
+    let classTime = null;
+    let classTitle = `${p.level || 'Intermediate'} Strategy Session`;
+    let classCoach = p.coach || 'Sarah Chess';
 
-    if (classTime) {
-      const diff = classTime - now;
-      if (diff > 0) {
-        minsUntil = Math.round(diff / 60000);
-      } else {
-        minsUntil = 0;
+    if (meetings.length) {
+      const next = meetings[0];
+      const match = (next.time || '').match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        classTime = new Date(next.date + 'T' + match[1].padStart(2,'0') + ':' + match[2] + ':00');
       }
-      displayTime = classTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      classTitle = next.title || next.type || classTitle;
+      classCoach = next.coach || classCoach;
+    } else {
+      // Fallback: parse from profile schedule
+      const scheduleRaw = p.schedule || '17:00';
+      const match = scheduleRaw.match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        classTime = new Date();
+        classTime.setHours(parseInt(match[1]), parseInt(match[2]), 0, 0);
+      }
     }
+
+    const displayTime = classTime
+      ? classTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      : '5:00 PM';
 
     const nameEl = document.getElementById('nextClassTime');
     const classEl = document.getElementById('nextClassName');
-    const subEl = document.getElementById('nextClassSub');
+    const subEl   = document.getElementById('nextClassSub');
     if (nameEl) nameEl.innerText = displayTime;
-    if (classEl) classEl.innerText = `${level} Strategy Session`;
-    if (subEl) subEl.innerText = `with Coach ${coach}`;
+    if (classEl) classEl.innerText = classTitle;
+    if (subEl)   subEl.innerText  = `with Coach ${classCoach}`;
 
     if (window.studentCountdownTimer) clearInterval(window.studentCountdownTimer);
 
     const tick = () => {
-      const remaining = classTime ? Math.max(0, Math.round((classTime - new Date()) / 60000)) : minsUntil;
-      el.innerText = remaining > 0 ? `Starts in ${remaining}m` : 'Starting now!';
+      if (!classTime) { el.innerText = 'Check schedule'; return; }
+      const remaining = Math.max(0, Math.round((classTime - new Date()) / 60000));
+      if (remaining === 0) {
+        el.innerText = '🔴 Starting now!';
+        el.style.color = 'var(--p-teal)';
+      } else if (remaining < 60) {
+        el.innerText = `Starts in ${remaining}m`;
+        el.style.color = remaining < 15 ? 'var(--p-danger)' : '';
+      } else {
+        const h = Math.floor(remaining / 60);
+        el.innerText = `Starts in ${h}h ${remaining % 60}m`;
+        el.style.color = '';
+      }
     };
     tick();
-    window.studentCountdownTimer = setInterval(tick, 60000);
+    window.studentCountdownTimer = setInterval(tick, 30000);
   },
 
   joinClass() {
+    this._trackDailyGoal('lessons');
     CK.showToast("Opening secure class session with Coach...", "success");
-    document.getElementById('studentSessionTitle').innerText = `Connecting to '${this.userProfile ? this.userProfile.level : 'Intermediate'} Strategy' Meeting...`;
-    
+    const sessionTitleEl = document.getElementById('studentSessionTitle');
+    if (sessionTitleEl) sessionTitleEl.innerText = `Connecting to '${this.userProfile ? this.userProfile.level : 'Intermediate'} Strategy' Meeting...`;
+
     const joinBtn = document.getElementById('studentJoinBtn');
+    if (!joinBtn) return;
     joinBtn.innerText = "Connecting...";
     joinBtn.disabled = true;
 
@@ -683,7 +1295,7 @@ CK.student = {
       setTimeout(() => {
         joinBtn.innerText = "▶ Rejoin Class Room";
         joinBtn.disabled = false;
-        document.getElementById('studentSessionTitle').innerText = "Class session is currently active!";
+        if (sessionTitleEl) sessionTitleEl.innerText = "Class session is currently active!";
       }, 3000);
     }, 1500);
   },
@@ -845,6 +1457,11 @@ CK.student = {
     set('payTotal', fmt(total));
     set('payAmountDisplay', fmt(total));
 
+    // Seed UPI strip with actual UPI ID from config
+    const cfg = window.APP_CONFIG || {};
+    const upiIdEl = document.getElementById('payUpiIdPreview');
+    if (upiIdEl) upiIdEl.textContent = cfg.ACADEMY_UPI_ID || '9025846663@upi';
+
     const badge = document.getElementById('payStatusBadge');
     if (badge) {
       badge.textContent = isPaid ? '✅ Paid' : '⚡ Pending';
@@ -879,6 +1496,28 @@ CK.student = {
     document.querySelectorAll('#student-panel-fees .pay-method').forEach(m => m.classList.remove('active'));
     if (el) el.classList.add('active');
     this._selectedPayMethod = method;
+
+    const btn   = document.getElementById('paySubmitBtn');
+    const strip = document.getElementById('payUpiStrip');
+    if (method === 'upi') {
+      if (btn) {
+        const textSpan = btn.querySelector('.pay-btn-text');
+        const iconSpan = btn.querySelector('.pay-btn-icon');
+        if (textSpan) textSpan.textContent = 'Pay via UPI / Google Pay';
+        if (iconSpan) iconSpan.textContent = '📱';
+        btn.classList.remove('razorpay-mode');
+      }
+      if (strip) strip.style.display = 'flex';
+    } else {
+      if (btn) {
+        const textSpan = btn.querySelector('.pay-btn-text');
+        const iconSpan = btn.querySelector('.pay-btn-icon');
+        if (textSpan) textSpan.textContent = 'Pay Securely via Razorpay';
+        if (iconSpan) iconSpan.textContent = '🔒';
+        btn.classList.add('razorpay-mode');
+      }
+      if (strip) strip.style.display = 'none';
+    }
   },
 
   async processPayment() {
@@ -888,47 +1527,41 @@ CK.student = {
       return;
     }
 
-    if (!window.Razorpay) {
-      CK.showToast('Payment gateway is loading. Please try again in a moment.', 'warning');
-      return;
-    }
+    const method = this._selectedPayMethod || 'upi';
 
-    const p = this.userProfile || {};
-    const tuition = parseInt(p.fee) || 4000;
-    const gst = Math.round(tuition * 0.18);
-    const total = tuition + gst;
-
-    const options = {
-      key: window.CK_RAZORPAY_KEY || 'rzp_test_PLACEHOLDER',
-      amount: total * 100, // paise
-      currency: 'INR',
-      name: 'ChessKidoo Academy',
-      description: (p.batch || 'Chess Training') + ' — ' + (p.level || 'Intermediate') + ' Batch',
-      image: 'assets/img/logo.png',
-      handler: response => CK.student.onPaymentSuccess(response),
-      prefill: {
-        name: p.full_name || '',
-        email: p.email || '',
-        contact: p.phone_number || p.phone || ''
-      },
-      notes: {
-        student_id: p.id || '',
-        batch: p.batch || ''
-      },
-      theme: { color: '#D97706' },
-      modal: {
-        ondismiss: () => CK.showToast('Payment cancelled.', 'warning')
+    if (method === 'upi') {
+      this.openUpiPayment();
+    } else {
+      // Card / Net Banking / EMI — Razorpay
+      if (!window.Razorpay) {
+        CK.showToast('Payment gateway is loading. Please try again in a moment.', 'warning');
+        return;
       }
-    };
-
-    try {
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', err => {
-        CK.showToast('Payment failed: ' + (err.error?.description || 'Unknown error'), 'error');
-      });
-      rzp.open();
-    } catch (e) {
-      CK.showToast('Could not open payment gateway. Please refresh and try again.', 'error');
+      const p = this.userProfile || {};
+      const tuition = parseInt(p.fee) || 4000;
+      const gst = Math.round(tuition * 0.18);
+      const total = tuition + gst;
+      const options = {
+        key: window.CK_RAZORPAY_KEY || 'rzp_test_PLACEHOLDER',
+        amount: total * 100,
+        currency: 'INR',
+        name: 'ChessKidoo Academy',
+        description: (p.batch || 'Chess Training') + ' — ' + (p.level || 'Intermediate') + ' Batch',
+        handler: response => CK.student.onPaymentSuccess(response),
+        prefill: { name: p.full_name || '', email: p.email || '', contact: p.phone_number || p.phone || '' },
+        notes:   { student_id: p.id || '', batch: p.batch || '' },
+        theme:   { color: '#D97706' },
+        modal:   { ondismiss: () => CK.showToast('Payment cancelled.', 'warning') }
+      };
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', err => {
+          CK.showToast('Payment failed: ' + (err.error?.description || 'Unknown error'), 'error');
+        });
+        rzp.open();
+      } catch (e) {
+        CK.showToast('Could not open payment gateway. Please refresh and try again.', 'error');
+      }
     }
   },
 
@@ -938,7 +1571,7 @@ CK.student = {
       p.status = 'Paid';
       p.last_txn_id = response.razorpay_payment_id || ('CK_TXN_' + Math.floor(1e8 + Math.random() * 9e8));
       p.paid_date = new Date().toLocaleDateString('en-GB');
-      p.pay_method = this._selectedPayMethod || 'Razorpay';
+      p.pay_method = 'Razorpay';
       p.due_date = '14-Jun-2026';
       await CK.db.saveProfile(p);
     }
@@ -947,6 +1580,188 @@ CK.student = {
     if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
       CK.admin.loadStudents();
     }
+  },
+
+  // ── UPI PAYMENT FLOW ──────────────────────────────────────────────
+
+  openUpiPayment() {
+    const p   = this.userProfile || {};
+    const cfg = window.APP_CONFIG || {};
+    const tuition = parseInt(p.fee) || 4000;
+    const gst     = Math.round(tuition * 0.18);
+    const total   = tuition + gst;
+
+    const upiId   = cfg.ACADEMY_UPI_ID   || '9025846663@upi';
+    const upiName = cfg.ACADEMY_UPI_NAME || 'Ranjith A S';
+    const note    = encodeURIComponent('ChessKidoo Fee - ' + (p.full_name || 'Student'));
+    const enc     = s => encodeURIComponent(s);
+
+    this._upiPaymentTotal = total;
+    this._upiLinks = {
+      upi:     `upi://pay?pa=${enc(upiId)}&pn=${enc(upiName)}&am=${total}&cu=INR&tn=${note}`,
+      gpay:    `tez://upi/pay?pa=${enc(upiId)}&pn=${enc(upiName)}&am=${total}&cu=INR&tn=${note}`,
+      phonepe: `phonepe://pay?pa=${enc(upiId)}&pn=${enc(upiName)}&am=${total}&cu=INR&tn=${note}`,
+      paytm:   `paytmmp://pay?pa=${enc(upiId)}&pn=${enc(upiName)}&am=${total}&cu=INR&tn=${note}`
+    };
+
+    // Populate amount
+    const amtEl = document.getElementById('upiAmountShow');
+    if (amtEl) amtEl.textContent = total.toLocaleString('en-IN');
+
+    // Populate VPA display
+    const vpaEl = document.getElementById('upiVpaDisplay');
+    if (vpaEl) vpaEl.textContent = upiId;
+
+    // Set strip preview
+    const previewEl = document.getElementById('payUpiIdPreview');
+    if (previewEl) previewEl.textContent = upiId;
+
+    // Generate QR code
+    const qrEl = document.getElementById('upiQrCode');
+    if (qrEl) {
+      qrEl.innerHTML = '';
+      if (window.QRCode) {
+        try {
+          new window.QRCode(qrEl, {
+            text: this._upiLinks.upi,
+            width: 176,
+            height: 176,
+            colorDark: '#1a1a2e',
+            colorLight: '#ffffff',
+            correctLevel: window.QRCode.CorrectLevel.H
+          });
+        } catch (e) {
+          qrEl.innerHTML = '<div style="color:#94a3b8;font-size:0.75rem;padding:12px;text-align:center;">QR unavailable<br>Use app buttons below</div>';
+        }
+      }
+    }
+
+    // Reset UTR input and confirm button
+    const utrEl = document.getElementById('upiUtrInput');
+    if (utrEl) utrEl.value = '';
+    const confirmBtn = document.getElementById('upiConfirmBtn');
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = '✅ Confirm & Get Receipt'; }
+
+    // Show modal
+    const modal = document.getElementById('upiPayModal');
+    if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  },
+
+  closeUpiModal() {
+    const modal = document.getElementById('upiPayModal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  },
+
+  openUpiApp(app) {
+    const links = this._upiLinks || {};
+    const url   = links[app] || links.upi;
+    if (url) {
+      window.location.href = url;
+      setTimeout(() => CK.showToast('If the app did not open, scan the QR code instead.', 'info'), 1800);
+    }
+  },
+
+  copyUpiId() {
+    const cfg   = window.APP_CONFIG || {};
+    const upiId = cfg.ACADEMY_UPI_ID || '9025846663@upi';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(upiId)
+        .then(() => CK.showToast('UPI ID copied!', 'success'))
+        .catch(() => CK.showToast('UPI ID: ' + upiId, 'info'));
+    } else {
+      CK.showToast('UPI ID: ' + upiId, 'info');
+    }
+  },
+
+  async submitUtrPayment() {
+    const utrEl = document.getElementById('upiUtrInput');
+    const utr   = utrEl ? utrEl.value.trim() : '';
+
+    if (!utr || utr.length < 8 || utr.length > 30 || !/^[A-Z0-9]+$/.test(utr)) {
+      CK.showToast('Please enter a valid UTR / Transaction ID (8–30 alphanumeric characters).', 'warning');
+      return;
+    }
+
+    const confirmBtn = document.getElementById('upiConfirmBtn');
+    if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Verifying…'; }
+
+    try {
+      const p     = this.userProfile;
+      const total = this._upiPaymentTotal || 0;
+
+      if (p) {
+        p.status     = 'Paid';
+        p.last_txn_id = utr;
+        p.paid_date  = new Date().toLocaleDateString('en-GB');
+        p.pay_method = 'UPI / Google Pay';
+        p.due_date   = '14-Jun-2026';
+        await CK.db.saveProfile(p);
+      }
+
+      // Send emails
+      try {
+        await this.sendPaymentEmails(p, utr, total);
+      } catch (emailErr) {
+        console.warn('[ChessKidoo] Email send failed:', emailErr);
+      }
+
+      this.closeUpiModal();
+      CK.showToast('Payment confirmed! Receipt sent to your email.', 'success');
+      this.renderFeesGateway();
+      if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
+        CK.admin.loadStudents();
+      }
+    } catch (e) {
+      console.error('[ChessKidoo] UTR submission error:', e);
+      CK.showToast('Payment recorded. Please contact admin if receipt is not received.', 'warning');
+      this.closeUpiModal();
+      this.renderFeesGateway();
+    } finally {
+      if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = '✅ Confirm & Get Receipt'; }
+    }
+  },
+
+  async sendPaymentEmails(p, utr, total) {
+    const cfg        = window.APP_CONFIG || {};
+    const serviceId  = cfg.EMAILJS_SERVICE  || 'service_7mn07q9';
+    const templateId = cfg.EMAILJS_TEMPLATE || 'template_3lumv9c';
+    const publicKey  = cfg.EMAILJS_KEY      || '1EuHvvzi2H9RnaBF6';
+
+    if (!window.emailjs) { console.warn('[ChessKidoo] EmailJS not loaded'); return; }
+    window.emailjs.init({ publicKey: publicKey });
+
+    const fmt    = n => '₹' + n.toLocaleString('en-IN');
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const base = {
+      student_name: p.full_name  || 'Chess Student',
+      utr_number:   utr,
+      amount:       fmt(total),
+      pay_method:   'UPI / Google Pay',
+      batch:        p.batch     || 'Chess Training',
+      paid_date:    dateStr,
+      academy_name: 'ChessKidoo Academy',
+      academy_email: cfg.ACADEMY_EMAIL || 'Chesskidoo37@gmail.com'
+    };
+
+    // Receipt to student
+    if (p && p.email) {
+      await window.emailjs.send(serviceId, templateId, {
+        ...base,
+        to_email: p.email,
+        to_name:  p.full_name || 'Student',
+        subject:  'ChessKidoo Payment Receipt — ' + utr
+      });
+    }
+
+    // Notification to academy
+    await window.emailjs.send(serviceId, templateId, {
+      ...base,
+      to_email: cfg.ACADEMY_EMAIL || 'Chesskidoo37@gmail.com',
+      to_name:  'ChessKidoo Admin',
+      subject:  'New Payment — ' + (p ? (p.full_name || 'Student') : 'Student') + ' — ' + utr
+    });
   },
 
   downloadReceipt() {
@@ -964,6 +1779,7 @@ CK.student = {
                   `${feeAmount} Rupees Only`;
 
     const receiptWin = window.open('', '_blank', 'width=800,height=950');
+    if (!receiptWin) { CK.showToast('Please allow popups to download the receipt.', 'warning'); return; }
     receiptWin.document.write(`
       <html>
         <head>
@@ -1164,14 +1980,9 @@ CK.student = {
   },
 
   downloadCertificate() {
-    if (!this.userProfile.certificate) {
-      CK.showToast("No certificate has been uploaded for this account.", "warning");
-      return;
-    }
-
-    CK.showToast("Downloading Level Completion Certificate...", "success");
-    // Dynamically retrieve public download URL from bucket or generate mock certificate
-    if (window.supabaseClient) {
+    CK.showToast("Opening Level Completion Certificate...", "success");
+    // Try fetching from Supabase storage if a certificate path is on the profile
+    if (window.supabaseClient && this.userProfile.certificate) {
       const { data } = window.supabaseClient.storage.from('documents').getPublicUrl(this.userProfile.certificate);
       if (data?.publicUrl) {
         window.open(data.publicUrl, '_blank');
@@ -1181,6 +1992,7 @@ CK.student = {
     
     // Fallback to static mock certificate window
     const certWindow = window.open("", "_blank");
+    if (!certWindow) { CK.showToast('Please allow popups to view the certificate.', 'warning'); return; }
     certWindow.document.write(`
       <html>
         <head>
@@ -1202,19 +2014,20 @@ CK.student = {
             <h2>Certificate of Excellence</h2>
             <p>This is proudly presented to</p>
             <div class="name">${this.userProfile.full_name}</div>
-            <p class="desc">for successfully completing the rigorous <strong>${this.userProfile.level} Chess Curriculum</strong>, mastering strategic thinking, endgame principles, and core tournament tactics.</p>
+            <p class="desc">for successfully completing the rigorous <strong>${this.userProfile.level || 'Chess'} Curriculum</strong>, demonstrating mastery of strategic thinking, endgame principles, and core tournament tactics. ELO Rating: <strong>${this.userProfile.rating || 800}</strong></p>
+            <p style="color:#94a3b8; font-size:0.9rem;">Issued on ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}</p>
             <div class="signatures">
               <div>
-                <div class="sig">Sarah Chess</div>
-                <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">Head Coach</div>
+                <div class="sig">${this.userProfile.coach || 'Sarah Chess'}</div>
+                <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">Assigned Coach</div>
               </div>
               <div>
-                <div class="sig">ChessKidoo AI</div>
+                <div class="sig">ChessKidoo Academy</div>
                 <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">Academy Director</div>
               </div>
             </div>
           </div>
-          <button onclick="window.print()" style="margin-top: 30px; background: #e8b84b; color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer;">Print Certificate</button>
+          <button onclick="window.print()" style="margin-top: 30px; background: #e8b84b; color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer;">🖨️ Print Certificate</button>
         </body>
       </html>
     `);

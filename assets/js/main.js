@@ -79,7 +79,7 @@
       return;
     }
 
-    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'pricing', 'faq'];
+    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'why-choose', 'pricing', 'faq'];
     const isLandingSection = landingSections.includes(section);
     
     if (isLandingSection) {
@@ -215,6 +215,7 @@
     const msg = input.value.trim();
     if (!msg) return;
     const msgs = document.getElementById('bot-messages');
+    if (!msgs) return;
     msgs.innerHTML += `<div class="bot-msg bot-msg--user">${msg}</div>`;
     input.value = '';
     msgs.scrollTop = msgs.scrollHeight;
@@ -222,7 +223,7 @@
     const replies = {
       fee: "Our fees range from ₹800 to ₹5,200/month depending on the session type. Group sessions start at ₹800! 💰",
       schedule: "We offer WEEKDAY (17:00) and WEEKEND sessions. Group and 1-on-1 options available! 📅",
-      coach: "We have 7 FIDE-certified coaches: Ranjith, Vishnu, Rohith Selvaraj, Gyansurya, Saran, Yogesh, and Haris! ♞",
+      coach: "We have 8 FIDE-certified coaches: Ranjith, Vishnu, Rohith Selvaraj, Gyansurya, Saran, Yogesh, Haris, and Arivuselvam! ♞",
       beginner: "Beginners start with piece movements, basic tactics, and fun puzzles. Your child will love it! 🎯",
       demo: "Click 'Book Free Demo' in the menu to schedule a free trial class with one of our expert coaches! 🎉",
       default: "Great question! Our FIDE-certified coaches are here to guide you. Want to book a free demo class? 🏆"
@@ -338,7 +339,7 @@
 
   /* ─── Scroll Effects + Active Nav Highlighting ─── */
   const header = document.getElementById('header');
-  const sections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'pricing', 'faq'];
+  const sections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'why-choose', 'pricing', 'faq'];
   const navLinkEls = document.querySelectorAll('.nav-link[data-section]');
 
   function updateActiveNav() {
@@ -446,7 +447,8 @@
     document.querySelectorAll('.faq-item').forEach(el => {
       if (el !== item) {
         el.classList.remove('active');
-        el.querySelector('.faq-content').style.maxHeight = null;
+        const fc = el.querySelector('.faq-content');
+        if (fc) fc.style.maxHeight = null;
       }
     });
 
@@ -500,7 +502,7 @@
       home: 'Home', features: 'Features', curriculum: 'Curriculum', coaches: 'Coaches',
       achievements: 'Achievements', pricing: 'Pricing', faq: 'Faq', login: 'Log In',
       translate: 'Translate',
-      hero_title: 'Where kids learn to<br><em>think two moves</em><br>ahead.',
+      hero_title: 'Where kids<br>learn to<br><em>think two</em><br><em>moves</em><br>ahead.',
       hero_badge: "India's #1 Student Tracking System",
       hero_stat_students: 'Active Students',
       hero_stat_coaches: 'FIDE Coaches',
@@ -738,7 +740,7 @@ ta: {
     document.addEventListener('DOMContentLoaded', initLevelCards3D);
   }
 
-  // Unified PGN & Stockfish Analysis Lab — v2.0
+  // Unified PGN & Stockfish Analysis Lab — v3.0
   CK.lab = {
     board: null,
     game: null,
@@ -747,9 +749,17 @@ ta: {
     orientation: 'white',
     annotations: {},
     _activeBoardId: 'studentLabBoard',
+    _mode: 'analysis',
+    _guessFrom: null,
+    _sparGame: null,
+    _sparMoveIdx: 0,
+    _sparFollowing: true,
 
     initBoard(containerId) {
       this._activeBoardId = containerId;
+      this._mode = 'analysis';
+      this._guessFrom = null;
+      this._sparGame = null;
       if (this.board) { this.board.destroy(); this.board = null; }
       this.game = new Chess();
       this.board = Chessboard(containerId, {
@@ -760,8 +770,9 @@ ta: {
       this.history = [];
       this.currentMove = 0;
       this.annotations = {};
+      this._resetModeBtns();
       this.renderMoveList();
-      this.updateAnalysis();
+      this.updateAnalysis(this.game.fen(), null);
     },
 
     loadPreset(pgnText, boardId) {
@@ -775,6 +786,14 @@ ta: {
 
     analyzePgn(pgnText, boardId) {
       this._activeBoardId = boardId;
+      this._mode = 'analysis';
+      this._guessFrom = null;
+      this._sparGame = null;
+      this._resetModeBtns();
+      const ba = document.getElementById('labModeAnalysis');
+      if (ba) ba.classList.add('active');
+      this._setBanner(null, '');
+
       if (!this.game) this.game = new Chess();
       const success = this.game.load_pgn(pgnText);
       if (!success) {
@@ -795,7 +814,7 @@ ta: {
         orientation: this.orientation
       });
       this.renderMoveList();
-      this.updateAnalysis(this.game.fen(), this.history[this.history.length - 1]);
+      this.updateAnalysis(this.game.fen(), this.history[this.history.length - 1] || null);
     },
 
     _autoAnnotate() {
@@ -878,11 +897,24 @@ ta: {
     last()  { this.currentMove = this.history.length; this._applyAndRefresh(); },
 
     _applyAndRefresh() {
+      if (this._mode !== 'analysis') {
+        this._mode = 'analysis';
+        this._resetModeBtns();
+        const ba = document.getElementById('labModeAnalysis');
+        if (ba) ba.classList.add('active');
+        this._setBanner(null, '');
+        if (this.board) { this.board.destroy(); this.board = null; }
+        this.board = Chessboard(this._activeBoardId, {
+          pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+          position: 'start',
+          orientation: this.orientation
+        });
+      }
       const g = new Chess();
       for (let i = 0; i < this.currentMove; i++) g.move(this.history[i]);
       if (this.board) this.board.position(g.fen(), false);
       this.renderMoveList();
-      this.updateAnalysis(g.fen(), this.history[this.currentMove - 1]);
+      this.updateAnalysis(g.fen(), this.history[this.currentMove - 1] || null);
     },
 
     updateAnalysis(fen, lastMoveObj) {
@@ -965,15 +997,394 @@ ta: {
         el.style.backgroundColor = barColor;
         el.style.transition = 'width 0.45s cubic-bezier(.4,0,.2,1), background-color 0.3s';
       });
+      document.querySelectorAll('.labVBarFill').forEach(el => {
+        el.style.height = barPct + '%';
+        el.style.transition = 'height 0.5s cubic-bezier(.4,0,.2,1)';
+      });
       document.querySelectorAll('.labCoachExplanation').forEach(el => {
-        el.innerHTML = `💡 <strong>Stockfish Analysis:</strong> ${explanation}`;
+        el.innerHTML = `💡 <strong>Analysis:</strong> ${explanation}`;
       });
       this._updateMoveCounter();
+
+      // Real engine evaluation — async overlay from Lichess Cloud Analysis
+      if (fen && window.CK && CK.engine) {
+        document.querySelectorAll('.labEvalText').forEach(el => el.style.opacity = '0.5');
+        CK.engine.evaluate(fen).then(result => {
+          if (result) CK.engine.applyToUI(result);
+          else document.querySelectorAll('.labEvalText').forEach(el => el.style.opacity = '1');
+        });
+      }
+    },
+
+    _resetModeBtns() {
+      ['labModeAnalysis','labModeGuess','labModeSpar','labModePlay'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) { b.classList.remove('active','active-guess','active-spar'); }
+      });
+    },
+
+    _setBanner(text, type) {
+      const banner = document.getElementById('labModeBanner');
+      if (!banner) return;
+      if (!text) { banner.style.display = 'none'; return; }
+      banner.style.display = 'block';
+      banner.className = `lab-mode-banner lab-mode-banner-${type}`;
+      banner.innerHTML = text;
+    },
+
+    setMode(mode) {
+      this._mode = mode;
+      this._resetModeBtns();
+      if (mode === 'guess') {
+        const b = document.getElementById('labModeGuess');
+        if (b) { b.classList.add('active-guess'); }
+        if (!this.history.length) {
+          CK.showToast('Load a PGN first, then enter Guess mode!', 'warning');
+          this._mode = 'analysis';
+          const ba = document.getElementById('labModeAnalysis');
+          if (ba) ba.classList.add('active');
+          this._setBanner(null, '');
+          return;
+        }
+        this.currentMove = 0;
+        this._guessFrom = null;
+        this._initGuessMode();
+        this._setBanner('🎯 <strong>Guess the Move!</strong> Click a piece, then its destination. Match the GM moves!', 'guess');
+      } else if (mode === 'spar') {
+        const b = document.getElementById('labModeSpar');
+        if (b) { b.classList.add('active-spar'); }
+        if (!this.history.length) {
+          CK.showToast('Load a PGN first, then enter Sparring mode!', 'warning');
+          this._mode = 'analysis';
+          const ba = document.getElementById('labModeAnalysis');
+          if (ba) ba.classList.add('active');
+          this._setBanner(null, '');
+          return;
+        }
+        this._initSparMode();
+        this._setBanner('🤖 <strong>Sparring Bot:</strong> You play White. Bot follows the PGN as Black. Drag pieces to make your move!', 'spar');
+      } else if (mode === 'play') {
+        const b = document.getElementById('labModePlay');
+        if (b) b.classList.add('active');
+        this._initPlayMode();
+        this._setBanner('♟ <strong>Play vs Computer:</strong> Choose your difficulty and start playing! The engine adapts to your level.', 'spar');
+      } else {
+        const b = document.getElementById('labModeAnalysis');
+        if (b) b.classList.add('active');
+        this._initAnalysisMode();
+        this._setBanner(null, '');
+      }
+    },
+
+    /* ─── Play vs Computer mode ─── */
+    _pvDifficulty: 'Intermediate',
+    _pvPlayerColor: 'white',
+
+    _initPlayMode() {
+      this._mode = 'play';
+      const pvPanel = document.getElementById('labPvCPanel') || document.getElementById('coachLabPvCPanel');
+      if (pvPanel) pvPanel.style.display = 'block';
+      // Don't auto-start; user clicks Start Game to choose time control + difficulty first
+    },
+
+    startPlayVsComputer(difficulty, color, timeControl) {
+      this._pvDifficulty  = difficulty   || this._pvDifficulty;
+      this._pvPlayerColor = color        || this._pvPlayerColor;
+      this._pvTimeControl = timeControl  || this._pvTimeControl || 'unlimited';
+      if (CK.enginePlay) {
+        CK.enginePlay.initPlayVsComputer(
+          'pvBoard',
+          'pvStatus',
+          this._pvDifficulty,
+          this._pvPlayerColor,
+          this._pvTimeControl
+        );
+      }
+    },
+
+    _initAnalysisMode() {
+      const g = new Chess();
+      for (let i = 0; i < this.currentMove; i++) g.move(this.history[i]);
+      if (this.board) { this.board.destroy(); this.board = null; }
+      this.board = Chessboard(this._activeBoardId, {
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        position: g.fen(),
+        orientation: this.orientation
+      });
+      this.renderMoveList();
+      this.updateAnalysis(g.fen(), this.history[this.currentMove - 1] || null);
+    },
+
+    _initGuessMode() {
+      const g = new Chess();
+      if (this.board) { this.board.destroy(); this.board = null; }
+      this.board = Chessboard(this._activeBoardId, {
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        position: g.fen(),
+        orientation: 'white',
+        draggable: false,
+        onSquareClick: (sq, piece) => this._handleGuessClick(sq, piece)
+      });
+      this.currentMove = 0;
+      this.renderMoveList();
+      this.updateAnalysis(g.fen(), null);
+    },
+
+    _handleGuessClick(square, piece) {
+      if (this._mode !== 'guess') return;
+      if (this.currentMove >= this.history.length) {
+        CK.showToast('End of game — all moves guessed!', 'info');
+        return;
+      }
+      const expected = this.history[this.currentMove];
+      const boardEl = document.getElementById(this._activeBoardId);
+
+      if (!this._guessFrom) {
+        if (!piece) return;
+        if (piece[0] !== expected.color) {
+          CK.showToast(`It's ${expected.color === 'w' ? 'White' : 'Black'}'s turn!`, 'warning');
+          return;
+        }
+        this._guessFrom = square;
+        boardEl?.querySelector(`.square-${square}`)?.classList.add('lab-guess-highlight');
+        return;
+      }
+
+      const from = this._guessFrom;
+      this._guessFrom = null;
+      boardEl?.querySelectorAll('.lab-guess-highlight,.lab-guess-hint').forEach(el => {
+        el.classList.remove('lab-guess-highlight','lab-guess-hint');
+      });
+
+      if (from === square) return;
+
+      if (from === expected.from && square === expected.to) {
+        this.currentMove++;
+        const g2 = new Chess();
+        for (let i = 0; i < this.currentMove; i++) g2.move(this.history[i]);
+        if (this.board) this.board.position(g2.fen(), true);
+        this.renderMoveList();
+        this.updateAnalysis(g2.fen(), expected);
+        CK.showToast(`✓ Correct! ${expected.san}`, 'success');
+        if (this.currentMove >= this.history.length) {
+          this._setBanner('🏆 <strong>Brilliant!</strong> You guessed all moves in this game!', 'guess');
+        } else {
+          const next = this.history[this.currentMove];
+          this._setBanner(`✓ <strong>${expected.san}</strong> — now guess ${next.color === 'w' ? 'White' : 'Black'}\'s next move!`, 'guess');
+        }
+      } else {
+        CK.showToast('✗ Not quite — try again!', 'warning');
+        this._guessFrom = null;
+        this._setBanner(`✗ <strong>Wrong square!</strong> Think about piece activity and threats. Hint: the piece starts on <code>${expected.from}</code>.`, 'guess');
+        setTimeout(() => {
+          if (this._mode === 'guess') {
+            this._setBanner('🎯 <strong>Guess the Move!</strong> Click a piece, then its destination.', 'guess');
+          }
+        }, 2500);
+      }
+    },
+
+    _initSparMode() {
+      this._sparGame = new Chess();
+      this._sparMoveIdx = 0;
+      this._sparFollowing = true;
+      if (this.board) { this.board.destroy(); this.board = null; }
+      const self = this;
+      this.board = Chessboard(this._activeBoardId, {
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        position: 'start',
+        orientation: 'white',
+        draggable: true,
+        onDrop: (from, to) => self._handleSparDrop(from, to),
+        onSnapEnd: () => { if (self.board && self._sparGame) self.board.position(self._sparGame.fen()); }
+      });
+    },
+
+    _handleSparDrop(from, to) {
+      if (this._mode !== 'spar' || !this._sparGame) return 'snapback';
+      if (this._sparGame.turn() !== 'w') return 'snapback';
+
+      const move = this._sparGame.move({ from, to, promotion: 'q' });
+      if (!move) return 'snapback';
+
+      const expected = this.history[this._sparMoveIdx];
+      const followedPgn = this._sparFollowing && expected && from === expected.from && to === expected.to;
+      this._sparMoveIdx++;
+      if (!followedPgn) this._sparFollowing = false;
+
+      this.updateAnalysis(this._sparGame.fen(), move);
+      if (followedPgn) {
+        CK.showToast(`Following game: ${move.san}`, 'info');
+      } else {
+        CK.showToast(`Deviation! ${move.san} — bot improvising…`, 'info');
+      }
+
+      if (!this._sparGame.game_over()) {
+        setTimeout(() => this._sparBotMove(), 600);
+      } else {
+        const result = this._sparGame.in_checkmate() ? '🏆 Checkmate!' : '½–½ Draw!';
+        this._setBanner(`${result} <strong>Game over.</strong>`, 'spar');
+      }
+    },
+
+    _sparBotMove() {
+      if (!this._sparGame || this._sparGame.game_over()) return;
+      const expected = this.history[this._sparMoveIdx];
+      if (this._sparFollowing && expected && this._sparMoveIdx < this.history.length) {
+        const move = this._sparGame.move(expected.san);
+        if (move) {
+          this._sparMoveIdx++;
+          if (this.board) this.board.position(this._sparGame.fen(), true);
+          this._setBanner(`🤖 <strong>Bot played:</strong> ${move.san}. Your turn (White)!`, 'spar');
+          this.updateAnalysis(this._sparGame.fen(), move);
+          return;
+        }
+      }
+      const fen = this._sparGame.fen();
+      if (window.CK && CK.engine) {
+        CK.engine.evaluate(fen).then(result => {
+          if (result && result.pv) {
+            const uci = result.pv.split(' ')[0];
+            const move = this._sparGame.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] || 'q' });
+            if (move) {
+              if (this.board) this.board.position(this._sparGame.fen(), true);
+              this._setBanner(`🤖 <strong>Bot played:</strong> ${move.san} (Stockfish d${result.depth}). Your turn!`, 'spar');
+              this.updateAnalysis(this._sparGame.fen(), move);
+              return;
+            }
+          }
+          const moves = this._sparGame.moves({ verbose: true });
+          if (moves.length) {
+            const m = moves[Math.floor(Math.random() * moves.length)];
+            const move = this._sparGame.move(m);
+            if (move && this.board) this.board.position(this._sparGame.fen(), true);
+            this._setBanner(`🤖 <strong>Bot played:</strong> ${move ? move.san : '?'}. Your turn!`, 'spar');
+          }
+        });
+      }
+    },
+
+    importUrl() {
+      this._importUrlFor('labUrlInput', this._activeBoardId || 'studentLabBoard');
+    },
+
+    _importUrlFor(inputId, boardId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const url = input.value.trim();
+      if (!url) { CK.showToast('Paste a Lichess game URL first', 'warning'); return; }
+      const m = url.match(/lichess\.org\/([a-zA-Z0-9]{8})/);
+      if (!m) {
+        CK.showToast('Only Lichess URLs supported (e.g. lichess.org/abcd1234)', 'warning');
+        return;
+      }
+      CK.showToast('Fetching game from Lichess…', 'info');
+      const isCoach = boardId && boardId.startsWith('coach');
+      const pgn2Id = isCoach ? 'coachLabPgnInput' : 'labPgnInput';
+      fetch(`https://lichess.org/game/export/${m[1]}?moves=true&clocks=false&evals=false&opening=false`, {
+        headers: { Accept: 'application/x-chess-pgn' }
+      })
+      .then(r => r.ok ? r.text() : Promise.reject(r.status))
+      .then(pgn => {
+        const ta = document.getElementById(pgn2Id);
+        if (ta) ta.value = pgn.trim();
+        this.analyzePgn(pgn.trim(), boardId);
+        input.value = '';
+        CK.showToast('Game imported from Lichess!', 'success');
+      })
+      .catch(() => CK.showToast('Could not fetch game. Paste the PGN directly.', 'error'));
     },
 
     broadcastCoach() {
       CK.showToast('📢 Position broadcasted to 12 active student scratchpads!', 'success');
+    },
+
+    handleFileUpload(event, boardId) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const pgnText = e.target.result;
+        const isCoach = (boardId || '').startsWith('coach');
+        const inputId = isCoach ? 'coachLabPgnInput' : 'labPgnInput';
+        const input = document.getElementById(inputId);
+        if (input) input.value = pgnText.trim();
+        this.analyzePgn(pgnText.trim(), boardId || 'studentLabBoard');
+        CK.showToast(`📁 "${file.name}" loaded — ${pgnText.match(/\d+\./g)?.length || '?'} moves`, 'success');
+      };
+      reader.readAsText(file);
+      event.target.value = '';
     }
+  };
+
+  /* ─── Vault Modal Functions ─── */
+  CK._vaultPieces = [
+    'r','n','b','q','k','b','n','r',
+    'p','p','p','p','p','p','p','p',
+    '','','','','','','','',
+    '','','','','','','','',
+    '','','','P','','','','',
+    '','','N','','','','','',
+    'P','P','P','','','P','P','P',
+    'R','','B','Q','K','B','N','R'
+  ];
+
+  CK._renderVaultGrid = (pieces) => {
+    const grid = document.getElementById('vaultSquaresGrid');
+    if (!grid) return;
+    const pieceGlyphs = {
+      'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟',
+      'R':'♖','N':'♘','B':'♗','Q':'♕','K':'♔','P':'♙'
+    };
+    grid.innerHTML = pieces.map((p, idx) => {
+      const row = Math.floor(idx / 8);
+      const col = idx % 8;
+      const light = (row + col) % 2 === 0;
+      const bg = light ? '#EEEED2' : '#769656';
+      const glyph = pieceGlyphs[p] || '';
+      const color = p && p === p.toUpperCase() ? '#fff' : '#1a1a1a';
+      return `<div style="background:${bg};display:flex;align-items:center;justify-content:center;font-size:clamp(14px,3vw,22px);color:${color};text-shadow:0 1px 3px rgba(0,0,0,0.5);">${glyph}</div>`;
+    }).join('');
+  };
+
+  CK.openVaultSession = (title, coach) => {
+    const titleEl = document.getElementById('vaultModalTitle');
+    const coachEl = document.getElementById('vaultModalCoach');
+    if (titleEl) titleEl.textContent = title || 'Class Replay';
+    if (coachEl) coachEl.textContent = `Coach: ${coach || 'Sarah Chess'}`;
+    const tsEl = document.getElementById('vaultVideoTimestamp');
+    if (tsEl) tsEl.textContent = '00:00 / 45:20';
+    const badgeEl = document.getElementById('vaultMoveBadge');
+    if (badgeEl) badgeEl.textContent = 'Starting Position';
+    const noteEl = document.getElementById('vaultHumanAnalysis');
+    if (noteEl) noteEl.innerHTML = '💡 <strong>GM Coach Note:</strong> Study the opening phase — piece development and center control are the foundation of every great game.';
+    CK._renderVaultGrid(CK._vaultPieces);
+    const modal = document.getElementById('vaultModal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  CK.seekVaultMove = (timestamp, move, explanation) => {
+    const tsEl = document.getElementById('vaultVideoTimestamp');
+    if (tsEl) tsEl.textContent = `${timestamp} / 45:20`;
+    const badgeEl = document.getElementById('vaultMoveBadge');
+    if (badgeEl) badgeEl.textContent = `Move: ${move}`;
+    const noteEl = document.getElementById('vaultHumanAnalysis');
+    if (noteEl) noteEl.innerHTML = `💡 <strong>GM Coach Note:</strong> ${explanation}`;
+    // Shift the board slightly to simulate move playback
+    const grid = document.getElementById('vaultSquaresGrid');
+    if (grid) {
+      grid.style.opacity = '0.6';
+      grid.style.transition = 'opacity 0.2s';
+      setTimeout(() => {
+        grid.style.opacity = '1';
+      }, 250);
+    }
+    CK.showToast(`Seeking to ${timestamp} — ${move}`, 'info');
+  };
+
+  CK.closeVaultModal = () => {
+    const modal = document.getElementById('vaultModal');
+    if (modal) modal.style.display = 'none';
   };
 
 })();

@@ -1313,18 +1313,21 @@ CK.arcade = (() => {
 
   ARC.renderScoreBadges = () => {
     const games = [
-      { id: 'puzzle', el: 'score-badge-puzzle' },
-      { id: 'gm', el: 'score-badge-gm' },
-      { id: 'memory', el: 'score-badge-memory' },
-      { id: 'timing', el: 'score-badge-timing' },
-      { id: 'opening', el: 'score-badge-opening' },
-      { id: 'queenquest', el: 'score-badge-queenquest' },
-      { id: 'quiz', el: 'score-badge-quiz' },
+      { id: 'puzzle',     strip: 'score-badge-puzzle',     card: 'score-display-puzzle' },
+      { id: 'gm',         strip: 'score-badge-gm',         card: 'score-display-gm' },
+      { id: 'memory',     strip: 'score-badge-memory',     card: 'score-display-memory' },
+      { id: 'timing',     strip: 'score-badge-timing',     card: 'score-display-timing' },
+      { id: 'opening',    strip: 'score-badge-opening',    card: 'score-display-opening' },
+      { id: 'queenquest', strip: 'score-badge-queenquest', card: 'score-display-queenquest' },
+      { id: 'quiz',       strip: 'score-badge-quiz',       card: 'score-display-quiz' },
     ];
     const scores = getScores();
-    games.forEach(({ id, el }) => {
-      const badge = document.getElementById(el);
-      if (badge) badge.textContent = scores[id] ? `Best: ${scores[id]}` : 'Not played';
+    games.forEach(({ id, strip, card }) => {
+      const val = scores[id];
+      const stripEl = document.getElementById(strip);
+      if (stripEl) stripEl.textContent = val ? `Best: ${val}` : '—';
+      const cardEl = document.getElementById(card);
+      if (cardEl) cardEl.textContent = val ? val : '—';
     });
   };
 

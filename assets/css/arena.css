@@ -27,8 +27,10 @@
   --arena-indigo: #6366f1;
   --arena-text: #f1f5f9;
   --arena-text-muted: #94a3b8;
-  --arena-board-light: #ffffff;
-  --arena-board-dark: #769656;
+  --arena-board-light: #f5f5e8;
+  --arena-board-dark: #556b2f;
+  --arcade-board-light: #f5f5e8;
+  --arcade-board-dark: #556b2f;
   --arena-shadow: rgba(0, 0, 0, 0.4);
   --arena-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   --card-puzzle: #f59e0b;
@@ -1651,10 +1653,10 @@
   grid-template-rows: repeat(8, 1fr);
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 4px solid #1f2937;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 4px solid #3a5220;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(85,107,47,0.3), inset 0 0 20px rgba(0,0,0,0.2);
   position: relative;
 }
 .arcade-sq {
@@ -1666,59 +1668,80 @@
   position: relative;
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s ease;
+  transition: filter 0.12s ease, outline 0.1s ease;
 }
 .arcade-sq.light {
-  background-color: #f0d9b5;
+  background-color: var(--arcade-board-light, #f5f5e8);
 }
 .arcade-sq.dark {
-  background-color: #b58863;
+  background-color: var(--arcade-board-dark, #556b2f);
+}
+.arcade-sq:hover {
+  filter: brightness(1.15);
+  outline: 2px solid rgba(85,107,47,0.55);
+  outline-offset: -2px;
+  z-index: 1;
 }
 .arcade-sq.valid-dest::before {
   content: '';
-  width: 16px;
-  height: 16px;
-  background: rgba(16, 185, 129, 0.6);
+  width: 34%;
+  height: 34%;
+  background: rgba(232,184,75,0.75);
   border-radius: 50%;
   z-index: 2;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
-  animation: pulseScale 1s infinite alternate;
+  box-shadow: 0 0 12px rgba(232,184,75,0.9), 0 0 4px rgba(232,184,75,0.5);
+  animation: pulseScale 0.9s ease-in-out infinite alternate;
+  pointer-events: none;
 }
 @keyframes pulseScale {
-  from { transform: scale(0.9); }
-  to { transform: scale(1.15); }
+  from { transform: scale(0.85); opacity: 0.8; }
+  to   { transform: scale(1.12); opacity: 1; }
 }
 .arcade-sq.selected {
-  background-color: rgba(245, 158, 11, 0.5) !important;
+  background-color: rgba(232,184,75,0.45) !important;
+  outline: 3px solid rgba(232,184,75,0.85);
+  outline-offset: -3px;
 }
 .arcade-sq.success-glow {
-  animation: successFlash 0.6s ease;
+  animation: successFlash 0.65s ease;
 }
 @keyframes successFlash {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.6); background-color: rgba(16, 185, 129, 0.7); }
+  0%   { filter: brightness(1); }
+  40%  { filter: brightness(1.8); background-color: rgba(52,211,153,0.65) !important; }
+  100% { filter: brightness(1); }
 }
 
+/* Pieces — high-contrast on olive/ivory board */
 .arcade-piece {
   font-size: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5;
-  cursor: grab;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.arcade-piece:active {
-  cursor: grabbing;
+  line-height: 1;
+  pointer-events: none;
 }
 .arcade-piece.white {
-  color: #ffffff;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  color: #fffde7;
+  text-shadow:
+    -1px -1px 0 rgba(0,0,0,0.9),
+     1px -1px 0 rgba(0,0,0,0.9),
+    -1px  1px 0 rgba(0,0,0,0.9),
+     1px  1px 0 rgba(0,0,0,0.9),
+     0 0 10px rgba(0,0,0,0.7);
+  filter: none;
 }
 .arcade-piece.black {
-  color: #1a1a1a;
-  filter: drop-shadow(0 2px 3px rgba(255, 255, 255, 0.6));
+  color: #1a1a2e;
+  text-shadow:
+    -1px -1px 0 rgba(255,255,255,0.85),
+     1px -1px 0 rgba(255,255,255,0.85),
+    -1px  1px 0 rgba(255,255,255,0.85),
+     1px  1px 0 rgba(255,255,255,0.85),
+     0 0 8px rgba(255,255,255,0.4);
+  filter: none;
 }
 
 .arcade-star {
@@ -2220,7 +2243,197 @@
   }
 }
 
+/* ─── Arcade Responsive & Production Fixes ─── */
+
+/* Make board-wrap square and fully responsive */
+.arcade-board-wrap {
+  position: relative;
+  width: min(400px, calc(100vw - 64px));
+  height: min(400px, calc(100vw - 64px));
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+/* Board coordinate labels overlaid on the board */
+.arcade-board-coords {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Tablet: stack board + dashboard vertically */
+@media (max-width: 900px) {
+  .arcade-cabinet {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+  .arcade-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .arcade-board-wrap {
+    width: min(340px, calc(100vw - 40px));
+    height: min(340px, calc(100vw - 40px));
+  }
+  .arcade-dashboard {
+    max-height: unset;
+  }
+  .arcade-stats-row {
+    gap: 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .arcade-overlay {
+    padding: 8px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  .arcade-cabinet {
+    padding: 14px 10px;
+    border-radius: 14px;
+    max-height: unset;
+  }
+  .arcade-board-wrap {
+    width: min(280px, calc(100vw - 28px));
+    height: min(280px, calc(100vw - 28px));
+  }
+  .arcade-title { font-size: 1.3rem !important; }
+  .arcade-game-icon { font-size: 1.6rem !important; }
+  .arcade-piece { font-size: 1.8rem !important; }
+}
+
+/* More Games page responsive */
+@media (max-width: 640px) {
+  .games-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .games-score-strip {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .score-strip-item {
+    min-width: 80px;
+    flex: 1;
+  }
+  .more-games-title {
+    font-size: 1.8rem !important;
+  }
+}
+@media (max-width: 420px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Production: Arcade board coord labels ─── */
+.arcade-board-frame {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.arcade-ranks {
+  position: absolute;
+  left: -20px;
+  top: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(85,107,47,0.7);
+  pointer-events: none;
+}
+.arcade-files {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(85,107,47,0.7);
+  pointer-events: none;
+  padding: 0 2px;
+  margin-top: 4px;
+}
+
+/* ─── Production: Game card hover improvement ─── */
+.game-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-best {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+}
+.card-best span {
+  font-weight: 700;
+  color: var(--arena-gold, #f6c45a);
+}
+
 /* Force Poppins Font on Arena Page Elements */
 #arena-page, #arena-page * {
   font-family: 'Poppins', sans-serif !important;
+}
+
+/* ─── Match Commentary Feed ─── */
+.commentary-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.commentary-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  animation: commentarySlideIn 0.35s ease both;
+}
+.commentary-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  line-height: 1;
+}
+.commentary-text {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+.commentary-text strong { color: #f1f5f9; }
+@keyframes commentarySlideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Grade value in stat card (colored) ─── */
+.grade-val.grade-s { color: #e8b84b; text-shadow: 0 0 12px rgba(232,184,75,0.5); }
+.grade-val.grade-a { color: #10b981; text-shadow: 0 0 12px rgba(16,185,129,0.4); }
+.grade-val.grade-b { color: #5b9cf6; text-shadow: 0 0 12px rgba(91,156,246,0.4); }
+.grade-val.grade-c { color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.4); }
+.grade-val.grade-d { color: #ef5350; text-shadow: 0 0 12px rgba(239,83,80,0.4); }
+
+/* ─── Puzzle Board Olive Theme ─── */
+.pz-board-inner {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: center;
+}
+.pz-board-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
 }

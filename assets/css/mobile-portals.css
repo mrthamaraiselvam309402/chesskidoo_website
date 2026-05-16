@@ -1,0 +1,572 @@
+/* mobile-portals.css — ChessKidoo Portal Mobile Optimization
+   Breakpoints: 900px → 768px → 600px → 480px → 390px
+   Applies to Admin, Coach, Student portals (portal-body)
+   ─────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════
+   BASE MOBILE FOUNDATIONS
+   ═══════════════════════════════════════════════════════════ */
+.portal-body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+.portal-body * {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   900px — TABLETS LANDSCAPE / SMALL LAPTOPS
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Sidebar collapses to icon-only strip */
+  .portal-sidebar {
+    width: 64px;
+    min-width: 64px;
+  }
+  .portal-sidebar .sidebar-logo-text,
+  .portal-sidebar .nav-label,
+  .portal-sidebar .sidebar-user-info {
+    display: none;
+  }
+  .portal-sidebar .nav-item {
+    justify-content: center;
+    padding: 12px 0;
+  }
+  .portal-sidebar .nav-icon {
+    margin-right: 0;
+  }
+  .portal-content {
+    margin-left: 64px;
+    width: calc(100% - 64px);
+  }
+  .p-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   768px — TABLETS PORTRAIT / LARGE PHONES
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* ── Layout: bottom navigation replaces sidebar ── */
+  .portal-body {
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .portal-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 60px;
+    z-index: 900;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--p-border);
+    border-right: none;
+    padding: 0;
+    overflow: hidden;
+  }
+  .portal-sidebar .sidebar-header,
+  .portal-sidebar .sidebar-user,
+  .portal-sidebar .sidebar-logo-text,
+  .portal-sidebar .nav-label,
+  .portal-sidebar .sidebar-user-info,
+  .portal-sidebar .sidebar-footer {
+    display: none !important;
+  }
+  .portal-sidebar .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .portal-sidebar .nav-item {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 2px 4px;
+    gap: 3px;
+    border-radius: 0;
+    min-height: 60px;
+    font-size: 0.6rem;
+  }
+  .portal-sidebar .nav-item .nav-icon {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+  .portal-sidebar .nav-item.active {
+    background: rgba(232,184,75,0.12);
+    border-left: none;
+    border-top: 2px solid var(--p-gold);
+  }
+  /* Show condensed label on bottom nav */
+  .portal-sidebar .nav-item .nav-label {
+    display: block !important;
+    font-size: 0.58rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 56px;
+    text-align: center;
+  }
+
+  /* ── Content area fills above bottom nav ── */
+  .portal-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    height: calc(100dvh - 60px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0;
+  }
+
+  /* ── Panel header ── */
+  .p-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .p-panel-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .p-panel-header-actions .p-btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  /* ── Stat cards: 2×2 grid ── */
+  .p-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .p-stat-card {
+    padding: 14px 12px;
+  }
+  .p-stat-val {
+    font-size: 1.7rem;
+  }
+
+  /* ── Tables: horizontal scroll ── */
+  .p-table-wrap,
+  .p-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .p-table {
+    min-width: 580px;
+  }
+  .p-table th,
+  .p-table td {
+    padding: 10px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* ── Modals: bottom sheet ── */
+  .p-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .p-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 88dvh;
+    overflow-y: auto;
+    margin: 0;
+  }
+  .p-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--p-surface);
+    border-radius: 20px 20px 0 0;
+    padding: 16px 20px 12px;
+  }
+
+  /* ── Forms: prevent iOS zoom ── */
+  .p-input,
+  .p-select,
+  .p-textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* ── Buttons: minimum 44px touch targets ── */
+  .p-btn,
+  button.p-btn,
+  .p-icon-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* ── Live panel / student grid: single column ── */
+  .p-live-grid,
+  .coach-students-grid,
+  .admin-coaches-grid,
+  .p-live-students-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* ── Coach student cards ── */
+  .coach-student-card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  /* ── Attendance table ── */
+  .att-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .att-table {
+    min-width: 480px;
+  }
+
+  /* ── Reports table ── */
+  .rpt-table-wrap {
+    overflow-x: auto;
+  }
+  .rpt-table {
+    min-width: 540px;
+  }
+
+  /* ── Chart containers: cap height ── */
+  .p-chart-wrap,
+  .chart-container {
+    height: 220px !important;
+    max-height: 220px !important;
+  }
+
+  /* ── Notification drawer ── */
+  .notif-drawer {
+    width: 100vw;
+    right: -100vw;
+  }
+  .notif-drawer.open {
+    right: 0;
+  }
+
+  /* ── Profile header ── */
+  .p-profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  /* ── 4-tile summary in live panel ── */
+  .admin-live-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   600px — PHONES LANDSCAPE / SMALL TABLETS
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* ── Portal top bar ── */
+  .portal-topbar {
+    padding: 10px 14px;
+  }
+  .portal-topbar-title {
+    font-size: 1rem;
+  }
+
+  /* ── Panels ── */
+  .p-panel {
+    padding: 14px 12px;
+  }
+
+  /* ── Stat grid stays 2-col but smaller ── */
+  .p-stat-card {
+    padding: 12px 10px;
+  }
+  .p-stat-val {
+    font-size: 1.5rem;
+  }
+  .p-stat-label {
+    font-size: 0.72rem;
+  }
+
+  /* ── Leaderboard ── */
+  .leaderboard-row {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  /* ── Progress cards ── */
+  .progress-card {
+    padding: 12px;
+  }
+
+  /* ── SRS queue ── */
+  .srs-card {
+    padding: 12px 14px;
+  }
+
+  /* ── Goals ── */
+  .goal-item {
+    padding: 10px 12px;
+  }
+
+  /* ── Timeline / activity ── */
+  .activity-item {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  /* ── Session cards ── */
+  .session-card {
+    padding: 12px;
+  }
+
+  /* ── 4-tile admin live summary: keep 2-col ── */
+  .admin-live-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   480px — STANDARD PHONES
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* ── Bottom nav: smaller items ── */
+  .portal-sidebar {
+    height: 56px;
+  }
+  .portal-sidebar .nav-item {
+    min-height: 56px;
+    padding: 4px 2px 2px;
+  }
+  .portal-sidebar .nav-item .nav-icon {
+    font-size: 1.1rem;
+  }
+  .portal-sidebar .nav-item .nav-label {
+    font-size: 0.52rem;
+  }
+  .portal-content {
+    height: calc(100dvh - 56px);
+  }
+
+  /* ── Content padding ── */
+  .p-panel {
+    padding: 12px 10px;
+  }
+
+  /* ── Stat grid: 2-col still but minimal padding ── */
+  .p-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px 10px;
+  }
+  .p-stat-card {
+    padding: 10px 8px;
+  }
+  .p-stat-val {
+    font-size: 1.3rem;
+  }
+  .p-stat-icon {
+    font-size: 1.4rem;
+  }
+
+  /* ── Table font ── */
+  .p-table th,
+  .p-table td {
+    font-size: 0.74rem;
+    padding: 8px 8px;
+  }
+
+  /* ── Buttons ── */
+  .p-btn {
+    font-size: 0.8rem;
+    padding: 9px 14px;
+  }
+
+  /* ── Modals ── */
+  .p-modal {
+    max-height: 92dvh;
+  }
+  .p-modal-body {
+    padding: 14px 16px;
+  }
+
+  /* ── Panel section headers ── */
+  .p-section-title {
+    font-size: 0.95rem;
+  }
+
+  /* ── Coach student cards: compact ── */
+  .coach-student-card .student-card-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* ── Attendance inline buttons ── */
+  .att-btn {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+    min-height: 32px;
+  }
+
+  /* ── Admin: coach scorecards ── */
+  .adm-coach-card {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .adm-coach-stats {
+    width: 100%;
+    justify-content: space-around;
+    gap: 8px;
+  }
+  .adm-coach-stat-val {
+    font-size: 0.95rem;
+  }
+
+  /* ── Live panel tiles ── */
+  .admin-live-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .admin-live-tile {
+    padding: 10px 8px;
+  }
+  .admin-live-tile-val {
+    font-size: 1.3rem;
+  }
+
+  /* ── Notification items ── */
+  .notif-item {
+    padding: 10px 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   390px — SMALL PHONES (iPhone 12 mini / SE)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 390px) {
+  .p-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 8px;
+  }
+  .p-stat-val {
+    font-size: 1.2rem;
+  }
+  .p-stat-card {
+    padding: 8px 6px;
+  }
+  .portal-topbar-title {
+    font-size: 0.88rem;
+  }
+  .p-modal-header h3 {
+    font-size: 1rem;
+  }
+  /* Admin live: 1-col for very small screens */
+  .admin-live-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .admin-live-tile-val {
+    font-size: 1.1rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   iOS SAFE AREA INSETS (home indicator, notch)
+   ═══════════════════════════════════════════════════════════ */
+@supports (padding: max(0px)) {
+  .portal-sidebar {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .portal-content {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  @media (max-width: 768px) {
+    .portal-sidebar {
+      height: calc(60px + env(safe-area-inset-bottom));
+    }
+    .portal-content {
+      height: calc(100dvh - 60px - env(safe-area-inset-bottom));
+    }
+    .p-modal {
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOUCH DEVICE — DISABLE HOVER ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  .portal-sidebar .nav-item:hover,
+  .p-stat-card:hover,
+  .coach-student-card:hover,
+  .adm-coach-card:hover,
+  .p-btn:hover,
+  .leaderboard-row:hover,
+  .activity-item:hover,
+  .notif-item:hover,
+  .session-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .p-btn:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+    transition: transform 0.1s, opacity 0.1s;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LANDSCAPE PHONE OVERRIDES
+   ═══════════════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .portal-sidebar {
+    height: 52px;
+  }
+  .portal-sidebar .nav-item .nav-label {
+    display: none !important;
+  }
+  .portal-sidebar .nav-item {
+    min-height: 52px;
+    padding: 6px 2px;
+  }
+  .portal-content {
+    height: calc(100dvh - 52px);
+  }
+  .p-stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .p-modal {
+    max-height: 95dvh;
+    overflow-y: auto;
+  }
+}

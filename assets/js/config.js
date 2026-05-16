@@ -9,6 +9,9 @@
    Never commit SERVICE_ROLE keys or private secrets here.
    --------------------------------------------------------------- */
 
+// Guarantee the CK namespace exists before any module attaches to it
+window.CK = window.CK || {};
+
 window.APP_CONFIG = {
   SUPABASE_URL:     "https://hcjuyqicftkgpiyrkscr.supabase.co",
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjanV5cWljZnRrZ3BpeXJrc2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTE4NTIsImV4cCI6MjA5MzEyNzg1Mn0.utVxS7jX2GH9mIVbKquuQFCyH99nUmP_geWI8hhWJP4",
@@ -16,11 +19,32 @@ window.APP_CONFIG = {
   // Admin UUID from Supabase Auth (set after creating the admin user)
   ADMIN_UUID:       "a007b0b0-9b30-478f-a147-1af18dff20ce",
 
+  // Razorpay — replace with your live key from dashboard.razorpay.com
+  // Test key format: rzp_test_XXXXXXXXXXXXXXXX
+  // Live key format: rzp_live_XXXXXXXXXXXXXXXX
+  RAZORPAY_KEY:     "rzp_test_REPLACE_WITH_YOUR_KEY",
+
+  // Academy display info
+  ACADEMY_NAME:     "ChessKidoo Academy",
+  ACADEMY_EMAIL:    "Chesskidoo37@gmail.com",
+  ACADEMY_PHONE:    "+91 90258 46663",
+  ACADEMY_CITY:     "Chennai, Tamil Nadu",
+
+  // UPI Payment — direct bank transfer (no gateway needed)
+  // IMPORTANT: Replace ACADEMY_UPI_ID with the actual UPI VPA from your bank app
+  // (e.g. ranjithas@okaxis, 9025846663@ybl, etc.)
+  ACADEMY_UPI_ID:     "9025846663@upi",
+  ACADEMY_UPI_NAME:   "Ranjith A S",
+  ACADEMY_UPI_MOBILE: "9025846663",
+
   // EmailJS (public keys — safe for client-side)
   EMAILJS_SERVICE:  "service_7mn07q9",
   EMAILJS_TEMPLATE: "template_3lumv9c",
   EMAILJS_KEY:      "1EuHvvzi2H9RnaBF6"
 };
+
+// Expose Razorpay key via global for student.js payment gateway
+window.CK_RAZORPAY_KEY = window.APP_CONFIG.RAZORPAY_KEY;
 
 // Initialize Supabase Client
 (function initSupabase() {

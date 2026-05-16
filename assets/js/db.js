@@ -141,11 +141,11 @@
     ]
   };
 
-  // Helper: Initialize localStorage if empty
+  // Helper: Initialize localStorage if empty (never overwrite existing data)
   const initLocalStore = () => {
     Object.keys(DEFAULT_DB).forEach(key => {
       const storeKey = `ck_db_${key}`;
-      if (!localStorage.getItem(storeKey) || key === 'users' || key === 'expenses') {
+      if (!localStorage.getItem(storeKey)) {
         localStorage.setItem(storeKey, JSON.stringify(DEFAULT_DB[key]));
       }
     });
@@ -161,8 +161,8 @@
   // Determine if Supabase can be queried
   let _supabaseDisabled = false; // Fast-fail flag: once Supabase fails, stop retrying this session
   const canUseSupabase = () => {
-    if (_supabaseDisabled || window.APP_CONFIG?.SUPABASE_URL?.includes('hcjuyqicftkgpiyrkscr')) return false;
-    return window.supabaseClient && navigator.onLine;
+    if (_supabaseDisabled) return false;
+    return !!(window.supabaseClient && navigator.onLine);
   };
   const markSupabaseFailed = () => {
     if (!_supabaseDisabled) {
@@ -282,10 +282,23 @@
 
     // --- EXPENDITURE OPERATIONS ---
     async getExpenses() {
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('expenses').select('*').order('created_at', { ascending: false });
+          if (!error && data) { setLocal('expenses', data); return data; }
+          markSupabaseFailed();
+        } catch(e) { markSupabaseFailed(); }
+      }
       return getLocal('expenses') || [];
     },
     async saveExpense(expense) {
       if (!expense.id) expense.id = Date.now();
+      if (canUseSupabase()) {
+        try {
+          const { error } = await window.supabaseClient.from('expenses').upsert(expense);
+          if (error) console.warn('[ChessKidoo DB] Expense save error:', error);
+        } catch(e) { console.warn('[ChessKidoo DB] Expense save error:', e); }
+      }
       const list = getLocal('expenses') || [];
       const idx = list.findIndex(e => e.id === expense.id);
       if (idx !== -1) list[idx] = { ...list[idx], ...expense };
@@ -294,6 +307,11 @@
       return expense;
     },
     async deleteExpense(id) {
+      if (canUseSupabase()) {
+        try {
+          await window.supabaseClient.from('expenses').delete().eq('id', id);
+        } catch(e) { console.warn('[ChessKidoo DB] Expense delete error:', e); }
+      }
       const list = getLocal('expenses') || [];
       setLocal('expenses', list.filter(e => e.id !== id));
       return true;
@@ -314,7 +332,7 @@
         }
       }
 
-      const docs = getLocal('document');
+      const docs = getLocal('document') || [];
       return level ? docs.filter(d => d.level === level) : docs;
     },
 
@@ -332,7 +350,7 @@
         }
       }
 
-      const docs = getLocal('document');
+      const docs = getLocal('document') || [];
       const idx = docs.findIndex(d => d.id === doc.id);
       if (idx !== -1) docs[idx] = { ...docs[idx], ...doc };
       else docs.push(doc);
@@ -352,7 +370,7 @@
         }
       }
 
-      const docs = getLocal('document');
+      const docs = getLocal('document') || [];
       const filtered = docs.filter(d => d.id !== numId && d.id !== id);
       setLocal('document', filtered);
       return true;
@@ -443,7 +461,7 @@
         }
       }
 
-      const ratings = getLocal('ratings');
+      const ratings = getLocal('ratings') || [];
       ratings.push(ratingLog);
       setLocal('ratings', ratings);
       return ratingLog;
@@ -483,26 +501,126 @@
         }
       }
 
-      const tours = getLocal('tourRatings');
+      const tours = getLocal('tourRatings') || [];
       tours.push(tourLog);
       setLocal('tourRatings', tours);
       return tourLog;
+    },
+
+    // --- RESOURCES OPERATIONS ---
+    async getResources(batch = null) {
+      if (canUseSupabase()) {
+        try {
+          let q = window.supabaseClient.from('resources').select('*').order('created_at', { ascending: false });
+          if (batch) q = q.eq('batch', batch);
+          const { data, error } = await q;
+          if (!error && data) { setLocal('resources', data); return data; }
+          markSupabaseFailed();
+        } catch(e) { markSupabaseFailed(); }
+      }
+      const local = getLocal('resources') || [];
+      return batch ? local.filter(r => String(r.batch) === String(batch)) : local;
+    },
+    async saveResource(resource) {
+      if (!resource.id) resource.id = Date.now();
+      if (canUseSupabase()) {
+        try {
+          const { error } = await window.supabaseClient.from('resources').upsert(resource);
+          if (error) console.warn('[ChessKidoo DB] Resource save error:', error);
+        } catch(e) { console.warn('[ChessKidoo DB] Resource save error:', e); }
+      }
+      const list = getLocal('resources') || [];
+      const idx = list.findIndex(r => r.id === resource.id);
+      if (idx !== -1) list[idx] = { ...list[idx], ...resource };
+      else list.push(resource);
+      setLocal('resources', list);
+      return resource;
+    },
+    async deleteResource(id) {
+      if (canUseSupabase()) {
+        try { await window.supabaseClient.from('resources').delete().eq('id', id); } catch(e) {}
+      }
+      const list = getLocal('resources') || [];
+      setLocal('resources', list.filter(r => r.id !== id));
+      return true;
+    },
+
+    // --- MEETINGS OPERATIONS ---
+    async getMeetings(filters = {}) {
+      if (canUseSupabase()) {
+        try {
+          let q = window.supabaseClient.from('meetings').select('*').order('date', { ascending: true });
+          if (filters.date) q = q.eq('date', filters.date);
+          if (filters.coach) q = q.eq('coach', filters.coach);
+          const { data, error } = await q;
+          if (!error && data) { localStorage.setItem('ck_meetings', JSON.stringify(data)); return data; }
+          markSupabaseFailed();
+        } catch(e) { markSupabaseFailed(); }
+      }
+      return JSON.parse(localStorage.getItem('ck_meetings') || '[]');
+    },
+    async saveMeeting(meeting) {
+      if (!meeting.id) meeting.id = Date.now();
+      if (canUseSupabase()) {
+        try {
+          const { error } = await window.supabaseClient.from('meetings').upsert(meeting);
+          if (error) console.warn('[ChessKidoo DB] Meeting save error:', error);
+        } catch(e) { console.warn('[ChessKidoo DB] Meeting save error:', e); }
+      }
+      const list = JSON.parse(localStorage.getItem('ck_meetings') || '[]');
+      const idx = list.findIndex(m => m.id === meeting.id);
+      if (idx !== -1) list[idx] = { ...list[idx], ...meeting };
+      else list.push(meeting);
+      localStorage.setItem('ck_meetings', JSON.stringify(list));
+      return meeting;
+    },
+    async deleteMeeting(id) {
+      if (canUseSupabase()) {
+        try { await window.supabaseClient.from('meetings').delete().eq('id', id); } catch(e) {}
+      }
+      const list = JSON.parse(localStorage.getItem('ck_meetings') || '[]');
+      localStorage.setItem('ck_meetings', JSON.stringify(list.filter(m => m.id !== id)));
+      return true;
+    },
+    // New: Classes Management (for Admin Portal)
+    async getClasses() {
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('classes').select('*');
+          if (!error && data) { localStorage.setItem('ck_admin_classes', JSON.stringify(data)); return data; }
+        } catch(e) {}
+      }
+      return JSON.parse(localStorage.getItem('ck_admin_classes') || '[]');
+    },
+    async saveClass(cls) {
+      if (canUseSupabase()) {
+        try { await window.supabaseClient.from('classes').upsert(cls); } catch(e) {}
+      }
+      const list = JSON.parse(localStorage.getItem('ck_admin_classes') || '[]');
+      const idx = list.findIndex(c => c.id === cls.id);
+      if (idx !== -1) list[idx] = cls; else list.push(cls);
+      localStorage.setItem('ck_admin_classes', JSON.stringify(list));
+      return cls;
     }
   };
 
   // --- STUDENT TRACKING SYSTEM (Admin / Coach / Student Integration) ---
   CK.tracker = {
     async addReview(reviewObj) {
-      const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
-      notes.push({
+      const note = {
         student: reviewObj.student,
         coach: reviewObj.coach || 'Sarah Chess',
         text: reviewObj.text,
         date: reviewObj.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      });
+      };
+      if (canUseSupabase()) {
+        try { await window.supabaseClient.from('coach_notes').insert(note); } catch(e) {}
+      }
+      const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
+      notes.push(note);
       localStorage.setItem('ck_coach_notes', JSON.stringify(notes));
 
-      const students = await CK.db.getProfiles('student');
+      const students = (await CK.db.getProfiles('student')) || [];
       const s = students.find(u => u.full_name.toLowerCase() === reviewObj.student.toLowerCase());
       if (s) {
         s.last_note = reviewObj.text;
@@ -513,43 +631,222 @@
       if (window.CK && CK.student && typeof CK.student.renderCoachReviews === 'function') {
         CK.student.renderCoachReviews();
       }
-      if (window.CK && CK.admin && typeof CK.admin.loadStudents === 'function') {
-        CK.admin.loadStudents();
-      }
     },
 
-    getReviews(studentName) {
-      if (!studentName) studentName = 'Emma Wilson';
-      const notes = JSON.parse(localStorage.getItem('ck_coach_notes')) || [];
-      const myNotes = notes.filter(n => n.student.toLowerCase() === studentName.toLowerCase());
-      if (myNotes.length === 0) {
-        return [
-          { coach: "Sarah Chess (FIDE Instructor)", date: "May 6, 2026", text: "Emma shows fantastic calculation skills in open tactical lines. Focus on rook endgames and pawn structures in the coming week. Keep up the high puzzle count!" },
-          { coach: "Michael Knight (Academy Coach)", date: "April 28, 2026", text: "Excellent concentration during our class match. Make sure to review basic opening concepts, specifically the Italian game sidelines." }
-        ];
+    async getReviews(studentName) {
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('coach_notes').select('*').order('created_at', { ascending: false });
+          if (!error && data) { localStorage.setItem('ck_coach_notes', JSON.stringify(data)); }
+        } catch(e) {}
       }
-      return myNotes.reverse();
+      const notes = JSON.parse(localStorage.getItem('ck_coach_notes') || '[]');
+      if (!studentName) return notes;
+      return notes.filter(n => n.student.toLowerCase() === studentName.toLowerCase()).reverse();
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────
+     ACCESS MANAGEMENT — Admin sets per-user credentials
+  ───────────────────────────────────────────────────────── */
+  CK.accessManager = {
+    CREDS_KEY: 'ck_user_credentials',
+    async getCreds() {
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('credentials').select('*');
+          if (!error && data) {
+            const map = {};
+            data.forEach(item => { map[item.email.toLowerCase()] = item.password; });
+            localStorage.setItem(this.CREDS_KEY, JSON.stringify(map));
+            return map;
+          }
+        } catch(e) {}
+      }
+      return JSON.parse(localStorage.getItem(this.CREDS_KEY) || '{}');
+    },
+
+    async setCredential(email, password) {
+      if (canUseSupabase()) {
+        try {
+          await window.supabaseClient.from('credentials').upsert({ email: email.toLowerCase(), password });
+        } catch(e) {}
+      }
+      const c = JSON.parse(localStorage.getItem(this.CREDS_KEY) || '{}');
+      c[email.toLowerCase()] = password;
+      localStorage.setItem(this.CREDS_KEY, JSON.stringify(c));
+    },
+
+    async removeCredential(email) {
+      if (canUseSupabase()) {
+        try { await window.supabaseClient.from('credentials').delete().eq('email', email.toLowerCase()); } catch(e) {}
+      }
+      const c = JSON.parse(localStorage.getItem(this.CREDS_KEY) || '{}');
+      delete c[email.toLowerCase()];
+      localStorage.setItem(this.CREDS_KEY, JSON.stringify(c));
+    },
+
+    /* Give all students/coaches their own access using their email + a shared password */
+    async bulkSetRolePassword(role, password) {
+      const users = (await CK.db.getProfiles(role)) || [];
+      for (const u of users) {
+        if (u.email) await this.setCredential(u.email, password);
+      }
+      return users.length;
+    },
+
+    /* Add a parent account linked to a child */
+    async addParent(parentName, parentEmail, parentPassword, childEmail) {
+      const uid = () => 'par-' + Date.now().toString(36);
+      const parent = {
+        id: uid(), full_name: parentName, email: parentEmail,
+        role: 'parent', childEmail, userid: 'p-' + Date.now().toString(36)
+      };
+      await CK.db.saveProfile(parent);
+      await this.setCredential(parentEmail, parentPassword);
+      return parent;
+    },
+
+    async renderAccessTable(containerId) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      const users = (await CK.db.getProfiles()) || [];
+      const nonAdmin = users.filter(u => u.role !== 'admin');
+      const creds = await this.getCreds();
+      el.innerHTML = `
+        <div class="acc-search-row">
+          <input class="p-input" id="accSearch" placeholder="Search by name or email…" oninput="CK.accessManager._filter(this.value)">
+          <select class="p-input" id="accRoleFilter" style="width:140px" onchange="CK.accessManager._filter(document.getElementById('accSearch').value)">
+            <option value="">All Roles</option>
+            <option value="student">Students</option>
+            <option value="coach">Coaches</option>
+            <option value="parent">Parents</option>
+          </select>
+        </div>
+        <div class="acc-bulk-row">
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.accessManager.bulkDialog('student')">🔑 Set Password for All Students</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.accessManager.bulkDialog('coach')">🔑 Set Password for All Coaches</button>
+          <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.accessManager.addParentDialog()">➕ Add Parent Account</button>
+        </div>
+        <table class="p-table" style="width:100%;margin-top:12px" id="accTable">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Has Access</th><th>Actions</th></tr></thead>
+          <tbody id="accTableBody">
+            ${this._rows(nonAdmin, creds)}
+          </tbody>
+        </table>`;
+    },
+
+    _rows(users, creds) {
+      return users.map(u => `
+        <tr data-name="${(u.full_name||'').toLowerCase()}" data-email="${(u.email||'').toLowerCase()}" data-role="${u.role}">
+          <td style="font-weight:600">${u.full_name || '—'}</td>
+          <td style="font-family:monospace;font-size:0.82rem">${u.email || '—'}</td>
+          <td><span class="p-badge p-badge-${u.role==='coach'?'blue':u.role==='parent'?'teal':'green'}">${u.role}</span></td>
+          <td>${u.email && creds[u.email.toLowerCase()] ? '<span class="p-badge p-badge-green">✓ Active</span>' : '<span class="p-badge p-badge-red">No Access</span>'}</td>
+          <td>
+            ${u.email ? `<button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.accessManager.setDialog('${u.email}','${u.full_name}')">🔑 Set Password</button>` : ''}
+            ${u.email && creds[u.email.toLowerCase()] ? `<button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" onclick="CK.accessManager.revokeAccess('${u.email}')">✕ Revoke</button>` : ''}
+          </td>
+        </tr>`).join('');
+    },
+
+    _filter(query) {
+      const role = document.getElementById('accRoleFilter')?.value || '';
+      document.querySelectorAll('#accTable tbody tr').forEach(tr => {
+        const nameMatch  = tr.dataset.name?.includes(query.toLowerCase());
+        const emailMatch = tr.dataset.email?.includes(query.toLowerCase());
+        const roleMatch  = !role || tr.dataset.role === role;
+        tr.style.display = ((nameMatch || emailMatch) && roleMatch) ? '' : 'none';
+      });
+    },
+
+    setDialog(email, name) {
+      const pass = prompt(`Set password for ${name} (${email}):`);
+      if (!pass) return;
+      this.setCredential(email, pass);
+      CK.showToast(`Access granted to ${name}!`, 'success');
+      this.renderAccessTable('adminAccessTable');
+    },
+
+    revokeAccess(email) {
+      if (!confirm(`Revoke access for ${email}?`)) return;
+      this.removeCredential(email);
+      CK.showToast('Access revoked.', 'success');
+      this.renderAccessTable('adminAccessTable');
+    },
+
+    async bulkDialog(role) {
+      const pass = prompt(`Set one password for ALL ${role}s:`);
+      if (!pass) return;
+      const count = await this.bulkSetRolePassword(role, pass);
+      CK.showToast(`Password set for ${count} ${role}s!`, 'success');
+      this.renderAccessTable('adminAccessTable');
+    },
+
+    addParentDialog() {
+      const modal = document.createElement('div');
+      modal.className = 'p-modal-overlay open';
+      modal.innerHTML = `
+        <div class="p-modal">
+          <div class="p-modal-header"><h3 class="p-modal-title">➕ Add Parent Account</h3><button class="p-modal-close" onclick="this.closest('.p-modal-overlay').remove()">✕</button></div>
+          <div class="p-modal-body">
+            <div class="p-form-group"><label class="p-form-label">Parent Name</label><input class="p-form-control" id="addp_name" placeholder="e.g. Ravi Shankar"></div>
+            <div class="p-form-group"><label class="p-form-label">Parent Email</label><input class="p-form-control" type="email" id="addp_email" placeholder="parent@gmail.com"></div>
+            <div class="p-form-group"><label class="p-form-label">Password</label><input class="p-form-control" type="password" id="addp_pass" placeholder="Password for parent login"></div>
+            <div class="p-form-group"><label class="p-form-label">Child's Email</label><input class="p-form-control" type="email" id="addp_child" placeholder="child@gmail.com"></div>
+          </div>
+          <div class="p-modal-footer">
+            <button class="p-btn p-btn-ghost" onclick="this.closest('.p-modal-overlay').remove()">Cancel</button>
+            <button class="p-btn p-btn-blue" onclick="CK.accessManager._doAddParent()">➕ Create Parent</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    },
+
+    async _doAddParent() {
+      const name  = document.getElementById('addp_name')?.value.trim();
+      const email = document.getElementById('addp_email')?.value.trim();
+      const pass  = document.getElementById('addp_pass')?.value;
+      const child = document.getElementById('addp_child')?.value.trim();
+      if (!name || !email || !pass) { CK.showToast('Fill all fields', 'warning'); return; }
+      await this.addParent(name, email, pass, child);
+      CK.showToast(`Parent account created for ${name}!`, 'success');
+      document.querySelector('.p-modal-overlay')?.remove();
+      this.renderAccessTable('adminAccessTable');
     }
   };
 
   // --- BATCH CLASS & ROOM LINK MANAGEMENT ---
   CK.batchManager = {
-    getLinks() {
+    async getLinks() {
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('batch_links').select('*');
+          if (!error && data) {
+            const map = {};
+            data.forEach(item => { map[item.batch_level] = item.link; });
+            localStorage.setItem('ck_batch_links', JSON.stringify(map));
+            return map;
+          }
+        } catch(e) {}
+      }
       return JSON.parse(localStorage.getItem('ck_batch_links')) || {
         'Beginner': 'https://meet.google.com/beg-inner-room',
         'Intermediate': 'https://meet.google.com/int-strategy-abc',
         'Advanced': 'https://meet.google.com/adv-endgames-xyz'
       };
     },
-    saveLink(batchLevel, link) {
-      const links = this.getLinks();
+    async saveLink(batchLevel, link) {
+      if (canUseSupabase()) {
+        try {
+          await window.supabaseClient.from('batch_links').upsert({ batch_level: batchLevel, link });
+        } catch(e) {}
+      }
+      const links = JSON.parse(localStorage.getItem('ck_batch_links') || '{}');
       links[batchLevel] = link;
       localStorage.setItem('ck_batch_links', JSON.stringify(links));
       if (window.CK && CK.showToast) {
         CK.showToast(`Updated Google Meet link for ${batchLevel} Batch!`, 'success');
-      }
-      if (window.CK && CK.coach && typeof CK.coach.renderSchedule === 'function') {
-        CK.coach.renderSchedule();
       }
     }
   };

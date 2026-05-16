@@ -21,21 +21,144 @@ CK.coach = {
 
     this.coachProfile = await CK.db.getProfile(currentUser.id) || currentUser;
 
-    // Load mock schedule classes
-    this.classesDb = [
-      { id: 'C1', class: 'Intermediate Strategy', level: 'Intermediate', time: '4:00 PM', students: 8, status: 'Upcoming' },
-      { id: 'C2', class: 'Advanced Endgames', level: 'Advanced', time: '6:30 PM', students: 5, status: 'Scheduled' }
-    ];
-
-    // Load coach notes
-    if (!localStorage.getItem('ck_coach_notes')) {
-      localStorage.setItem('ck_coach_notes', JSON.stringify([]));
+    // Load today's classes from ck_meetings, fallback to mock
+    const _todayStr = new Date().toISOString().split('T')[0];
+    const _meetings = await CK.db.getMeetings();
+    const _coachName = this.coachProfile?.full_name;
+    const _todayMeetings = _meetings.filter(m =>
+      (m.coach === _coachName || !m.coach) &&
+      (m.date === new Date().toISOString().split('T')[0])
+    );
+    if (_todayMeetings.length > 0) {
+      this.classesDb = _todayMeetings.map((m, i) => ({
+        id: m.id || `C${i + 1}`,
+        class: m.title || m.type || 'Chess Class',
+        level: m.level || 'Intermediate',
+        time: m.time || '4:00 PM',
+        students: m.students || 0,
+        status: 'Upcoming',
+        batch: m.batch
+      }));
+    } else {
+      this.classesDb = [
+        { id: 'C1', class: 'Intermediate Strategy', level: 'Intermediate', time: '4:00 PM', students: 8, status: 'Upcoming' },
+        { id: 'C2', class: 'Advanced Endgames', level: 'Advanced', time: '6:30 PM', students: 5, status: 'Scheduled' }
+      ];
     }
+
+    // coach_notes are managed by CK.tracker (via db.js) — no local init needed
 
     // 2. Load UI elements
     await this.updateProfile();
     await this.renderDashboard();
     this.nav('home');
+
+    // 3. Start real-time auto-refresh
+    this.startAutoRefresh();
+  },
+
+  /* ── Real-Time Auto Refresh ── */
+  _coachRefreshTimer: null,
+  _sessionTimerInterval: null,
+  _sessionSeconds: 0,
+
+  startAutoRefresh() {
+    if (this._coachRefreshTimer) clearInterval(this._coachRefreshTimer);
+    // Heartbeat presence
+    this._updateCoachPresence();
+    this._coachRefreshTimer = setInterval(async () => {
+      this._updateCoachPresence();
+      // Refresh student grid if on home or students panel
+      const homePanel = document.getElementById('coach-panel-home');
+      const studPanel = document.getElementById('coach-panel-students');
+      if ((homePanel && homePanel.classList.contains('active')) ||
+          (studPanel && studPanel.classList.contains('active'))) {
+        await this._refreshStudentGrid();
+      }
+      await this.updateProfile();
+    }, 30000);
+  },
+
+  stopAutoRefresh() {
+    if (this._coachRefreshTimer) { clearInterval(this._coachRefreshTimer); this._coachRefreshTimer = null; }
+    this.stopSessionTimer();
+  },
+
+  _updateCoachPresence() {
+    const cp = this.coachProfile;
+    if (!cp) return;
+    const presence = JSON.parse(localStorage.getItem('ck_live_presence') || '{}');
+    presence[cp.id] = { name: cp.full_name, role: 'coach', lastSeen: Date.now() };
+    localStorage.setItem('ck_live_presence', JSON.stringify(presence));
+  },
+
+  async _refreshStudentGrid() {
+    const grid = document.getElementById('coachStudentsGrid');
+    if (!grid) return;
+    const students = (await CK.db.getProfiles('student')) || [];
+    const myStudents = students.filter(s => s.coach === (this.coachProfile ? this.coachProfile.full_name : ''));
+    if (!myStudents.length) return;
+    const presence = JSON.parse(localStorage.getItem('ck_live_presence') || '{}');
+    const now = Date.now();
+    const colors = ['var(--p-teal)', 'var(--p-gold)', 'var(--p-blue)', 'var(--p-rose)'];
+    grid.innerHTML = myStudents.map((s, i) => {
+      const initial = s.full_name ? s.full_name.charAt(0).toUpperCase() : '♟';
+      const p = presence[s.id];
+      const isRecent = p && (now - p.lastSeen) < 300000; // 5 min
+      const statusLabel = isRecent ? 'Online' : (s.status || 'Offline');
+      const statusDot = isRecent ? 'online' : 'offline';
+      const color = colors[i % colors.length];
+      return `
+        <div class="p-live-card ${statusDot}">
+          <div class="p-live-avatar" style="background:rgba(255,255,255,0.06);color:${color};font-size:1.1rem;font-weight:700;border:2px solid ${color}20;position:relative;">
+            ${initial}
+            ${isRecent ? `<span style="position:absolute;bottom:0;right:0;width:9px;height:9px;background:var(--p-teal);border-radius:50%;border:2px solid var(--p-surface2);"></span>` : ''}
+          </div>
+          <div class="p-live-info">
+            <div class="p-live-name">${s.full_name}</div>
+            <div class="p-live-sub">${s.level || 'Beginner'} · ${s.rating || 800} ELO · ${s.puzzle || 0} puzzles</div>
+            <div class="p-live-status"><span class="p-status-dot ${statusDot}"></span> ${statusLabel}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <button class="p-icon-btn" onclick="CK.coach.viewStudentMetrics('${s.id}')" title="View Progress">📊</button>
+            <button class="p-icon-btn" onclick="CK.coach.quickNoteFor('${s.id}','${s.full_name?.replace(/'/g,"\\'")||''}')" title="Quick Note">📝</button>
+          </div>
+        </div>`;
+    }).join('');
+  },
+
+  /* ── Session Timer ── */
+  startSessionTimer() {
+    this.stopSessionTimer();
+    this._sessionSeconds = 0;
+    this._sessionTimerInterval = setInterval(() => {
+      this._sessionSeconds++;
+      const el = document.getElementById('coachSessionTimer');
+      if (el) {
+        const h = Math.floor(this._sessionSeconds / 3600);
+        const m = Math.floor((this._sessionSeconds % 3600) / 60);
+        const s = this._sessionSeconds % 60;
+        el.textContent = h > 0
+          ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+          : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }
+    }, 1000);
+  },
+
+  stopSessionTimer() {
+    if (this._sessionTimerInterval) { clearInterval(this._sessionTimerInterval); this._sessionTimerInterval = null; }
+    this._sessionSeconds = 0;
+    const el = document.getElementById('coachSessionTimer');
+    if (el) el.textContent = '00:00';
+  },
+
+  /* ── Quick Note Shortcut ── */
+  async quickNoteFor(_studentId, studentName) {
+    const noteEl = document.getElementById('coach_note_student');
+    const textEl = document.getElementById('coach_note_text');
+    if (noteEl) noteEl.value = studentName;
+    if (textEl) textEl.value = '';
+    CK.openModal('coachNoteModal');
   },
 
   nav(panelId) {
@@ -60,20 +183,66 @@ CK.coach = {
       notes: 'Game Notes',
       puzzles: 'Assign Puzzles',
       resources: 'Homework & Notes',
-      lab: 'PGN Teaching Studio'
+      lab: 'PGN Teaching Studio',
+      classroom: 'Classroom Manager'
     };
-    document.getElementById('coachPanelTitle').innerText = titles[panelId] || 'Dashboard';
-    
+    const titleEl = document.getElementById('coachPanelTitle');
+    if (titleEl) titleEl.innerText = titles[panelId] || 'Dashboard';
+
     const topBtn = document.getElementById('coachTopBtn');
     if (topBtn) topBtn.style.display = (panelId === 'notes') ? 'block' : 'none';
-    if(panelId === 'resources') this.renderResources();
-    if(panelId === 'schedule') this.renderSchedule();
-    if(panelId === 'notes') this.initReportEditor();
-    if(panelId === 'attendance') this.loadAttendance();
+    if (panelId === 'resources')  this.renderResources();
+    if (panelId === 'schedule')   this.renderSchedulePro();
+    if (panelId === 'notes')      this.initReportEditor();
+    if (panelId === 'attendance') { this.loadAttendance(); this.loadAttendanceAdvanced(); }
+    if (panelId === 'classes')    this.renderClassesPanel();
+    if (panelId === 'reports')    this.renderReportsPanel();
+    if (panelId === 'classroom' && window.CK && CK.classroom) CK.classroom.coachTab('assign');
   },
 
-  renderSchedule() {
-    const links = window.CK && CK.batchManager ? CK.batchManager.getLinks() : {};
+  /* ── Class Management Panel ── */
+  renderClassesPanel() {
+    const cp = this.coachProfile || {};
+    if (CK.classSystem) CK.classSystem.renderCoachClasses('coachClassesList', cp.id);
+  },
+
+  createClass() {
+    this.openCreateClassModal();
+  },
+
+  openCreateClassModal() {
+    const cp = this.coachProfile || {};
+    CK.classSystem.openClassModal(null, (data) => {
+      CK.classSystem.createClass(data, cp.id, cp.full_name);
+      this.renderClassesPanel();
+    });
+  },
+
+  /* ── Schedule Pro Panel ── */
+  renderSchedulePro() {
+    const cp = this.coachProfile || {};
+    if (CK.schedulePro) CK.schedulePro.renderCoachSchedule('coachSchedList', cp.id);
+  },
+
+  createMeeting() {
+    const cp = this.coachProfile || {};
+    if (CK.schedulePro) CK.schedulePro.createMeeting(cp.id, cp.full_name, 'coachSchedList');
+  },
+
+  /* ── Monthly Reports Panel ── */
+  renderReportsPanel() {
+    const cp = this.coachProfile || {};
+    if (CK.reportSystem) CK.reportSystem.renderCoachReports('coachReportsList', cp.id, cp.full_name);
+  },
+
+  /* ── Attendance Panel (advanced) ── */
+  loadAttendanceAdvanced() {
+    const cp = this.coachProfile || {};
+    if (CK.classSystem) CK.classSystem.renderAttendanceMarker('coachAttendanceMarker', cp.id);
+  },
+
+  async renderSchedule() {
+    const links = window.CK && CK.batchManager ? await CK.batchManager.getLinks() : {};
     const tbody = document.querySelector('#coach-panel-schedule tbody');
     if (tbody) {
       tbody.innerHTML = `
@@ -84,8 +253,8 @@ CK.coach = {
     }
   },
 
-  editBatchLink(batchLevel) {
-    const links = window.CK && CK.batchManager ? CK.batchManager.getLinks() : {};
+  async editBatchLink(batchLevel) {
+    const links = window.CK && CK.batchManager ? await CK.batchManager.getLinks() : {};
     const newLink = prompt(`Enter Google Meet Class Room URL for ${batchLevel} Batch:`, links[batchLevel] || '');
     if (newLink && window.CK && CK.batchManager) {
       CK.batchManager.saveLink(batchLevel, newLink);
@@ -112,25 +281,50 @@ CK.coach = {
     if (welcomeEl) welcomeEl.textContent = `${greeting}, ${firstName}! You have ${this.classesDb.length} classes scheduled today. Your students are ready to learn.`;
 
     // Stats counters
-    const students = await CK.db.getProfiles('student');
+    const students = (await CK.db.getProfiles('student')) || [];
     const myStudents = students.filter(s => s.coach === cp.full_name);
 
     const stStud = document.getElementById('coachStatStudents');
     const stAtt = document.getElementById('coachStatAttend');
     const stClass = document.getElementById('coachStatClasses');
+    const stAvgElo = document.getElementById('coachStatAvgElo');
     if (stStud) stStud.innerText = myStudents.length || 0;
-    if (stAtt) stAtt.innerText = '96%';
+    if (stAvgElo && myStudents.length) {
+      const avg = Math.round(myStudents.reduce((s, u) => s + (parseInt(u.rating) || 800), 0) / myStudents.length);
+      stAvgElo.innerText = avg;
+    }
+    if (stAtt) {
+      const attAdv = (await CK.db.getAttendance()) || [];
+      const myStudentIds = new Set(myStudents.map(s => s.id));
+      const myRecords = attAdv.filter(r => myStudentIds.has(r.userid) || myStudentIds.has(r.studentId) || myStudentIds.has(r.student_id));
+      const attPct = myRecords.length > 0
+        ? Math.round(myRecords.filter(r => r.status === 'present').length / myRecords.length * 100)
+        : 96;
+      stAtt.innerText = attPct + '%';
+    }
     if (stClass) stClass.innerText = this.classesDb.length || 0;
   },
 
-  renderResources() {
+  async markAllPresentToday() {
+    const cp = this.coachProfile || {};
+    const students = (await CK.db.getProfiles('student')) || [];
+    const myStudents = students.filter(s => s.coach === cp.full_name || !s.coach);
+    const todayStr = new Date().toISOString().split('T')[0];
+    for (const s of myStudents) {
+      await CK.db.saveAttendance({ userid: s.id, date: todayStr, status: 'present', coachId: cp.id, coachName: cp.full_name });
+    }
+    await this.loadAttendance();
+    CK.showToast(`All ${myStudents.length} students marked Present for today!`, 'success');
+  },
+
+  async renderResources() {
     const container = document.getElementById('coachResourcesContainer');
     if (!container) return;
 
-    const resources = CK.db.resources || [];
-    
+    const resources = await CK.db.getResources();
+
     if (resources.length === 0) {
-      container.innerHTML = '<div style="opacity:0.6; padding:20px; text-align:center;">No resources uploaded yet.</div>';
+      container.innerHTML = '<div class="cls-empty">?? No resources uploaded yet. Use the Admin panel to upload learning materials.</div>';
       return;
     }
 
@@ -191,34 +385,31 @@ CK.coach = {
       `).join('');
     }
 
-    // 2. Load assigned students grid
+    // 2. Load assigned students grid with real-time presence
     const grid = document.getElementById('coachStudentsGrid');
     if (grid) {
-      const students = await CK.db.getProfiles('student');
-      const myStudents = students.filter(s => s.coach === this.coachProfile.full_name);
+      const students = (await CK.db.getProfiles('student')) || [];
+      const myStudents = students.filter(s => s.coach === (this.coachProfile ? this.coachProfile.full_name : ''));
 
       if (myStudents.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; opacity:0.5;">No students currently assigned to you.</div>';
-        return;
+        grid.innerHTML = '<div class="cls-empty">No students currently assigned to you.</div>';
+      } else {
+        // Use the shared refresh method
+        await this._refreshStudentGrid();
       }
 
-      const colors = ['var(--p-teal)', 'var(--p-gold)', 'var(--p-blue)', 'var(--p-rose)'];
-      grid.innerHTML = myStudents.map((s, i) => {
-        const initial = s.full_name ? s.full_name.charAt(0).toUpperCase() : '♟';
-        const status = s.status || 'Offline';
-        const color = colors[i % colors.length];
-        return `
-          <div class="p-live-card ${status.toLowerCase()}">
-            <div class="p-live-avatar" style="background:rgba(255,255,255,0.06); color:${color}; font-size:1.1rem; font-weight:700; border:2px solid ${color}20;">${initial}</div>
-            <div class="p-live-info">
-              <div class="p-live-name">${s.full_name}</div>
-              <div class="p-live-sub">${s.level || 'Beginner'} · ${s.rating || 800} ELO</div>
-              <div class="p-live-status"><span class="p-status-dot ${status.toLowerCase()}"></span> ${status}</div>
-            </div>
-            <button class="p-icon-btn" onclick="CK.coach.viewStudentMetrics('${s.id}')" title="View Progress">📊</button>
-          </div>
-        `;
-      }).join('');
+      // Student summary stats
+      const summaryEl = document.getElementById('coachStudentsSummary');
+      if (summaryEl && myStudents.length) {
+        const avgRating = Math.round(myStudents.reduce((s, u) => s + (parseInt(u.rating) || 800), 0) / myStudents.length);
+        const totalPuzzles = myStudents.reduce((s, u) => s + (parseInt(u.puzzle) || 0), 0);
+        const paidCount = myStudents.filter(s => s.status === 'Paid').length;
+        summaryEl.innerHTML = `
+          <span style="color:var(--p-teal);font-weight:700;">${myStudents.length}</span> students assigned ·
+          Avg ELO <span style="color:var(--p-gold);font-weight:700;">${avgRating}</span> ·
+          <span style="color:var(--p-blue);font-weight:700;">${totalPuzzles}</span> puzzles solved ·
+          <span style="color:var(--p-teal);font-weight:700;">${paidCount}/${myStudents.length}</span> fees paid`;
+      }
     }
   },
 
@@ -227,22 +418,29 @@ CK.coach = {
     if (!tbody) return;
 
     const dateInput = document.getElementById('coachAttendanceDate');
-    if (!dateInput.value) {
+    if (dateInput && !dateInput.value) {
       dateInput.value = new Date().toISOString().split('T')[0];
     }
-    const selectedDate = dateInput.value;
+    const selectedDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
 
     const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
-    const students = await CK.db.getProfiles('student');
+    const students = (await CK.db.getProfiles('student')) || [];
     const myStudents = students.filter(s => s.coach === coachName || !s.coach);
-    const attendanceLogs = await CK.db.getAttendance(null, selectedDate);
+    const attendanceLogs = (await CK.db.getAttendance(null, selectedDate)) || [];
 
     const attendanceMap = {};
     attendanceLogs.forEach(l => { attendanceMap[l.userid] = l.status; });
 
     if (myStudents.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5; padding:20px;">No students assigned to you.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6"><div class="cls-empty">?? No students assigned to you yet.</div></td></tr>';
       return;
+    }
+
+    // Stats summary for attendance panel
+    const presentCount = Object.values(attendanceMap).filter(v => v === 'present').length;
+    const summaryEl = document.getElementById('coachAttendanceSummary');
+    if (summaryEl) {
+      summaryEl.innerHTML = `${selectedDate} · <span style="color:var(--p-teal);font-weight:700;">${presentCount} present</span> of <span style="font-weight:700;">${myStudents.length}</span> students`;
     }
 
     tbody.innerHTML = myStudents.map(s => {
@@ -250,27 +448,45 @@ CK.coach = {
       const levelBatch = s.level === 'Beginner' ? 'Beginner Fundamentals' : s.level === 'Advanced' ? 'Advanced Endgames' : 'Intermediate Strategy';
       const badgeCls = currentStatus === 'present' ? 'p-badge-green' : currentStatus === 'absent' ? 'p-badge-red' : 'p-badge-ghost';
       return `
-        <tr>
+        <tr id="coach_att_row_${s.id}">
           <td style="font-weight:700;">${s.full_name}</td>
           <td><span class="p-badge p-badge-blue" style="font-size:0.75rem;">${s.level || 'Beginner'}</span></td>
           <td style="font-size:0.85rem; color:var(--p-text-muted);">${levelBatch}</td>
           <td style="font-size:0.85rem; color:var(--p-text-muted);">${selectedDate}</td>
-          <td><span class="p-badge ${badgeCls}" id="coach_att_${s.id}">${currentStatus === 'present' ? '✅ Present' : currentStatus === 'absent' ? '❌ Absent' : '⏳ Pending'}</span></td>
-          <td>
-            <select class="p-form-control" style="width:auto; padding:4px 8px; font-size:0.8rem; height:auto;"
-                    onchange="CK.admin && CK.admin.saveAttendanceRecord ? CK.admin.saveAttendanceRecord('${s.id}', '${selectedDate}', this.value) : CK.showToast('Admin not loaded','warning')">
-              <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>⏳ Pending</option>
-              <option value="present" ${currentStatus === 'present' ? 'selected' : ''}>✅ Present</option>
-              <option value="absent" ${currentStatus === 'absent' ? 'selected' : ''}>❌ Absent</option>
-            </select>
+          <td><span class="p-badge ${badgeCls}" id="coach_att_badge_${s.id}">${currentStatus === 'present' ? '✅ Present' : currentStatus === 'absent' ? '❌ Absent' : '⏳ Pending'}</span></td>
+          <td style="display:flex;gap:6px;align-items:center;">
+            <button class="p-btn p-btn-teal p-btn-sm" onclick="CK.coach.markAttendance('${s.id}','${selectedDate}','present')"
+                    style="${currentStatus === 'present' ? 'opacity:1;' : 'opacity:0.4;'}">✅</button>
+            <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.coach.markAttendance('${s.id}','${selectedDate}','absent')"
+                    style="${currentStatus === 'absent' ? 'opacity:1;' : 'opacity:0.4;'}">❌</button>
+            <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.coach.markAttendance('${s.id}','${selectedDate}','pending')"
+                    style="${currentStatus === 'pending' ? 'opacity:1;' : 'opacity:0.3;'}">⏳</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   },
 
+  async markAttendance(studentId, date, status) {
+    await CK.db.saveAttendance({ userid: studentId, date, status, coachId: this.coachProfile?.id, coachName: this.coachProfile?.full_name });
+    // Update badge in-place without full reload
+    const badge = document.getElementById(`coach_att_badge_${studentId}`);
+    if (badge) {
+      badge.className = `p-badge ${status === 'present' ? 'p-badge-green' : status === 'absent' ? 'p-badge-red' : 'p-badge-ghost'}`;
+      badge.textContent = status === 'present' ? '✅ Present' : status === 'absent' ? '❌ Absent' : '⏳ Pending';
+    }
+    // Update button opacities
+    const row = document.getElementById(`coach_att_row_${studentId}`);
+    if (row) {
+      row.querySelectorAll('button').forEach((btn, i) => {
+        const btnStatus = ['present','absent','pending'][i];
+        btn.style.opacity = btnStatus === status ? '1' : '0.35';
+      });
+    }
+    CK.showToast(`${status === 'present' ? 'Marked Present' : status === 'absent' ? 'Marked Absent' : 'Reset'} — auto-saved!`, 'success');
+  },
+
   async viewStudentMetrics(studentId) {
-    const students = await CK.db.getProfiles('student');
+    const students = (await CK.db.getProfiles('student')) || [];
     const s = students.find(u => u.id === studentId);
     if (!s) return;
 
@@ -324,45 +540,55 @@ CK.coach = {
     if (!c) return;
 
     this.nav('session');
-    document.getElementById('coachSessionName').innerText = c.class;
-    document.getElementById('coachSessionSub').innerText = `${c.level} · ${c.students} Students Connected`;
-    document.getElementById('coachCommandCenter').style.display = 'grid';
+    const nameEl = document.getElementById('coachSessionName');
+    const subEl = document.getElementById('coachSessionSub');
+    const cmdEl = document.getElementById('coachCommandCenter');
+    if (nameEl) nameEl.innerText = c.class;
+    if (subEl) subEl.innerText = `${c.level} · ${c.students} Students Connected`;
+    if (cmdEl) cmdEl.style.display = 'grid';
     if (CK.renderVaultBoard) CK.renderVaultBoard();
-    CK.showToast("Triple-Pane session environment ready", "success");
+    this.startSessionTimer();
+    CK.showToast("Live session started — timer running!", "success");
   },
 
   toggleSession() {
     const btn = document.getElementById('coachStartBtn');
+    if (!btn) return;
+    const cmdEl = document.getElementById('coachCommandCenter');
     if (btn.innerText.includes('Start') || btn.innerText.includes('Resume')) {
       btn.innerText = '⏸ Pause Command Center';
       btn.classList.remove('p-btn-teal');
       btn.classList.add('p-btn-ghost');
-      document.getElementById('coachCommandCenter').style.display = 'grid';
+      if (cmdEl) cmdEl.style.display = 'grid';
       if (CK.renderVaultBoard) CK.renderVaultBoard();
-      CK.showToast("Interactive Triple-Pane Command Center started!", "success");
+      this.startSessionTimer();
+      CK.showToast("Triple-Pane Command Center started!", "success");
     } else {
       btn.innerText = '▶ Resume Command Center';
       btn.classList.remove('p-btn-ghost');
       btn.classList.add('p-btn-teal');
+      this.stopSessionTimer();
       CK.showToast("Command Center paused", "info");
     }
   },
 
   endSession() {
-    document.getElementById('coachCommandCenter').style.display = 'none';
+    const cmdEl = document.getElementById('coachCommandCenter');
+    if (cmdEl) cmdEl.style.display = 'none';
     const btn = document.getElementById('coachStartBtn');
     if (btn) {
       btn.innerText = '▶ Start Live Command Center';
       btn.classList.remove('p-btn-ghost');
       btn.classList.add('p-btn-teal');
     }
+    this.stopSessionTimer();
     CK.showToast("Live session ended successfully", "info");
   },
 
   async topAction() {
     const select = document.getElementById('coach_note_student');
     if (select) {
-      const students = await CK.db.getProfiles('student');
+      const students = (await CK.db.getProfiles('student')) || [];
       const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
       const myStudents = students.filter(s => s.coach === coachName || !s.coach);
       select.innerHTML = myStudents.map(s => `<option value="${s.full_name}">${s.full_name}</option>`).join('');
@@ -370,26 +596,28 @@ CK.coach = {
     CK.openModal('coachNoteModal');
   },
 
-  saveNote() {
-    const name = document.getElementById('coach_note_student').value;
-    const text = document.getElementById('coach_note_text').value;
-    if (!text) return CK.showToast("Note content is required", "error");
-    
-    CK.tracker.addReview({
+  async saveNote() {
+    const nameEl = document.getElementById('coach_note_student');
+    const textEl = document.getElementById('coach_note_text');
+    const name   = nameEl ? nameEl.value : '';
+    const text   = textEl ? textEl.value : '';
+    if (!text) return CK.showToast('Note content is required', 'error');
+
+    await CK.tracker.addReview({
       student: name,
       text: text,
       coach: this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess'
     });
 
-    CK.showToast("Game assessment note saved successfully! ELO accuracy updated.", "success");
+    CK.showToast('Game assessment note saved successfully! ELO accuracy updated.', 'success');
     CK.closeModal('coachNoteModal');
-    document.getElementById('coach_note_text').value = '';
+    if (textEl) textEl.value = '';
   },
 
   async initReportEditor() {
     const select = document.getElementById('coachReportStudentSelect');
     if (!select) return;
-    const students = await CK.db.getProfiles('student');
+    const students = (await CK.db.getProfiles('student')) || [];
     const coachName = this.coachProfile ? this.coachProfile.full_name : 'Sarah Chess';
     const myStudents = students.filter(s => s.coach === coachName || !s.coach);
     select.innerHTML = myStudents.map(s => `<option value="${s.full_name}">${s.full_name}</option>`).join('');
@@ -399,7 +627,7 @@ CK.coach = {
   },
 
   async loadStudentReport(studentName) {
-    const students = await CK.db.getProfiles('student');
+    const students = (await CK.db.getProfiles('student')) || [];
     const s = students.find(u => u.full_name === studentName);
     if (!s) return;
     const rc = s.report_card || {
@@ -412,35 +640,87 @@ CK.coach = {
       remarks: "Excellent concentration and tactical calculation. Shows great promise when navigating complex middlegame positions.",
       goals: ["Participate in State Level Rapid U-14", "Master Lucena and Philidor Rook Endgames", "Maintain blunder rate under 3% in tournaments"]
     };
-    document.getElementById('rep_opening').value = rc.opening;
-    document.getElementById('rep_middlegame').value = rc.middlegame;
-    document.getElementById('rep_tactics').value = rc.tactics;
-    document.getElementById('rep_endgame').value = rc.endgame;
-    document.getElementById('rep_time').value = rc.time;
-    document.getElementById('rep_sports').value = rc.sports;
-    document.getElementById('rep_remarks').value = rc.remarks;
-    document.getElementById('rep_goals').value = Array.isArray(rc.goals) ? rc.goals.join(', ') : rc.goals;
+    const setRep = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+    setRep('rep_opening',    rc.opening);
+    setRep('rep_middlegame', rc.middlegame);
+    setRep('rep_tactics',    rc.tactics);
+    setRep('rep_endgame',    rc.endgame);
+    setRep('rep_time',       rc.time);
+    setRep('rep_sports',     rc.sports);
+    setRep('rep_remarks',    rc.remarks);
+    setRep('rep_goals',      Array.isArray(rc.goals) ? rc.goals.join(', ') : rc.goals);
   },
 
   async saveStudentReport() {
-    const studentName = document.getElementById('coachReportStudentSelect').value;
-    const students = await CK.db.getProfiles('student');
+    const selectEl = document.getElementById('coachReportStudentSelect');
+    const studentName = selectEl ? selectEl.value : '';
+    const students = (await CK.db.getProfiles('student')) || [];
     const s = students.find(u => u.full_name === studentName);
     if (!s) return CK.showToast("Student profile not found", "error");
 
-    const goalsVal = document.getElementById('rep_goals').value;
+    const getV = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const goalsVal = getV('rep_goals');
     s.report_card = {
-      opening: Number(document.getElementById('rep_opening').value) || 0,
-      middlegame: Number(document.getElementById('rep_middlegame').value) || 0,
-      tactics: Number(document.getElementById('rep_tactics').value) || 0,
-      endgame: Number(document.getElementById('rep_endgame').value) || 0,
-      time: Number(document.getElementById('rep_time').value) || 0,
-      sports: Number(document.getElementById('rep_sports').value) || 0,
-      remarks: document.getElementById('rep_remarks').value || '',
+      opening:    Number(getV('rep_opening'))    || 0,
+      middlegame: Number(getV('rep_middlegame'))  || 0,
+      tactics:    Number(getV('rep_tactics'))     || 0,
+      endgame:    Number(getV('rep_endgame'))     || 0,
+      time:       Number(getV('rep_time'))        || 0,
+      sports:     Number(getV('rep_sports'))      || 0,
+      remarks:    getV('rep_remarks'),
       goals: goalsVal ? goalsVal.split(',').map(x => x.trim()) : []
     };
 
     await CK.db.saveProfile(s);
     CK.showToast(`Weekly Report Card saved for ${studentName}!`, "success");
+  },
+
+  openPuzzleCreator() {
+    const modal = document.getElementById('coachPuzzleCreatorModal');
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closePuzzleCreator() {
+    const modal = document.getElementById('coachPuzzleCreatorModal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  async savePuzzle() {
+    const getV = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+    const title = getV('cpzTitle');
+    const fen   = getV('cpzFen');
+    const sol   = getV('cpzSolution');
+    const diff  = getV('cpzDiff');
+    const cat   = getV('cpzCategory');
+    const expl  = getV('cpzExplanation');
+
+    if (!title || !sol) {
+      CK.showToast('Please fill in at least the Title and Solution fields.', 'warning');
+      return;
+    }
+
+    const puzzle = {
+      id: 'CPZ' + Date.now(),
+      name: title,
+      fen: fen || null,
+      solution: sol,
+      difficulty: diff,
+      category: cat,
+      explanation: expl,
+      type: 'Puzzle',
+      notes: `By ${this.coachProfile ? this.coachProfile.full_name : 'Coach'} — ${cat || 'Tactics'}`,
+      batch: 0, // available to all batches
+      created_at: new Date().toISOString()
+    };
+
+    // Save via DB layer so it syncs to Supabase and student portal can see it
+    await CK.db.saveResource(puzzle);
+
+    // Reset form
+    ['cpzTitle','cpzFen','cpzSolution','cpzExplanation'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    this.closePuzzleCreator();
+    CK.showToast(`Puzzle "${title}" created and saved to library!`, 'success');
   }
 };

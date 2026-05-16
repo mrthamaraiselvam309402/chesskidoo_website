@@ -40,7 +40,7 @@
     if (['admin', 'student', 'coach'].includes(hash)) {
       const u = CK.checkAuth();
       if (!u || u.role.toLowerCase() !== hash) {
-        CK.showToast('Please log in to access this portal.', 'warn');
+        CK.showToast('Please log in to access this portal.', 'warning');
         CK.showLogin();
       } else {
         CK.showPage(`${hash}-page`);

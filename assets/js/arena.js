@@ -245,7 +245,7 @@
     chartEl.appendChild(canvas);
     const ctx = canvas.getContext('2d');
     
-    evalChart = new Chart(ctx, {
+    evalChart = new window.Chart(ctx, {
       type: 'line',
       data: {
         labels: [],
@@ -875,6 +875,104 @@ function executePlayerMove(move) {
     }
   }
 
+  /* ─── Match Commentary Engine ─── */
+  function generateMatchCommentary(result, accuracy, totalMoves, durationMin, counts) {
+    const lines = [];
+    const levelOrder = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+    const selectedIdx = levelOrder.indexOf(currentDifficulty);
+
+    // Determine actual played level from accuracy
+    let playerActualLevel, actualIdx;
+    if (accuracy >= 88) { playerActualLevel = 'Expert';       actualIdx = 3; }
+    else if (accuracy >= 72) { playerActualLevel = 'Advanced';     actualIdx = 2; }
+    else if (accuracy >= 55) { playerActualLevel = 'Intermediate'; actualIdx = 1; }
+    else               { playerActualLevel = 'Beginner';     actualIdx = 0; }
+
+    // Opening commentary
+    const earlyErrors = classificationHistory.slice(0, Math.min(8, totalMoves))
+      .filter(c => c.classification === 'blunder' || c.classification === 'mistake').length;
+    if (totalMoves < 8) {
+      lines.push({ icon: '⚡', text: 'A blitz-style finish! The game was decided in just a handful of moves — find ways to prolong the battle and create more complex positions.' });
+    } else if (earlyErrors === 0 && totalMoves >= 8) {
+      lines.push({ icon: '📖', text: 'Excellent opening! You developed your pieces efficiently, secured king safety, and contested the center — textbook fundamentals.' });
+    } else if (earlyErrors >= 2) {
+      lines.push({ icon: '⚠️', text: `The opening phase contained ${earlyErrors} errors. Early mistakes force you into a defensive posture for the rest of the game. Review basic opening principles: control the center, develop knights before bishops, castle early.` });
+    } else {
+      lines.push({ icon: '📖', text: 'A reasonable opening — some inaccuracies, but no critical errors. Solid enough to enter the middlegame with fair chances.' });
+    }
+
+    // Brilliant moves
+    const brilliantList = classificationHistory.map((c, i) => ({...c, moveNum: i+1})).filter(c => c.classification === 'brilliant');
+    if (brilliantList.length > 0) {
+      const bm = brilliantList[0];
+      lines.push({ icon: '✨', text: `Brilliant! Move ${bm.moveNum} — ${bm.san} — was a Grandmaster-level find. Sacrificing material or finding a quiet move in a sharp position demonstrates deep tactical vision. ${brilliantList.length > 1 ? `You found ${brilliantList.length} brilliant moves in total — truly exceptional play.` : ''}` });
+    }
+
+    // Blunders & mistakes
+    const blunderList = classificationHistory.map((c, i) => ({...c, moveNum: i+1})).filter(c => c.classification === 'blunder');
+    const mistakeList = classificationHistory.map((c, i) => ({...c, moveNum: i+1})).filter(c => c.classification === 'mistake');
+    if (blunderList.length > 0) {
+      const worst = blunderList[0];
+      lines.push({ icon: '💔', text: `Critical moment at move ${worst.moveNum} (${worst.san}): a blunder that significantly shifted the evaluation. ${blunderList.length > 1 ? `You made ${blunderList.length} blunders total — the single biggest area for improvement is piece safety and tactical awareness.` : 'Before each move, ask yourself: "Can any of my pieces be captured?"'}` });
+    } else if (mistakeList.length > 0) {
+      lines.push({ icon: '⚠️', text: `${mistakeList.length} mistake${mistakeList.length > 1 ? 's' : ''} noted (move${mistakeList.length > 1 ? 's' : ''} ${mistakeList.slice(0,3).map(m => m.moveNum).join(', ')}). These are significant inaccuracies that handed the opponent an advantage, but not game-ending on their own.` });
+    } else {
+      lines.push({ icon: '🎯', text: 'Remarkably clean play — zero blunders and zero mistakes! You kept your composure throughout and made only minor inaccuracies. This is the hallmark of a well-disciplined player.' });
+    }
+
+    // Middlegame / tactical play
+    if (totalMoves >= 20) {
+      const midSlice = classificationHistory.slice(8, Math.min(totalMoves - 8, classificationHistory.length));
+      const midBest = midSlice.filter(c => ['brilliant','best','excellent'].includes(c.classification)).length;
+      const midPct = midSlice.length > 0 ? Math.round(midBest / midSlice.length * 100) : 0;
+      if (midPct >= 70) {
+        lines.push({ icon: '⚔️', text: `Strong middlegame! You executed ${midPct}% best/excellent moves in the critical phase — your tactical pattern recognition is working well.` });
+      } else if (midPct >= 40) {
+        lines.push({ icon: '⚔️', text: 'Mixed middlegame — some sharp moments with both good and poor decisions. The middlegame is the most complex phase; study piece coordination, pawn structure weaknesses, and king safety.' });
+      } else {
+        lines.push({ icon: '⚔️', text: 'The middlegame was challenging. Focus on calculating forcing variations (checks, captures, threats) before committing to a move. Tactical puzzles are the fastest way to improve here.' });
+      }
+    }
+
+    // Endgame
+    if (totalMoves >= 30) {
+      const endSlice = classificationHistory.slice(-10);
+      const endGood = endSlice.filter(c => ['brilliant','best','excellent','good'].includes(c.classification)).length;
+      if (endGood >= 7) {
+        lines.push({ icon: '🏁', text: 'Excellent endgame conversion! You maintained precision when it mattered most — a clear sign of technical maturity.' });
+      } else {
+        lines.push({ icon: '🏁', text: 'The endgame showed some imprecision. Endgame study pays huge dividends: master King & Pawn endings, basic Rook endgames, and the opposition concept.' });
+      }
+    }
+
+    // Result commentary
+    if (result === 'win') {
+      lines.push({ icon: '🏆', text: `Victory on ${currentDifficulty} difficulty in ${durationMin}m! ${accuracy >= 80 ? 'A dominant performance — you outplayed the engine at every stage.' : 'A hard-fought win. The engine put up resistance but your determination carried through.'}` });
+    } else if (result === 'loss') {
+      lines.push({ icon: '💪', text: `A tough loss, but every defeat is a lesson. ${counts.blunder > 0 ? `Eliminating the ${counts.blunder} blunder${counts.blunder > 1 ? 's' : ''} would completely change the game's trajectory.` : 'Study the key moments where the evaluation turned against you — small improvements compound over time.'}` });
+    } else {
+      lines.push({ icon: '🤝', text: 'A solid draw! Holding the engine to a draw on this difficulty level demonstrates real defensive skill and resilience.' });
+    }
+
+    // Level assessment
+    let levelMsg, levelIcon, levelColor;
+    if (actualIdx > selectedIdx) {
+      levelIcon = '🚀';
+      levelColor = '#10b981';
+      levelMsg = `Your ${accuracy}% accuracy exceeds the ${currentDifficulty} standard — you are playing at <strong>${playerActualLevel} level</strong>. Consider challenging yourself with <strong>${levelOrder[Math.min(selectedIdx + 1, 3)]}</strong> difficulty for better calibrated opposition!`;
+    } else if (actualIdx < selectedIdx) {
+      levelIcon = '📉';
+      levelColor = '#f59e0b';
+      levelMsg = `Your ${accuracy}% accuracy is below the <strong>${currentDifficulty}</strong> standard (${playerActualLevel}-level play detected). Drop to <strong>${levelOrder[Math.max(selectedIdx - 1, 0)]}</strong> to build stronger foundations before tackling this difficulty.`;
+    } else {
+      levelIcon = '✅';
+      levelColor = '#00d4aa';
+      levelMsg = `Your ${accuracy}% accuracy is perfectly calibrated for <strong>${currentDifficulty}</strong> — you are right where you should be! Consistent play at this level will see your rating rise steadily.`;
+    }
+
+    return { lines, levelMsg, levelIcon, levelColor, playerActualLevel };
+  }
+
   /* ─── Post-Game Report ─── */
   function showPostGameReport(result) {
     const overlay = document.getElementById('arena-report-overlay');
@@ -909,6 +1007,10 @@ function executePlayerMove(move) {
       .map((c, i) => ({ ...c, moveNum: i + 1 }))
       .filter(c => c.classification === 'blunder' || c.classification === 'mistake' || c.classification === 'brilliant');
 
+    // Generate commentary
+    const { lines: commentLines, levelMsg, levelIcon, levelColor, playerActualLevel } =
+      generateMatchCommentary(result, accuracy, totalMoves, durationMin, counts);
+
     // Build report HTML
     const resultClass = result === 'win' ? 'win' : result === 'loss' ? 'loss' : 'draw';
     const resultLabel = result === 'win' ? '🏆 Victory' : result === 'loss' ? '💔 Defeat' : '🤝 Draw';
@@ -934,8 +1036,17 @@ function executePlayerMove(move) {
               <div class="report-stat-label">Best Moves</div>
             </div>
             <div class="report-stat-card">
-              <div class="report-stat-val">${grade}</div>
+              <div class="report-stat-val grade-val ${gradeClass}">${grade}</div>
               <div class="report-stat-label">Grade</div>
+            </div>
+          </div>
+
+          <!-- Level Assessment Banner -->
+          <div class="level-assessment-banner" style="background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,34,43,0.95));border:1px solid ${levelColor}44;border-left:4px solid ${levelColor};border-radius:10px;padding:16px 20px;margin:16px 0;display:flex;align-items:flex-start;gap:14px;">
+            <span style="font-size:1.6rem;line-height:1;flex-shrink:0;">${levelIcon}</span>
+            <div>
+              <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${levelColor};margin-bottom:5px;">Level Assessment · Playing as ${playerActualLevel}</div>
+              <div style="font-size:0.88rem;color:#e2e8f0;line-height:1.55;">${levelMsg}</div>
             </div>
           </div>
 
@@ -954,11 +1065,27 @@ function executePlayerMove(move) {
 
           <div class="eval-graph-container">
             <div class="eval-graph-title">Evaluation Over Time</div>
-            <div id="arena-eval-chart" style="height: 160px; background: var(--arena-surface2); border-radius: 8px; padding: 16px; color: var(--arena-text-muted); display: flex; align-items: center; justify-content: center;">Chart loading...</div>
+            <div id="arena-eval-chart" style="height:160px;background:var(--arena-surface2);border-radius:8px;padding:16px;color:var(--arena-text-muted);display:flex;align-items:center;justify-content:center;">Chart loading...</div>
+          </div>
+
+          <!-- Stockfish Commentary -->
+          <div style="margin:20px 0 0;">
+            <div class="move-breakdown-title" style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:1rem;">🎙</span> Match Commentary
+              <span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(91,156,246,0.12);color:#5b9cf6;letter-spacing:0.05em;text-transform:uppercase;margin-left:4px;">Engine Analysis</span>
+            </div>
+            <div class="commentary-feed">
+              ${commentLines.map((line, idx) => `
+                <div class="commentary-line" style="animation-delay:${idx * 0.08}s">
+                  <span class="commentary-icon">${line.icon}</span>
+                  <p class="commentary-text">${line.text}</p>
+                </div>
+              `).join('')}
+            </div>
           </div>
 
           ${achievements.length > 0 ? `
-          <div class="key-moments">
+          <div class="key-moments" style="margin-top:20px;">
             <div class="key-moments-title">🏆 Achievements Unlocked</div>
             ${achievements.map(a => `
               <div class="key-moment-item">
@@ -970,13 +1097,17 @@ function executePlayerMove(move) {
           </div>` : ''}
 
           ${keyMoments.length > 0 ? `
-          <div class="key-moments">
+          <div class="key-moments" style="margin-top:20px;">
             <div class="key-moments-title">Key Moments</div>
             ${keyMoments.slice(0, 6).map(km => `
               <div class="key-moment-item">
                 <span class="km-move">${km.moveNum}. ${km.san}</span>
                 <span class="km-type ${km.classification}">${km.classification}</span>
-                <span class="km-desc">${km.classification === 'brilliant' ? 'Exceptional find!' : km.classification === 'blunder' ? 'Significant error' : 'Notable inaccuracy'}</span>
+                <span class="km-desc">${
+                  km.classification === 'brilliant' ? 'Exceptional find — Grandmaster-level!' :
+                  km.classification === 'blunder'   ? 'Critical error — major evaluation swing' :
+                                                      'Significant inaccuracy'
+                }</span>
               </div>
             `).join('')}
           </div>` : ''}
@@ -1002,17 +1133,17 @@ function executePlayerMove(move) {
   function renderPostGameChart() {
     const chartEl = document.getElementById('arena-eval-chart');
     if (!chartEl || !window.Chart) return;
-    
+
     chartEl.innerHTML = '';
     const canvas = document.createElement('canvas');
     chartEl.appendChild(canvas);
     const ctx = canvas.getContext('2d');
-    
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(0, 'rgba(232, 184, 75, 0.3)');
     gradient.addColorStop(1, 'rgba(232, 184, 75, 0)');
-    
-    new Chart(ctx, {
+
+    new window.Chart(ctx, {
       type: 'line',
       data: {
         labels: evalHistory.map((_, i) => (i + 1).toString()),
@@ -1254,6 +1385,7 @@ A.showCertificate = (result, grade, gradeClass, accuracy) => {
     const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
     const printWindow = window.open('', '_blank');
+    if (!printWindow) { CK.showToast('Please allow popups to download the certificate.', 'warning'); return; }
     const doc = printWindow.document;
     doc.open();
     doc.write(`

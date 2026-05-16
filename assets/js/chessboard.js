@@ -272,7 +272,7 @@
     document.getElementById('b-end')?.addEventListener('click', lastMove);
 
     // initial render and auto-start
-    goToMove(0);
+    goToMove(5);
     startAutoPlay();
     isPlaying = true;
     const pauseBtn = document.getElementById('b-pause');

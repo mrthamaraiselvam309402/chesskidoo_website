@@ -1,0 +1,579 @@
+/* assets/js/classroom.js
+   Chess-Native Classroom — Assignment System, Live Broadcast, PGN Library, Grades */
+
+window.CK = window.CK || {};
+
+CK.classroom = (() => {
+  const ASSIGN_KEY = 'ck_assignments';
+  const SUBMIT_KEY = 'ck_hw_submissions';
+  const LIVE_KEY   = 'ck_live_session';
+  const LIB_KEY    = 'ck_pgn_lib';
+
+  /* ─── Storage ─── */
+  const getAssignments  = () => JSON.parse(localStorage.getItem(ASSIGN_KEY) || '[]');
+  const saveAssignments = a  => localStorage.setItem(ASSIGN_KEY, JSON.stringify(a));
+  const getSubmissions  = () => JSON.parse(localStorage.getItem(SUBMIT_KEY) || '[]');
+  const saveSubmissions = s  => localStorage.setItem(SUBMIT_KEY, JSON.stringify(s));
+  const getLive         = () => JSON.parse(localStorage.getItem(LIVE_KEY)   || 'null');
+  const saveLive        = d  => localStorage.setItem(LIVE_KEY, JSON.stringify(d));
+  const getLibrary      = () => JSON.parse(localStorage.getItem(LIB_KEY)    || '[]');
+  const saveLibrary     = l  => localStorage.setItem(LIB_KEY, JSON.stringify(l));
+  const uid             = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const me              = () => (window.CK && CK.currentUser)
+                                  ? (CK.currentUser.id || CK.currentUser.email || 'student')
+                                  : 'student';
+
+  /* ─── Board state ─── */
+  let _hwBoard = null, _hwHistory = [], _hwCurrentMove = 0;
+  let _hwMode = 'study', _hwAssignment = null, _hwGuessFrom = null;
+  let _hwCorrect = 0;
+
+  let _liveBoard = null, _livePollTimer = null, _lastLiveFen = null;
+  let _ccLiveBoard = null, _ccLiveHistory = [], _ccLiveMove = 0;
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STUDENT — TAB SWITCHING
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function studentTab(tab) {
+    ['scTabHomework', 'scTabLive'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    document.querySelectorAll('.sc-tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('scTab' + tab[0].toUpperCase() + tab.slice(1));
+    const btn   = document.querySelector(`.sc-tab-btn[data-tab="${tab}"]`);
+    if (panel) panel.style.display = 'block';
+    if (btn)   btn.classList.add('active');
+    if (tab === 'homework') renderStudentHomework();
+    if (tab === 'live')     joinLiveClass();
+    if (tab !== 'live')     _stopPolling();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STUDENT — HOMEWORK LIST
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function renderStudentHomework() {
+    const list = document.getElementById('scHomeworkList');
+    if (!list) return;
+    const assignments = getAssignments();
+    const submissions = getSubmissions();
+    const userId = me();
+
+    if (!assignments.length) {
+      list.innerHTML = `<div class="cls-empty">📭 No homework assigned yet — check back soon!</div>`;
+      return;
+    }
+
+    list.innerHTML = assignments.map(a => {
+      const sub  = submissions.find(s => s.assignmentId === a.id && s.studentId === userId);
+      const done = sub && sub.completed;
+      const badge = done
+        ? `<span class="cls-badge cls-badge-done">✓ ${sub.accuracy}%</span>`
+        : `<span class="cls-badge cls-badge-pending">Pending</span>`;
+      const icon = { study: '📖', guess: '🎯', practice: '⚡' }[a.type] || '📖';
+      const due  = a.dueDate ? ` · Due ${a.dueDate}` : '';
+      return `
+        <div class="cls-hw-card${done ? ' cls-hw-done' : ''}">
+          <div class="cls-hw-icon">${icon}</div>
+          <div class="cls-hw-info">
+            <div class="cls-hw-title">${a.title}</div>
+            <div class="cls-hw-meta">${a.coach}${due} · <em>${a.type} mode</em> · ${a.moves || '?'} moves</div>
+            ${a.description ? `<div class="cls-hw-desc">${a.description}</div>` : ''}
+          </div>
+          <div class="cls-hw-right">
+            ${badge}
+            <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.classroom.openHomework('${a.id}')">
+              ${done ? '🔄 Review' : '▶ Start'}
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STUDENT — HOMEWORK BOARD
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function openHomework(id) {
+    const a = getAssignments().find(x => x.id === id);
+    if (!a) return;
+    _hwAssignment = a;
+    _hwMode       = a.type === 'guess' ? 'guess' : 'study';
+    _hwCorrect    = 0;
+    _hwGuessFrom  = null;
+
+    /* Show detail, hide list */
+    const detail = document.getElementById('scHomeworkDetail');
+    const list   = document.getElementById('scHomeworkList');
+    if (detail) detail.style.display = 'block';
+    if (list)   list.style.display   = 'none';
+
+    /* Populate header */
+    const titleEl = document.getElementById('scHwTitle');
+    const descEl  = document.getElementById('scHwDesc');
+    const typeEl  = document.getElementById('scHwTypeBadge');
+    if (titleEl) titleEl.textContent = a.title;
+    if (descEl)  descEl.textContent  = a.description || '';
+    if (typeEl)  typeEl.textContent  = { study: '📖 Study Mode', guess: '🎯 Guess the Move', practice: '⚡ Practice' }[a.type] || '📖 Study';
+
+    const noteEl = document.getElementById('scHwNote');
+    if (noteEl) noteEl.value = '';
+
+    /* Load PGN */
+    const g = new Chess();
+    if (a.pgn) g.load_pgn(a.pgn);
+    _hwHistory      = g.history({ verbose: true });
+    _hwCurrentMove  = 0;
+
+    /* Init board after DOM has painted (avoids zero-width init in hidden div) */
+    if (_hwBoard) { _hwBoard.destroy(); _hwBoard = null; }
+    const cfg = {
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+      position: 'start',
+      orientation: 'white',
+      draggable: false
+    };
+    if (_hwMode === 'guess') {
+      cfg.onSquareClick = (sq, piece) => hwGuessClick(sq, piece);
+    }
+    requestAnimationFrame(() => {
+      _hwBoard = Chessboard('scHwBoard', cfg);
+      _updateHwUI();
+    });
+  }
+
+  function closeHomework() {
+    const detail = document.getElementById('scHomeworkDetail');
+    const list   = document.getElementById('scHomeworkList');
+    if (detail) detail.style.display = 'none';
+    if (list)   list.style.display   = 'block';
+    if (_hwBoard) { _hwBoard.destroy(); _hwBoard = null; }
+    _hwAssignment = null;
+    renderStudentHomework();
+  }
+
+  function _applyHwPos() {
+    const g = new Chess();
+    for (let i = 0; i < _hwCurrentMove; i++) g.move(_hwHistory[i]);
+    if (_hwBoard) _hwBoard.position(g.fen(), true);
+    _updateHwUI();
+  }
+
+  function _updateHwUI() {
+    const total   = _hwHistory.length;
+    const counter = document.getElementById('scHwCounter');
+    const expl    = document.getElementById('scHwExplanation');
+    const banner  = document.getElementById('scHwGuessBanner');
+    if (counter) counter.textContent = `Move ${_hwCurrentMove} / ${total}`;
+
+    const mv = _hwHistory[_hwCurrentMove - 1];
+    if (expl && mv) {
+      expl.textContent = `${mv.color === 'w' ? 'White' : 'Black'} played ${mv.san}.`;
+    } else if (expl) {
+      expl.textContent = _hwMode === 'guess'
+        ? '🎯 Click a piece, then its destination square to guess the GM move.'
+        : '📖 Use the navigation buttons to study each position.';
+    }
+
+    if (banner) {
+      if (_hwMode !== 'guess') { banner.style.display = 'none'; return; }
+      banner.style.display = 'block';
+      if (_hwCurrentMove >= total) {
+        const pct = total > 0 ? Math.round((_hwCorrect / total) * 100) : 100;
+        banner.innerHTML = `🏆 <strong>Complete!</strong> Accuracy: <strong>${pct}%</strong>`;
+        banner.className = 'cls-guess-banner cls-guess-done';
+      } else {
+        const next = _hwHistory[_hwCurrentMove];
+        banner.innerHTML = `🎯 Guess <strong>${next.color === 'w' ? 'White' : 'Black'}'s</strong> next move`;
+        banner.className = 'cls-guess-banner cls-guess-active';
+      }
+    }
+  }
+
+  function hwFirst() { _hwCurrentMove = 0;                    _applyHwPos(); }
+  function hwPrev()  { if (_hwCurrentMove > 0) { _hwCurrentMove--; _applyHwPos(); } }
+  function hwNext()  { if (_hwCurrentMove < _hwHistory.length) { _hwCurrentMove++; _applyHwPos(); } }
+  function hwLast()  { _hwCurrentMove = _hwHistory.length;    _applyHwPos(); }
+
+  function hwGuessClick(square, piece) {
+    if (_hwMode !== 'guess' || _hwCurrentMove >= _hwHistory.length) return;
+    const expected = _hwHistory[_hwCurrentMove];
+    const boardEl  = document.getElementById('scHwBoard');
+
+    if (!_hwGuessFrom) {
+      if (!piece || piece[0] !== expected.color) return;
+      _hwGuessFrom = square;
+      boardEl?.querySelector(`.square-${square}`)?.classList.add('lab-guess-highlight');
+      return;
+    }
+
+    const from = _hwGuessFrom;
+    _hwGuessFrom = null;
+    boardEl?.querySelectorAll('.lab-guess-highlight').forEach(el => el.classList.remove('lab-guess-highlight'));
+
+    if (from === square) return;
+
+    if (from === expected.from && square === expected.to) {
+      _hwCorrect++;
+      _hwCurrentMove++;
+      _applyHwPos();
+      CK.showToast(`✓ Correct! ${expected.san}`, 'success');
+    } else {
+      CK.showToast(`✗ Not quite — hint: piece starts on ${expected.from}`, 'warning');
+    }
+  }
+
+  function submitHomework() {
+    if (!_hwAssignment) return;
+    const userId  = me();
+    const total   = _hwHistory.length;
+    const noteEl  = document.getElementById('scHwNote');
+    const note    = noteEl ? noteEl.value.trim() : '';
+    const accuracy = total > 0
+      ? (_hwMode === 'guess'
+          ? Math.round((_hwCorrect / total) * 100)
+          : Math.min(100, Math.round((_hwCurrentMove / total) * 100)))
+      : 100;
+
+    const subs = getSubmissions().filter(s => !(s.assignmentId === _hwAssignment.id && s.studentId === userId));
+    subs.push({
+      assignmentId: _hwAssignment.id,
+      studentId:    userId,
+      accuracy,
+      movesStudied: _hwCurrentMove,
+      totalMoves:   total,
+      note,
+      completed:    true,
+      submittedAt:  Date.now()
+    });
+    saveSubmissions(subs);
+    CK.showToast(`✓ Homework submitted! Accuracy: ${accuracy}%`, 'success');
+    closeHomework();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STUDENT — LIVE CLASS
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function joinLiveClass() {
+    _syncLive();
+    if (!_livePollTimer) _livePollTimer = setInterval(_syncLive, 2000);
+  }
+
+  function _stopPolling() {
+    if (_livePollTimer) { clearInterval(_livePollTimer); _livePollTimer = null; }
+  }
+
+  function _syncLive() {
+    const session  = getLive();
+    const statusEl = document.getElementById('scLiveStatus');
+    const noteEl   = document.getElementById('scLiveCoachNote');
+    const wrap     = document.getElementById('scLiveBoardWrap');
+
+    if (!session || !session.active) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:rgba(255,255,255,0.35);">No live session active — wait for your coach to start class.</span>';
+      if (wrap) wrap.style.display = 'none';
+      _lastLiveFen = null;
+      return;
+    }
+
+    if (wrap) wrap.style.display = 'block';
+    if (statusEl) statusEl.innerHTML = '<span class="cls-live-dot"></span>&nbsp;<strong>Live session in progress</strong>';
+    if (noteEl && session.coachNote) noteEl.textContent = session.coachNote;
+
+    if (session.fen !== _lastLiveFen) {
+      _lastLiveFen = session.fen;
+      if (!_liveBoard) {
+        _liveBoard = Chessboard('scLiveBoard', {
+          pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+          position:    session.fen,
+          orientation: session.orientation || 'white',
+          draggable:   false
+        });
+      } else {
+        _liveBoard.position(session.fen, true);
+      }
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COACH — TAB SWITCHING
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function coachTab(tab) {
+    ['ccTabAssign', 'ccTabLive', 'ccTabGrades', 'ccTabLibrary'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    document.querySelectorAll('.cc-tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('ccTab' + tab[0].toUpperCase() + tab.slice(1));
+    const btn   = document.querySelector(`.cc-tab-btn[data-tab="${tab}"]`);
+    if (panel) panel.style.display = 'block';
+    if (btn)   btn.classList.add('active');
+    if (tab === 'assign')  renderCoachAssignments();
+    if (tab === 'grades')  renderGrades();
+    if (tab === 'library') renderLibrary();
+    if (tab === 'live')    _initCoachLiveUI();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COACH — ASSIGN HOMEWORK
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function assignHomework() {
+    const title  = document.getElementById('ccHwTitle')?.value.trim();
+    const pgn    = document.getElementById('ccHwPgn')?.value.trim();
+    const type   = document.getElementById('ccHwType')?.value || 'study';
+    const to     = document.getElementById('ccHwAssignTo')?.value || 'all';
+    const due    = document.getElementById('ccHwDue')?.value || '';
+    const desc   = document.getElementById('ccHwDesc')?.value.trim() || '';
+    const coach  = (window.CK && CK.currentUser) ? (CK.currentUser.full_name || CK.currentUser.email || 'Coach') : 'Coach';
+
+    if (!title) { CK.showToast('Enter an assignment title', 'warning'); return; }
+    if (!pgn)   { CK.showToast('Paste the PGN for this assignment', 'warning'); return; }
+
+    const g = new Chess();
+    if (!g.load_pgn(pgn)) { CK.showToast('Invalid PGN — check the notation', 'warning'); return; }
+
+    const assignment = { id: uid(), title, pgn, type, assignedTo: to, dueDate: due, description: desc, coach, moves: g.history().length, created: Date.now() };
+    const list = getAssignments();
+    list.unshift(assignment);
+    saveAssignments(list);
+
+    CK.showToast(`✓ Assigned: "${title}" (${g.history().length} moves, ${type} mode)`, 'success');
+    ['ccHwTitle', 'ccHwPgn', 'ccHwDesc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    renderCoachAssignments();
+  }
+
+  function renderCoachAssignments() {
+    const container = document.getElementById('ccAssignmentList');
+    if (!container) return;
+    const assignments = getAssignments();
+    if (!assignments.length) { container.innerHTML = '<div class="cls-empty">No assignments yet</div>'; return; }
+    container.innerHTML = assignments.map(a => {
+      const icon = { study: '📖', guess: '🎯', practice: '⚡' }[a.type] || '📖';
+      const d    = new Date(a.created).toLocaleDateString();
+      return `
+        <div class="cls-assign-row">
+          <span class="cls-type-icon">${icon}</span>
+          <div class="cls-assign-info">
+            <strong>${a.title}</strong>
+            <span>${a.type} · ${a.moves} moves · ${d}${a.dueDate ? ' · due ' + a.dueDate : ''}</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-shrink:0;">
+            <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.classroom._loadAssignInLab('${a.id}')">Open Lab</button>
+            <button class="p-btn p-btn-ghost p-btn-sm" style="color:#ef4444;" onclick="CK.classroom.deleteAssignment('${a.id}')">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function deleteAssignment(id) {
+    saveAssignments(getAssignments().filter(a => a.id !== id));
+    renderCoachAssignments();
+    CK.showToast('Assignment deleted', 'info');
+  }
+
+  function _loadAssignInLab(id) {
+    const a = getAssignments().find(x => x.id === id);
+    if (!a) return;
+    CK.coach.nav('lab');
+    setTimeout(() => {
+      CK.lab.initBoard('coachLabBoard');
+      setTimeout(() => CK.lab.analyzePgn(a.pgn, 'coachLabBoard'), 200);
+    }, 100);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COACH — LIVE SESSION
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function _initCoachLiveUI() {
+    const session  = getLive();
+    const statusEl = document.getElementById('ccLiveStatus');
+    if (session && session.active) {
+      if (statusEl) statusEl.innerHTML = '<span class="cls-live-dot"></span>&nbsp;<strong>Session is LIVE</strong>';
+    } else {
+      if (statusEl) statusEl.textContent = 'No active session';
+    }
+  }
+
+  function coachStartLive() {
+    const pgn = document.getElementById('ccLivePgn')?.value.trim() || '';
+    const g = new Chess();
+    if (pgn) g.load_pgn(pgn);
+    _ccLiveHistory = g.history({ verbose: true });
+    _ccLiveMove    = _ccLiveHistory.length;
+
+    if (_ccLiveBoard) { _ccLiveBoard.destroy(); _ccLiveBoard = null; }
+    _ccLiveBoard = Chessboard('ccLiveBoard', {
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+      position:    g.fen(),
+      orientation: 'white',
+      draggable:   false
+    });
+
+    saveLive({ active: true, pgn, fen: g.fen(), orientation: 'white', currentMove: _ccLiveMove, coachNote: '', updatedAt: Date.now() });
+
+    const statusEl = document.getElementById('ccLiveStatus');
+    if (statusEl) statusEl.innerHTML = '<span class="cls-live-dot"></span>&nbsp;<strong>Session is LIVE — students can see your board</strong>';
+    CK.showToast('🔴 Live session started! Students can join now.', 'success');
+  }
+
+  function coachEndLive() {
+    saveLive(null);
+    if (_ccLiveBoard) { _ccLiveBoard.destroy(); _ccLiveBoard = null; }
+    const statusEl = document.getElementById('ccLiveStatus');
+    if (statusEl) statusEl.textContent = 'Session ended';
+    CK.showToast('Live session ended', 'info');
+  }
+
+  function coachLiveNav(dir) {
+    if (!_ccLiveHistory.length) return;
+    if (dir === 'first') _ccLiveMove = 0;
+    if (dir === 'prev'  && _ccLiveMove > 0)                    _ccLiveMove--;
+    if (dir === 'next'  && _ccLiveMove < _ccLiveHistory.length) _ccLiveMove++;
+    if (dir === 'last')  _ccLiveMove = _ccLiveHistory.length;
+
+    const g = new Chess();
+    for (let i = 0; i < _ccLiveMove; i++) g.move(_ccLiveHistory[i]);
+    if (_ccLiveBoard) _ccLiveBoard.position(g.fen(), true);
+
+    const note    = document.getElementById('ccLiveNote')?.value || '';
+    const session = getLive() || {};
+    saveLive({ ...session, fen: g.fen(), currentMove: _ccLiveMove, coachNote: note, updatedAt: Date.now() });
+
+    const ctr = document.getElementById('ccLiveMoveCounter');
+    if (ctr) ctr.textContent = `Move ${_ccLiveMove} / ${_ccLiveHistory.length}`;
+  }
+
+  function coachBroadcastNote() {
+    const note    = document.getElementById('ccLiveNote')?.value.trim() || '';
+    const session = getLive();
+    if (!session || !session.active) { CK.showToast('Start a live session first', 'warning'); return; }
+    saveLive({ ...session, coachNote: note, updatedAt: Date.now() });
+    CK.showToast('📢 Note sent to all students!', 'success');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COACH — GRADES
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function renderGrades() {
+    const container = document.getElementById('ccGradesList');
+    if (!container) return;
+    const assignments = getAssignments();
+    const submissions = getSubmissions();
+    if (!assignments.length) { container.innerHTML = '<div class="cls-empty">No assignments yet</div>'; return; }
+
+    container.innerHTML = assignments.map(a => {
+      const subs = submissions.filter(s => s.assignmentId === a.id);
+      const avg  = subs.length ? Math.round(subs.reduce((s, x) => s + x.accuracy, 0) / subs.length) : null;
+      const rows = subs.length
+        ? subs.map(s => {
+            const acc = s.accuracy;
+            const col = acc >= 80 ? 'var(--p-teal)' : acc >= 60 ? 'var(--p-gold)' : '#ef4444';
+            return `<tr>
+              <td>${s.studentId}</td>
+              <td style="color:${col};font-weight:700;">${acc}%</td>
+              <td>${s.movesStudied}/${s.totalMoves}</td>
+              <td style="color:var(--p-text-muted);">${new Date(s.submittedAt).toLocaleDateString()}</td>
+              <td style="color:var(--p-text-muted);font-size:0.82rem;">${s.note || '—'}</td>
+            </tr>`;
+          }).join('')
+        : `<tr><td colspan="5" style="color:rgba(255,255,255,0.3);text-align:center;padding:12px;">No submissions yet</td></tr>`;
+
+      return `
+        <div class="cls-grade-section">
+          <div class="cls-grade-title">
+            ${a.title}
+            <span style="color:var(--p-text-muted);font-size:0.8rem;font-weight:400;"> · ${a.type} · ${subs.length} submitted${avg !== null ? ` · avg ${avg}%` : ''}</span>
+          </div>
+          <table class="cls-grade-table">
+            <thead><tr><th>Student</th><th>Accuracy</th><th>Moves</th><th>Submitted</th><th>Notes</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     COACH — PGN LIBRARY
+  ═══════════════════════════════════════════════════════════════════ */
+
+  function saveToLibrary() {
+    const title = document.getElementById('ccLibTitle')?.value.trim();
+    const pgn   = document.getElementById('ccLibPgn')?.value.trim();
+    const tags  = document.getElementById('ccLibTags')?.value.trim() || '';
+    if (!title || !pgn) { CK.showToast('Enter title and PGN', 'warning'); return; }
+    const g = new Chess();
+    if (!g.load_pgn(pgn)) { CK.showToast('Invalid PGN', 'warning'); return; }
+    const lib = getLibrary();
+    lib.unshift({ id: uid(), title, pgn, tags, moves: g.history().length, created: Date.now() });
+    saveLibrary(lib);
+    CK.showToast(`📚 "${title}" saved to library`, 'success');
+    ['ccLibTitle', 'ccLibPgn', 'ccLibTags'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    renderLibrary();
+  }
+
+  function renderLibrary() {
+    const container = document.getElementById('ccLibraryList');
+    if (!container) return;
+    const lib = getLibrary();
+    if (!lib.length) { container.innerHTML = '<div class="cls-empty">No saved PGNs yet. Save a lesson to build your library!</div>'; return; }
+    container.innerHTML = lib.map(item => `
+      <div class="cls-lib-card">
+        <div class="cls-lib-icon">📄</div>
+        <div class="cls-lib-info">
+          <div class="cls-lib-title">${item.title}</div>
+          <div class="cls-lib-meta">${item.moves} moves${item.tags ? ' · ' + item.tags : ''}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0;">
+          <button class="p-btn p-btn-blue p-btn-sm" onclick="CK.classroom._libLoadInLab('${item.id}')">Open Lab</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" onclick="CK.classroom._libAssign('${item.id}')">Assign</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" style="color:#ef4444;" onclick="CK.classroom._libDelete('${item.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function _libLoadInLab(id) {
+    const item = getLibrary().find(x => x.id === id);
+    if (!item) return;
+    CK.coach.nav('lab');
+    setTimeout(() => {
+      CK.lab.initBoard('coachLabBoard');
+      setTimeout(() => CK.lab.analyzePgn(item.pgn, 'coachLabBoard'), 200);
+    }, 100);
+  }
+
+  function _libAssign(id) {
+    const item = getLibrary().find(x => x.id === id);
+    if (!item) return;
+    coachTab('assign');
+    const titleEl = document.getElementById('ccHwTitle');
+    const pgnEl   = document.getElementById('ccHwPgn');
+    if (titleEl) titleEl.value = item.title;
+    if (pgnEl)   pgnEl.value   = item.pgn;
+    CK.showToast('PGN loaded — fill in details and assign!', 'info');
+  }
+
+  function _libDelete(id) {
+    saveLibrary(getLibrary().filter(x => x.id !== id));
+    renderLibrary();
+  }
+
+  return {
+    /* Student */
+    studentTab, renderStudentHomework, openHomework, closeHomework,
+    hwFirst, hwPrev, hwNext, hwLast, hwGuessClick, submitHomework,
+    joinLiveClass, _stopPolling,
+    /* Coach */
+    coachTab, assignHomework, renderCoachAssignments, deleteAssignment,
+    _loadAssignInLab,
+    coachStartLive, coachEndLive, coachLiveNav, coachBroadcastNote,
+    renderGrades,
+    saveToLibrary, renderLibrary, _libLoadInLab, _libAssign, _libDelete
+  };
+})();

@@ -1,9 +1,17 @@
 /* assets/js/auth.js -------------------------------------------------------
-   Supabase Authentication — handles all roles: admin, student, coach
+   Supabase Authentication — handles all roles: admin, student, coach, parent
+   Per-user email/password. Admin can set individual credentials.
    --------------------------------------------------------------- */
 
 (() => {
   const CK = window.CK = window.CK || {};
+
+  /* Check per-user credential */
+  async function _checkPerUserCred(email, password) {
+    const creds = await CK.accessManager.getCreds();
+    const stored = creds[email.toLowerCase()];
+    return stored ? stored === password : false;
+  }
 
   CK.handleLogin = async (e) => {
     e.preventDefault();
@@ -23,8 +31,7 @@
       let isOfflineMode = false;
 
       // 1. Attempt Supabase Auth login if online and configured
-      const isDemoProject = window.APP_CONFIG?.SUPABASE_URL?.includes('hcjuyqicftkgpiyrkscr');
-      if (window.supabaseClient && navigator.onLine && !isDemoProject) {
+      if (window.supabaseClient && navigator.onLine) {
         try {
           const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
           if (!error && data && data.user) {
@@ -71,13 +78,17 @@
         const found = profiles.find(p => p && p.email && (p.email.toLowerCase() === email || (email.includes('@ck') && p.email.toLowerCase().startsWith(email.split('@')[0]))));
         
         if (found) {
-          // Simple offline credential check: accepts 'admin', 'coach', 'student', or passwords matching README instructions
+          // Check per-user credential first (admin-set individual passwords)
           const role = (found.role || 'student').toLowerCase();
-          const isValidPass = 
-            (role === 'admin' && (password === 'admin' || password === 'admin123' || password === 'Admin123$')) ||
-            (role === 'coach' && (password === 'coach' || password === 'Coach123')) ||
-            (role === 'student' && (password === 'student' || password === 'Student123' || password === '123456'));
-            
+          const perUserMatch = await _checkPerUserCred(email, password);
+          // Then fall back to role-based demo passwords
+          const roleMatch =
+            (role === 'admin'  && (password === 'admin' || password === 'admin123' || password === 'Admin123$')) ||
+            (role === 'coach'  && (password === 'coach' || password === 'Coach123')) ||
+            (role === 'parent' && (password === 'parent' || password === 'Parent123')) ||
+            (role === 'student'&& (password === 'student' || password === 'Student123' || password === '123456'));
+          const isValidPass = perUserMatch || roleMatch;
+
           if (isValidPass) {
             profile = found;
             session = { access_token: "mock-jwt-token-" + Date.now(), user: { id: found.id, email: found.email } };
@@ -115,9 +126,11 @@
 
       setTimeout(() => {
         CK.showPage(`${role}-page`);
-        if (role === 'admin' && CK.admin)   CK.admin.init();
+        if (CK.notifs) CK.notifs.init(profile);
+        if (role === 'admin'   && CK.admin)   CK.admin.init();
         if (role === 'student' && CK.student) CK.student.init();
-        if (role === 'coach' && CK.coach)   CK.coach.init();
+        if (role === 'coach'   && CK.coach)   CK.coach.init();
+        if (role === 'parent'  && CK.parents) CK.parents.init();
       }, 500);
 
     } catch (err) {
