@@ -395,8 +395,9 @@ body {
   .hero-sub { margin-left: auto; margin-right: auto; }
   .hero-btns { justify-content: center; }
   .hero-stats { justify-content: center; }
-  .hero-visual { margin-top: 40px !important; }
+  .hero-visual { margin-top: 40px !important; perspective: none; }
   .hero-board-frame { margin: 0 auto !important; }
+  .board-panel { margin: 0 auto; max-width: 560px; }
 }
 
 /* --- Hero Visual / Chess Board (Premium Match Interface) --- */
