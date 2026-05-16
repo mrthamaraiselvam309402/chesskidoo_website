@@ -86,7 +86,14 @@
   /* ─── Init ─── */
   A.init = () => {
     console.log('Arena: Initializing AI Challenge Arena...');
+    // Clear any active clock/timer from previous game or mini-game modes
+    if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+    if (typeof gameTimer !== 'undefined' && gameTimer) { clearInterval(gameTimer); gameTimer = null; }
+
     puzzleMode = false;
+    quickMoveState = null;   // reset mini-game state so regular moves aren't blocked
+    memoryGameState = null;
+
     game = new Chess();
     boardEl = document.getElementById('arena-board');
 
