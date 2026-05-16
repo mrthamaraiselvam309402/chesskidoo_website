@@ -688,14 +688,13 @@ body {
 
 /* ── BOARD PANEL (extracted bit) ── */
 .board-panel {
-  background: linear-gradient(160deg, #0d1f14 0%, #091209 100%);
+  background: #111111;
   border-radius: 32px;
   padding: 20px 20px 16px;
-  border: 1px solid rgba(74, 124, 64, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(74, 124, 64, 0.12),
-    0 0 60px rgba(74, 124, 64, 0.08),
+    0 40px 80px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: all 0.3s ease;
   width: 100%;
@@ -705,11 +704,9 @@ body {
 }
 .board-panel:hover {
   box-shadow:
-    0 48px 96px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(74, 124, 64, 0.22),
-    0 0 80px rgba(74, 124, 64, 0.14),
+    0 48px 96px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-color: rgba(74, 124, 64, 0.45);
 }
 
 /* PLAYER HEADER */
@@ -737,19 +734,19 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  border: 2px solid rgba(74, 124, 64, 0.35);
-  background: #1a2e18;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #222;
   flex-shrink: 0;
 }
 .av-white {
-  background: #f0f7ee;
-  color: #1a3018;
-  border-color: rgba(74, 124, 64, 0.5);
+  background: #f0f0f0;
+  color: #111;
+  border-color: rgba(255, 255, 255, 0.4);
 }
 .av-black {
-  background: #1a2e18;
-  color: #a8d4a0;
-  border-color: rgba(74, 124, 64, 0.4);
+  background: #1a1a1a;
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .pname {
   color: #fff;
@@ -822,7 +819,7 @@ body {
 .coord {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(168, 212, 160, 0.65);
+  color: rgba(255, 255, 255, 0.4);
   text-align: center;
   font-family: 'Inter', monospace;
 }
@@ -873,14 +870,14 @@ body {
 .moves-panel {
   flex: 1;
   min-width: 180px;
-  background: rgba(74, 124, 64, 0.07);
-  border: 1px solid rgba(74, 124, 64, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 14px 12px;
   height: 320px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(74, 124, 64, 0.35) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 .moves-panel::-webkit-scrollbar {
   width: 4px;
@@ -890,14 +887,14 @@ body {
   border-radius: 10px;
 }
 .panel-head {
-  color: rgba(168, 212, 160, 0.8);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(74, 124, 64, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .move-row {
   display: grid;
@@ -950,9 +947,9 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(74, 124, 64, 0.12);
-  border: 1px solid rgba(74, 124, 64, 0.25);
-  color: rgba(168, 212, 160, 0.85);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 16px;
   cursor: pointer;
   display: inline-flex;
@@ -961,8 +958,7 @@ body {
   transition: 0.2s;
 }
 .cb:hover {
-  background: rgba(74, 124, 64, 0.25);
-  border-color: rgba(74, 124, 64, 0.5);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   transform: scale(0.96);
 }
