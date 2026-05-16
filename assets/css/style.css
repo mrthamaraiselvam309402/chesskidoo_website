@@ -331,18 +331,20 @@ body {
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
-.hero-content-wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 10px 48px 60px; width: 100%; }
-.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.hero-content-wrap { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 10px 56px 60px; width: 100%; }
+.hero-grid { display: grid; grid-template-columns: 46fr 54fr; gap: 80px; align-items: center; }
 .hero-badge {
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center; gap: 8px;
   background: rgba(232,160,32,0.15);
   border: 1px solid rgba(232,160,32,0.3);
   color: var(--amber-light);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: 8px 18px;
+  padding: 7px 16px;
   border-radius: 99px;
   margin-bottom: 32px;
 }
@@ -2170,7 +2172,7 @@ button, input, textarea, select, a {
   .hero { padding-top: 80px; }
   .hero-content-wrap { padding: 10px 16px 40px; }
   .hero-title { font-size: clamp(2rem, 8vw, 3rem); }
-  .hero-badge { font-size: 0.7rem; padding: 6px 14px; }
+  .hero-badge { font-size: 0.65rem; padding: 6px 12px; letter-spacing: 0.14em; }
   .hero-stat-num { font-size: 1.8rem; }
   .hero-stat-label { font-size: 0.7rem; }
   
