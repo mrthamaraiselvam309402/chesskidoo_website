@@ -1036,7 +1036,7 @@
             <h2>The World of ChessKidoo</h2>
             <p class="lead" style="max-width:620px;margin-left:auto;margin-right:auto;">
               Three offline centres in Tamil Nadu, and live online classes reaching students
-              across six countries. Explore where we teach.
+              across seven countries. Explore where we teach.
             </p>
           </div>
 
@@ -1052,7 +1052,7 @@
               <canvas class="ckw-canvas"></canvas>
               <svg class="ckw-arcs" aria-hidden="true"></svg>
               <div class="ckw-pins"></div>
-              <div class="ckw-badge">6 countries · live online classes</div>
+              <div class="ckw-badge">7 countries · live online classes</div>
             </div>
             <aside class="ckw-panel" aria-live="polite"></aside>
           </div>
@@ -1404,7 +1404,7 @@
             <div class="price-tiers">
               <div class="price-tier">
                 <div class="price-tier-label"><span>👥</span> Group Class</div>
-                <div class="price-tier-amount">₹1,600</div>
+                <div class="price-tier-amount">₹1,800</div>
                 <div class="price-tier-unit">per month</div>
               </div>
               <div class="price-tier">
@@ -3006,9 +3006,9 @@
     <div class="modal-card ck-demo-modal-card">
       <div class="modal-header ck-demo-modal-header">
         <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal()" aria-label="Close">✕</button>
-        <div class="ck-demo-icon">♟️</div>
+        <div class="ck-demo-header-badge">⭐ 100% Free Trial Session</div>
         <h3 class="ck-demo-title">Book a Free Demo Class</h3>
-        <p class="ck-demo-subtitle">30-min 1-on-1 FIDE-certified coaching session. No payment required.</p>
+        <p class="ck-demo-subtitle">30-min 1-on-1 FIDE-certified coaching session. No credit card required.</p>
       </div>
       <form class="modal-body ck-demo-modal-body" onsubmit="CK.handleDemoSubmit(event)">
         <div class="form-group ck-form-group">
@@ -3029,20 +3029,60 @@
           </div>
           <div class="form-group ck-form-group">
             <label class="ck-form-label">City</label>
-            <input type="text" name="city" placeholder="e.g. Chennai" class="ck-form-input">
+            <input type="text" name="city" placeholder="e.g. Chennai / Erode" class="ck-form-input">
           </div>
         </div>
         <div class="form-group ck-form-group">
           <label class="ck-form-label">Country</label>
           <select name="country" data-ck-country class="ck-form-select"></select>
         </div>
+
+        <!-- Level Selector -->
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Child's Current Experience Level</label>
+          <div class="ck-level-chips">
+            <label class="ck-chip-item">
+              <input type="radio" name="level" value="Beginner" checked>
+              <span>🌱 Beginner (New to Chess)</span>
+            </label>
+            <label class="ck-chip-item">
+              <input type="radio" name="level" value="Intermediate">
+              <span>🌿 Intermediate (Knows Rules)</span>
+            </label>
+            <label class="ck-chip-item">
+              <input type="radio" name="level" value="Advanced">
+              <span>🌳 Advanced (Tournament Player)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Class Mode & Time Slot -->
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Learning Mode</label>
+            <select name="mode" class="ck-form-select">
+              <option value="Online Class">💻 Live Online Class</option>
+              <option value="Offline Centre">🏫 Offline Centre (Tamil Nadu)</option>
+            </select>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Preferred Time Slot</label>
+            <select name="slot" class="ck-form-select">
+              <option value="Evening (5 PM - 8 PM)">🌆 Evening (5 PM - 8 PM)</option>
+              <option value="Morning (10 AM - 1 PM)">🌅 Morning (10 AM - 1 PM)</option>
+              <option value="Afternoon (2 PM - 5 PM)">☀️ Afternoon (2 PM - 5 PM)</option>
+              <option value="Weekend Special">⭐ Weekend Special</option>
+            </select>
+          </div>
+        </div>
+
         <div class="ck-demo-notice">
           <span class="ck-notice-icon">💬</span>
-          <span class="ck-notice-text">Instant confirmation — enquiry is saved to Admin Dashboard & redirects to WhatsApp.</span>
+          <span class="ck-notice-text">Instant Confirmation — Saved to Admin Dashboard and opens WhatsApp directly for coach scheduling.</span>
         </div>
         <div class="ck-demo-actions">
           <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary ck-btn-submit">📱 Book Free Demo & WhatsApp Us</button>
+          <button type="submit" class="btn btn-primary ck-btn-submit">📱 Book Free Demo &amp; WhatsApp Us</button>
         </div>
       </form>
     </div>

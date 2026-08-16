@@ -42,6 +42,8 @@
       note: 'Our furthest classroom — 13,500 km from Erode, with flexible time-zone slots.' },
     { id: 'ca', name: 'Canada',         flag: '🇨🇦', city: 'Toronto & Vancouver', lon: -106.34, lat: 56.13, pos: 'top',
       note: 'Weekend batches timed for Ontario and British Columbia families.' },
+    { id: 'de', name: 'Germany',        flag: '🇩🇪', city: 'Berlin & Frankfurt', lon: 10.45,  lat: 51.16, pos: 'top',
+      note: 'Evening CET batches tailored for European students and families.' },
     { id: 'sg', name: 'Singapore',      flag: '🇸🇬', city: 'Singapore',          lon: 103.82, lat: 1.35, pos: 'bottom',
       note: 'Evening SGT batches for students in the city-state.' },
     { id: 'my', name: 'Malaysia',       flag: '🇲🇾', city: 'Kuala Lumpur',       lon: 101.69, lat: 4.21, pos: 'top',
@@ -414,7 +416,7 @@
     });
     root.classList.toggle('is-centres', view === 'centres');
     badge.textContent = view === 'global'
-      ? '6 countries · live online classes'
+      ? '7 countries · live online classes'
       : 'Erode District · Tamil Nadu';
 
     defaultPanel();       // update the copy immediately, don't wait for the zoom

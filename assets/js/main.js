@@ -534,6 +534,10 @@
     const country = form.country ? form.country.value : '';
     const cityRaw = form.city ? form.city.value.trim() : '';
     const city = [cityRaw, country].filter(Boolean).join(', ') || 'Not specified';
+    const levelEl = form.querySelector('input[name="level"]:checked');
+    const level = levelEl ? levelEl.value : 'Beginner';
+    const mode = form.mode ? form.mode.value : 'Online Class';
+    const slot = form.slot ? form.slot.value : 'Evening (5 PM - 8 PM)';
 
     if (!name || !phone) {
       if (CK.showToast) CK.showToast('Please fill in your name and phone number', 'error');
@@ -545,6 +549,8 @@
     btn.disabled = true;
 
     try {
+      const summaryMsg = `Parent Name: ${name}\nPhone: ${phone}\nChild Age: ${age}\nLocation: ${city}\nSkill Level: ${level}\nMode: ${mode}\nTime Slot: ${slot}\nRequested Date: ${new Date().toLocaleDateString()}`;
+
       // 1. Save to Supabase 'leads' table
       if (window.supabaseClient) {
         try {
@@ -554,6 +560,8 @@
             parent_name: name,
             child_age: age,
             city,
+            level,
+            notes: `Mode: ${mode} | Slot: ${slot}`,
             status: 'new',
             created_at: new Date().toISOString()
           });
@@ -568,7 +576,7 @@
             sender_type: 'parent',
             subject: 'New Demo Class Booking Enquiry',
             category: 'Demo Enquiry',
-            message: `Parent Name: ${name}\nPhone: ${phone}\nChild Age: ${age}\nLocation: ${city}\nRequested Date: ${new Date().toLocaleDateString()}`,
+            message: summaryMsg,
             is_read: false,
             created_at: new Date().toISOString()
           });
@@ -587,7 +595,7 @@
               sender_type: 'parent',
               subject: 'New Demo Class Booking Enquiry',
               category: 'Demo Enquiry',
-              message: `Parent Name: ${name}\nPhone: ${phone}\nChild Age: ${age}\nLocation: ${city}`,
+              message: summaryMsg,
               created_at: new Date().toISOString()
             })
           }).catch(() => {});
@@ -602,7 +610,7 @@
           sender_type: 'parent',
           subject: 'New Demo Class Booking Enquiry',
           category: 'Demo Enquiry',
-          message: `Parent Name: ${name}\nPhone: ${phone}\nChild Age: ${age}\nLocation: ${city}`,
+          message: summaryMsg,
           is_read: false,
           created_at: new Date().toISOString()
         });
@@ -610,10 +618,10 @@
       }
 
       // 5. WhatsApp Message Text & Launch URL
-      const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 *Parent Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City/Country:* ${city}\n\nPlease confirm our demo slot!`;
+      const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 *Parent Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City/Country:* ${city}\n🎯 *Skill Level:* ${level}\n💻 *Preferred Mode:* ${mode}\n⏱️ *Preferred Slot:* ${slot}\n\nPlease confirm our demo slot!`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
 
-      if (CK.showToast) CK.showToast('🎉 Enquiry saved to Admin Dashboard & Opening WhatsApp...', 'success');
+      if (CK.showToast) CK.showToast('🎉 Demo Enquiry saved! Opening WhatsApp...', 'success');
 
       // Immediate WhatsApp window launch
       setTimeout(() => {
@@ -624,7 +632,7 @@
 
     } catch (err) {
       if (CK.showToast) CK.showToast('Booking logged! Opening WhatsApp directly...', 'info');
-      const msg = `Hello ChessKidoo! ♟️ I'd like to book a FREE Demo Class. Parent: ${name}, Phone: ${phone}, Age: ${age}.`;
+      const msg = `Hello ChessKidoo! ♟️ I'd like to book a FREE Demo Class. Parent: ${name}, Phone: ${phone}, Level: ${level}, Mode: ${mode}, Slot: ${slot}.`;
       window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
       if (CK.closeModal) CK.closeModal();
     } finally {
