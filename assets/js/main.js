@@ -643,6 +643,142 @@
     }
   };
 
+  /* ─── Tournament Registration Modal & Submit Handler ─── */
+  CK.openTournamentModal = (name = 'ChessKidoo Tournament') => {
+    const titleEl = document.getElementById('tModalTitle');
+    const hiddenEl = document.getElementById('tModalHiddenName');
+    if (titleEl) titleEl.textContent = `Register: ${name}`;
+    if (hiddenEl) hiddenEl.value = name;
+    CK.openModal('tournamentModal');
+  };
+
+  CK.handleTournamentSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('[type="submit"]');
+    const tName = form.tournamentName ? form.tournamentName.value : 'Tournament';
+    const player = form.playerName ? form.playerName.value.trim() : '';
+    const dial = form.dialCode ? form.dialCode.value : '';
+    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, form.phone.value) : form.phone.value;
+    const age = form.age ? form.age.value : '';
+    const fideRating = form.fideRating ? form.fideRating.value.trim() : 'Unrated';
+    const category = form.category ? form.category.value : 'Under-13';
+
+    if (!player || !phone) {
+      if (CK.showToast) CK.showToast('Please enter player name and phone number', 'error');
+      return;
+    }
+
+    const origText = btn.textContent;
+    btn.textContent = 'Registering... ♟';
+    btn.disabled = true;
+
+    try {
+      const summaryMsg = `TOURNAMENT REGISTRATION:\nEvent: ${tName}\nPlayer Name: ${player}\nPhone: ${phone}\nAge: ${age}\nFIDE Rating/ID: ${fideRating}\nCategory: ${category}\nSubmitted At: ${new Date().toLocaleString()}`;
+
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('messages').insert({
+            sender_name: player,
+            sender_type: 'student',
+            subject: `Tournament Entry: ${tName}`,
+            category: 'Tournament Entry',
+            message: summaryMsg,
+            is_read: false,
+            created_at: new Date().toISOString()
+          });
+        } catch (sErr) {}
+      }
+
+      const msg = `Hello ChessKidoo! ♟️🏆\n\nI'd like to register for the tournament:\n*Event:* ${tName}\n👤 *Player Name:* ${player}\n📞 *Phone:* ${phone}\n👶 *Age:* ${age}\n⭐ *FIDE Rating:* ${fideRating}\n🎯 *Category:* ${category}\n\nPlease send entry confirmation and pairings link!`;
+      const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+
+      if (CK.showToast) CK.showToast('🎉 Tournament entry saved! Opening WhatsApp...', 'success');
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+        CK.closeModal('tournamentModal');
+        form.reset();
+      }, 500);
+    } catch (err) {
+      const msg = `Hello ChessKidoo! ♟️ I'd like to register for ${tName}. Player: ${player}, Phone: ${phone}, Category: ${category}`;
+      window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
+      CK.closeModal('tournamentModal');
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  };
+
+  /* ─── Job / Careers Modal & Submit Handler ─── */
+  CK.openJobModal = (jobTitle = 'Coach / Staff Role') => {
+    const titleEl = document.getElementById('jobModalTitle');
+    const hiddenEl = document.getElementById('jobModalHiddenPosition');
+    if (titleEl) titleEl.textContent = `Apply: ${jobTitle}`;
+    if (hiddenEl) hiddenEl.value = jobTitle;
+    CK.openModal('jobApplyModal');
+  };
+
+  CK.handleJobSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('[type="submit"]');
+    const position = form.jobPosition ? form.jobPosition.value : 'Chess Role';
+    const applicant = form.applicantName ? form.applicantName.value.trim() : '';
+    const dial = form.dialCode ? form.dialCode.value : '';
+    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, form.phone.value) : form.phone.value;
+    const fideTitle = form.fideTitle ? form.fideTitle.value.trim() : 'N/A';
+    const experience = form.experience ? form.experience.value : '1-2 Years';
+    const jobMode = form.jobMode ? form.jobMode.value : 'Online Coach';
+    const resumeUrl = form.resumeUrl ? form.resumeUrl.value.trim() : 'Not provided';
+
+    if (!applicant || !phone) {
+      if (CK.showToast) CK.showToast('Please enter your full name and phone number', 'error');
+      return;
+    }
+
+    const origText = btn.textContent;
+    btn.textContent = 'Submitting Application... 💼';
+    btn.disabled = true;
+
+    try {
+      const summaryMsg = `JOB APPLICATION:\nPosition: ${position}\nApplicant Name: ${applicant}\nPhone: ${phone}\nFIDE Title/Rating: ${fideTitle}\nExperience: ${experience}\nPreferred Mode: ${jobMode}\nResume Link: ${resumeUrl}\nSubmitted At: ${new Date().toLocaleString()}`;
+
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('messages').insert({
+            sender_name: applicant,
+            sender_type: 'coach',
+            subject: `Job Application: ${position}`,
+            category: 'Career Application',
+            message: summaryMsg,
+            is_read: false,
+            created_at: new Date().toISOString()
+          });
+        } catch (sErr) {}
+      }
+
+      const msg = `Hello ChessKidoo HR! 💼♟️\n\nI'm applying for the role:\n*Position:* ${position}\n👤 *Name:* ${applicant}\n📞 *Phone:* ${phone}\n⭐ *FIDE Rating/Title:* ${fideTitle}\n⏱️ *Experience:* ${experience}\n📍 *Mode:* ${jobMode}\n🔗 *Resume:* ${resumeUrl}\n\nLooking forward to discussing opportunities!`;
+      const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+
+      if (CK.showToast) CK.showToast('💼 Application submitted! Connecting to HR on WhatsApp...', 'success');
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+        CK.closeModal('jobApplyModal');
+        form.reset();
+      }, 500);
+    } catch (err) {
+      const msg = `Hello ChessKidoo HR! I'd like to apply for ${position}. Name: ${applicant}, Phone: ${phone}, Rating: ${fideTitle}.`;
+      window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
+      CK.closeModal('jobApplyModal');
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  };
+
+  window.openTournamentModal = CK.openTournamentModal;
+  window.openJobModal = CK.openJobModal;
+
   CK.togglePassword = (id) => {
     const input = document.querySelector(`#${id} input[name="password"]`) || document.querySelector(`input[name="${id}"]`);
     if (input) {

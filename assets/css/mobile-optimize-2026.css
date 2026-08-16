@@ -390,3 +390,276 @@ body.modal-open {
   }
 }
 
+/* ─── UPCOMING TOURNAMENTS & ANNOUNCEMENTS SECTION ─── */
+.ck-tournaments-section {
+  background: linear-gradient(180deg, #090e1a 0%, #0f172a 100%);
+  color: #fff;
+  padding: 90px 0;
+}
+.ck-notice-board {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 48px;
+  backdrop-filter: blur(8px);
+}
+.ck-notice-board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+.ck-notice-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.6px;
+}
+.ck-notice-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.ck-notice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.ck-notice-card {
+  display: flex;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  align-items: flex-start;
+}
+.ck-notice-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.ck-notice-detail h5 {
+  font-size: 0.92rem;
+  color: #f8fafc;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.ck-notice-detail p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Tournament Grid */
+.ck-tournament-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+.ck-t-card {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.ck-t-card:hover {
+  transform: translateY(-6px);
+  border-color: #f59e0b;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+.ck-t-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.ck-t-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.fide-badge { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.offline-badge { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.weekly-badge { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.ck-t-status { font-size: 0.75rem; font-weight: 600; color: #10b981; }
+.ck-t-status.free { color: #38bdf8; }
+
+.ck-t-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.ck-t-sub { font-size: 0.8rem; color: #94a3b8; margin-bottom: 18px; }
+
+.ck-t-details {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ck-t-item { display: flex; flex-direction: column; gap: 2px; }
+.ck-t-label { font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+.ck-t-val { font-size: 0.85rem; color: #e2e8f0; font-weight: 600; }
+
+.ck-t-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.ck-t-fee { display: flex; flex-direction: column; }
+.ck-fee-amt { font-size: 1.3rem; font-weight: 800; color: #fbbf24; line-height: 1; }
+.ck-fee-lbl { font-size: 0.7rem; color: #64748b; }
+.ck-t-btn { padding: 10px 18px; font-size: 0.85rem; border-radius: 10px; }
+
+/* ─── CAREERS & JOBS SECTION ─── */
+.ck-careers-section {
+  background: #0f172a;
+  color: #fff;
+  padding: 90px 0;
+}
+.ck-careers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.ck-job-card {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+.ck-job-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+.ck-job-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 12px;
+  width: max-content;
+}
+.ck-job-title { font-size: 1.15rem; font-weight: 800; color: #f8fafc; margin-bottom: 10px; }
+.ck-job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.ck-job-meta span {
+  font-size: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #94a3b8;
+}
+.ck-job-desc { font-size: 0.83rem; color: #cbd5e1; line-height: 1.45; margin-bottom: 20px; flex: 1 1 auto; }
+.ck-job-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ck-job-salary { font-size: 0.8rem; font-weight: 700; color: #34d399; }
+.ck-job-btn { width: 100%; padding: 10px; font-size: 0.85rem; border-radius: 10px; }
+
+/* ─── NRI PRICING BOX & INR BADGE ─── */
+.ck-inr-pricing-tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #059669;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin: 10px 0 14px;
+}
+.ck-nri-pricing-box {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 24px;
+  padding: 32px;
+  margin-top: 40px;
+  color: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+.ck-nri-badge {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 5px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+.ck-nri-content {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ck-nri-info { flex: 1 1 500px; }
+.ck-nri-info h4 { font-size: 1.25rem; font-weight: 800; color: #f8fafc; margin-bottom: 8px; }
+.ck-nri-info p { font-size: 0.88rem; color: #94a3b8; line-height: 1.45; margin-bottom: 18px; }
+.ck-nri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.ck-nri-col {
+  display: flex;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ck-nri-icon { font-size: 1.3rem; flex-shrink: 0; }
+.ck-nri-col strong { display: block; font-size: 0.8rem; color: #f1f5f9; }
+.ck-nri-col p { font-size: 0.73rem; color: #94a3b8; margin: 0; line-height: 1.3; }
+
+.ck-nri-action {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 18px;
+  padding: 24px;
+  text-align: center;
+  flex: 0 0 240px;
+}
+.ck-nri-price-tag { font-size: 1.4rem; font-weight: 800; color: #fbbf24; }
+.ck-nri-price-sub { font-size: 0.75rem; color: #94a3b8; margin-bottom: 16px; }
+.ck-nri-btn { width: 100%; padding: 12px 16px; font-size: 0.85rem; border-radius: 10px; }
+
+@media (max-width: 768px) {
+  .ck-nri-content { flex-direction: column; align-items: stretch; }
+  .ck-nri-action { flex: 1 1 auto; }
+}
+
+

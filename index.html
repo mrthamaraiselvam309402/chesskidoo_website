@@ -166,11 +166,11 @@
 
         <button class="nav-link" data-section="achievements" data-translate="achievements"
           onclick="CK.navigate('achievements')">Achievements</button>
+        <button class="nav-link" data-section="tournaments" onclick="CK.navigate('tournaments')">🏆 Tournaments</button>
         <button class="nav-link" data-section="ck-world" onclick="CK.navigate('ck-world')">Our Reach</button>
-        <button class="nav-link" data-section="why-choose" onclick="CK.navigate('why-choose')">Why Us</button>
-        
         <button class="nav-link" data-section="pricing" data-translate="pricing"
-          onclick="CK.navigate('pricing')">Pricing</button>
+          onclick="CK.navigate('pricing')">Pricing &amp; NRI</button>
+        <button class="nav-link" data-section="careers" onclick="CK.navigate('careers')">💼 Careers</button>
         <button class="nav-link" data-section="faq" data-translate="faq" onclick="CK.navigate('faq')">Faq</button>
         <div class="nav-spacer"></div>
         <a href="/lms/" id="loginNavBtn" class="nav-link btn btn-ghost nav-login" data-translate="login"
@@ -1007,6 +1007,164 @@
         </div>
       </section>
 
+      <!-- Upcoming Tournaments & Announcements Section -->
+      <section id="tournaments" class="section-padding ck-tournaments-section">
+        <div class="container">
+          <div class="section-head" data-aos="fade-up" style="text-align: center;">
+            <div class="eyebrow">🏆 Live Competitions &amp; Events</div>
+            <h2>Upcoming Tournaments &amp; Announcements</h2>
+            <p class="lead" style="max-width: 680px; margin: 0 auto;">
+              Compete in official FIDE-rated championships, weekly internal blitz arenas, and stay updated with academy notices.
+            </p>
+          </div>
+
+          <!-- Official Announcements Banner -->
+          <div class="ck-notice-board" data-aos="fade-up">
+            <div class="ck-notice-board-header">
+              <span class="ck-notice-badge">📢 OFFICIAL ANNOUNCEMENTS &amp; NOTICES</span>
+              <span class="ck-notice-date">Updated Today</span>
+            </div>
+            <div class="ck-notice-grid">
+              <div class="ck-notice-card">
+                <span class="ck-notice-icon">🏆</span>
+                <div class="ck-notice-detail">
+                  <h5>ChessKidoo All-India Junior Rapid GP 2026 Registration Open</h5>
+                  <p>Open for all students aged 6–18. Cash prizes worth ₹25,000 + FIDE-certified trophies for top performers.</p>
+                </div>
+              </div>
+              <div class="ck-notice-card">
+                <span class="ck-notice-icon">🌍</span>
+                <div class="ck-notice-detail">
+                  <h5>NRI &amp; International Timezone Batches Expanded</h5>
+                  <p>New evening slots added for USA (EST/PST), UK (GMT), UAE (GST), and Singapore (SGT) students.</p>
+                </div>
+              </div>
+              <div class="ck-notice-card">
+                <span class="ck-notice-icon">🎓</span>
+                <div class="ck-notice-detail">
+                  <h5>Special GM Endgames Masterclass on August 28</h5>
+                  <p>Exclusive interactive session with FIDE Masters on tactical endgame patterns for Intermediate &amp; Advanced students.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Tournaments Grid -->
+          <div class="ck-tournament-grid">
+            <!-- Tournament Card 1 -->
+            <div class="ck-t-card" data-aos="fade-up">
+              <div class="ck-t-header">
+                <span class="ck-t-badge fide-badge">⭐ FIDE Rated Standard</span>
+                <span class="ck-t-status open">Registration Open</span>
+              </div>
+              <h3 class="ck-t-title">ChessKidoo All-India Junior Rapid GP 2026</h3>
+              <p class="ck-t-sub">5 Rounds Swiss System · Official Certificate &amp; Cash Prizes</p>
+
+              <div class="ck-t-details">
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📅 Date &amp; Time</span>
+                  <span class="ck-t-val">Sunday, Aug 30, 2026 · 10:00 AM IST</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📍 Venue / Mode</span>
+                  <span class="ck-t-val">💻 Online (ChessKidoo Arena &amp; Lichess)</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">🏆 Prize Pool</span>
+                  <span class="ck-t-val">₹25,000 Cash + Top 10 Trophies</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">👥 Categories</span>
+                  <span class="ck-t-val">Under-9, Under-13, Open Junior</span>
+                </div>
+              </div>
+
+              <div class="ck-t-footer">
+                <div class="ck-t-fee">
+                  <span class="ck-fee-amt">₹350</span>
+                  <span class="ck-fee-lbl">Entry Fee</span>
+                </div>
+                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('ChessKidoo All-India Junior Rapid GP 2026')">🏆 Register Now</button>
+              </div>
+            </div>
+
+            <!-- Tournament Card 2 -->
+            <div class="ck-t-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="ck-t-header">
+                <span class="ck-t-badge offline-badge">🏫 Offline Centre · Erode</span>
+                <span class="ck-t-status open">Seats Filling Fast</span>
+              </div>
+              <h3 class="ck-t-title">Tamil Nadu State Level Children's Championship</h3>
+              <p class="ck-t-sub">Co-hosted with Erode District Chess Association</p>
+
+              <div class="ck-t-details">
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📅 Date &amp; Time</span>
+                  <span class="ck-t-val">Sept 12–14, 2026 · 09:00 AM IST</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📍 Venue / Mode</span>
+                  <span class="ck-t-val">🏫 ChessKidoo Centre, K K Nagar, Erode</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">🏆 Prize Pool</span>
+                  <span class="ck-t-val">30 Trophies + State Rank Certificates</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">👥 Categories</span>
+                  <span class="ck-t-val">U-8, U-11, U-14, U-18 (Boys &amp; Girls)</span>
+                </div>
+              </div>
+
+              <div class="ck-t-footer">
+                <div class="ck-t-fee">
+                  <span class="ck-fee-amt">₹400</span>
+                  <span class="ck-fee-lbl">Entry Fee</span>
+                </div>
+                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('Tamil Nadu State Level Children Championship')">🏆 Register Now</button>
+              </div>
+            </div>
+
+            <!-- Tournament Card 3 -->
+            <div class="ck-t-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="ck-t-header">
+                <span class="ck-t-badge weekly-badge">⚡ Weekly Arena</span>
+                <span class="ck-t-status free">Free for Students</span>
+              </div>
+              <h3 class="ck-t-title">ChessKidoo Sunday Blitz Arena #48</h3>
+              <p class="ck-t-sub">Fast-paced 3+0 Blitz Arena for sharpening tactical intuition</p>
+
+              <div class="ck-t-details">
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📅 Date &amp; Time</span>
+                  <span class="ck-t-val">Every Sunday · 06:00 PM IST</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">📍 Venue / Mode</span>
+                  <span class="ck-t-val">💻 Online Student Arena Portal</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">🏆 Rewards</span>
+                  <span class="ck-t-val">Leaderboard Rating Points &amp; Badges</span>
+                </div>
+                <div class="ck-t-item">
+                  <span class="ck-t-label">👥 Eligibility</span>
+                  <span class="ck-t-val">All Enrolled ChessKidoo Students</span>
+                </div>
+              </div>
+
+              <div class="ck-t-footer">
+                <div class="ck-t-fee">
+                  <span class="ck-fee-amt">FREE</span>
+                  <span class="ck-fee-lbl">Student Access</span>
+                </div>
+                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('Sunday Blitz Arena #48')">⚡ Join Arena</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Global Certifications / About -->
       <section id="about" class="section-padding" style="background: #fdfcf9; border-top: 1px solid #eee;">
         <div class="section-head" data-aos="fade-up">
@@ -1217,6 +1375,93 @@
         </div>
       </section>
 
+      <!-- Careers / Open Vacancies Section -->
+      <section id="careers" class="section-padding ck-careers-section">
+        <div class="container">
+          <div class="section-head" data-aos="fade-up" style="text-align: center;">
+            <div class="eyebrow">💼 Join Our Team</div>
+            <h2>Careers &amp; Open Vacancies</h2>
+            <p class="lead" style="max-width: 680px; margin: 0 auto;">
+              Passionate about teaching chess and shaping future champions? Explore open roles and build your career with India's premier chess academy.
+            </p>
+          </div>
+
+          <div class="ck-careers-grid">
+            <!-- Job Card 1 -->
+            <div class="ck-job-card" data-aos="fade-up">
+              <div class="ck-job-badge">♟️ Teaching &amp; Coaching</div>
+              <h3 class="ck-job-title">Senior FIDE Certified Chess Coach</h3>
+              <div class="ck-job-meta">
+                <span>📍 Online (Remote) / Offline Centre</span>
+                <span>⏱️ Full-Time &amp; Part-Time</span>
+                <span>⭐ FIDE Rated 1800+</span>
+              </div>
+              <p class="ck-job-desc">
+                Conduct high-impact 1-on-1 and small group coaching for Intermediate and Advanced students. Analyze games, prepare tournament opening rep, and mentor students for rated competitions.
+              </p>
+              <div class="ck-job-footer">
+                <span class="ck-job-salary">Attractive Pay + Incentives</span>
+                <button type="button" class="btn btn-primary ck-job-btn" onclick="CK.openJobModal('Senior FIDE Certified Chess Coach')">💼 Apply Position</button>
+              </div>
+            </div>
+
+            <!-- Job Card 2 -->
+            <div class="ck-job-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="ck-job-badge">🌱 Beginner Instructor</div>
+              <h3 class="ck-job-title">Junior Chess Trainer</h3>
+              <div class="ck-job-meta">
+                <span>📍 Erode &amp; Bhavani / Remote</span>
+                <span>⏱️ Full-Time</span>
+                <span>⭐ State / District Player</span>
+              </div>
+              <p class="ck-job-desc">
+                Engage young kids (ages 6–12) with foundational chess rules, tactics, and piece coordination. Create fun, interactive learning environments and track weekly student puzzle scores.
+              </p>
+              <div class="ck-job-footer">
+                <span class="ck-job-salary">Competitive Stipend / Fixed</span>
+                <button type="button" class="btn btn-primary ck-job-btn" onclick="CK.openJobModal('Junior Chess Trainer')">💼 Apply Position</button>
+              </div>
+            </div>
+
+            <!-- Job Card 3 -->
+            <div class="ck-job-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="ck-job-badge">🏆 Events &amp; Arbiter</div>
+              <h3 class="ck-job-title">Tournament Arbiter &amp; Coordinator</h3>
+              <div class="ck-job-meta">
+                <span>📍 Hybrid (Tamil Nadu &amp; Online)</span>
+                <span>⏱️ Event-Based / Part-Time</span>
+                <span>⭐ SNA / FA License</span>
+              </div>
+              <p class="ck-job-desc">
+                Manage pairing software (Swiss-Manager / Arena), enforce fair-play regulations, assist chief arbiters during weekend championships, and generate official result lists.
+              </p>
+              <div class="ck-job-footer">
+                <span class="ck-job-salary">Per-Event Honorarium</span>
+                <button type="button" class="btn btn-primary ck-job-btn" onclick="CK.openJobModal('Tournament Arbiter & Coordinator')">💼 Apply Position</button>
+              </div>
+            </div>
+
+            <!-- Job Card 4 -->
+            <div class="ck-job-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="ck-job-badge">📞 Operations &amp; Support</div>
+              <h3 class="ck-job-title">Student Success &amp; Lead Executive</h3>
+              <div class="ck-job-meta">
+                <span>📍 Remote / Erode HQ</span>
+                <span>⏱️ Full-Time</span>
+                <span>⭐ English &amp; Tamil/Hindi</span>
+              </div>
+              <p class="ck-job-desc">
+                Guide interested parents through demo class bookings, manage student schedules, answer WhatsApp queries, and assist in onboarding international students across timezones.
+              </p>
+              <div class="ck-job-footer">
+                <span class="ck-job-salary">Fixed Pay + Performance Bonus</span>
+                <button type="button" class="btn btn-primary ck-job-btn" onclick="CK.openJobModal('Student Success Executive')">💼 Apply Position</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Pricing -->
 
       <style>
@@ -1384,6 +1629,7 @@
         <div class="section-head" data-aos="fade-up">
           <div class="eyebrow">Transparent Pricing</div>
           <h2>Course &amp; Fee Structure</h2>
+          <div class="ck-inr-pricing-tag">🇮🇳 Resident Indian Student Fee Structure (INR)</div>
           <p class="lead">Choose the perfect path for your child's chess journey. No hidden fees — every level starts
             with a free demo class.</p>
         </div>
@@ -1499,8 +1745,49 @@
         </div>
 
         <p class="price-footnote" data-aos="fade-up">
-          <span aria-hidden="true">★</span> Fees may vary slightly based on batch timing and specific requirements.
+          <span aria-hidden="true">★</span> Fees may vary slightly based on batch timing, class format, and specific requirements.
         </p>
+
+        <!-- NRI & International Students Fee Box -->
+        <div class="ck-nri-pricing-box" data-aos="fade-up">
+          <div class="ck-nri-badge">🌍 NRI &amp; ABROAD STUDENTS FEE STRUCTURE</div>
+          <div class="ck-nri-content">
+            <div class="ck-nri-info">
+              <h4>📌 Important Clarification for International Parents</h4>
+              <p>The standard fee table above applies to resident students in India. For <strong>NRI &amp; International Students</strong> residing in the USA, UK, Europe, UAE, Singapore, Australia, etc., fees are customized based on local timezone alignment and 1-on-1 scheduling.</p>
+              
+              <div class="ck-nri-grid">
+                <div class="ck-nri-col">
+                  <span class="ck-nri-icon">🌐</span>
+                  <div>
+                    <strong>Timezone Matching:</strong>
+                    <p>Dedicated slots for EST, PST, GMT, CET, GST (Dubai), SGT, and AEST.</p>
+                  </div>
+                </div>
+                <div class="ck-nri-col">
+                  <span class="ck-nri-icon">💳</span>
+                  <div>
+                    <strong>International Payments:</strong>
+                    <p>Pay easily in USD ($), EUR (€), GBP (£), AED, or SGD via Razorpay / Stripe.</p>
+                  </div>
+                </div>
+                <div class="ck-nri-col">
+                  <span class="ck-nri-icon">♟️</span>
+                  <div>
+                    <strong>Rating Preparation:</strong>
+                    <p>Curriculum tailored for USCF, FIDE, ECF, and FCF national tournaments.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="ck-nri-action">
+              <div class="ck-nri-price-tag">Custom Quote</div>
+              <div class="ck-nri-price-sub">Based on Timezone &amp; Format</div>
+              <button type="button" class="btn btn-primary ck-nri-btn" onclick="CK.openDemoModal()">🌍 Inquire NRI Fee &amp; Slot</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- FAQ Section -->
@@ -3083,6 +3370,119 @@
         <div class="ck-demo-actions">
           <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal()">Cancel</button>
           <button type="submit" class="btn btn-primary ck-btn-submit">📱 Book Free Demo &amp; WhatsApp Us</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tournament Registration Modal -->
+  <div id="tournamentModal" class="modal-overlay">
+    <div class="modal-card ck-demo-modal-card">
+      <div class="modal-header ck-demo-modal-header">
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal('tournamentModal')" aria-label="Close">✕</button>
+        <div class="ck-demo-header-badge">🏆 Tournament Registration</div>
+        <h3 class="ck-demo-title" id="tModalTitle">Register for Tournament</h3>
+        <p class="ck-demo-subtitle">Fill in details to confirm your slot &amp; receive tournament schedule &amp; pairings link via WhatsApp.</p>
+      </div>
+      <form class="modal-body ck-demo-modal-body" onsubmit="CK.handleTournamentSubmit(event)">
+        <input type="hidden" name="tournamentName" id="tModalHiddenName" value="">
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Player / Student Full Name *</label>
+          <input type="text" name="playerName" required placeholder="e.g. Mukilan S" class="ck-form-input">
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Parent / Contact WhatsApp Number *</label>
+          <div class="ck-phone-row">
+            <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
+            <input type="tel" name="phone" required placeholder="90258 46663" class="ck-form-input ck-phone-input">
+          </div>
+        </div>
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Player Age *</label>
+            <input type="number" name="age" required min="4" max="25" placeholder="e.g. 10" class="ck-form-input">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">FIDE ID / Rating (if any)</label>
+            <input type="text" name="fideRating" placeholder="e.g. Unrated / 1250" class="ck-form-input">
+          </div>
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Category</label>
+          <select name="category" class="ck-form-select">
+            <option value="Under-9">Under-9 (Boys &amp; Girls)</option>
+            <option value="Under-13">Under-13 (Boys &amp; Girls)</option>
+            <option value="Open Junior">Open Junior (Under-18)</option>
+          </select>
+        </div>
+        <div class="ck-demo-notice">
+          <span class="ck-notice-icon">💬</span>
+          <span class="ck-notice-text">Instant WhatsApp Confirmation &amp; Tournament Entry Pass sent directly to your number.</span>
+        </div>
+        <div class="ck-demo-actions">
+          <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal('tournamentModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary ck-btn-submit">🏆 Submit &amp; WhatsApp Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Careers / Job Application Modal -->
+  <div id="jobApplyModal" class="modal-overlay">
+    <div class="modal-card ck-demo-modal-card">
+      <div class="modal-header ck-demo-modal-header">
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal('jobApplyModal')" aria-label="Close">✕</button>
+        <div class="ck-demo-header-badge">💼 Career Application</div>
+        <h3 class="ck-demo-title" id="jobModalTitle">Apply for Job Position</h3>
+        <p class="ck-demo-subtitle">Join Team ChessKidoo. Share your experience and start your coaching journey with us.</p>
+      </div>
+      <form class="modal-body ck-demo-modal-body" onsubmit="CK.handleJobSubmit(event)">
+        <input type="hidden" name="jobPosition" id="jobModalHiddenPosition" value="">
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Your Full Name *</label>
+          <input type="text" name="applicantName" required placeholder="e.g. Coach Saran" class="ck-form-input">
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">WhatsApp Number *</label>
+          <div class="ck-phone-row">
+            <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
+            <input type="tel" name="phone" required placeholder="98765 43210" class="ck-form-input ck-phone-input">
+          </div>
+        </div>
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">FIDE Rating / Title</label>
+            <input type="text" name="fideTitle" placeholder="e.g. 1820 FIDE / FI / Unrated" class="ck-form-input">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Teaching Experience</label>
+            <select name="experience" class="ck-form-select">
+              <option value="1-2 Years">1 - 2 Years</option>
+              <option value="3-5 Years">3 - 5 Years</option>
+              <option value="5+ Years">5+ Years</option>
+              <option value="Fresher / Active Player">Fresher / Active Player</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Location / Preferred Mode</label>
+          <select name="jobMode" class="ck-form-select">
+            <option value="Online Coach (Remote)">Online Coach (Remote)</option>
+            <option value="Offline Centre (Tamil Nadu)">Offline Centre (Erode / Bhavani)</option>
+            <option value="Both Online &amp; Offline">Both Online &amp; Offline</option>
+          </select>
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">CV / LinkedIn / Portfolio Link (Optional)</label>
+          <input type="url" name="resumeUrl" placeholder="https://linkedin.com/in/yourprofile" class="ck-form-input">
+        </div>
+        <div class="ck-demo-notice">
+          <span class="ck-notice-icon">💬</span>
+          <span class="ck-notice-text">Direct HR Connect — Your application is saved to our portal &amp; opens WhatsApp HR desk.</span>
+        </div>
+        <div class="ck-demo-actions">
+          <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal('jobApplyModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary ck-btn-submit">💼 Submit Application</button>
         </div>
       </form>
     </div>
