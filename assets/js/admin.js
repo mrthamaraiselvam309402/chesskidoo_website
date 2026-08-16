@@ -561,6 +561,7 @@ CK.admin = {
       if (status === 'Paid') {
         actionBtns = `
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:#ef4444;" data-sid="${sid}" onclick="CK.admin.toggleStudentPause(this.dataset.sid, true)">⏸️ Pause Access</button>
+          <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.openMarkAsPaidModal(this.dataset.sid)">💳 Record Fee</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" data-sname="${_e(s.full_name || 'Student')}" onclick="CK.admin.informStudent(this.dataset.sid,this.dataset.sname)">📢 Inform</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.viewStudentInfo(this.dataset.sid)">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.editStudent(this.dataset.sid)">Edit</button>
@@ -568,13 +569,14 @@ CK.admin = {
         `;
       } else if (status === 'Waiting List') {
         actionBtns = `
+          <button class="p-btn p-btn-teal p-btn-sm" data-sid="${sid}" onclick="CK.admin.openMarkAsPaidModal(this.dataset.sid)">✅ Enroll &amp; Mark Paid</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.viewStudentInfo(this.dataset.sid)">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.editStudent(this.dataset.sid)">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" data-sid="${sid}" onclick="CK.admin.deleteStudent(this.dataset.sid)">Delete</button>
         `;
       } else {
         actionBtns = `
-          <button class="p-btn p-btn-teal p-btn-sm" data-sid="${sid}" onclick="CK.admin.toggleStudentPause(this.dataset.sid, false)">▶️ Resume &amp; Mark Paid</button>
+          <button class="p-btn p-btn-teal p-btn-sm" data-sid="${sid}" onclick="CK.admin.openMarkAsPaidModal(this.dataset.sid)">▶️ Record Fee &amp; Auto-Resume</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.viewStudentInfo(this.dataset.sid)">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.editStudent(this.dataset.sid)">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" data-sid="${sid}" onclick="CK.admin.deleteStudent(this.dataset.sid)">Delete</button>
@@ -624,15 +626,92 @@ CK.admin = {
       s.due_date = '⚠️ Access Paused (Fee Due)';
       await CK.db.saveProfile(s);
       await this.loadStudents();
-      CK.showToast(`⏸️ Access paused for ${s.full_name || 'student'} due to unpaid fees.`, 'warning');
+      CK.showToast(`⏸️ Access manually paused for ${s.full_name || 'student'}.`, 'warning');
     } else {
-      s.status = 'Paid';
-      s.access_status = 'active';
-      s.due_date = this._nextDueDate();
-      await CK.db.saveProfile(s);
-      await this.loadStudents();
-      CK.showToast(`▶️ Access automatically resumed & fees marked Paid for ${s.full_name || 'student'}!`, 'success');
+      await this.openMarkAsPaidModal(id);
     }
+  },
+
+  async openMarkAsPaidModal(id) {
+    const s = await CK.db.getProfile(id);
+    if (!s) return;
+    const form = document.getElementById('markAsPaidForm');
+    if (!form) return;
+
+    document.getElementById('mapStudentId').value = s.id;
+    document.getElementById('mapStudentName').textContent = s.full_name || 'Student';
+    document.getElementById('mapStudentSub').textContent = `${s.level || 'Beginner'} Level · Coach: ${s.coach || 'Unassigned'}`;
+    
+    const statusBadgeEl = document.getElementById('mapStudentStatusBadge');
+    if (statusBadgeEl) {
+      const st = s.status || 'Pending';
+      const badgeClass = st === 'Paid' ? 'p-badge-green' : (st.includes('Paused') || st === 'Due' ? 'p-badge-red' : 'p-badge-yellow');
+      statusBadgeEl.innerHTML = `<span class="p-badge ${badgeClass}">${_e(st)}</span>`;
+    }
+
+    document.getElementById('mapTuitionFee').value = s.fee || 1800;
+    document.getElementById('mapExtraAmount').value = 0;
+    document.getElementById('mapDiscountAmount').value = 0;
+    document.getElementById('mapExtraType').value = 'none';
+    document.getElementById('mapPaymentMethod').value = 'UPI / GPay / PhonePe';
+    document.getElementById('mapBillingPeriod').value = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('mapTxnNote').value = '';
+
+    CK.openModal('markAsPaidModal');
+  },
+
+  async submitMarkAsPaid(e) {
+    e.preventDefault();
+    const form = e.target;
+    const studentId = form.studentId.value;
+    const s = await CK.db.getProfile(studentId);
+    if (!s) return;
+
+    const tuition = parseFloat(form.tuitionFee.value) || 0;
+    const extraType = form.extraType.value;
+    const extraAmt = parseFloat(form.extraAmount.value) || 0;
+    const discount = parseFloat(form.discountAmount.value) || 0;
+    const method = form.paymentMethod.value;
+    const period = form.billingPeriod.value || 'Current Month';
+    const note = form.txnNote.value.trim();
+
+    const netAmount = Math.max(0, (tuition + extraAmt) - discount);
+
+    // Save transaction record to local history & audit log
+    const payments = JSON.parse(localStorage.getItem('ck_payments_history') || '[]');
+    const newTxn = {
+      id: 'pay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      student_id: s.id,
+      student_name: s.full_name,
+      amount: netAmount,
+      tuition_fee: tuition,
+      extra_type: extraType !== 'none' ? extraType : null,
+      extra_amount: extraAmt,
+      discount_amount: discount,
+      payment_method: method,
+      period: period,
+      note: note,
+      status: 'paid',
+      created_at: new Date().toISOString()
+    };
+    payments.unshift(newTxn);
+    localStorage.setItem('ck_payments_history', JSON.stringify(payments));
+
+    // Update student status & automatically restore access
+    s.status = 'Paid';
+    s.access_status = 'active';
+    s.fee = tuition;
+    s.due_date = this._nextDueDate();
+    s.last_payment_date = new Date().toISOString().slice(0, 10);
+    s.last_payment_method = method;
+    s.last_payment_amount = netAmount;
+
+    await CK.db.saveProfile(s);
+    CK.closeModal('markAsPaidModal');
+    await this.loadStudents();
+    this.updateStats();
+
+    CK.showToast(`✅ Recorded fee ₹${netAmount.toLocaleString('en-IN')} via ${method}. Access automatically resumed for ${s.full_name}!`, 'success');
   },
 
   async toggleFeeStatus(id, newStatus) {

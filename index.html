@@ -3592,6 +3592,93 @@
             </select>
           </div>
         </div>
+
+  <!-- Advanced Mark as Paid & Record Fee Modal -->
+  <div id="markAsPaidModal" class="modal-overlay">
+    <div class="modal-card ck-demo-modal-card" style="max-width:560px;">
+      <div class="modal-header ck-demo-modal-header">
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal('markAsPaidModal')" aria-label="Close">✕</button>
+        <div class="ck-demo-header-badge">💳 Fee Collection Desk</div>
+        <h3 class="ck-demo-title" id="mapModalTitle">Mark Student Fee as Paid</h3>
+        <p class="ck-demo-subtitle">Record tuition fee, extra items, discounts &amp; automatically restore access.</p>
+      </div>
+      <form class="modal-body ck-demo-modal-body" id="markAsPaidForm" onsubmit="CK.admin.submitMarkAsPaid(event)">
+        <input type="hidden" id="mapStudentId" name="studentId" value="">
+        
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;color:#fff;" id="mapStudentName">—</div>
+            <div style="font-size:0.8rem;color:var(--p-text-muted);" id="mapStudentSub">—</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem;color:var(--p-text-muted);">Current Status</div>
+            <div id="mapStudentStatusBadge"><span class="p-badge p-badge-yellow">Pending</span></div>
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Monthly Tuition Fee (₹) *</label>
+            <input type="number" id="mapTuitionFee" name="tuitionFee" required class="ck-form-input" placeholder="1800">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Payment Method *</label>
+            <select id="mapPaymentMethod" name="paymentMethod" class="ck-form-select">
+              <option value="UPI / GPay / PhonePe">📱 UPI / GPay / PhonePe</option>
+              <option value="Bank Transfer (NEFT/IMPS)">🏦 Bank Transfer (NEFT/IMPS)</option>
+              <option value="Cash Payment">💵 Cash Payment</option>
+              <option value="Razorpay Online">💳 Razorpay / Card</option>
+              <option value="Manual Override">⚡ Manual Admin Override</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Extra Fee Item (Optional)</label>
+            <select id="mapExtraType" name="extraType" class="ck-form-select">
+              <option value="none">None</option>
+              <option value="Admission Fee">One-Time Admission Fee</option>
+              <option value="Tournament Entry Fee">Tournament Entry Fee</option>
+              <option value="Chess Workbooks &amp; Materials">Chess Workbooks &amp; Materials</option>
+              <option value="1-on-1 Special Coaching">1-on-1 Special Coaching</option>
+            </select>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Extra Amount (₹)</label>
+            <input type="number" id="mapExtraAmount" name="extraAmount" class="ck-form-input" placeholder="0" value="0">
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Discount / Scholarship (₹)</label>
+            <input type="number" id="mapDiscountAmount" name="discountAmount" class="ck-form-input" placeholder="0" value="0">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Billing Month / Period</label>
+            <input type="text" id="mapBillingPeriod" name="billingPeriod" class="ck-form-input" placeholder="Current Cycle">
+          </div>
+        </div>
+
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Transaction / Reference Note (Optional)</label>
+          <input type="text" id="mapTxnNote" name="txnNote" class="ck-form-input" placeholder="e.g. UPI Ref #987654321 or Receipt #1042">
+        </div>
+
+        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:12px;margin-bottom:14px;font-size:0.85rem;color:#4ade80;display:flex;align-items:center;gap:8px;">
+          <span>▶️</span>
+          <span>Recording payment will <strong>automatically resume student portal access</strong> if previously paused.</span>
+        </div>
+
+        <div class="modal-footer ck-demo-actions" style="position:sticky;bottom:-20px;padding-top:12px;background:#162036;">
+          <button type="button" class="p-btn p-btn-ghost" onclick="CK.closeModal('markAsPaidModal')">Cancel</button>
+          <button type="submit" class="p-btn p-btn-teal" style="flex:1;">✅ Record Fee &amp; Auto-Resume Access</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
         <div class="form-group ck-form-group">
           <label class="ck-form-label">Location / Preferred Mode</label>
           <select name="jobMode" class="ck-form-select">
