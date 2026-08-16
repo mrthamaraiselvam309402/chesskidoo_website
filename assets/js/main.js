@@ -608,8 +608,10 @@
     const form = e.target;
     const btn = form.querySelector('[type="submit"]');
     const name = form.fullName ? form.fullName.value.trim() : '';
-    const dial = form.dialCode ? form.dialCode.value : '';
-    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, form.phone.value) : form.phone.value;
+    const dial = form.dialCode ? form.dialCode.value : '+91';
+    const rawPhone = form.phone ? form.phone.value : '';
+    const cleanDigits = rawPhone.replace(/\D/g, '');
+    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, cleanDigits) : `${dial} ${cleanDigits}`;
     const age = form.age ? form.age.value : '';
     const country = form.country ? form.country.value : '';
     const cityRaw = form.city ? form.city.value.trim() : '';
@@ -621,8 +623,8 @@
     const slotEl = form.querySelector('input[name="slot"]:checked');
     const slot = slotEl ? slotEl.value : 'Evening (5 PM - 8 PM)';
 
-    if (!name || !phone) {
-      if (CK.showToast) CK.showToast('Please fill in your name and phone number', 'error');
+    if (!name || !cleanDigits) {
+      if (CK.showToast) CK.showToast('Please enter a valid parent name and phone number', 'error');
       return;
     }
 
