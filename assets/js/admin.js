@@ -553,18 +553,18 @@ CK.admin = {
 
       let statusBadge = 'p-badge-green';
       if (status === 'Pending') statusBadge = 'p-badge-yellow';
-      if (status === 'Due' || status.includes('⚠️')) statusBadge = 'p-badge-red';
+      if (status === 'Due' || status.includes('Paused') || status.includes('⚠️')) statusBadge = 'p-badge-red';
       if (status === 'Waiting List') statusBadge = 'p-badge-blue';
 
       let actionBtns = '';
       const sid = _e(String(s.id));
       if (status === 'Paid') {
         actionBtns = `
+          <button class="p-btn p-btn-ghost p-btn-sm" style="color:#ef4444;" data-sid="${sid}" onclick="CK.admin.toggleStudentPause(this.dataset.sid, true)">⏸️ Pause Access</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" data-sname="${_e(s.full_name || 'Student')}" onclick="CK.admin.informStudent(this.dataset.sid,this.dataset.sname)">📢 Inform</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.viewStudentInfo(this.dataset.sid)">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.editStudent(this.dataset.sid)">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" data-sid="${sid}" onclick="CK.admin.deleteStudent(this.dataset.sid)">Delete</button>
-          <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.toggleFeeStatus(this.dataset.sid,'Pending')">🔁 Mark Unpaid</button>
         `;
       } else if (status === 'Waiting List') {
         actionBtns = `
@@ -574,7 +574,7 @@ CK.admin = {
         `;
       } else {
         actionBtns = `
-          <button class="p-btn p-btn-teal p-btn-sm" data-sid="${sid}" onclick="CK.admin.toggleFeeStatus(this.dataset.sid,'Paid')">✅ Mark as Paid</button>
+          <button class="p-btn p-btn-teal p-btn-sm" data-sid="${sid}" onclick="CK.admin.toggleStudentPause(this.dataset.sid, false)">▶️ Resume &amp; Mark Paid</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.viewStudentInfo(this.dataset.sid)">View</button>
           <button class="p-btn p-btn-ghost p-btn-sm" data-sid="${sid}" onclick="CK.admin.editStudent(this.dataset.sid)">Edit</button>
           <button class="p-btn p-btn-ghost p-btn-sm" style="color:var(--p-danger)" data-sid="${sid}" onclick="CK.admin.deleteStudent(this.dataset.sid)">Delete</button>
@@ -587,7 +587,7 @@ CK.admin = {
           <td style="color:var(--p-text-muted)">${i + 1}</td>
           <td style="font-weight:600; color:#fff;">
             <div>${_e(s.full_name)}</div>
-            <div style="font-size:0.75rem; color:var(--p-text-muted);">${status === 'Waiting List' ? 'Waiting List' : 'Enrolled & Attending'}</div>
+            <div style="font-size:0.75rem; color:var(--p-text-muted);">${status === 'Waiting List' ? 'Waiting List' : (status.includes('Paused') ? '⏸️ Access Paused' : 'Enrolled & Attending')}</div>
           </td>
           <td>${levelStr}</td>
           <td>${_e(coach)}</td>
@@ -615,10 +615,31 @@ CK.admin = {
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
   },
 
+  async toggleStudentPause(id, pause) {
+    const s = await CK.db.getProfile(id);
+    if (!s) return;
+    if (pause) {
+      s.status = 'Paused (Unpaid)';
+      s.access_status = 'paused';
+      s.due_date = '⚠️ Access Paused (Fee Due)';
+      await CK.db.saveProfile(s);
+      await this.loadStudents();
+      CK.showToast(`⏸️ Access paused for ${s.full_name || 'student'} due to unpaid fees.`, 'warning');
+    } else {
+      s.status = 'Paid';
+      s.access_status = 'active';
+      s.due_date = this._nextDueDate();
+      await CK.db.saveProfile(s);
+      await this.loadStudents();
+      CK.showToast(`▶️ Access automatically resumed & fees marked Paid for ${s.full_name || 'student'}!`, 'success');
+    }
+  },
+
   async toggleFeeStatus(id, newStatus) {
     const s = await CK.db.getProfile(id);
     if (!s) return;
     s.status = newStatus;
+    s.access_status = newStatus === 'Paid' ? 'active' : 'paused';
     s.due_date = newStatus === 'Paid'
       ? this._nextDueDate()
       : '⚠️ Overdue as of ' + new Date().toLocaleDateString('en-GB');

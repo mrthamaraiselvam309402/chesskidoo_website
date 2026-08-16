@@ -87,7 +87,9 @@ CK.student = {
       } catch(e) {}
     }
 
-    // 2. Load UI elements
+    // 2. Check if student account access is paused due to unpaid fee
+    if (this._checkAccountPaused()) return;
+
     this.updateProfile();
     this.updateStreak(this.userProfile.id);
     this.renderDashboard();
@@ -103,12 +105,53 @@ CK.student = {
     this.renderFeesGateway();
     this.renderReportCard();
     this.initCharts();
-    // Level hub and gating removed based on user request
 
     // Auto-sync Lichess data if linked (runs in background)
     this._autoSyncLichess();
     this.startCountdown();
     this.startAutoRefresh();
+  },
+
+  _checkAccountPaused() {
+    const p = this.userProfile || (CK.currentUser || {});
+    const status = (p.status || '').toLowerCase();
+    const access = (p.access_status || '').toLowerCase();
+    const isPaused = status.includes('paused') || access === 'paused';
+
+    const overlayId = 'studentAccountPausedOverlay';
+    let overlay = document.getElementById(overlayId);
+
+    if (isPaused) {
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = overlayId;
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,15,30,0.95);backdrop-filter:blur(12px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+        overlay.innerHTML = `
+          <div style="background:#162036;border:2px solid #ef4444;border-radius:18px;max-width:520px;width:100%;padding:32px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.6);color:#fff;">
+            <div style="font-size:3.8rem;margin-bottom:12px;animation:pulse 2s infinite;">⏸️</div>
+            <h2 style="font-size:1.8rem;color:#f87171;margin-bottom:10px;font-weight:800;">Student Access Temporarily Paused</h2>
+            <p style="color:#cbd5e1;font-size:0.95rem;line-height:1.6;margin-bottom:24px;">
+              Hello <strong style="color:#fff;">${_e(p.full_name || 'Student')}</strong>! Your learning portal access has been temporarily paused by the academy admin due to pending monthly fees (₹${_e(String(p.fee || 1800))}). Access will <strong>automatically resume</strong> once fees are cleared.
+            </p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <a href="https://wa.me/919025846663?text=${encodeURIComponent('Hello Admin, I have paid the fee for student ' + (p.full_name || '') + '. Please resume my access.')}" target="_blank" style="background:#22c55e;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.95rem;box-shadow:0 4px 14px rgba(34,197,94,0.3);">
+                💬 Send Payment Screenshot via WhatsApp
+              </a>
+              <button onclick="location.reload()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;font-size:0.9rem;">
+                🔄 Refresh Access Status
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      } else {
+        overlay.style.display = 'flex';
+      }
+      return true;
+    } else if (overlay) {
+      overlay.style.display = 'none';
+    }
+    return false;
   },
 
   /*  Auto Refresh  */
