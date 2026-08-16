@@ -114,6 +114,44 @@
         throw new Error('Incorrect email or password. Please try again.');
       }
 
+      // Check if student access is paused due to unpaid fees
+      const status = (profile.status || '').toLowerCase();
+      const access = (profile.access_status || '').toLowerCase();
+      if ((profile.role || '').toLowerCase() === 'student' && (status.includes('paused') || access === 'paused')) {
+        const adminPhone = '+91 90258 46663';
+        const waMsg = encodeURIComponent(`Hello Admin, my access is paused for ${profile.full_name || 'student'}. I want to pay fees / send payment receipt to resume my access.`);
+        
+        let pauseModal = document.getElementById('loginPausedModal');
+        if (!pauseModal) {
+          pauseModal = document.createElement('div');
+          pauseModal.id = 'loginPausedModal';
+          pauseModal.className = 'modal-overlay';
+          pauseModal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,15,30,0.95);backdrop-filter:blur(12px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+          pauseModal.innerHTML = `
+            <div class="modal-card" style="max-width:480px;text-align:center;padding:28px;background:#162036;border:2px solid #ef4444;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,0.6);color:#fff;">
+              <div style="font-size:3.5rem;margin-bottom:12px;">⏸️</div>
+              <h3 style="font-size:1.6rem;color:#f87171;margin-bottom:10px;font-weight:800;">Student Access Paused</h3>
+              <p style="color:#cbd5e1;font-size:0.92rem;line-height:1.6;margin-bottom:20px;">
+                Hello <strong style="color:#fff;">${profile.full_name || 'Student'}</strong>! Your student portal access has been temporarily paused by the academy admin due to pending monthly fees.
+              </p>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <a href="https://wa.me/919025846663?text=${waMsg}" target="_blank" style="background:#22c55e;color:#fff;text-decoration:none;padding:12px;border-radius:8px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;">
+                  💬 Call / WhatsApp Admin (${adminPhone})
+                </a>
+                <button onclick="document.getElementById('loginPausedModal').style.display='none'" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(pauseModal);
+        } else {
+          pauseModal.style.display = 'flex';
+        }
+
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+        throw new Error(`⏸️ Access Paused: Your account is temporarily suspended due to pending fees. Please contact Academy Admin (${adminPhone}) to resume access.`);
+      }
+
       // 3. Save profile (never store JWT — Supabase manages its own sb-* keys)
       CK.currentUser = profile;
       localStorage.setItem('ck_user', JSON.stringify(profile));
