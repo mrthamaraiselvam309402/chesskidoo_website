@@ -26,11 +26,8 @@ select[style*="background:#f8fafc"],  select[style*="background:#fff"] {
 input[style*="background:#f8fafc"]::placeholder,
 textarea[style*="background:#f8fafc"]::placeholder { color: #94a3b8; }
 
-/* 3) Light modals (Book-a-Demo / contact) — guarantee readable fields. */
-#contactModal input,
-#contactModal select,
-#contactModal textarea { color: #0f172a; -webkit-text-fill-color: #0f172a; }
-#contactModal select option { color: #0f172a; }
+/* 3) Modals option list readable colors. */
+#contactModal select option { color: #0f172a; background: #ffffff; }
 
 /* 4) Dark-theme portal form controls keep light text + visible placeholders
       (guards against dark-on-dark when an inline style strips the colour). */

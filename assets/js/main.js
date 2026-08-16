@@ -280,6 +280,7 @@
     m.style.display = m.classList.contains('p-modal-overlay') ? 'grid' : 'flex';
     m.removeAttribute('aria-hidden');
     document.body.setAttribute('aria-hidden', 'true');
+    document.body.classList.add('modal-open');
     // Focus first focusable element inside modal
     requestAnimationFrame(() => {
       const first = m.querySelector(_focusableSelectors);
@@ -311,6 +312,7 @@
       document.querySelectorAll('.modal-overlay, .p-modal-overlay').forEach(closeOne);
     }
     document.body.removeAttribute('aria-hidden');
+    document.body.classList.remove('modal-open');
     if (_modalPreviousFocus && typeof _modalPreviousFocus.focus === 'function') {
       _modalPreviousFocus.focus();
       _modalPreviousFocus = null;
