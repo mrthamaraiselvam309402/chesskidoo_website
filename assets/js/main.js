@@ -320,13 +320,47 @@
   };
 
   CK.openDemoModal = () => CK.openModal('contactModal');
+  CK.closeDemoModal = () => CK.closeModal('contactModal');
+  CK.currentStep = 1;
 
-  // Close modal on overlay click
+  CK.updateWizardUI = () => {
+    const steps = document.querySelectorAll('.ck-wizard-step');
+    const progressSteps = document.querySelectorAll('.ck-progress-step');
+    steps.forEach(s => s.classList.remove('active'));
+    progressSteps.forEach(p => p.classList.remove('active'));
+    const currentStepEl = document.querySelector(`.ck-wizard-step[data-step="${CK.currentStep}"]`);
+    const currentProgressEl = document.querySelector(`.ck-progress-step[data-step="${CK.currentStep}"]`);
+    if (currentStepEl) currentStepEl.classList.add('active');
+    if (currentProgressEl) currentProgressEl.classList.add('active');
+    document.getElementById('demoWizard').scrollTop = 0;
+  };
+
+  CK.nextStep = () => {
+    if (CK.currentStep < 4) {
+      CK.currentStep++;
+      CK.updateWizardUI();
+    }
+  };
+
+  CK.prevStep = () => {
+    if (CK.currentStep > 1) {
+      CK.currentStep--;
+      CK.updateWizardUI();
+    }
+  };
+
+  // Close modal on overlay click — only close the clicked modal
   document.addEventListener('click', e => {
-    if (e.target.classList.contains('modal-overlay')) CK.closeModal();
+    if (e.target.classList.contains('modal-overlay')) {
+      const modalId = e.target.id;
+      CK.closeModal(modalId);
+    }
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') CK.closeModal();
+    if (e.key === 'Escape') {
+      const activeModal = document.querySelector('.modal-overlay.active, .p-modal-overlay.active');
+      if (activeModal) CK.closeModal(activeModal.id);
+    }
   });
 
   /* ─── Toast Notification ─── */
@@ -538,8 +572,10 @@
     const city = [cityRaw, country].filter(Boolean).join(', ') || 'Not specified';
     const levelEl = form.querySelector('input[name="level"]:checked');
     const level = levelEl ? levelEl.value : 'Beginner';
-    const mode = form.mode ? form.mode.value : 'Online Class';
-    const slot = form.slot ? form.slot.value : 'Evening (5 PM - 8 PM)';
+    const modeEl = form.querySelector('input[name="mode"]:checked');
+    const mode = modeEl ? modeEl.value : 'Online Class';
+    const slotEl = form.querySelector('input[name="slot"]:checked');
+    const slot = slotEl ? slotEl.value : 'Evening (5 PM - 8 PM)';
 
     if (!name || !phone) {
       if (CK.showToast) CK.showToast('Please fill in your name and phone number', 'error');
@@ -553,7 +589,6 @@
     try {
       const summaryMsg = `Parent Name: ${name}\nPhone: ${phone}\nChild Age: ${age}\nLocation: ${city}\nSkill Level: ${level}\nMode: ${mode}\nTime Slot: ${slot}\nRequested Date: ${new Date().toLocaleDateString()}`;
 
-      // 1. Save to Supabase 'leads' table
       if (window.supabaseClient) {
         try {
           await window.supabaseClient.from('leads').insert({
@@ -571,7 +606,6 @@
           console.warn('[Demo Booking] Supabase leads insert warning:', supaErr);
         }
 
-        // 2. Insert into Supabase 'messages' table so it appears in Admin Messages Hub
         try {
           await window.supabaseClient.from('messages').insert({
             sender_name: name,
@@ -587,7 +621,6 @@
         }
       }
 
-      // 3. Fallback via /api/messages for admin dashboard integration
       try {
         if (window.apiCall) {
           window.apiCall('/api/messages', {
@@ -604,7 +637,6 @@
         }
       } catch (apiErr) {}
 
-      // 4. Also store locally in window.allMessages for instant Admin UI reflection
       if (window.allMessages) {
         window.allMessages.unshift({
           id: 'demo_' + Date.now(),
@@ -619,24 +651,25 @@
         if (window.renderMsgs) window.renderMsgs();
       }
 
-      // 5. WhatsApp Message Text & Launch URL
       const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 *Parent Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City/Country:* ${city}\n🎯 *Skill Level:* ${level}\n💻 *Preferred Mode:* ${mode}\n⏱️ *Preferred Slot:* ${slot}\n\nPlease confirm our demo slot!`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
 
       if (CK.showToast) CK.showToast('🎉 Demo Enquiry saved! Opening WhatsApp...', 'success');
 
-      // Immediate WhatsApp window launch
       setTimeout(() => {
         window.open(waUrl, '_blank');
-        if (CK.closeModal) CK.closeModal();
+        CK.currentStep = 4;
+        CK.updateWizardUI();
         form.reset();
-      }, 500);
+      }, 400);
 
     } catch (err) {
       if (CK.showToast) CK.showToast('Booking logged! Opening WhatsApp directly...', 'info');
       const msg = `Hello ChessKidoo! ♟️ I'd like to book a FREE Demo Class. Parent: ${name}, Phone: ${phone}, Level: ${level}, Mode: ${mode}, Slot: ${slot}.`;
       window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
-      if (CK.closeModal) CK.closeModal();
+      CK.currentStep = 4;
+      CK.updateWizardUI();
+      form.reset();
     } finally {
       btn.textContent = origText;
       btn.disabled = false;
@@ -718,12 +751,58 @@
     CK.openModal('jobApplyModal');
   };
 
+  CK.sendJobEmail = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const form = document.getElementById('jobApplyForm') || (e ? e.target.closest('form') : null);
+    if (!form) return;
+
+    const position = form.jobPosition ? form.jobPosition.value : 'Chess Coach / Staff Role';
+    const applicant = form.applicantName ? form.applicantName.value.trim() : '';
+    const email = form.applicantEmail ? form.applicantEmail.value.trim() : '';
+    const dial = form.dialCode ? form.dialCode.value : '';
+    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, form.phone.value) : (form.phone ? form.phone.value : '');
+    const fideTitle = form.fideTitle ? form.fideTitle.value.trim() : 'N/A';
+    const experience = form.experience ? form.experience.value : '1-2 Years';
+    const jobMode = form.jobMode ? form.jobMode.value : 'Online Coach';
+    const resumeUrl = form.resumeUrl ? form.resumeUrl.value.trim() : '';
+
+    if (!applicant || !email) {
+      if (CK.showToast) CK.showToast('Please enter your full name and email address first', 'error');
+      return;
+    }
+
+    const subject = `Job Application: ${position} - ${applicant}`;
+    const body = `Hello ChessKidoo HR Team,
+
+I would like to apply for the position of "${position}" at ChessKidoo Academy.
+
+APPLICANT DETAILS:
+- Full Name: ${applicant}
+- Email: ${email}
+- Phone/WhatsApp: ${phone}
+- FIDE Rating / Title: ${fideTitle}
+- Teaching Experience: ${experience}
+- Preferred Mode: ${jobMode}
+- Portfolio / Resume Link: ${resumeUrl || 'Attached in this email'}
+
+(Please find my Resume / CV attached to this email.)
+
+Thank you,
+${applicant}`;
+
+    const mailtoUrl = `mailto:chesskidoo37@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+
+    if (CK.showToast) CK.showToast('📧 Opening your email client to send resume...', 'success');
+  };
+
   CK.handleJobSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     const btn = form.querySelector('[type="submit"]');
     const position = form.jobPosition ? form.jobPosition.value : 'Chess Role';
     const applicant = form.applicantName ? form.applicantName.value.trim() : '';
+    const email = form.applicantEmail ? form.applicantEmail.value.trim() : '';
     const dial = form.dialCode ? form.dialCode.value : '';
     const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, form.phone.value) : form.phone.value;
     const fideTitle = form.fideTitle ? form.fideTitle.value.trim() : 'N/A';
@@ -741,7 +820,7 @@
     btn.disabled = true;
 
     try {
-      const summaryMsg = `JOB APPLICATION:\nPosition: ${position}\nApplicant Name: ${applicant}\nPhone: ${phone}\nFIDE Title/Rating: ${fideTitle}\nExperience: ${experience}\nPreferred Mode: ${jobMode}\nResume Link: ${resumeUrl}\nSubmitted At: ${new Date().toLocaleString()}`;
+      const summaryMsg = `JOB APPLICATION:\nPosition: ${position}\nApplicant Name: ${applicant}\nEmail: ${email}\nPhone: ${phone}\nFIDE Title/Rating: ${fideTitle}\nExperience: ${experience}\nPreferred Mode: ${jobMode}\nResume Link: ${resumeUrl}\nSubmitted At: ${new Date().toLocaleString()}`;
 
       if (window.supabaseClient) {
         try {
@@ -757,17 +836,17 @@
         } catch (sErr) {}
       }
 
-      const msg = `Hello ChessKidoo HR! 💼♟️\n\nI'm applying for the role:\n*Position:* ${position}\n👤 *Name:* ${applicant}\n📞 *Phone:* ${phone}\n⭐ *FIDE Rating/Title:* ${fideTitle}\n⏱️ *Experience:* ${experience}\n📍 *Mode:* ${jobMode}\n🔗 *Resume:* ${resumeUrl}\n\nLooking forward to discussing opportunities!`;
+      const msg = `Hello ChessKidoo HR! ♟️💼\n\nI'd like to apply for the position:\n*Role:* ${position}\n👤 *Name:* ${applicant}\n📧 *Email:* ${email}\n📞 *Phone:* ${phone}\n⭐ *FIDE Rating/Title:* ${fideTitle}\n⏱️ *Experience:* ${experience}\n📍 *Preferred Mode:* ${jobMode}\n📄 *Resume Link:* ${resumeUrl}\n\nPlease review my application!`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
 
-      if (CK.showToast) CK.showToast('💼 Application submitted! Connecting to HR on WhatsApp...', 'success');
+      if (CK.showToast) CK.showToast('🎉 Application submitted! Opening WhatsApp HR desk...', 'success');
       setTimeout(() => {
         window.open(waUrl, '_blank');
         CK.closeModal('jobApplyModal');
         form.reset();
       }, 500);
     } catch (err) {
-      const msg = `Hello ChessKidoo HR! I'd like to apply for ${position}. Name: ${applicant}, Phone: ${phone}, Rating: ${fideTitle}.`;
+      const msg = `Hello ChessKidoo HR! ♟️ I'd like to apply for ${position}. Name: ${applicant}, Phone: ${phone}, Email: ${email}`;
       window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
       CK.closeModal('jobApplyModal');
     } finally {

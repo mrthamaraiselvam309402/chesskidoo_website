@@ -711,11 +711,31 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   font-size: 0.8rem; opacity: 0.55; text-align: center; margin-top: 12px;
 }
 .price-footnote {
-  max-width: 720px; margin: 40px auto 0;
-  text-align: center; font-size: 0.9rem; line-height: 1.6;
-  color: var(--ink); opacity: 0.75;
+  max-width: 720px;
+  margin: 40px auto 0;
+  text-align: center;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: rgba(232, 160, 32, 0.05);
+  border: 1px solid rgba(232, 160, 32, 0.12);
+  border-radius: 14px;
+  font-weight: 500;
 }
-.price-footnote span { color: var(--amber); }
+.price-footnote span {
+  color: var(--amber);
+  font-size: 1rem;
+  animation: starPulse 2s ease-in-out infinite;
+}
+@keyframes starPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
 
 /* ─── Portal / Dashboard ─── */
 .page { display: revert; }
@@ -4503,3 +4523,215 @@ body:has(.page.active:not(#landing-page)) #scrollTopBtn {
 .gt-game-link:hover { opacity: 1; }
 .gt-empty { text-align: center; padding: 40px; background: rgba(0,0,0,0.1); border-radius: 12px; color: var(--p-text-muted); }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   2026 WORLD-CLASS DESIGN OVERRIDES — TOURNAMENTS, CAREERS, NRI & MODALS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Dark Section Global Overrides */
+.ck-tournaments-section,
+.ck-careers-section {
+  position: relative !important;
+  background: #090e1a !important;
+  background: linear-gradient(180deg, #060a14 0%, #0c1322 50%, #060a14 100%) !important;
+  color: #ffffff !important;
+  padding: 100px 0 !important;
+  overflow: hidden !important;
+}
+
+.ck-tournaments-section .section-head h2,
+.ck-careers-section .section-head h2 {
+  color: #ffffff !important;
+  font-family: var(--font-display, 'Outfit', sans-serif) !important;
+  font-weight: 800 !important;
+}
+
+.ck-tournaments-section .section-head .eyebrow,
+.ck-careers-section .section-head .eyebrow {
+  color: #fbbf24 !important;
+  letter-spacing: 2px !important;
+}
+
+.ck-tournaments-section .section-head .lead,
+.ck-careers-section .section-head .lead {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+/* ── Notice Board ── */
+.ck-notice-board {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  border-radius: 20px !important;
+  padding: 28px !important;
+  margin-bottom: 56px !important;
+  backdrop-filter: blur(12px) !important;
+  position: relative !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4) !important;
+}
+.ck-notice-board::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+}
+.ck-notice-board-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ck-notice-badge {
+  font-size: 0.78rem; font-weight: 800; color: #fbbf24;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+}
+.ck-notice-badge::before {
+  content: ''; width: 8px; height: 8px; background: #fbbf24;
+  border-radius: 50%; animation: noticePulse 2s infinite;
+}
+@keyframes noticePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.ck-notice-date { font-size: 0.78rem; color: #94a3b8; font-weight: 600; }
+.ck-notice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.ck-notice-card {
+  display: flex; gap: 14px; background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px;
+  padding: 18px; align-items: flex-start; transition: all 0.3s ease;
+}
+.ck-notice-card:hover {
+  background: rgba(30, 41, 59, 0.8); border-color: rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+}
+.ck-notice-icon {
+  font-size: 1.5rem; flex-shrink: 0; width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(245, 158, 11, 0.12); border-radius: 12px;
+}
+.ck-notice-detail h5 { font-size: 0.95rem; color: #f8fafc; margin-bottom: 4px; font-weight: 700; }
+.ck-notice-detail p { font-size: 0.82rem; color: #94a3b8; margin: 0; line-height: 1.45; }
+
+/* ── Tournament Cards ── */
+.ck-tournament-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+}
+.ck-t-card {
+  background: linear-gradient(145deg, #131c2e 0%, #0d1524 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  padding: 28px !important;
+  display: flex; flex-direction: column;
+  transition: all 0.35s ease !important;
+  position: relative; overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
+}
+.ck-t-card:hover {
+  transform: translateY(-6px) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 25px rgba(245, 158, 11, 0.15) !important;
+}
+.ck-t-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ck-t-badge {
+  font-size: 0.72rem; font-weight: 800; padding: 5px 12px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.fide-badge { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.offline-badge { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.weekly-badge { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.ck-t-status { font-size: 0.78rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px; }
+.ck-t-title { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; margin-bottom: 6px; }
+.ck-t-sub { font-size: 0.85rem; color: #94a3b8 !important; margin-bottom: 20px; line-height: 1.45; }
+.ck-t-details {
+  background: rgba(15, 23, 42, 0.5); border-radius: 14px;
+  padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ck-t-item { display: flex; flex-direction: column; gap: 2px; }
+.ck-t-label { font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.ck-t-val { font-size: 0.88rem; color: #e2e8f0; font-weight: 600; }
+.ck-t-categories { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.ck-t-cat {
+  font-size: 0.72rem; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.ck-cat-beginner { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.ck-cat-intermediate { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+.ck-cat-advanced { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+/* ── Careers Grid & Job Cards ── */
+.ck-careers-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px; margin-top: 48px;
+}
+.ck-job-card {
+  background: linear-gradient(145deg, #131c2e 0%, #0d1524 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px !important; padding: 28px !important;
+  display: flex; flex-direction: column; transition: all 0.35s ease !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
+}
+.ck-job-card:hover {
+  transform: translateY(-6px) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+}
+.ck-job-badge {
+  font-size: 0.75rem; font-weight: 800; color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12); padding: 5px 12px; border-radius: 12px;
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 14px;
+  width: max-content; border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.ck-job-title { font-size: 1.2rem; font-weight: 800; color: #ffffff !important; margin-bottom: 10px; }
+.ck-job-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.ck-job-meta span {
+  font-size: 0.75rem; font-weight: 600; background: rgba(15, 23, 42, 0.6);
+  padding: 4px 10px; border-radius: 8px; color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ck-job-desc { font-size: 0.86rem; color: #cbd5e1 !important; line-height: 1.55; margin-bottom: 20px; flex: 1; }
+.ck-job-footer {
+  display: flex; flex-direction: column; gap: 10px; padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ck-job-salary { font-size: 0.85rem; font-weight: 700; color: #34d399; }
+.ck-job-btn { width: 100%; padding: 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+
+/* ── NRI Pricing Box ── */
+.ck-nri-pricing-box {
+  background: linear-gradient(135deg, #0c1322 0%, #152035 50%, #0c1322 100%) !important;
+  border: 2px solid rgba(251, 191, 36, 0.4) !important;
+  border-radius: 28px !important; padding: 40px !important;
+  margin-top: 48px !important; color: #ffffff !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  position: relative; overflow: hidden;
+}
+.ck-nri-pricing-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+}
+.ck-nri-badge {
+  font-size: 0.82rem; font-weight: 800; color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 6px 16px; border-radius: 20px; display: inline-flex; align-items: center;
+  gap: 8px; margin-bottom: 20px; letter-spacing: 0.5px;
+}
+.ck-nri-content { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; }
+.ck-nri-info { flex: 1 1 480px; }
+.ck-nri-info h4 { font-size: 1.25rem; font-weight: 800; color: #f8fafc; margin-bottom: 10px; }
+.ck-nri-info p { font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px; }
+.ck-nri-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.ck-nri-col {
+  display: flex; gap: 12px; background: rgba(15, 23, 42, 0.6);
+  padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ck-nri-icon { font-size: 1.4rem; flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(245, 158, 11, 0.1); border-radius: 12px; }
+.ck-nri-col strong { display: block; font-size: 0.85rem; color: #f1f5f9; margin-bottom: 4px; font-weight: 700; }
+.ck-nri-col p { font-size: 0.78rem; color: #94a3b8; margin: 0; line-height: 1.45; }
+.ck-nri-action {
+  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 20px; padding: 28px; text-align: center; flex: 0 0 240px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+}
+.ck-nri-price-tag { font-size: 1.5rem; font-weight: 800; color: #fbbf24; }
+.ck-nri-price-sub { font-size: 0.78rem; color: #94a3b8; margin-bottom: 16px; }
+.ck-nri-btn { width: 100%; padding: 12px 18px; font-size: 0.9rem; border-radius: 12px; font-weight: 700; }

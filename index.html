@@ -1073,22 +1073,21 @@
                   <span class="ck-t-label">🏆 Prize Pool</span>
                   <span class="ck-t-val">₹25,000 Cash + Top 10 Trophies</span>
                 </div>
-                <div class="ck-t-item">
-                  <span class="ck-t-label">👥 Categories</span>
-                  <span class="ck-t-val">Under-9, Under-13, Open Junior</span>
-                </div>
-              </div>
+                 <div class="ck-t-item">
+                   <span class="ck-t-label">👥 Categories</span>
+                   <span class="ck-t-val">Under-9, Under-13, Open Junior</span>
+                 </div>
+               </div>
 
-              <div class="ck-t-footer">
-                <div class="ck-t-fee">
-                  <span class="ck-fee-amt">₹350</span>
-                  <span class="ck-fee-lbl">Entry Fee</span>
-                </div>
-                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('ChessKidoo All-India Junior Rapid GP 2026')">🏆 Register Now</button>
-              </div>
-            </div>
+               <!-- Category Tags -->
+               <div class="ck-t-categories">
+                 <span class="ck-t-cat ck-cat-beginner">🌱 Beginner</span>
+                 <span class="ck-t-cat ck-cat-intermediate">🌿 Intermediate</span>
+                 <span class="ck-t-cat ck-cat-advanced">🌳 Advanced</span>
+               </div>
+             </div>
 
-            <!-- Tournament Card 2 -->
+             <!-- Tournament Card 2 -->
             <div class="ck-t-card" data-aos="fade-up" data-aos-delay="100">
               <div class="ck-t-header">
                 <span class="ck-t-badge offline-badge">🏫 Offline Centre · Erode</span>
@@ -1110,22 +1109,21 @@
                   <span class="ck-t-label">🏆 Prize Pool</span>
                   <span class="ck-t-val">30 Trophies + State Rank Certificates</span>
                 </div>
-                <div class="ck-t-item">
-                  <span class="ck-t-label">👥 Categories</span>
-                  <span class="ck-t-val">U-8, U-11, U-14, U-18 (Boys &amp; Girls)</span>
-                </div>
-              </div>
+                 <div class="ck-t-item">
+                   <span class="ck-t-label">👥 Categories</span>
+                   <span class="ck-t-val">U-8, U-11, U-14, U-18 (Boys &amp; Girls)</span>
+                 </div>
+               </div>
 
-              <div class="ck-t-footer">
-                <div class="ck-t-fee">
-                  <span class="ck-fee-amt">₹400</span>
-                  <span class="ck-fee-lbl">Entry Fee</span>
-                </div>
-                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('Tamil Nadu State Level Children Championship')">🏆 Register Now</button>
-              </div>
-            </div>
+               <!-- Category Tags -->
+               <div class="ck-t-categories">
+                 <span class="ck-t-cat ck-cat-beginner">🌱 Beginner</span>
+                 <span class="ck-t-cat ck-cat-intermediate">🌿 Intermediate</span>
+                 <span class="ck-t-cat ck-cat-advanced">🌳 Advanced</span>
+               </div>
+             </div>
 
-            <!-- Tournament Card 3 -->
+             <!-- Tournament Card 3 -->
             <div class="ck-t-card" data-aos="fade-up" data-aos-delay="200">
               <div class="ck-t-header">
                 <span class="ck-t-badge weekly-badge">⚡ Weekly Arena</span>
@@ -1147,21 +1145,20 @@
                   <span class="ck-t-label">🏆 Rewards</span>
                   <span class="ck-t-val">Leaderboard Rating Points &amp; Badges</span>
                 </div>
-                <div class="ck-t-item">
-                  <span class="ck-t-label">👥 Eligibility</span>
-                  <span class="ck-t-val">All Enrolled ChessKidoo Students</span>
-                </div>
-              </div>
+                 <div class="ck-t-item">
+                   <span class="ck-t-label">👥 Eligibility</span>
+                   <span class="ck-t-val">All Enrolled ChessKidoo Students</span>
+                 </div>
+               </div>
 
-              <div class="ck-t-footer">
-                <div class="ck-t-fee">
-                  <span class="ck-fee-amt">FREE</span>
-                  <span class="ck-fee-lbl">Student Access</span>
-                </div>
-                <button type="button" class="btn btn-primary ck-t-btn" onclick="CK.openTournamentModal('Sunday Blitz Arena #48')">⚡ Join Arena</button>
-              </div>
-            </div>
-          </div>
+               <!-- Category Tags -->
+               <div class="ck-t-categories">
+                 <span class="ck-t-cat ck-cat-beginner">🌱 Beginner</span>
+                 <span class="ck-t-cat ck-cat-intermediate">🌿 Intermediate</span>
+                 <span class="ck-t-cat ck-cat-advanced">🌳 Advanced</span>
+               </div>
+             </div>
+           </div>
         </div>
       </section>
 
@@ -3292,84 +3289,169 @@
   <div id="contactModal" class="modal-overlay">
     <div class="modal-card ck-demo-modal-card">
       <div class="modal-header ck-demo-modal-header">
-        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal()" aria-label="Close">✕</button>
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeDemoModal()" aria-label="Close">✕</button>
         <div class="ck-demo-header-badge">⭐ 100% Free Trial Session</div>
         <h3 class="ck-demo-title">Book a Free Demo Class</h3>
         <p class="ck-demo-subtitle">30-min 1-on-1 FIDE-certified coaching session. No credit card required.</p>
+        
+        <!-- Progress Indicator -->
+        <div class="ck-demo-progress">
+          <div class="ck-progress-step active" data-step="1">
+            <div class="ck-step-circle">1</div>
+            <div class="ck-step-label">Level</div>
+          </div>
+          <div class="ck-progress-line"></div>
+          <div class="ck-progress-step" data-step="2">
+            <div class="ck-step-circle">2</div>
+            <div class="ck-step-label">Schedule</div>
+          </div>
+          <div class="ck-progress-line"></div>
+          <div class="ck-progress-step" data-step="3">
+            <div class="ck-step-circle">3</div>
+            <div class="ck-step-label">Details</div>
+          </div>
+        </div>
       </div>
-      <form class="modal-body ck-demo-modal-body" onsubmit="CK.handleDemoSubmit(event)">
-        <div class="form-group ck-form-group">
-          <label class="ck-form-label">Parent's Name *</label>
-          <input type="text" name="fullName" required placeholder="e.g. Ramesh Kumar" class="ck-form-input">
-        </div>
-        <div class="form-group ck-form-group">
-          <label class="ck-form-label">WhatsApp Number *</label>
-          <div class="ck-phone-row">
-            <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
-            <input type="tel" name="phone" required placeholder="98765 43210" pattern="[0-9+\s\-]{6,15}" class="ck-form-input ck-phone-input">
-          </div>
-        </div>
-        <div class="ck-demo-grid">
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">Child's Age *</label>
-            <input type="number" name="age" required min="4" max="18" placeholder="e.g. 8" class="ck-form-input">
-          </div>
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">City</label>
-            <input type="text" name="city" placeholder="e.g. Chennai / Erode" class="ck-form-input">
-          </div>
-        </div>
-        <div class="form-group ck-form-group">
-          <label class="ck-form-label">Country</label>
-          <select name="country" data-ck-country class="ck-form-select"></select>
-        </div>
-
-        <!-- Level Selector -->
-        <div class="form-group ck-form-group">
-          <label class="ck-form-label">Child's Current Experience Level</label>
-          <div class="ck-level-chips">
-            <label class="ck-chip-item">
+      
+      <form class="modal-body ck-demo-modal-body" id="demoWizard" onsubmit="CK.handleDemoSubmit(event)">
+        
+        <!-- Step 1: Choose Level -->
+        <div class="ck-wizard-step active" data-step="1">
+          <div class="ck-step-title">Select Your Child's Chess Level</div>
+          <div class="ck-level-cards">
+            <label class="ck-level-card">
               <input type="radio" name="level" value="Beginner" checked>
-              <span>🌱 Beginner (New to Chess)</span>
+              <div class="ck-level-card-content">
+                <div class="ck-level-icon">🌱</div>
+                <div class="ck-level-name">Beginner</div>
+                <div class="ck-level-desc">New to chess, learning basics</div>
+              </div>
             </label>
-            <label class="ck-chip-item">
+            <label class="ck-level-card">
               <input type="radio" name="level" value="Intermediate">
-              <span>🌿 Intermediate (Knows Rules)</span>
+              <div class="ck-level-card-content">
+                <div class="ck-level-icon">🌿</div>
+                <div class="ck-level-name">Intermediate</div>
+                <div class="ck-level-desc">Knows rules, wants tactics</div>
+              </div>
             </label>
-            <label class="ck-chip-item">
+            <label class="ck-level-card">
               <input type="radio" name="level" value="Advanced">
-              <span>🌳 Advanced (Tournament Player)</span>
+              <div class="ck-level-card-content">
+                <div class="ck-level-icon">🌳</div>
+                <div class="ck-level-name">Advanced</div>
+                <div class="ck-level-desc">Tournament player</div>
+              </div>
             </label>
           </div>
-        </div>
-
-        <!-- Class Mode & Time Slot -->
-        <div class="ck-demo-grid">
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">Learning Mode</label>
-            <select name="mode" class="ck-form-select">
-              <option value="Online Class">💻 Live Online Class</option>
-              <option value="Offline Centre">🏫 Offline Centre (Tamil Nadu)</option>
-            </select>
-          </div>
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">Preferred Time Slot</label>
-            <select name="slot" class="ck-form-select">
-              <option value="Evening (5 PM - 8 PM)">🌆 Evening (5 PM - 8 PM)</option>
-              <option value="Morning (10 AM - 1 PM)">🌅 Morning (10 AM - 1 PM)</option>
-              <option value="Afternoon (2 PM - 5 PM)">☀️ Afternoon (2 PM - 5 PM)</option>
-              <option value="Weekend Special">⭐ Weekend Special</option>
-            </select>
+          <div class="ck-wizard-actions">
+            <button type="button" class="btn btn-primary ck-wizard-next" onclick="CK.nextStep()">Continue →</button>
           </div>
         </div>
 
-        <div class="ck-demo-notice">
-          <span class="ck-notice-icon">💬</span>
-          <span class="ck-notice-text">Instant Confirmation — Saved to Admin Dashboard and opens WhatsApp directly for coach scheduling.</span>
+        <!-- Step 2: Mode & Time -->
+        <div class="ck-wizard-step" data-step="2">
+          <div class="ck-step-title">Choose Learning Mode &amp; Time</div>
+          <div class="ck-form-group ck-form-group">
+            <label class="ck-form-label">Learning Mode *</label>
+            <div class="ck-mode-cards">
+              <label class="ck-mode-card">
+                <input type="radio" name="mode" value="Online Class" checked>
+                <div class="ck-mode-card-content">
+                  <div class="ck-mode-icon">💻</div>
+                  <div class="ck-mode-name">Online Class</div>
+                  <div class="ck-mode-desc">Live Google Meet session</div>
+                </div>
+              </label>
+              <label class="ck-mode-card">
+                <input type="radio" name="mode" value="Offline Centre">
+                <div class="ck-mode-card-content">
+                  <div class="ck-mode-icon">🏫</div>
+                  <div class="ck-mode-name">Offline Centre</div>
+                  <div class="ck-mode-desc">Tamil Nadu only</div>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="ck-form-group ck-form-group">
+            <label class="ck-form-label">Preferred Time Slot *</label>
+            <div class="ck-slot-grid">
+              <label class="ck-slot-item">
+                <input type="radio" name="slot" value="Morning (10 AM - 1 PM)" checked>
+                <span>🌅 Morning<br><small>10 AM - 1 PM</small></span>
+              </label>
+              <label class="ck-slot-item">
+                <input type="radio" name="slot" value="Afternoon (2 PM - 5 PM)">
+                <span>☀️ Afternoon<br><small>2 PM - 5 PM</small></span>
+              </label>
+              <label class="ck-slot-item">
+                <input type="radio" name="slot" value="Evening (5 PM - 8 PM)">
+                <span>🌆 Evening<br><small>5 PM - 8 PM</small></span>
+              </label>
+              <label class="ck-slot-item">
+                <input type="radio" name="slot" value="Weekend Special">
+                <span>⭐ Weekend<br><small>Special Batch</small></span>
+              </label>
+            </div>
+          </div>
+          <div class="ck-wizard-actions">
+            <button type="button" class="btn btn-ghost ck-wizard-back" onclick="CK.prevStep()">← Back</button>
+            <button type="button" class="btn btn-primary ck-wizard-next" onclick="CK.nextStep()">Continue →</button>
+          </div>
         </div>
-        <div class="ck-demo-actions">
-          <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary ck-btn-submit">📱 Book Free Demo &amp; WhatsApp Us</button>
+
+        <!-- Step 3: Contact Details -->
+        <div class="ck-wizard-step" data-step="3">
+          <div class="ck-step-title">Parent &amp; Student Details</div>
+          <div class="ck-form-group ck-form-group">
+            <label class="ck-form-label">Parent's Name *</label>
+            <input type="text" name="fullName" required placeholder="e.g. Ramesh Kumar" class="ck-form-input">
+          </div>
+          <div class="ck-form-group ck-form-group">
+            <label class="ck-form-label">WhatsApp Number *</label>
+            <div class="ck-phone-row">
+              <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
+              <input type="tel" name="phone" required placeholder="98765 43210" pattern="[0-9+\s\-]{6,15}" class="ck-form-input ck-phone-input">
+            </div>
+          </div>
+          <div class="ck-demo-grid">
+            <div class="form-group ck-form-group">
+              <label class="ck-form-label">Child's Age *</label>
+              <input type="number" name="age" required min="4" max="18" placeholder="e.g. 8" class="ck-form-input">
+            </div>
+            <div class="form-group ck-form-group">
+              <label class="ck-form-label">City</label>
+              <input type="text" name="city" placeholder="e.g. Chennai / Erode" class="ck-form-input">
+            </div>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Country</label>
+            <select name="country" data-ck-country class="ck-form-select"></select>
+          </div>
+          <div class="ck-wizard-actions">
+            <button type="button" class="btn btn-ghost ck-wizard-back" onclick="CK.prevStep()">← Back</button>
+            <button type="submit" class="btn btn-primary ck-wizard-submit">📱 Book Free Demo &amp; WhatsApp Us</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div class="ck-wizard-step" data-step="4">
+          <div class="ck-success-state">
+            <div class="ck-success-icon">🎉</div>
+            <h3 class="ck-success-title">Demo Request Sent!</h3>
+            <p class="ck-success-text">Your free demo class request has been saved. We'll confirm your slot via WhatsApp shortly.</p>
+            <div class="ck-success-info">
+              <div class="ck-success-info-item">
+                <span class="ck-success-info-label">Status</span>
+                <span class="ck-success-info-value">Pending Confirmation</span>
+              </div>
+              <div class="ck-success-info-item">
+                <span class="ck-success-info-label">Response Time</span>
+                <span class="ck-success-info-value">&lt; 30 minutes</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary ck-wizard-submit" onclick="CK.closeDemoModal()">Done</button>
+          </div>
         </div>
       </form>
     </div>
@@ -3436,11 +3518,15 @@
         <h3 class="ck-demo-title" id="jobModalTitle">Apply for Job Position</h3>
         <p class="ck-demo-subtitle">Join Team ChessKidoo. Share your experience and start your coaching journey with us.</p>
       </div>
-      <form class="modal-body ck-demo-modal-body" onsubmit="CK.handleJobSubmit(event)">
+      <form class="modal-body ck-demo-modal-body" id="jobApplyForm" onsubmit="CK.handleJobSubmit(event)">
         <input type="hidden" name="jobPosition" id="jobModalHiddenPosition" value="">
         <div class="form-group ck-form-group">
           <label class="ck-form-label">Your Full Name *</label>
           <input type="text" name="applicantName" required placeholder="e.g. Coach Saran" class="ck-form-input">
+        </div>
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Email Address *</label>
+          <input type="email" name="applicantEmail" required placeholder="coach@example.com" class="ck-form-input">
         </div>
         <div class="form-group ck-form-group">
           <label class="ck-form-label">WhatsApp Number *</label>
