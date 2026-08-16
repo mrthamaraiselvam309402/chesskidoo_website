@@ -3589,7 +3589,9 @@ CK.student = {
     const grid = document.getElementById('studentELibraryGrid');
     if (!grid) return;
 
-    const studentId = this.userProfile?.id || CK.currentUser?.id;
+    const prof = this.userProfile || CK.currentUser || JSON.parse(localStorage.getItem('ck_user') || '{}');
+    const myLevel = (prof.level || 'Beginner').trim();
+    const studentId = prof.id || prof.userid;
     if (!studentId) return;
 
     const progressList = await CK.db.getELibraryProgress(studentId) || [];
@@ -3599,28 +3601,70 @@ CK.student = {
     });
 
     const COVERS = {
-      Opening:    { grad: 'linear-gradient(140deg,#3b5998,#1e3358)', icon: '♟️' },
-      Tactics:    { grad: 'linear-gradient(140deg,#d35400,#8e2f00)', icon: '⚡' },
-      Endgame:    { grad: 'linear-gradient(140deg,#16a085,#0b5345)', icon: '👑' },
-      Strategy:   { grad: 'linear-gradient(140deg,#8e44ad,#512e5f)', icon: '🧠' },
-      Middlegame: { grad: 'linear-gradient(140deg,#27ae60,#145a32)', icon: '⚔️' },
-      Psychology: { grad: 'linear-gradient(140deg,#dca33e,#9c7320)', icon: '🎯' },
-      Beginner:   { grad: 'linear-gradient(140deg,#e8527c,#922b4e)', icon: '🌱' }
+      Opening:      { grad: 'linear-gradient(140deg,#3b5998,#1e3358)', icon: '♟️' },
+      Tactics:      { grad: 'linear-gradient(140deg,#d35400,#8e2f00)', icon: '⚡' },
+      Endgame:      { grad: 'linear-gradient(140deg,#16a085,#0b5345)', icon: '👑' },
+      Strategy:     { grad: 'linear-gradient(140deg,#8e44ad,#512e5f)', icon: '🧠' },
+      Middlegame:   { grad: 'linear-gradient(140deg,#27ae60,#145a32)', icon: '⚔️' },
+      Psychology:   { grad: 'linear-gradient(140deg,#dca33e,#9c7320)', icon: '🎯' },
+      Beginner:     { grad: 'linear-gradient(140deg,#e8527c,#922b4e)', icon: '🌱' },
+      'All Levels': { grad: 'linear-gradient(140deg,#0ea5e9,#0284c7)', icon: '🌍' },
+      Intermediate: { grad: 'linear-gradient(140deg,#f59e0b,#b45309)', icon: '⚔️' },
+      Advanced:     { grad: 'linear-gradient(140deg,#ec4899,#be185d)', icon: '👑' }
     };
-    const filtered = this.booksDb.filter(b => this._elibraryCategory === 'All' || b.category === this._elibraryCategory);
+
+    // 1. Fetch custom uploaded E-Library documents from DB (uploaded by Admin / Coach)
+    const allDocs = (await CK.db.getDocuments()) || [];
+    const customDocs = allDocs.filter(d => {
+      const type = (d.type || '').toLowerCase();
+      const isELib = type.includes('library') || type.includes('book') || type.includes('reading') || type.includes('notes') || type.includes('pdf') || type.includes('material');
+      if (!isELib) return false;
+
+      // Filter by Level (Level-based section)
+      const docLvl = (d.level || 'All Levels').toLowerCase();
+      const lvlMatch = docLvl.includes('all') || docLvl.includes(myLevel.toLowerCase()) || myLevel.toLowerCase().includes(docLvl);
+      return lvlMatch;
+    }).map(d => ({
+      id: d.id || `doc-${d.created_at}`,
+      title: d.name || 'Untitled Material',
+      author: d.coach ? `Coach ${d.coach}` : 'Academy Admin',
+      category: d.level || 'All Levels',
+      targetLevel: d.level || 'All Levels',
+      xpReward: d.xp_reward || 25,
+      pages: [d.url || d.file_name || d.link],
+      isCustom: true,
+      customUrl: d.url || d.file_name || d.link,
+      notes: d.notes || ''
+    }));
+
+    // 2. Filter static books by Category & Level
+    const staticBooks = (this.booksDb || []).filter(b => {
+      const lvlMatch = !b.difficulty || b.difficulty === 'All Levels' || b.difficulty === myLevel;
+      const catMatch = this._elibraryCategory === 'All' || b.category === this._elibraryCategory;
+      return lvlMatch && catMatch;
+    });
+
+    const allItems = [...customDocs, ...staticBooks];
     grid.classList.add('elib-grid');
 
-    grid.innerHTML = filtered.map(b => {
+    if (!allItems.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;opacity:0.7;">📚 No E-Library materials found for ${CK.esc(myLevel)} Level. New materials will appear here when uploaded by your coach or admin!</div>`;
+      return;
+    }
+
+    const _e = CK.esc || (s => s);
+    grid.innerHTML = allItems.map(b => {
       const prog = progressMap[b.id] || { last_page: 0, completed_percentage: 0 };
       const percent = Math.min(100, Math.round(prog.completed_percentage || 0));
-      const cv = COVERS[b.category] || { grad: 'linear-gradient(140deg,#475569,#1e293b)', icon: '📘' };
-      const _e = CK.esc || (s => s);
+      const cv = COVERS[b.category] || COVERS[b.targetLevel] || { grad: 'linear-gradient(140deg,#475569,#1e293b)', icon: '📘' };
+      const levelBadgeColor = (b.targetLevel || b.category || 'All').includes('Beginner') ? '#22c55e' : ((b.targetLevel || b.category || '').includes('Intermediate') ? '#f59e0b' : '#3b82f6');
+      
       return `
-        <div class="elib-book">
+        <div class="elib-book" style="border:1px solid rgba(255,255,255,0.08);background:#111827;border-radius:14px;overflow:hidden;">
           <div class="elib-cover" style="background:${cv.grad}">
             <div class="elib-spine"></div>
             <div class="elib-cover-top">
-              <span class="elib-cover-cat">${_e(b.category)}</span>
+              <span class="elib-cover-cat" style="background:rgba(0,0,0,0.4);padding:2px 8px;border-radius:4px;font-size:0.75rem;">${_e(b.targetLevel || b.category)}</span>
               <span class="elib-cover-xp">+${b.xpReward} XP</span>
             </div>
             <div class="elib-cover-icon">${cv.icon}</div>
@@ -3628,10 +3672,20 @@ CK.student = {
             <div class="elib-cover-author">${_e(b.author)}</div>
             ${percent >= 100 ? '<div class="elib-done-badge">✓ Completed</div>' : ''}
           </div>
-          <div class="elib-foot">
-            <div class="elib-prog-row"><span>${b.pages.length} pages</span><span>${percent}%</span></div>
-            <div class="elib-bar"><div class="elib-bar-fill" style="width:${percent}%"></div></div>
-            <button class="p-btn p-btn-gold p-btn-sm elib-read-btn" onclick="CK.student.openPDFReader('${b.id}')">${percent > 0 && percent < 100 ? '📖 Continue Reading' : (percent >= 100 ? '🔄 Read Again' : '📖 Read Online')}</button>
+          <div class="elib-foot" style="padding:12px;">
+            <div style="font-size:0.75rem;color:var(--p-text-muted);margin-bottom:6px;display:flex;justify-content:space-between;">
+              <span>Target: <strong style="color:${levelBadgeColor}">${_e(b.targetLevel || b.category)}</strong></span>
+              <span>${b.pages?.length || 1} file(s)</span>
+            </div>
+            ${b.isCustom ? `
+              <a href="${_e(b.customUrl)}" target="_blank" class="p-btn p-btn-teal p-btn-sm" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;">
+                📖 Open / Download Material
+              </a>
+            ` : `
+              <div class="elib-prog-row"><span>Progress</span><span>${percent}%</span></div>
+              <div class="elib-bar"><div class="elib-bar-fill" style="width:${percent}%"></div></div>
+              <button class="p-btn p-btn-gold p-btn-sm elib-read-btn" onclick="CK.student.openPDFReader('${b.id}')">${percent > 0 && percent < 100 ? '📖 Continue Reading' : (percent >= 100 ? '🔄 Read Again' : '📖 Read Online')}</button>
+            `}
           </div>
         </div>
       `;
