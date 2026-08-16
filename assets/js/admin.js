@@ -2817,7 +2817,7 @@ CK.admin = {
             
             <button class="calc-btn p-btn-ghost" style="grid-column: span 2;" onclick="document.getElementById('calc-display').value+='0'">0</button>
             <button class="calc-btn p-btn-ghost" onclick="document.getElementById('calc-display').value+='.'">.</button>
-            <button class="calc-btn p-btn" style="background:var(--p-gold); color:#000;" onclick="try{ document.getElementById('calc-display').value = eval(document.getElementById('calc-display').value) }catch(e){ document.getElementById('calc-display').value = 'Error' }">=</button>
+            <button class="calc-btn p-btn" style="background:var(--p-gold); color:#000;" onclick="try{ var _v=document.getElementById('calc-display').value; if(!/^[0-9+\-*/().\\s]+$/.test(_v)){throw 'bad'}; document.getElementById('calc-display').value = new Function('return (' + _v + ')')() }catch(e){ document.getElementById('calc-display').value = 'Error' }">=</button>
           </div>
           <style>
             .calc-btn { border-radius: 8px; font-size: 1.2rem; font-weight: bold; padding: 12px 0; transition: transform 0.1s; border: 1px solid rgba(255,255,255,0.05); }

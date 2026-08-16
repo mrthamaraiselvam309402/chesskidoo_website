@@ -34,6 +34,9 @@ export default async function handler(request, response) {
     const body = request.body || {};
     const { amount, currency, receipt } = body;
 
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return response.status(400).json({ error: 'A positive numeric amount is required' });
+    }
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return response.status(200).json({
         simulated: true,

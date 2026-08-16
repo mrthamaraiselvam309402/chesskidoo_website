@@ -270,22 +270,79 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* ── Mobile & Desktop Location Chips Row ── */
+.ckw-touch-chips {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 18px 4px 6px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 160, 32, 0.4) transparent;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ckw-touch-chips::-webkit-scrollbar {
+  height: 4px;
+}
+.ckw-touch-chips::-webkit-scrollbar-thumb {
+  background: rgba(232, 160, 32, 0.4);
+  border-radius: 4px;
+}
+.ckw-chip {
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 8px 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.ckw-chip:hover {
+  color: #ffffff;
+  background: rgba(232, 160, 32, 0.2);
+  border-color: rgba(232, 160, 32, 0.5);
+  transform: translateY(-2px);
+}
+.ckw-chip.is-active {
+  color: #1a1206;
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(232, 160, 32, 0.35);
+}
+
 /* ── Responsive ── */
 @media (max-width: 980px) {
   .ckw-layout { grid-template-columns: 1fr; }
   .ckw-stage { aspect-ratio: 2.3 / 1; }
   .ckw-panel { padding: 22px 20px; }
   .ckw-stats { grid-template-columns: repeat(2, 1fr); }
+  .ckw-touch-chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }
 @media (max-width: 560px) {
   .ckw-stage { aspect-ratio: 2 / 1; min-height: 200px; }
-  /* Nine country labels collide at this width, so show dots only — but the
-     three centres in the zoomed view have room and need their names. */
   .ck-world:not(.is-centres) .ckw-pin-label { display: none; }
   .ckw-tab { flex: 1 1 auto; text-align: center; padding: 10px 16px; }
+  .ckw-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .ckw-stat-num { font-size: 1.6rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ckw-pin.is-home::before { animation: none; opacity: 0; }
   .ckw-panel-cta:hover { transform: none; }
 }
+

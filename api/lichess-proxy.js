@@ -35,4 +35,13 @@ async function route(request) {
 
 // Named exports: required for Vercel to use the web fetch-style signature.
 export const GET = route;
-export const OPTIONS = route;
+export function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+}

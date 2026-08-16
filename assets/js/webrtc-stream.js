@@ -14,7 +14,7 @@ CK.webrtc = (() => {
   let studentPeerConnection = null; // Single RTCPeerConnection (Student side)
   let webrtcChannel = null;
   let isBroadcasting = false;
-  const isListening = false;
+  let isListening = false;
   let streamMode = 'none'; // 'video' or 'audio' or 'none'
   let mediaRecorder = null;
   let recordedChunks = [];

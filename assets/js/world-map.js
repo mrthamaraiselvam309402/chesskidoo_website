@@ -36,28 +36,28 @@
   const HOME = { lon: 77.7172, lat: 11.3410 };
 
   const COUNTRIES = [
-    { id: 'in', name: 'India',          city: 'Erode · Tamil Nadu', lon: 77.72,  lat: 11.34,  home: true,
+    { id: 'in', name: 'India',          flag: '🇮🇳', city: 'Erode · Tamil Nadu', lon: 77.72,  lat: 11.34,  home: true,
       note: 'Head office plus three offline centres — online classes nationwide.' },
-    { id: 'us', name: 'United States',  city: 'New York',           lon: -74.00, lat: 40.71,
-      note: 'Our furthest classroom — 13,500 km from Erode, on an early-morning IST slot.' },
-    { id: 'ca', name: 'Canada',         city: 'Toronto',            lon: -79.38, lat: 43.65,
+    { id: 'us', name: 'United States',  flag: '🇺🇸', city: 'New York / US Coasts', lon: -74.00, lat: 40.71,
+      note: 'Our furthest classroom — 13,500 km from Erode, with flexible time-zone slots.' },
+    { id: 'ca', name: 'Canada',         flag: '🇨🇦', city: 'Toronto & Vancouver', lon: -79.38, lat: 43.65,
       note: 'Weekend batches timed for Ontario and British Columbia families.' },
-    { id: 'sg', name: 'Singapore',      city: 'Singapore',          lon: 103.82, lat: 1.35,
+    { id: 'sg', name: 'Singapore',      flag: '🇸🇬', city: 'Singapore',          lon: 103.82, lat: 1.35,
       note: 'Evening SGT batches for students in the city-state.' },
-    { id: 'my', name: 'Malaysia',       city: 'Kuala Lumpur',       lon: 101.69, lat: 3.14,
+    { id: 'my', name: 'Malaysia',       flag: '🇲🇾', city: 'Kuala Lumpur',       lon: 101.69, lat: 3.14,
       note: 'Shared timetable with our Singapore batches.' },
-    { id: 'au', name: 'Australia',      city: 'Sydney',             lon: 151.21, lat: -33.87,
+    { id: 'au', name: 'Australia',      flag: '🇦🇺', city: 'Sydney & Melbourne', lon: 151.21, lat: -33.87,
       note: 'Early-morning AEST classes before the school run.' },
   ];
 
   const CENTRES = [
-    { id: 'bhavani',    name: 'Bhavani',       tag: 'Head Office', lon: 77.6817, lat: 11.4453,
+    { id: 'bhavani',    name: 'Bhavani',       flag: '🏫', tag: 'Head Office', lon: 77.6817, lat: 11.4453,
       addr: 'K K Nagar, Kalingarayanpalayam, Erode 638316',
       note: 'Head office — in-person coaching, admissions and academy operations.' },
-    { id: 'erode',      name: 'Erode Central', tag: 'Centre',      lon: 77.7172, lat: 11.3410,
+    { id: 'erode',      name: 'Erode Central', flag: '🏫', tag: 'Centre',      lon: 77.7172, lat: 11.3410,
       addr: 'Erode, Tamil Nadu',
       note: 'In-person coaching and weekend batches.' },
-    { id: 'perundurai', name: 'Perundurai',    tag: 'Centre',      lon: 77.5878, lat: 11.2758,
+    { id: 'perundurai', name: 'Perundurai',    flag: '🏫', tag: 'Centre',      lon: 77.5878, lat: 11.2758,
       addr: 'Perundurai, Tamil Nadu',
       note: 'In-person coaching and school programmes.' },
   ];
@@ -334,12 +334,43 @@
 
   /* ── Detail panel ───────────────────────────────────────────────────── */
 
+  function renderChips() {
+    let chipsBox = root.querySelector('.ckw-touch-chips');
+    if (!chipsBox) {
+      chipsBox = document.createElement('div');
+      chipsBox.className = 'ckw-touch-chips';
+      chipsBox.setAttribute('aria-label', 'Select location');
+      const layout = root.querySelector('.ckw-layout');
+      if (layout) layout.after(chipsBox);
+    }
+    chipsBox.innerHTML = '';
+    const list = state.view === 'global' ? COUNTRIES : CENTRES;
+    list.forEach((m) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ckw-chip' + (state.active === m.id ? ' is-active' : '');
+      btn.innerHTML = (m.flag ? m.flag + ' ' : '') + '<span>' + m.name + '</span>';
+      btn.onclick = () => setActive(m.id);
+      chipsBox.appendChild(btn);
+    });
+  }
+
   function setActive(id) {
     state.active = id;
     for (const [key, el] of state.pins) el.classList.toggle('is-active', key === id);
     const list = state.view === 'global' ? COUNTRIES : CENTRES;
     const m = list.find((x) => x.id === id);
     if (m) renderPanel(m);
+
+    // Update active class on touch chips
+    const chipsBox = root.querySelector('.ckw-touch-chips');
+    if (chipsBox) {
+      const chips = chipsBox.querySelectorAll('.ckw-chip');
+      chips.forEach((c, idx) => {
+        const item = list[idx];
+        if (item) c.classList.toggle('is-active', item.id === id);
+      });
+    }
   }
 
   function renderPanel(m) {
@@ -352,8 +383,6 @@
       '<h3 class="ckw-panel-title">' + (m.flag ? m.flag + ' ' : '') + m.name + '</h3>' +
       '<div class="ckw-panel-meta">' + (m.addr || m.city) + '</div>' +
       '<p class="ckw-panel-note">' + m.note + '</p>' +
-      // India and the head office are the origin, so a distance chip there
-      // would just read "0 km from Erode".
       (m.home
         ? '<div class="ckw-panel-dist">Head office &middot; 3 offline centres</div>'
         : isCentre
@@ -389,6 +418,7 @@
       : 'Erode District · Tamil Nadu';
 
     defaultPanel();       // update the copy immediately, don't wait for the zoom
+    renderChips();
 
     const to = targetProj();
     if (reduce) { state.proj = to; rebuild(); return; }
@@ -404,6 +434,7 @@
     drawDots(false);
     if (state.view === 'global') updateArcProgress();
     defaultPanel();
+    renderChips();
   }
 
   let rafId = 0;

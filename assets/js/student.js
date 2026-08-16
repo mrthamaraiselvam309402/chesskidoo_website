@@ -406,7 +406,7 @@ CK.student = {
         if (liveSub) {
           const coachName = liveMeeting.coach || p.coach || 'Your Coach';
           const className = liveMeeting.title || liveMeeting.type || 'Chess Session';
-          liveSub.innerHTML = `Your coach <strong>${coachName}</strong> is currently live-streaming the class: <strong>${className}</strong>. Join now to participate!`;
+          liveSub.innerHTML = `Your coach <strong>${CK.esc(coachName)}</strong> is currently live-streaming the class: <strong>${CK.esc(className)}</strong>. Join now to participate!`;
         }
         liveBanner.style.display = 'flex';
       } else {
@@ -3623,7 +3623,7 @@ CK.student = {
     this._activeBookBookmarks = bookmarks;
 
     const titleEl = document.getElementById('pdfReaderTitle');
-    if (titleEl) titleEl.innerHTML = ` Online Reader: ${book.title}`;
+    if (titleEl) titleEl.innerHTML = ` Online Reader: ${CK.esc(book.title)}`;
 
     const contentEl = document.getElementById('pdfContentArea');
     if (contentEl) {

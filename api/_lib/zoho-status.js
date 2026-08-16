@@ -18,8 +18,18 @@ import {
 } from './zoho.js';
 
 export default async function handler(request) {
+  const allowedOrigins = [
+    'https://chesskidoo-ai-admin.vercel.app',
+    'https://twoknights-ai-admin.vercel.app',
+    'https://twoknightacademy.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ];
+  const origin = request.headers?.get('origin') || '';
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
   };

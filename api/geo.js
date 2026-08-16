@@ -1,3 +1,10 @@
+const corsHeaders = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type'
+};
+
 async function route() {
   const services = [
     'https://ipapi.co/json/',
@@ -17,7 +24,7 @@ async function route() {
           };
           return new Response(JSON.stringify(payload), {
             status: 200,
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' }
+            headers: { ...corsHeaders, 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' }
           });
         }
       }
@@ -28,7 +35,13 @@ async function route() {
 
   return new Response(JSON.stringify({ ip: '127.0.0.1', country_code: 'IN', country: 'India' }), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' }
+    headers: corsHeaders
   });
 }
+
+function handleOptions() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
 export const GET = route;
+export const OPTIONS = handleOptions;

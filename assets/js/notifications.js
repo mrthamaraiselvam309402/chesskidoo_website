@@ -110,8 +110,13 @@ CK.notifs = (() => {
       }).join('')}`;
   }
 
-  /* ── Bell badge refresh ── */
+  /* ── Bell badge refresh (debounced to prevent jank) ── */
+  let _bellTimer = null;
   function _refreshBells() {
+    if (_bellTimer) clearTimeout(_bellTimer);
+    _bellTimer = setTimeout(_refreshBellsNow, 50);
+  }
+  function _refreshBellsNow() {
     const user = CK.currentUser;
     if (!user) return;
     const count = getUnread(user.id, user.role);

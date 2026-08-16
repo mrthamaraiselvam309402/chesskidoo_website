@@ -17,7 +17,7 @@ CK.runDiagnostics = async function() {
   const logFail = (msg) => { console.log(`%c[FAIL] %c${msg}`, "color: #ef4444; font-weight: bold;", "color: inherit;"); errors++; };
 
   // 1. Module Check
-  const requiredModules = ['db', 'admin', 'student', 'coach', 'parent', 'schedulePro', 'classroom', 'lab', 'puzzlesPro', 'liveSession', 'enginePlay', 'engine'];
+  const requiredModules = ['db', 'admin', 'student', 'coach', 'parents', 'schedulePro', 'classroom', 'puzzlesPro', 'enginePlay', 'engine', 'rpg', 'security', 'notifs', 'multiplayer'];
   requiredModules.forEach(mod => {
     if (CK[mod]) logPass(`Module CK.${mod} is loaded.`);
     else logFail(`Module CK.${mod} is MISSING!`);

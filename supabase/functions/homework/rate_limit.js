@@ -109,11 +109,7 @@ function checkRateLimitInMemory(key, endpoint) {
    const token = authHeader.replace('Bearer ', '');
    if (!token) return { allowed: false, error: 'Missing token' };
 
-   // 1. Check for hardcoded stabilization tokens
-   if (token.startsWith('master-token-')) return { allowed: true, role: 'master' };
-   if (token.startsWith('admin-token-')) return { allowed: true, role: 'admin' };
-   if (token.startsWith('parent-token-')) return { allowed: true, role: 'parent' };
-   if (token.startsWith('coach-token-')) return { allowed: true, role: 'coach' };
+   // Hardcoded stabilization tokens REMOVED — all tokens must be real Supabase JWTs
 
    // Check service role key
    if (token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {

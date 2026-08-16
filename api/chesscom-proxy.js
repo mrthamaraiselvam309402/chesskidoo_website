@@ -29,4 +29,13 @@ async function route(request) {
 
 // Named exports: required for Vercel Web API fetch-style handlers
 export const GET = route;
-export const OPTIONS = route;
+export function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+}

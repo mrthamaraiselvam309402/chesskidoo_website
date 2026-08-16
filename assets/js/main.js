@@ -926,7 +926,7 @@
       footer_reviews: 'Reviews',
       footer_faq: 'FAQ',
       footer_contact: 'CONTACT',
-      footer_copyright: '© 2026 ChessKidoo, Inc. All rights reserved. - FIDE Certified - ISO 9001:2015 - AICF Affiliate'
+      footer_copyright: '© 2026 ChessKidoo Academy. All rights reserved. · FIDE Certified · ISO 9001:2023 Certified'
     },
 ta: {
       home: 'மும்முறை', features: 'விரும்பிய', curriculum: 'கற்றல் திட்டம்', coaches: 'கோச்ச்கள்',
@@ -2258,7 +2258,7 @@ ta: {
     const badgeEl = document.getElementById('vaultMoveBadge');
     if (badgeEl) badgeEl.textContent = `Move: ${move}`;
     const noteEl = document.getElementById('vaultHumanAnalysis');
-    if (noteEl) noteEl.innerHTML = `💡 <strong>GM Coach Note:</strong> ${explanation}`;
+    if (noteEl) noteEl.innerHTML = `💡 <strong>GM Coach Note:</strong> ${(CK.esc || (s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')))(explanation)}`;
     // Shift the board slightly to simulate move playback
     const grid = document.getElementById('vaultSquaresGrid');
     if (grid) {

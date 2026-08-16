@@ -105,7 +105,8 @@ CK.intl = (() => {
 
     document.querySelectorAll('[data-ck-dialcode]').forEach(sel => {
       if (sel.dataset.ckReady) return; sel.dataset.ckReady = '1';
-      sel.innerHTML = COUNTRIES.map(c => `<option value="+${c[2]}" data-iso="${c[0]}" ${c[0]===defIso?'selected':''}>${c[3]} +${c[2]}</option>`).join('');
+      const _e = CK.esc || (s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'));
+      sel.innerHTML = COUNTRIES.map(c => `<option value="+${_e(String(c[2]))}" data-iso="${_e(c[0])}" ${c[0]===defIso?'selected':''}>${_e(c[3])} +${_e(String(c[2]))}</option>`).join('');
     });
     document.querySelectorAll('[data-ck-country]').forEach(sel => {
       if (sel.dataset.ckReady) return; sel.dataset.ckReady = '1';
@@ -119,7 +120,8 @@ CK.intl = (() => {
     });
     document.querySelectorAll('[data-ck-currency]').forEach(sel => {
       if (sel.dataset.ckReady) return; sel.dataset.ckReady = '1';
-      sel.innerHTML = Object.keys(CUR).map(code => `<option value="${code}" ${code===defCountry[4]?'selected':''}>${CUR[code][0].trim()} ${code}</option>`).join('');
+      const _e2 = CK.esc || (s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'));
+      sel.innerHTML = Object.keys(CUR).map(code => `<option value="${_e2(code)}" ${code===defCountry[4]?'selected':''}>${_e2(CUR[code][0].trim())} ${_e2(code)}</option>`).join('');
       sel.addEventListener('change', () => applyCurrency(sel.value));
     });
 

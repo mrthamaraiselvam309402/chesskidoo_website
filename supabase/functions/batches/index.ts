@@ -28,8 +28,8 @@ async function validateAuth(req: Request): Promise<boolean> {
   if (!authHeader) return false;
   const token = authHeader.replace('Bearer ', '');
   if (!token) return false;
-  if (token.startsWith('eyJ') || token.startsWith('master-token-') || token.startsWith('admin-token-') || token.startsWith('coach-token-') || token.startsWith('parent-token-')) return true;
-  if (token === SUPABASE_SERVICE_ROLE_KEY || token === SUPABASE_ANON_KEY) return true;
+  // Only accept the service role key or a real Supabase JWT (validated server-side)
+  if (token === SUPABASE_SERVICE_ROLE_KEY) return true;
   try {
     const supabase = getClient(true);
     const { data: { user } } = await supabase.auth.getUser(token);

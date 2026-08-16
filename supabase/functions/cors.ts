@@ -34,10 +34,10 @@ export function isOriginAllowed(origin: string | null): boolean {
     }
   }
   
-  // Check if origin contains vercel.app (for preview deployments)
+  // Allow Vercel preview deployments (e.g., chesskidoo-xxx-yyy.vercel.app)
   if (origin.includes('.vercel.app')) return true;
   
-  return true; // Allow all origins for flexibility with preview URLs
+  return false;
 }
 
 export function corsResponse(body: unknown, status: number, origin: string | null): Response {

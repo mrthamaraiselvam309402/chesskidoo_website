@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Authentication required' }, 401);
     }
     const token = authHeader.replace('Bearer ', '');
-    // Accept any JWT token (starts with eyJ) for development/demo mode
-    if (!token || (!token.startsWith('eyJ') && !token.startsWith('master-token-') && !token.startsWith('admin-token-') && !token.startsWith('coach-token-'))) {
+    // Only accept real Supabase JWT tokens (validated downstream by Supabase)
+    if (!token || !token.startsWith('eyJ')) {
       return jsonResponse({ error: 'Invalid token' }, 401);
     }
   }

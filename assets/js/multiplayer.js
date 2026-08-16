@@ -43,7 +43,7 @@ CK.multiplayer = (() => {
       }
 
       // 2. Create new game as white
-      const newId = 'game_' + Date.now();
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'game_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
       const { error: insertErr } = await window.supabaseClient.from('multiplayer_games')
         .insert({
