@@ -297,14 +297,18 @@ body.modal-open {
 }
 .ck-phone-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  align-items: center;
 }
 .ck-dial-select {
-  flex: 0 0 auto;
-  width: 100px;
+  flex: 0 0 110px !important;
+  width: 110px !important;
+  min-width: 110px !important;
+  max-width: 110px !important;
 }
 .ck-phone-input {
-  flex: 1 1 auto;
+  flex: 1 1 auto !important;
+  width: 100% !important;
 }
 .ck-demo-grid {
   display: grid;
@@ -461,24 +465,47 @@ body.modal-open {
 
 .ck-wizard-step {
   display: none;
-  animation: ckWizardFadeIn 0.4s ease;
+  animation: ckWizardFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ck-wizard-step.active {
   display: block;
 }
 @keyframes ckWizardFadeIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.ck-step-title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 20px;
+.ck-step-head {
   text-align: center;
+  margin-bottom: 22px;
+}
+.ck-step-pill {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  padding: 3px 10px;
+  border-radius: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.ck-step-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+.ck-step-sub {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
 }
 
+/* ── Level Selection Cards ── */
 .ck-level-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -495,40 +522,74 @@ body.modal-open {
   pointer-events: none;
 }
 .ck-level-card-content {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.7);
   border: 2px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 20px 12px;
-  text-align: center;
-  transition: all 0.3s ease;
+  padding: 16px 12px;
+  text-align: left;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 .ck-level-card:hover .ck-level-card-content {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(245, 158, 11, 0.3);
-  transform: translateY(-4px);
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(245, 158, 11, 0.4);
+  transform: translateY(-3px);
 }
+.ck-level-card input:checked + .ck-level-card-content,
 .ck-level-card:has(input:checked) .ck-level-card-content {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: #f59e0b;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.25) !important;
+}
+.ck-level-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 .ck-level-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.ck-level-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 7px;
+  border-radius: 10px;
 }
 .ck-level-name {
   font-size: 0.9rem;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
   margin-bottom: 4px;
 }
 .ck-level-desc {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: #94a3b8;
-  line-height: 1.3;
+  line-height: 1.35;
+  margin-bottom: 12px;
+  flex: 1;
+}
+.ck-level-check {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fbbf24;
+  display: none;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.ck-level-card input:checked + .ck-level-card-content .ck-level-check,
+.ck-level-card:has(input:checked) .ck-level-check {
+  display: block;
 }
 
+/* ── Mode Selection Cards ── */
 .ck-mode-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -545,39 +606,44 @@ body.modal-open {
   pointer-events: none;
 }
 .ck-mode-card-content {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.7);
   border: 2px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 20px;
-  text-align: center;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 .ck-mode-card:hover .ck-mode-card-content {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(30, 41, 59, 0.9);
   border-color: rgba(245, 158, 11, 0.3);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
+.ck-mode-card input:checked + .ck-mode-card-content,
 .ck-mode-card:has(input:checked) .ck-mode-card-content {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: #f59e0b;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2) !important;
 }
 .ck-mode-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
+  font-size: 1.8rem;
+  flex-shrink: 0;
 }
 .ck-mode-name {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #fff;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .ck-mode-desc {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #94a3b8;
+  line-height: 1.3;
 }
 
+/* ── Slot Grid ── */
 .ck-slot-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -586,61 +652,91 @@ body.modal-open {
 .ck-slot-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.7);
   border: 2px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-.ck-slot-item:hover {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(245, 158, 11, 0.3);
-}
-.ck-slot-item:has(input:checked) {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: #f59e0b;
+  position: relative;
 }
 .ck-slot-item input[type="radio"] {
-  accent-color: #f59e0b;
-  width: 16px;
-  height: 16px;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.ck-slot-item:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.ck-slot-item input:checked + .ck-slot-content,
+.ck-slot-item:has(input:checked) {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: #f59e0b !important;
+}
+.ck-slot-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.ck-slot-icon {
+  font-size: 1.3rem;
   flex-shrink: 0;
 }
-.ck-slot-item span {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #e2e8f0;
-  line-height: 1.3;
+.ck-slot-content strong {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.2;
 }
-.ck-slot-item small {
+.ck-slot-content small {
   font-size: 0.68rem;
   color: #94a3b8;
   font-weight: 500;
 }
 
+/* ── Wizard Actions / Buttons ── */
 .ck-wizard-actions {
   display: flex;
   gap: 10px;
   margin-top: 24px;
 }
-.ck-wizard-back {
+.ck-btn-step-back {
   flex: 0 0 auto;
+  padding: 12px 18px;
+  font-size: 0.88rem;
 }
-.ck-wizard-next, .ck-wizard-submit {
+.ck-btn-step-next, .ck-btn-step-submit {
   flex: 1;
   justify-content: center;
+  padding: 14px 20px;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
+/* ── Success State ── */
 .ck-success-state {
   text-align: center;
-  padding: 20px 0;
+  padding: 24px 10px 10px;
   animation: ckWizardFadeIn 0.5s ease;
 }
+.ck-success-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  letter-spacing: 0.6px;
+}
 .ck-success-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
+  font-size: 3.5rem;
+  margin-bottom: 12px;
   animation: ckSuccessPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 @keyframes ckSuccessPop {
@@ -649,34 +745,68 @@ body.modal-open {
   100% { transform: scale(1); }
 }
 .ck-success-title {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #fff;
   margin-bottom: 8px;
 }
 .ck-success-text {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #94a3b8;
-  line-height: 1.6;
-  margin-bottom: 24px;
-  max-width: 320px;
+  line-height: 1.55;
+  margin-bottom: 20px;
+  max-width: 340px;
   margin-left: auto;
   margin-right: auto;
 }
-.ck-success-info {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 28px;
-}
-.ck-success-info-item {
+.ck-success-summary {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: rgba(15, 23, 42, 0.6);
-  padding: 12px 20px;
+  gap: 8px;
+}
+.ck-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ck-summary-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.ck-summary-label {
+  color: #64748b;
+  font-weight: 600;
+}
+.ck-summary-val {
+  color: #fbbf24;
+  font-weight: 700;
+}
+.ck-success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ck-btn-wa-direct {
+  width: 100%;
+  padding: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #25d366 !important;
+  color: #ffffff !important;
+  border: none !important;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ck-btn-wa-direct:hover {
+  background: #1eb956 !important;
 }
 .ck-success-info-label {
   font-size: 0.68rem;

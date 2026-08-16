@@ -235,20 +235,37 @@
       return;
     }
 
-    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'about', 'reviews', 'why-choose', 'pricing', 'faq'];
+    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'tournaments', 'about', 'ck-world', 'careers', 'pricing', 'faq', 'reviews', 'why-choose', 'cta'];
     const isLandingSection = landingSections.includes(section);
     
     if (isLandingSection) {
       const landingPage = document.getElementById('landing-page');
-      if (!landingPage.classList.contains('active')) {
+      if (landingPage && !landingPage.classList.contains('active')) {
         CK.showPage('landing-page');
       }
       
       // Delay slightly if we just switched pages to ensure DOM is ready for scroll
       setTimeout(() => {
         const el = document.getElementById(section);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        if (el) {
+          const headerOffset = 80;
+          const elementPosition = el.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
       }, 50);
+
+      // Highlight active header link
+      document.querySelectorAll('.nav-links .nav-link').forEach(btn => {
+        if (btn.getAttribute('data-section') === section) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
       return;
     }
 
@@ -267,6 +284,33 @@
     
     CK.showPage(section + '-page');
   };
+
+  // ScrollSpy: Automatically highlight active header navigation link based on scroll position
+  window.addEventListener('scroll', () => {
+    const landingPage = document.getElementById('landing-page');
+    if (!landingPage || !landingPage.classList.contains('active')) return;
+
+    const sections = ['home', 'features', 'levels', 'coaches', 'achievements', 'tournaments', 'ck-world', 'pricing', 'careers', 'faq'];
+    const scrollPosition = window.scrollY + 140;
+
+    for (const secId of sections) {
+      const el = document.getElementById(secId);
+      if (el) {
+        const top = el.offsetTop;
+        const height = el.offsetHeight;
+        if (scrollPosition >= top && scrollPosition < top + height) {
+          document.querySelectorAll('.nav-links .nav-link').forEach(btn => {
+            if (btn.getAttribute('data-section') === secId) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+          break;
+        }
+      }
+    }
+  });
 
   /* ─── Modal System ─── */
   let _modalPreviousFocus = null;
@@ -651,8 +695,20 @@
         if (window.renderMsgs) window.renderMsgs();
       }
 
-      const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 *Parent Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Age:* ${age}\n📍 *City/Country:* ${city}\n🎯 *Skill Level:* ${level}\n💻 *Preferred Mode:* ${mode}\n⏱️ *Preferred Slot:* ${slot}\n\nPlease confirm our demo slot!`;
+      const msg = `Hello ChessKidoo! ♟️\n\nI'd like to book a FREE Demo Class for my child.\n\n👤 *Parent Name:* ${name}\n📞 *Phone:* ${phone}\n👶 *Child Details:* ${childDetails || age}\n📍 *City/Country:* ${city}\n🎯 *Skill Level:* ${level}\n💻 *Preferred Mode:* ${mode}\n⏱️ *Preferred Slot:* ${slot}\n\nPlease confirm our demo slot!`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+      CK.lastDemoWhatsAppUrl = waUrl;
+
+      // Populate Success Summary HTML
+      const summaryEl = document.getElementById('demoSuccessSummary');
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+          <div class="ck-summary-row"><span class="ck-summary-label">Parent Name:</span><span class="ck-summary-val">${CK.esc(name)}</span></div>
+          <div class="ck-summary-row"><span class="ck-summary-label">Skill Level:</span><span class="ck-summary-val">${CK.esc(level)}</span></div>
+          <div class="ck-summary-row"><span class="ck-summary-label">Learning Format:</span><span class="ck-summary-val">${CK.esc(mode)}</span></div>
+          <div class="ck-summary-row"><span class="ck-summary-label">Time Slot:</span><span class="ck-summary-val">${CK.esc(slot)}</span></div>
+        `;
+      }
 
       if (CK.showToast) CK.showToast('🎉 Demo Enquiry saved! Opening WhatsApp...', 'success');
 
@@ -666,7 +722,8 @@
     } catch (err) {
       if (CK.showToast) CK.showToast('Booking logged! Opening WhatsApp directly...', 'info');
       const msg = `Hello ChessKidoo! ♟️ I'd like to book a FREE Demo Class. Parent: ${name}, Phone: ${phone}, Level: ${level}, Mode: ${mode}, Slot: ${slot}.`;
-      window.open(`https://wa.me/919025846663?text=${encodeURIComponent(msg)}`, '_blank');
+      CK.lastDemoWhatsAppUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+      window.open(CK.lastDemoWhatsAppUrl, '_blank');
       CK.currentStep = 4;
       CK.updateWizardUI();
       form.reset();
@@ -674,6 +731,11 @@
       btn.textContent = origText;
       btn.disabled = false;
     }
+  };
+
+  CK.openDirectDemoWhatsApp = () => {
+    const url = CK.lastDemoWhatsAppUrl || 'https://wa.me/919025846663?text=' + encodeURIComponent('Hello ChessKidoo! I would like to confirm my free demo class booking.');
+    window.open(url, '_blank');
   };
 
   /* ─── Tournament Registration Modal & Submit Handler ─── */

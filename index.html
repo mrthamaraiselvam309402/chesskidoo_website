@@ -67,7 +67,7 @@
   <link rel="stylesheet" href="assets/css/animations.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/redesign-2026.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/theme-contrast-fix.css?v=20260728k">
-  <link rel="stylesheet" href="assets/css/mobile-optimize-2026.css?v=20260728k">
+  <link rel="stylesheet" href="assets/css/mobile-optimize-2026.css?v=20260817b">
   <link rel="stylesheet" href="assets/css/world-map.css?v=20260728k">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
@@ -163,15 +163,14 @@
           onclick="CK.navigate('levels')">Curriculum</button>
         <button class="nav-link" data-section="coaches" data-translate="coaches"
           onclick="CK.navigate('coaches')">Coaches</button>
-
         <button class="nav-link" data-section="achievements" data-translate="achievements"
           onclick="CK.navigate('achievements')">Achievements</button>
         <button class="nav-link" data-section="tournaments" onclick="CK.navigate('tournaments')">🏆 Tournaments</button>
         <button class="nav-link" data-section="ck-world" onclick="CK.navigate('ck-world')">Our Reach</button>
+        <button class="nav-link" data-section="careers" onclick="CK.navigate('careers')">💼 Careers</button>
         <button class="nav-link" data-section="pricing" data-translate="pricing"
           onclick="CK.navigate('pricing')">Pricing &amp; NRI</button>
-        <button class="nav-link" data-section="careers" onclick="CK.navigate('careers')">💼 Careers</button>
-        <button class="nav-link" data-section="faq" data-translate="faq" onclick="CK.navigate('faq')">Faq</button>
+        <button class="nav-link" data-section="faq" data-translate="faq" onclick="CK.navigate('faq')">FAQ</button>
         <div class="nav-spacer"></div>
         <a href="/lms/" id="loginNavBtn" class="nav-link btn btn-ghost nav-login" data-translate="login"
           style="padding: 8px 16px; font-size: 0.9rem;">Log In</a>
@@ -3251,50 +3250,23 @@
             style="height:auto;padding:8px 12px;" />
           <button class="p-btn p-btn-teal" style="white-space:nowrap;" onclick="CK.admin.moreOptionAction('rating')">🏅
             Update ELO</button>
-        </div>
-        <button class="p-btn p-btn-ghost" style="text-align:left;justify-content:flex-start;gap:12px;"
-          onclick="CK.admin.moreOptionAction('export')">📤 Export Profile as JSON</button>
-      </div>
-      <div class="p-modal-footer">
         <button class="p-btn p-btn-ghost" onclick="CK.closeModal('adminMoreOptionsModal')">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Student Metrics Modal (Coach) -->
-  <div class="p-modal-overlay" id="coachMetricsModal">
-    <div class="p-modal" style="max-width:480px;">
-      <div class="p-modal-header">
-        <div class="p-modal-title">📊 Student Metrics</div>
-        <button class="p-modal-close" onclick="CK.closeModal('coachMetricsModal')">✕</button>
-      </div>
-      <div class="p-modal-body">
-        <div id="metricsStudentName"
-          style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--p-gold);margin-bottom:4px;">
-        </div>
-        <div id="metricsRating" style="font-size:.85rem;color:var(--p-text-muted);margin-bottom:20px;"></div>
-        <div id="metricsBars"></div>
-      </div>
-      <div class="p-modal-footer">
-        <button class="p-btn p-btn-ghost" onclick="CK.closeModal('coachMetricsModal')">Close</button>
-        <button class="p-btn p-btn-teal" onclick="if(CK&&CK.coach&&CK.coach.nav){CK.coach.nav('notes');CK.closeModal('coachMetricsModal');}">✏️ Write
-          Note</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating UI Removed -->
-
-  <!-- Demo/Contact Modal -->
+  <!-- Redesigned World-Class Demo Booking Modal -->
   <div id="contactModal" class="modal-overlay">
     <div class="modal-card ck-demo-modal-card">
+      
+      <!-- Modal Header -->
       <div class="modal-header ck-demo-modal-header">
-        <button type="button" class="ck-modal-close-btn" onclick="CK.closeDemoModal()" aria-label="Close">✕</button>
-        <div class="ck-demo-header-badge">⭐ 100% Free Trial Session</div>
-        <h3 class="ck-demo-title">Book a Free Demo Class</h3>
-        <p class="ck-demo-subtitle">30-min 1-on-1 FIDE-certified coaching session. No credit card required.</p>
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeDemoModal()" aria-label="Close modal">✕</button>
+        <div class="ck-demo-header-badge">⭐ 100% FREE DEMO SESSION</div>
+        <h3 class="ck-demo-title">Book Your Free Demo Class</h3>
+        <p class="ck-demo-subtitle">30-min live 1-on-1 coaching session with a FIDE-certified master. Zero commitment.</p>
         
-        <!-- Progress Indicator -->
+        <!-- Interactive Progress Steps -->
         <div class="ck-demo-progress">
           <div class="ck-progress-step active" data-step="1">
             <div class="ck-step-circle">1</div>
@@ -3303,7 +3275,7 @@
           <div class="ck-progress-line"></div>
           <div class="ck-progress-step" data-step="2">
             <div class="ck-step-circle">2</div>
-            <div class="ck-step-label">Schedule</div>
+            <div class="ck-step-label">Format &amp; Time</div>
           </div>
           <div class="ck-progress-line"></div>
           <div class="ck-progress-step" data-step="3">
@@ -3313,128 +3285,198 @@
         </div>
       </div>
       
+      <!-- Modal Form Body -->
       <form class="modal-body ck-demo-modal-body" id="demoWizard" onsubmit="CK.handleDemoSubmit(event)">
         
-        <!-- Step 1: Choose Level -->
+        <!-- Step 1: Select Child's Skill Level -->
         <div class="ck-wizard-step active" data-step="1">
-          <div class="ck-step-title">Select Your Child's Chess Level</div>
+          <div class="ck-step-head">
+            <span class="ck-step-pill">Step 1 of 3</span>
+            <h4 class="ck-step-title">Select Your Child's Chess Skill Level</h4>
+            <p class="ck-step-sub">We customize every demo lesson to match your child's exact starting point.</p>
+          </div>
+
           <div class="ck-level-cards">
+            <!-- Beginner Card -->
             <label class="ck-level-card">
-              <input type="radio" name="level" value="Beginner" checked>
+              <input type="radio" name="level" value="Beginner" checked onchange="CK.onLevelCardSelect(this)">
               <div class="ck-level-card-content">
-                <div class="ck-level-icon">🌱</div>
-                <div class="ck-level-name">Beginner</div>
-                <div class="ck-level-desc">New to chess, learning basics</div>
+                <div class="ck-level-card-top">
+                  <div class="ck-level-icon">🌱</div>
+                  <span class="ck-level-tag">Ages 5–12</span>
+                </div>
+                <div class="ck-level-name">Beginner Level</div>
+                <div class="ck-level-desc">New to chess or learning piece movements, board setup, and basic rules.</div>
+                <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
+
+            <!-- Intermediate Card -->
             <label class="ck-level-card">
-              <input type="radio" name="level" value="Intermediate">
+              <input type="radio" name="level" value="Intermediate" onchange="CK.onLevelCardSelect(this)">
               <div class="ck-level-card-content">
-                <div class="ck-level-icon">🌿</div>
-                <div class="ck-level-name">Intermediate</div>
-                <div class="ck-level-desc">Knows rules, wants tactics</div>
+                <div class="ck-level-card-top">
+                  <div class="ck-level-icon">🌿</div>
+                  <span class="ck-level-tag">Ages 6–16</span>
+                </div>
+                <div class="ck-level-name">Intermediate Level</div>
+                <div class="ck-level-desc">Knows movement and checkmates. Ready for tactical patterns &amp; opening strategy.</div>
+                <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
+
+            <!-- Advanced Card -->
             <label class="ck-level-card">
-              <input type="radio" name="level" value="Advanced">
+              <input type="radio" name="level" value="Advanced" onchange="CK.onLevelCardSelect(this)">
               <div class="ck-level-card-content">
-                <div class="ck-level-icon">🌳</div>
-                <div class="ck-level-name">Advanced</div>
-                <div class="ck-level-desc">Tournament player</div>
+                <div class="ck-level-card-top">
+                  <div class="ck-level-icon">🌳</div>
+                  <span class="ck-level-tag">FIDE / Rated</span>
+                </div>
+                <div class="ck-level-name">Advanced &amp; Rated</div>
+                <div class="ck-level-desc">Active tournament player or preparing for official FIDE rated championships.</div>
+                <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
           </div>
+
           <div class="ck-wizard-actions">
-            <button type="button" class="btn btn-primary ck-wizard-next" onclick="CK.nextStep()">Continue →</button>
+            <button type="button" class="btn btn-primary ck-btn-step-next" onclick="CK.nextStep()">Continue to Format &amp; Time →</button>
           </div>
         </div>
 
-        <!-- Step 2: Mode & Time -->
+        <!-- Step 2: Format & Preferred Schedule -->
         <div class="ck-wizard-step" data-step="2">
-          <div class="ck-step-title">Choose Learning Mode &amp; Time</div>
-          <div class="ck-form-group ck-form-group">
-            <label class="ck-form-label">Learning Mode *</label>
+          <div class="ck-step-head">
+            <span class="ck-step-pill">Step 2 of 3</span>
+            <h4 class="ck-step-title">Choose Learning Format &amp; Preferred Time</h4>
+            <p class="ck-step-sub">Select online interactive sessions or in-person coaching at our Tamil Nadu centres.</p>
+          </div>
+
+          <!-- Format Selection -->
+          <div class="ck-form-group">
+            <label class="ck-form-label">Learning Format *</label>
             <div class="ck-mode-cards">
               <label class="ck-mode-card">
                 <input type="radio" name="mode" value="Online Class" checked>
                 <div class="ck-mode-card-content">
                   <div class="ck-mode-icon">💻</div>
-                  <div class="ck-mode-name">Online Class</div>
-                  <div class="ck-mode-desc">Live Google Meet session</div>
+                  <div class="ck-mode-info">
+                    <div class="ck-mode-name">Live Online Class</div>
+                    <div class="ck-mode-desc">1-on-1 via HD Board &amp; Google Meet (Worldwide)</div>
+                  </div>
                 </div>
               </label>
               <label class="ck-mode-card">
                 <input type="radio" name="mode" value="Offline Centre">
                 <div class="ck-mode-card-content">
                   <div class="ck-mode-icon">🏫</div>
-                  <div class="ck-mode-name">Offline Centre</div>
-                  <div class="ck-mode-desc">Tamil Nadu only</div>
+                  <div class="ck-mode-info">
+                    <div class="ck-mode-name">Offline Centre</div>
+                    <div class="ck-mode-desc">Erode &amp; Bhavani Academy Centres (Tamil Nadu)</div>
+                  </div>
                 </div>
               </label>
             </div>
           </div>
-          <div class="ck-form-group ck-form-group">
+
+          <!-- Preferred Time Slot -->
+          <div class="ck-form-group">
             <label class="ck-form-label">Preferred Time Slot *</label>
             <div class="ck-slot-grid">
               <label class="ck-slot-item">
                 <input type="radio" name="slot" value="Morning (10 AM - 1 PM)" checked>
-                <span>🌅 Morning<br><small>10 AM - 1 PM</small></span>
+                <div class="ck-slot-content">
+                  <span class="ck-slot-icon">🌅</span>
+                  <div>
+                    <strong>Morning Batch</strong>
+                    <small>10:00 AM - 01:00 PM IST</small>
+                  </div>
+                </div>
               </label>
               <label class="ck-slot-item">
                 <input type="radio" name="slot" value="Afternoon (2 PM - 5 PM)">
-                <span>☀️ Afternoon<br><small>2 PM - 5 PM</small></span>
+                <div class="ck-slot-content">
+                  <span class="ck-slot-icon">☀️</span>
+                  <div>
+                    <strong>Afternoon Batch</strong>
+                    <small>02:00 PM - 05:00 PM IST</small>
+                  </div>
+                </div>
               </label>
               <label class="ck-slot-item">
-                <input type="radio" name="slot" value="Evening (5 PM - 8 PM)">
-                <span>🌆 Evening<br><small>5 PM - 8 PM</small></span>
+                <input type="radio" name="slot" value="Evening (5 PM - 8:30 PM)">
+                <div class="ck-slot-content">
+                  <span class="ck-slot-icon">🌆</span>
+                  <div>
+                    <strong>Evening Prime</strong>
+                    <small>05:00 PM - 08:30 PM IST</small>
+                  </div>
+                </div>
               </label>
               <label class="ck-slot-item">
                 <input type="radio" name="slot" value="Weekend Special">
-                <span>⭐ Weekend<br><small>Special Batch</small></span>
+                <div class="ck-slot-content">
+                  <span class="ck-slot-icon">⭐</span>
+                  <div>
+                    <strong>Weekend Special</strong>
+                    <small>Sat &amp; Sun Slots</small>
+                  </div>
+                </div>
               </label>
             </div>
           </div>
+
           <div class="ck-wizard-actions">
-            <button type="button" class="btn btn-ghost ck-wizard-back" onclick="CK.prevStep()">← Back</button>
-            <button type="button" class="btn btn-primary ck-wizard-next" onclick="CK.nextStep()">Continue →</button>
+            <button type="button" class="btn btn-ghost ck-btn-step-back" onclick="CK.prevStep()">← Back</button>
+            <button type="button" class="btn btn-primary ck-btn-step-next" onclick="CK.nextStep()">Continue to Parent Details →</button>
           </div>
         </div>
 
-        <!-- Step 3: Contact Details -->
+        <!-- Step 3: Parent & Student Contact Details -->
         <div class="ck-wizard-step" data-step="3">
-          <div class="ck-step-title">Parent &amp; Student Details</div>
-          <div class="ck-form-group ck-form-group">
-            <label class="ck-form-label">Parent's Name *</label>
+          <div class="ck-step-head">
+            <span class="ck-step-pill">Step 3 of 3</span>
+            <h4 class="ck-step-title">Parent &amp; Student Details</h4>
+            <p class="ck-step-sub">Where should we send your Google Meet link &amp; demo slot confirmation?</p>
+          </div>
+
+          <div class="ck-form-group">
+            <label class="ck-form-label">Parent / Guardian Full Name *</label>
             <input type="text" name="fullName" required placeholder="e.g. Ramesh Kumar" class="ck-form-input">
           </div>
-          <div class="ck-form-group ck-form-group">
-            <label class="ck-form-label">WhatsApp Number *</label>
+
+          <div class="ck-form-group">
+            <label class="ck-form-label">WhatsApp Number (for instant slot confirmation) *</label>
             <div class="ck-phone-row">
-              <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
+              <select name="dialCode" data-ck-dialcode aria-label="Country Code" class="ck-form-select ck-dial-select"></select>
               <input type="tel" name="phone" required placeholder="98765 43210" pattern="[0-9+\s\-]{6,15}" class="ck-form-input ck-phone-input">
             </div>
           </div>
+
           <div class="ck-demo-grid">
-            <div class="form-group ck-form-group">
-              <label class="ck-form-label">Child's Age *</label>
-              <input type="number" name="age" required min="4" max="18" placeholder="e.g. 8" class="ck-form-input">
+            <div class="ck-form-group">
+              <label class="ck-form-label">Child's Name &amp; Age *</label>
+              <input type="text" name="childDetails" required placeholder="e.g. Mukilan (Age 8)" class="ck-form-input">
             </div>
-            <div class="form-group ck-form-group">
+            <div class="ck-form-group">
               <label class="ck-form-label">City</label>
-              <input type="text" name="city" placeholder="e.g. Chennai / Erode" class="ck-form-input">
+              <input type="text" name="city" placeholder="e.g. Chennai / Erode / Dubai" class="ck-form-input">
             </div>
           </div>
-          <div class="form-group ck-form-group">
+
+          <div class="ck-form-group">
             <label class="ck-form-label">Country</label>
             <select name="country" data-ck-country class="ck-form-select"></select>
           </div>
+
           <div class="ck-wizard-actions">
-            <button type="button" class="btn btn-ghost ck-wizard-back" onclick="CK.prevStep()">← Back</button>
-            <button type="submit" class="btn btn-primary ck-wizard-submit">📱 Book Free Demo &amp; WhatsApp Us</button>
+            <button type="button" class="btn btn-ghost ck-btn-step-back" onclick="CK.prevStep()">← Back</button>
+            <button type="submit" class="btn btn-primary ck-btn-step-submit">📱 Confirm &amp; Book Free Demo</button>
           </div>
         </div>
 
-        <!-- Step 4: Success -->
+        <!-- Step 4: Instant Confirmation / Success State -->
         <div class="ck-wizard-step" data-step="4">
           <div class="ck-success-state">
             <div class="ck-success-icon">🎉</div>
