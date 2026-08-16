@@ -138,11 +138,35 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .ckw-pin-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.78);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-  transition: color 0.25s ease;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(232, 160, 32, 0.4);
+  padding: 3px 9px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.ckw-pin.pos-top {
+  flex-direction: column-reverse;
+  align-items: center;
+  margin: -28px 0 0 -7px;
+}
+.ckw-pin.pos-bottom {
+  flex-direction: column;
+  align-items: center;
+}
+.ckw-pin.pos-left {
+  flex-direction: row-reverse;
+  align-items: center;
+}
+.ckw-pin.pos-right {
+  flex-direction: row;
+  align-items: center;
 }
 .ckw-pin:hover .ckw-pin-dot,
 .ckw-pin:focus-visible .ckw-pin-dot,
@@ -152,7 +176,12 @@
 }
 .ckw-pin:hover .ckw-pin-label,
 .ckw-pin:focus-visible .ckw-pin-label,
-.ckw-pin.is-active .ckw-pin-label { color: #fff; }
+.ckw-pin.is-active .ckw-pin-label {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.8);
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 6px 18px rgba(232, 160, 32, 0.35);
+}
 .ckw-pin:focus-visible { outline: 2px solid var(--amber-light); outline-offset: 4px; border-radius: 4px; }
 
 /* The home / head-office pin gets a slow radar pulse. */

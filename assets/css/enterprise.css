@@ -189,11 +189,11 @@
 /* ═══ TESTIMONIAL VIDEOS (landing page) ═══ */
 .tvid-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+  grid-template-columns: repeat(3, 1fr);
   justify-content: center;
   align-items: start;
-  gap: 28px;
-  max-width: 820px;
+  gap: 24px;
+  max-width: 1140px;
   margin: 36px auto 0;
   padding: 0 20px;
 }

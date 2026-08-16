@@ -36,17 +36,17 @@
   const HOME = { lon: 77.7172, lat: 11.3410 };
 
   const COUNTRIES = [
-    { id: 'in', name: 'India',          flag: '🇮🇳', city: 'Erode · Tamil Nadu', lon: 77.72,  lat: 11.34,  home: true,
+    { id: 'in', name: 'India',          flag: '🇮🇳', city: 'Erode · Tamil Nadu', lon: 77.72,  lat: 11.34,  home: true, pos: 'top',
       note: 'Head office plus three offline centres — online classes nationwide.' },
-    { id: 'us', name: 'United States',  flag: '🇺🇸', city: 'New York / US Coasts', lon: -74.00, lat: 40.71,
+    { id: 'us', name: 'United States',  flag: '🇺🇸', city: 'New York / US Coasts', lon: -98.57, lat: 38.00, pos: 'bottom',
       note: 'Our furthest classroom — 13,500 km from Erode, with flexible time-zone slots.' },
-    { id: 'ca', name: 'Canada',         flag: '🇨🇦', city: 'Toronto & Vancouver', lon: -79.38, lat: 43.65,
+    { id: 'ca', name: 'Canada',         flag: '🇨🇦', city: 'Toronto & Vancouver', lon: -106.34, lat: 56.13, pos: 'top',
       note: 'Weekend batches timed for Ontario and British Columbia families.' },
-    { id: 'sg', name: 'Singapore',      flag: '🇸🇬', city: 'Singapore',          lon: 103.82, lat: 1.35,
+    { id: 'sg', name: 'Singapore',      flag: '🇸🇬', city: 'Singapore',          lon: 103.82, lat: 1.35, pos: 'bottom',
       note: 'Evening SGT batches for students in the city-state.' },
-    { id: 'my', name: 'Malaysia',       flag: '🇲🇾', city: 'Kuala Lumpur',       lon: 101.69, lat: 3.14,
+    { id: 'my', name: 'Malaysia',       flag: '🇲🇾', city: 'Kuala Lumpur',       lon: 101.69, lat: 4.21, pos: 'top',
       note: 'Shared timetable with our Singapore batches.' },
-    { id: 'au', name: 'Australia',      flag: '🇦🇺', city: 'Sydney & Melbourne', lon: 151.21, lat: -33.87,
+    { id: 'au', name: 'Australia',      flag: '🇦🇺', city: 'Sydney & Melbourne', lon: 133.77, lat: -25.27, pos: 'right',
       note: 'Early-morning AEST classes before the school run.' },
   ];
 
@@ -305,7 +305,7 @@
     for (const m of list) {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'ckw-pin' + ((m.home || m.tag === 'Head Office') ? ' is-home' : '');
+      b.className = 'ckw-pin' + ((m.home || m.tag === 'Head Office') ? ' is-home' : '') + (m.pos ? ' pos-' + m.pos : ' pos-right');
       b.innerHTML =
         '<span class="ckw-pin-dot" aria-hidden="true"></span>' +
         '<span class="ckw-pin-label">' + (m.flag ? m.flag + ' ' : '') + m.name + '</span>';
