@@ -1137,7 +1137,8 @@ ${applicant}`;
   CK.translations = {
     en: {
       home: 'Home', features: 'Features', curriculum: 'Curriculum', coaches: 'Coaches',
-      achievements: 'Achievements', pricing: 'Pricing', faq: 'Faq', login: 'Log In',
+      achievements: 'Achievements', tournaments: '🏆 Tournaments', ck_world: 'Our Reach',
+      careers: '💼 Careers', pricing: 'Pricing & NRI', faq: 'FAQ', login: 'Log In',
       translate: 'Translate',
       hero_title: 'Where kids<br>learn to<br><em>think two</em><br><em>moves</em><br>ahead.',
       hero_badge: "India's #1 Student Tracking System",
@@ -1215,9 +1216,10 @@ ${applicant}`;
       footer_contact: 'CONTACT',
       footer_copyright: '© 2026 ChessKidoo Academy. All rights reserved. · FIDE Certified · ISO 9001:2023 Certified'
     },
-ta: {
-      home: 'மும்முறை', features: 'விரும்பிய', curriculum: 'கற்றல் திட்டம்', coaches: 'கோச்ச்கள்',
-      achievements: 'சிறப்பு', pricing: 'விலை', faq: 'கேல்வி', login: 'பயனர் உள்நுழைய',
+  ta: {
+      home: 'முகப்பு', features: 'அம்சங்கள்', curriculum: 'பாடத்திட்டம்', coaches: 'பயிற்சியாளர்கள்',
+      achievements: 'சாதனைகள்', tournaments: '🏆 போட்டிகள்', ck_world: 'எங்கள் எல்லை',
+      careers: '💼 வேலைவாய்ப்பு', pricing: 'கட்டணம் & NRI', faq: 'கேள்விகள்', login: 'உள்நுழைவு',
       translate: 'மொழி',
       hero_title: 'பள்ளத்தின் இரண்டு பக்கெல்லாம் யோசிக்க கல்வி',
       hero_badge: "இந்தியாவின் #1 மாணவர் கண்காணிப்பச் சிறப்பு",
