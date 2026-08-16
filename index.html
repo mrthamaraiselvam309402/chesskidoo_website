@@ -1780,7 +1780,7 @@
             <div class="ck-nri-action">
               <div class="ck-nri-price-tag">Custom Quote</div>
               <div class="ck-nri-price-sub">Based on Timezone &amp; Format</div>
-              <button type="button" class="btn btn-primary ck-nri-btn" onclick="CK.openDemoModal()">🌍 Inquire NRI Fee &amp; Slot</button>
+              <button type="button" class="btn btn-primary ck-nri-btn" onclick="CK.openNriModal()">🌍 Inquire NRI Fee &amp; Slot</button>
             </div>
           </div>
         </div>
@@ -3551,6 +3551,78 @@
     </div>
   </div>
 
+  <!-- NRI & International Custom Fee Quote Inquiry Modal -->
+  <div id="nriInquiryModal" class="modal-overlay">
+    <div class="modal-card ck-demo-modal-card" style="max-width:540px;">
+      <div class="modal-header ck-demo-modal-header">
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal('nriInquiryModal')" aria-label="Close">✕</button>
+        <div class="ck-demo-header-badge">🌍 NRI &amp; International Custom Quote</div>
+        <h3 class="ck-demo-title">Inquire NRI Fee &amp; Timezone Slot</h3>
+        <p class="ck-demo-subtitle">Get custom fee details tailored to your country's timezone, coaching format &amp; class frequency.</p>
+      </div>
+      <form class="modal-body ck-demo-modal-body" id="nriInquiryForm" onsubmit="CK.handleNriSubmit(event)">
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Parent Full Name *</label>
+          <input type="text" name="fullName" required placeholder="e.g. Dr. Rajesh Kumar" class="ck-form-input">
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Country &amp; Timezone *</label>
+            <select name="countryTimezone" required class="ck-form-select">
+              <option value="🇺🇸 USA (EST - New York)">🇺🇸 USA (EST - New York / East)</option>
+              <option value="🇺🇸 USA (PST - California)">🇺🇸 USA (PST - West Coast)</option>
+              <option value="🇬🇧 UK (GMT / BST - London)">🇬🇧 UK (GMT / BST - London)</option>
+              <option value="🇪🇺 Germany / Europe (CET - Frankfurt)">🇪🇺 Germany / Europe (CET)</option>
+              <option value="🇦🇪 UAE / Gulf (GST - Dubai)">🇦🇪 UAE / Gulf (GST - Dubai)</option>
+              <option value="🇸🇬 Singapore / Asia (SGT)">🇸🇬 Singapore / Asia (SGT)</option>
+              <option value="🇦🇺 Australia (AEST - Sydney)">🇦🇺 Australia (AEST - Sydney)</option>
+              <option value="🌐 Other International Region">🌐 Other International Region</option>
+            </select>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Category / Format Looking For *</label>
+            <select name="categoryFormat" required class="ck-form-select">
+              <option value="1-on-1 Personal Coaching">♟️ 1-on-1 Personal Coaching</option>
+              <option value="Small Group (Max 4 Students)">👥 Small Group (Max 4 Students)</option>
+              <option value="Weekend Special Intensive">⭐ Weekend Special Intensive</option>
+              <option value="FIDE Rated Masterclass">🏆 FIDE Rated Masterclass</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Classes Per Month *</label>
+            <select name="classesPerMonth" required class="ck-form-select">
+              <option value="4 Classes / Month (1x / Week)">4 Classes / Month (Weekly 1 Class)</option>
+              <option value="8 Classes / Month (2x / Week)">8 Classes / Month (Weekly 2 Classes)</option>
+              <option value="12 Classes / Month (3x / Week)">12 Classes / Month (Weekly 3 Classes)</option>
+              <option value="Custom Schedule / Flexible">Custom Schedule / Flexible</option>
+            </select>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">WhatsApp Contact Number *</label>
+            <div class="ck-phone-row">
+              <select name="dialCode" data-ck-dialcode aria-label="Country code" class="ck-form-select ck-dial-select"></select>
+              <input type="tel" name="phone" required placeholder="98765 43210" class="ck-form-input ck-phone-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="ck-demo-notice">
+          <span class="ck-notice-icon">💬</span>
+          <span class="ck-notice-text">Direct HR Connect — Opens WhatsApp desk (+91 90258 46663) with your pre-filled inquiry.</span>
+        </div>
+
+        <div class="modal-footer ck-demo-actions" style="position:sticky;bottom:-20px;padding-top:12px;background:#162036;">
+          <button type="button" class="p-btn p-btn-ghost" onclick="CK.closeModal('nriInquiryModal')">Cancel</button>
+          <button type="submit" class="p-btn p-btn-teal" style="flex:1;">💬 Send Custom NRI Quote Request via WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Careers / Job Application Modal -->
   <div id="jobApplyModal" class="modal-overlay">
     <div class="modal-card ck-demo-modal-card">
@@ -3651,16 +3723,6 @@
         </div>
 
         <div class="ck-demo-grid">
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">Discount / Scholarship (₹)</label>
-            <input type="number" id="mapDiscountAmount" name="discountAmount" class="ck-form-input" placeholder="0" value="0">
-          </div>
-          <div class="form-group ck-form-group">
-            <label class="ck-form-label">Billing Month / Period</label>
-            <input type="text" id="mapBillingPeriod" name="billingPeriod" class="ck-form-input" placeholder="Current Cycle">
-          </div>
-        </div>
-
         <div class="form-group ck-form-group">
           <label class="ck-form-label">Transaction / Reference Note (Optional)</label>
           <input type="text" id="mapTxnNote" name="txnNote" class="ck-form-input" placeholder="e.g. UPI Ref #987654321 or Receipt #1042">

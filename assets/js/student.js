@@ -469,13 +469,18 @@ CK.student = {
         sTable.innerHTML = meetings.map(m => {
           const isToday = m.date === todayStr;
           const displayDate = isToday ? 'Today' : new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const liveUrl = m.link || m.url || m.meet_link || p.class_link || 'https://meet.google.com/chesskidoo-live';
           return `<tr>
             <td>${displayDate}</td>
             <td style="font-weight:600">${_e(m.title || m.type || 'Class')}</td>
             <td>${_e(m.coach || p.coach || 'Coach')}</td>
             <td>${_e(m.time || '')}</td>
             <td>${m.duration ? m.duration + 'm' : '60m'}</td>
-            <td><span class="p-badge ${isToday ? 'p-badge-green' : 'p-badge-blue'}">${isToday ? 'Upcoming' : 'Scheduled'}</span></td>
+            <td>
+              <a href="${_e(liveUrl)}" target="_blank" class="p-btn p-btn-teal p-btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.78rem;">
+                🎥 Join Live Class
+              </a>
+            </td>
           </tr>`;
         }).join('');
       } else {

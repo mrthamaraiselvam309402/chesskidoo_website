@@ -735,6 +735,68 @@
     }
   };
 
+  CK.openNriModal = () => {
+    if (CK.openModal) CK.openModal('nriInquiryModal');
+  };
+
+  CK.handleNriSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('[type="submit"]');
+    const name = form.fullName ? form.fullName.value.trim() : '';
+    const dial = form.dialCode ? form.dialCode.value : '+91';
+    const rawPhone = form.phone ? form.phone.value : '';
+    const cleanDigits = rawPhone.replace(/\D/g, '');
+    const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, cleanDigits) : `${dial} ${cleanDigits}`;
+    const countryTz = form.countryTimezone ? form.countryTimezone.value : '';
+    const category = form.categoryFormat ? form.categoryFormat.value : '';
+    const classesPerMonth = form.classesPerMonth ? form.classesPerMonth.value : '';
+
+    if (!name || !cleanDigits) {
+      if (CK.showToast) CK.showToast('Please enter your full name and WhatsApp contact number', 'error');
+      return;
+    }
+
+    const origText = btn.textContent;
+    btn.textContent = 'Preparing Request... ♟';
+    btn.disabled = true;
+
+    try {
+      const summaryMsg = `Parent Name: ${name}\nPhone: ${phone}\nCountry & Timezone: ${countryTz}\nFormat Looking For: ${category}\nClasses / Month: ${classesPerMonth}\nRequested Date: ${new Date().toLocaleDateString()}`;
+
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('leads').insert({
+            name,
+            phone,
+            city: countryTz,
+            notes: `NRI Inquiry | Format: ${category} | Frequency: ${classesPerMonth}`,
+            status: 'new',
+            created_at: new Date().toISOString()
+          });
+        } catch (_) {}
+      }
+
+      const msg = `Hello ChessKidoo Academy! 🌍\n\nI am requesting a Custom NRI Fee & Timezone Quote for my child.\n\n👤 *Parent Name:* ${name}\n📞 *WhatsApp:* ${phone}\n🌐 *Country & Timezone:* ${countryTz}\n♟️ *Format Looking For:* ${category}\n📅 *Classes / Month:* ${classesPerMonth}\n\nPlease send custom fee details and available slots! ♟️`;
+      const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
+
+      if (CK.showToast) CK.showToast('🎉 Custom NRI Quote request ready! Opening WhatsApp...', 'success');
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+        CK.closeModal('nriInquiryModal');
+        form.reset();
+      }, 400);
+    } catch (err) {
+      const fallbackUrl = `https://wa.me/919025846663?text=${encodeURIComponent('Hello ChessKidoo! 🌍 NRI Inquiry from ' + name + ' (' + countryTz + '). Format: ' + category + ', Frequency: ' + classesPerMonth)}`;
+      window.open(fallbackUrl, '_blank');
+      CK.closeModal('nriInquiryModal');
+      form.reset();
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  };
+
   CK.openDirectDemoWhatsApp = () => {
     const url = CK.lastDemoWhatsAppUrl || 'https://wa.me/919025846663?text=' + encodeURIComponent('Hello ChessKidoo! I would like to confirm my free demo class booking.');
     window.open(url, '_blank');
