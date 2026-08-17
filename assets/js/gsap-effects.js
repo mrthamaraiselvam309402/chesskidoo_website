@@ -70,19 +70,15 @@
     if (pieces.length) {
       gsap.fromTo(pieces,
         { x: -260, opacity: 0, rotation: -12 },
-        { x: 0, opacity: 0.9, rotation: 0, duration: 0.9, ease: 'power3.out', stagger: 0.13 });
+        { x: 0, opacity: 0.9, rotation: 0, duration: 1.1, ease: 'power3.out', stagger: 0.15 });
     }
-    // 2. THEN the words fly in from alternating sides and fall into place.
+    // 2. THEN the words fly in gracefully and settle smoothly.
     if (words.length) {
       gsap.fromTo(words,
-        { opacity: 0, y: -60, x: (i) => (i % 2 ? 130 : -130), rotation: (i) => (i % 2 ? 9 : -9) },
-        { opacity: 1, y: 0, x: 0, rotation: 0, duration: 0.75, ease: 'back.out(1.7)', stagger: 0.12, delay: 0.65 });
+        { opacity: 0, y: -45, x: (i) => (i % 2 ? 80 : -80), rotation: (i) => (i % 2 ? 5 : -5) },
+        { opacity: 1, y: 0, x: 0, rotation: 0, duration: 0.95, ease: 'power3.out', stagger: 0.12, delay: 0.5 });
     }
     // Touch / hover handler — each word FLIES OUT and returns to its place.
-    // Alternating direction per word, with a slight spin; uses an elastic return
-    // so it lands with a satisfying spring. Re-armable: triggers again next time.
-    // Stores the running bounce tween so we can pause it during the fly, then
-    // restart it (a fresh yoyo from the rest position) when the word lands.
     words.forEach((el, i) => {
       const dir = i % 2 ? 1 : -1;
       let flying = false;
@@ -97,11 +93,11 @@
           if (el._bounceTween) { el._bounceTween.restart(true); }
         }});
         tl.to(el, {
-          x: dir * 90, y: -54, rotation: dir * 18, scale: 1.18,
-          duration: 0.38, ease: 'power2.out', overwrite: 'auto'
+          x: dir * 70, y: -38, rotation: dir * 12, scale: 1.12,
+          duration: 0.45, ease: 'power2.out', overwrite: 'auto'
         }).to(el, {
           x: 0, y: 0, rotation: 0, scale: 1,
-          duration: 0.85, ease: 'elastic.out(1, 0.45)'
+          duration: 1.0, ease: 'elastic.out(1, 0.5)'
         });
       };
       el.addEventListener('mouseenter', fly);
@@ -109,30 +105,27 @@
       el.addEventListener('click', fly);
     });
 
-    // 3. After the entrance settles, start a CONTINUOUS bounce-back-and-forth on
-    //    each title word + the gentle float on the pieces. Each word bobs on its
-    //    own offset rhythm so the headline feels alive.
-    gsap.delayedCall(2.0, () => {
-      // Per-word vertical bounce (slight horizontal sway for personality).
-      // Save the tween on the element so the click/hover fly handler can pause
-      // it during the fly and restart it cleanly when the word lands.
+    // 3. After the entrance settles, start a GENTLE, SLOW float on
+    //    each title word + the gentle float on the pieces.
+    //    Slow, relaxed cycle (3.6s - 4.4s) for a calm, luxurious feel.
+    gsap.delayedCall(1.8, () => {
       words.forEach((el, i) => {
         el._bounceTween = gsap.to(el, {
-          y: -10,
-          x: (i % 2 ? 4 : -4),
-          rotation: (i % 2 ? 1.5 : -1.5),
-          duration: 1.6 + (i % 3) * 0.25,         // varied tempo per word
-          delay: i * 0.08,                         // staggered start
+          y: -5,
+          x: (i % 2 ? 1.5 : -1.5),
+          rotation: (i % 2 ? 0.6 : -0.6),
+          duration: 3.6 + (i % 3) * 0.4,          // Slow, graceful tempo per word (~3.6s - 4.4s)
+          delay: i * 0.12,                         // Staggered start
           ease: 'sine.inOut',
           yoyo: true,
           repeat: -1
         });
       });
-      // Pieces float
+      // Pieces float gently
       pieces.forEach((el, i) => {
         gsap.to(el, {
-          y: `+=${18 + i * 6}`, x: `+=${(i % 2 ? 1 : -1) * (10 + i * 3)}`,
-          rotation: (i % 2 ? 1 : -1) * 6, duration: 3.4 + i * 0.6,
+          y: `+=${14 + i * 5}`, x: `+=${(i % 2 ? 1 : -1) * (8 + i * 2)}`,
+          rotation: (i % 2 ? 1 : -1) * 4, duration: 4.2 + i * 0.6,
           ease: 'sine.inOut', yoyo: true, repeat: -1
         });
       });
@@ -175,7 +168,7 @@
         gsap.fromTo(head, { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
           scrollTrigger: { trigger: head, start: 'top 88%', once: true } });
       });
-      // Card grids — staggered pop-in with a soft overshoot
+      // Card grids — staggered smooth rise
       const gridSelectors = ['.feat-grid', '.coach-grid', '.achievements-grid', '.pricing-grid',
         '.reviews-grid', '.skills-grid', '.why-grid', '.levels-grid', '.level-cards',
         '.curriculum-grid', '.showcase-gallery-container', '.cert-grid', '.about-cert-grid'];
@@ -184,8 +177,8 @@
           claim(grid);
           const kids = Array.from(grid.children);
           kids.forEach((k) => { claim(k); claimed.push(k); });
-          gsap.fromTo(kids, { opacity: 0, y: 56, scale: 0.95 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.3)', stagger: 0.08,
+          gsap.fromTo(kids, { opacity: 0, y: 36 },
+            { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out', stagger: 0.06,
               scrollTrigger: { trigger: grid, start: 'top 88%', once: true } });
         });
       });
@@ -348,8 +341,7 @@
       });
     } else if (ST) {
       // ── Touch parity ──
-      // As a card travels through the viewport its highlight sweeps top→bottom
-      // and it tilts a few degrees, mirroring the desktop hover feel.
+      // Card spotlight positioning on mobile for parity without distorting transforms
       cards.forEach((card) => {
         card.classList.add('ck-spotlight');
         card.style.setProperty('--ck-mx', '50%');
@@ -364,39 +356,14 @@
             card.style.setProperty('--ck-spot', (1 - Math.abs(p - 0.5) * 2).toFixed(2));
           },
         });
-        gsap.fromTo(card,
-          { rotateX: 6, y: 18 },
-          { rotateX: 0, y: 0, ease: 'none',
-            scrollTrigger: { trigger: card, start: 'top bottom', end: 'center 62%', scrub: 0.6 } });
       });
-      // Tap feedback so touching a card feels as responsive as hovering one.
+      // Tap feedback so touching a card feels responsive.
       cards.forEach((card) => {
         card.addEventListener('touchstart', () => gsap.to(card, { scale: 0.985, duration: 0.16, ease: 'power2.out' }), { passive: true });
         const release = () => gsap.to(card, { scale: 1, duration: 0.34, ease: 'back.out(2)' });
         card.addEventListener('touchend', release, { passive: true });
         card.addEventListener('touchcancel', release, { passive: true });
       });
-    }
-
-    /* ─── 5. Scroll-velocity skew ───
-       The page's card grids lean very slightly into fast scrolling and settle
-       when it stops. Clamped hard (±5deg) so it reads as momentum, not glitch. */
-    if (ST) {
-      const skewTargets = gsap.utils.toArray('.feat-grid, .reviews-grid, .achievements-grid, .levels-grid');
-      if (skewTargets.length) {
-        const clamp = gsap.utils.clamp(-5, 5);
-        let proxy = { skew: 0 };
-        ST.create({
-          onUpdate: (self) => {
-            const v = clamp(self.getVelocity() / -260);
-            if (Math.abs(v) > Math.abs(proxy.skew)) {
-              proxy.skew = v;
-              gsap.to(proxy, { skew: 0, duration: 0.85, ease: 'power3.out', overwrite: true,
-                onUpdate: () => gsap.set(skewTargets, { skewY: proxy.skew, transformOrigin: 'center center' }) });
-            }
-          },
-        });
-      }
     }
 
     /* ─── 6. Footer centre/country chips cascade ───

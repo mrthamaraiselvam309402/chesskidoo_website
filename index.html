@@ -74,7 +74,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260728k">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260818a">
   <link rel="stylesheet" href="assets/css/portals.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/arena.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/dashboard.css?v=20260728k">
@@ -84,7 +84,7 @@
   <link rel="stylesheet" href="assets/css/portal-modern.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/tomai.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/enterprise.css?v=20260728k">
-  <link rel="stylesheet" href="assets/css/animations.css?v=20260728k">
+  <link rel="stylesheet" href="assets/css/animations.css?v=20260818a">
   <link rel="stylesheet" href="assets/css/redesign-2026.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/theme-contrast-fix.css?v=20260728k">
   <link rel="stylesheet" href="assets/css/mobile-optimize-2026.css?v=20260817b">
@@ -445,132 +445,164 @@
                    src="/assets/videos/ranjith-testimonial.mp4">
               Sorry, your browser doesn't support embedded videos.
             </video>
-            <figcaption class="tvid-caption">🎥 Ranjith's Parent Experience &amp; Review</figcaption>
+            <figcaption class="tvid-caption">🎥 About our Academy</figcaption>
           </figure>
         </div>
       </section>
+
+      <!-- Academy Events Section -->
+      <section id="academy-events" class="section-padding" style="background: var(--cream, #fffdf8);">
+        <div class="section-head" data-aos="fade-up">
+          <div class="eyebrow">🎉 Academy Events</div>
+          <h2 style="font-size: 2.8rem;">Excitement, Tournaments &amp; Events</h2>
+          <p class="lead">Glimpses of life at ChessKidoo — where learning chess meets boundless fun and competitive spirit.</p>
+        </div>
+        <div class="tvid-grid" data-aos="fade-up" style="grid-template-columns: repeat(auto-fit, minmax(320px, 480px)); max-width: 1020px; margin: 36px auto 0;">
+          <figure class="tvid-card">
+            <video class="tvid-player" controls preload="metadata" playsinline
+                   src="/assets/videos/playful-video.mp4">
+              Sorry, your browser doesn't support embedded videos.
+            </video>
+            <figcaption class="tvid-caption">🎉 Fun &amp; Playful Moments</figcaption>
+          </figure>
+          <figure class="tvid-card">
+            <video class="tvid-player" controls preload="metadata" playsinline
+                   src="/assets/videos/tournament-video.mp4">
+              Sorry, your browser doesn't support embedded videos.
+            </video>
+            <figcaption class="tvid-caption">🏆 Tournament Action &amp; Events</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <script>
         /* Show the video's own first frame as the thumbnail (not a static poster):
-           seek each testimonial video to 0.1s once metadata loads so a real frame renders. */
+           seek each video to 0.1s once metadata loads so a real frame renders. */
         (function () {
           function primeFrame(v){ v.addEventListener('loadedmetadata', function(){ try { if (v.currentTime < 0.1) v.currentTime = 0.1; } catch(e){} }, { once:true }); }
           document.querySelectorAll('.tvid-player').forEach(primeFrame);
         })();
       </script>
 
-      <!-- Curriculum -->
-      <section id="levels" class="section-padding" style="overflow: hidden;">
+      <!-- Learning Journey (Reference Inspired) -->
+      <section id="levels" class="section-padding cj-reference-theme" style="overflow: hidden;">
         <div class="container">
-          <div class="journey-section-head" data-aos="fade-up">
-            <div class="eyebrow" style="display:block;text-align:center;margin-bottom:12px;">Student Journey</div>
-            <h2>Online Chess Classes for <span>Beginners</span> to <span>Master Level</span></h2>
-            <p class="lead" style="color:#111111;max-width:580px;margin:12px auto 0; font-weight:600;">Progress from your very first
-              move to tournament glory — four milestones, one extraordinary journey.</p>
+          <div class="section-head" data-aos="fade-up" style="text-align:center; margin-bottom: 24px;">
+            <div class="eyebrow" style="color: #0284c7; font-weight: 800; letter-spacing: 2.5px; display: inline-block; margin-bottom: 8px;">OUR PATH</div>
+            <h2 class="journey-main-title">LEARNING JOURNEY</h2>
+            <p class="lead" style="color: #475569; max-width: 620px; margin: 0 auto; font-size: 1.05rem; font-weight: 500; line-height: 1.6;">
+              Online Chess Classes for Beginners to Master Level — four milestone stages on your path to mastery.
+            </p>
           </div>
 
-          <!-- Visual journey path — a gold rail with four milestone stations.
-               Cards alternate above/below the rail on desktop; the rail fill
-               animates in when the section scrolls into view (landing-fx.js
-               adds .cj-inview). Accent per step ramps light gold -> deep gold
-               so progression reads without leaving the brand palette. -->
-          <div class="chess-journey-wrap" data-aos="fade-up">
-            <!-- The path itself. viewBox is stretched to the row width
-                 (preserveAspectRatio="none"), so the four medallions land on
-                 x = 0 / 33.3 / 66.7 / 100 exactly; the S commands keep the
-                 curve smooth through each one. pathLength="100" lets the draw
-                 animation use round dash numbers at any width. -->
-            <svg class="cj-curve" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+          <div class="learning-journey-container" data-aos="fade-up">
+            <!-- Wavy SVG Path -->
+            <svg class="lj-wave-svg" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true">
               <defs>
-                <linearGradient id="cjCurveGrad" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
-                  <stop offset="0" stop-color="#F5C842" />
-                  <stop offset="0.5" stop-color="#E8A020" />
-                  <stop offset="1" stop-color="#B0700C" />
+                <linearGradient id="ljWaveSolidGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#3b82f6" />
+                  <stop offset="50%" stop-color="#2563eb" />
+                  <stop offset="100%" stop-color="#60a5fa" />
                 </linearGradient>
               </defs>
-              <path class="cj-curve-track" vector-effect="non-scaling-stroke"
-                d="M 0,12 C 11.1,19 22.2,19 33.333,12 S 55.6,5 66.667,12 S 88.9,19 100,12" />
-              <path class="cj-curve-line" pathLength="100" vector-effect="non-scaling-stroke"
-                d="M 0,12 C 11.1,19 22.2,19 33.333,12 S 55.6,5 66.667,12 S 88.9,19 100,12" />
-              <!-- A short lit dash that travels the path once the line is drawn.
-                   Done with stroke-dashoffset rather than a moving <circle>,
-                   because preserveAspectRatio="none" would squash any shape —
-                   a stroke with non-scaling-stroke stays perfectly round. -->
-              <path class="cj-curve-spark" pathLength="100" vector-effect="non-scaling-stroke"
-                d="M 0,12 C 11.1,19 22.2,19 33.333,12 S 55.6,5 66.667,12 S 88.9,19 100,12" />
+              <!-- Solid active trail from Pawn to Knight -->
+              <path class="lj-wave-solid" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75" />
+              <!-- Dashed future trail from midpoint to Rook and King -->
+              <path class="lj-wave-dashed" d="M 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" />
+              <!-- Glowing energy spark -->
+              <path class="lj-wave-spark" pathLength="100" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" />
             </svg>
-            <ol class="chess-journey">
-              <li class="cj-step" style="--cj-i:0; --cj-accent:#F5C842; --cj-accent-2:#E8A020;">
-                <div class="cj-node">
-                  <span class="cj-num">01</span>
-                  <span class="cj-piece" aria-hidden="true">♟</span>
-                </div>
-                <div class="cj-card">
-                  <div class="cj-level-label">Beginner Level</div>
-                  <h3 class="cj-piece-name">Pawn</h3>
-                  <p class="cj-desc">Learn the basics of chess — rules, board control and your first tactics.</p>
-                  <ul class="cj-skills">
-                    <li>Piece movement</li>
-                    <li>Board control</li>
-                    <li>First tactics</li>
-                  </ul>
-                  <button class="cj-explore-btn" onclick="CK.openDemoModal()">Explore Course</button>
-                </div>
-              </li>
 
-              <li class="cj-step" style="--cj-i:1; --cj-accent:#E8A020; --cj-accent-2:#D08A12;">
-                <div class="cj-node">
-                  <span class="cj-num">02</span>
-                  <span class="cj-piece" aria-hidden="true">♞</span>
+            <!-- 4 Journey Stations Grid -->
+            <div class="lj-grid">
+              <!-- Station 1: PAWN -->
+              <div class="lj-station station-pawn" style="--lj-color:#9A7B1C;">
+                <div class="lj-badge-wrap">
+                  <div class="lj-badge">
+                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22.5 9a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM16.5 13a6 6 0 0112 0c0 3.2-1.8 5.7-3.8 8h-4.4c-2-2.3-3.8-4.8-3.8-8zM15 23h15v3H15v-3zM13 28h19l2 7H11l2-7zM9 37h27v4H9v-4z" fill="#9A7B1C"/>
+                    </svg>
+                  </div>
                 </div>
-                <div class="cj-card">
-                  <div class="cj-level-label">Intermediate Level</div>
-                  <h3 class="cj-piece-name">Knight</h3>
-                  <p class="cj-desc">Understand the tricks and strategies used in real competitive games.</p>
-                  <ul class="cj-skills">
-                    <li>Tactical patterns</li>
-                    <li>Positional play</li>
-                    <li>Game analysis</li>
+                <div class="lj-content">
+                  <span class="lj-level-tag">BEGINNER LEVEL</span>
+                  <h3 class="lj-piece-title">PAWN</h3>
+                  <p class="lj-piece-desc">Learn to play the basics of chess</p>
+                  <ul class="lj-feature-list">
+                    <li>Board rules &amp; piece moves</li>
+                    <li>Basic checkmates</li>
+                    <li>First tactics &amp; puzzles</li>
                   </ul>
-                  <button class="cj-explore-btn" onclick="CK.openDemoModal()">Explore Course</button>
+                  <button class="lj-btn" onclick="CK.openDemoModal()">Explore Course</button>
                 </div>
-              </li>
+              </div>
 
-              <li class="cj-step" style="--cj-i:2; --cj-accent:#D08A12; --cj-accent-2:#B0700C;">
-                <div class="cj-node">
-                  <span class="cj-num">03</span>
-                  <span class="cj-piece" aria-hidden="true">♜</span>
+              <!-- Station 2: KNIGHT -->
+              <div class="lj-station station-knight" style="--lj-color:#D97706;">
+                <div class="lj-badge-wrap">
+                  <div class="lj-badge">
+                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22 4c-4.5 0-9 3.5-9 8 0 2 .5 4 1.5 5.5-2.5 1-4.5 3-4.5 6.5 0 3.5 2 6 5 7l-2 5h20l-1-7c2-1 4-3.5 4-7 0-4-3-8-7-9.5V11c0-4-3-7-7-7zm-4 8a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="#D97706"/>
+                    </svg>
+                  </div>
                 </div>
-                <div class="cj-card">
-                  <div class="cj-level-label">Advanced Player</div>
-                  <h3 class="cj-piece-name">Rook</h3>
-                  <p class="cj-desc">Advanced strategy and a deep understanding of positional chess.</p>
-                  <ul class="cj-skills">
-                    <li>Endgame technique</li>
-                    <li>Opening repertoire</li>
-                    <li>Tournament prep</li>
+                <div class="lj-content">
+                  <span class="lj-level-tag">INTERMEDIATE LEVEL</span>
+                  <h3 class="lj-piece-title">KNIGHT</h3>
+                  <p class="lj-piece-desc">Understand the tricks and strategies to be used in the real game</p>
+                  <ul class="lj-feature-list">
+                    <li>Forks, pins &amp; skewers</li>
+                    <li>Opening principles</li>
+                    <li>Middle-game planning</li>
                   </ul>
-                  <button class="cj-explore-btn" onclick="CK.openDemoModal()">Explore Course</button>
+                  <button class="lj-btn" onclick="CK.openDemoModal()">Explore Course</button>
                 </div>
-              </li>
+              </div>
 
-              <li class="cj-step cj-step-final" style="--cj-i:3; --cj-accent:#B0700C; --cj-accent-2:#8C5A08;">
-                <div class="cj-node">
-                  <span class="cj-num">04</span>
-                  <span class="cj-piece" aria-hidden="true">♚</span>
+              <!-- Station 3: ROOK -->
+              <div class="lj-station station-rook" style="--lj-color:#EA580C;">
+                <div class="lj-badge-wrap">
+                  <div class="lj-badge">
+                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 5v7h4V9h4v3h6V9h4v3h4V5H11zm3 10l2 12h14l2-12H14zm-4 14h25v4H10v-4zm-2 6h29v4H8v-4z" fill="#EA580C"/>
+                    </svg>
+                  </div>
                 </div>
-                <div class="cj-card">
-                  <div class="cj-level-label">Master Level</div>
-                  <h3 class="cj-piece-name">King</h3>
-                  <p class="cj-desc">Show your skills in tournaments and earn international recognition.</p>
-                  <ul class="cj-skills">
-                    <li>FIDE rating</li>
-                    <li>Match psychology</li>
-                    <li>Titled play</li>
+                <div class="lj-content">
+                  <span class="lj-level-tag">ADVANCED PLAYER</span>
+                  <h3 class="lj-piece-title">ROOK</h3>
+                  <p class="lj-piece-desc">Learn the advance strategies and deep understanding of chess</p>
+                  <ul class="lj-feature-list">
+                    <li>Complex endgame play</li>
+                    <li>Positional sacrifices</li>
+                    <li>Tournament preparation</li>
                   </ul>
-                  <button class="cj-explore-btn" onclick="CK.openDemoModal()">Explore Course</button>
+                  <button class="lj-btn" onclick="CK.openDemoModal()">Explore Course</button>
                 </div>
-              </li>
-            </ol>
+              </div>
+
+              <!-- Station 4: KING -->
+              <div class="lj-station station-king" style="--lj-color:#DC2626;">
+                <div class="lj-badge-wrap">
+                  <div class="lj-badge">
+                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 2h3v3h3v3h-3v3h-3V8h-3V5h3V2zm-7 11h17l4 8-6 3 3 5H13l3-5-6-3 4-8zm-4 18h25v4H10v-4zm-2 6h29v4H8v-4z" fill="#DC2626"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="lj-content">
+                  <span class="lj-level-tag">MASTER LEVEL</span>
+                  <h3 class="lj-piece-title">KING</h3>
+                  <p class="lj-piece-desc">Show your skills in the tournaments and get International Recognition</p>
+                  <ul class="lj-feature-list">
+                    <li>FIDE official rating</li>
+                    <li>Grandmaster opening theory</li>
+                    <li>Competitive psychology</li>
+                  </ul>
+                  <button class="lj-btn" onclick="CK.openDemoModal()">Explore Course</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Detailed level cards below the path -->
@@ -745,7 +777,7 @@
           <div class="coach-card-premium" data-aos="fade-up">
             <div class="coach-level-badge">Advanced</div>
             <div class="coach-img-box">
-              <img loading="lazy" src="assets/img/ranjith.png" alt="Ranjith">
+              <img loading="lazy" src="assets/img/ranjith.jpg?v=20260818" alt="Ranjith">
             </div>
             <div class="coach-card-body">
               <h5>Ranjith</h5>
@@ -851,7 +883,7 @@
             <p class="lead team-showcase-lead" style="color: #334155 !important; max-width: 680px; margin: 0 auto; font-size: 1.05rem; line-height: 1.6; font-weight: 500;">From intense tournament battles to celebrating championship victories together as one united academy.</p>
           </div>
 
-          <div class="team-action-grid" style="max-width: 980px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; align-items: stretch;">
+          <div class="team-action-grid" style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; align-items: stretch;">
             
             <!-- Card 1: Tournament Battle -->
             <div class="team-action-card" style="background: #ffffff; border: 1px solid rgba(15, 23, 42, 0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); display: flex; flex-direction: column;">
@@ -874,6 +906,18 @@
               <div class="team-action-body" style="padding: 24px 22px; background: #ffffff; flex: 1; display: flex; flex-direction: column; justify-content: center;">
                 <h4 class="team-action-title" style="font-family: var(--font-display, 'Poppins', sans-serif); font-size: 1.35rem; font-weight: 800; color: #0f172a !important; margin: 0 0 8px 0; line-height: 1.3;">Championship Trophy</h4>
                 <p class="team-action-desc" style="font-size: 0.95rem; line-height: 1.6; color: #334155 !important; margin: 0; font-weight: 500;">Team ChessKidoo proudly celebrating a hard-earned tournament victory 🏆</p>
+              </div>
+            </div>
+
+            <!-- Card 3: Newspaper Coverage / Media Moment -->
+            <div class="team-action-card" style="background: #ffffff; border: 1px solid rgba(15, 23, 42, 0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); display: flex; flex-direction: column;">
+              <div class="team-action-img-wrap" style="position: relative; width: 100%; height: 290px; overflow: hidden; background: #0f172a; flex: 0 0 auto;">
+                <img loading="lazy" src="assets/img/newspaper-coverage.jpg?v=20260818" alt="Makkal Kural Newspaper Coverage - ChessKidoo Tournament" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%; display: block;">
+                <span class="team-action-tag" style="position: absolute; top: 14px; left: 14px; background: rgba(15, 23, 42, 0.88); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.5); font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">📰 Media Spotlight</span>
+              </div>
+              <div class="team-action-body" style="padding: 24px 22px; background: #ffffff; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <h4 class="team-action-title" style="font-family: var(--font-display, 'Poppins', sans-serif); font-size: 1.35rem; font-weight: 800; color: #0f172a !important; margin: 0 0 8px 0; line-height: 1.3;">District Tournament Feature</h4>
+                <p class="team-action-desc" style="font-size: 0.95rem; line-height: 1.6; color: #334155 !important; margin: 0; font-weight: 500;">Makkal Kural press coverage featuring 80+ student champions felicitated by Police Inspector Thavamani 🌟</p>
               </div>
             </div>
 
@@ -4141,8 +4185,8 @@
   <!-- GSAP — premium scroll + interaction animations -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script defer src="assets/js/gsap-effects.js?v=20260728k"></script>
-  <script defer src="assets/js/landing-fx.js?v=20260728k"></script>
+  <script defer src="assets/js/gsap-effects.js?v=20260818a"></script>
+  <script defer src="assets/js/landing-fx.js?v=20260818a"></script>
   <!-- Reach map: coastline data must load before the renderer that reads it. -->
   <script defer src="assets/js/world-geo.js?v=20260728k"></script>
   <script defer src="assets/js/world-map.js?v=20260728k"></script>

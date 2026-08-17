@@ -24,8 +24,7 @@
         transition:opacity .45s ease;
         background:radial-gradient(300px circle at var(--x,50%) var(--y,50%),
           rgba(245,158,11,.16), rgba(20,184,166,.06) 45%, transparent 70%);}
-      /* no always-on transform transition → never fights GSAP's scroll reveal */
-      .ck-tilt{will-change:transform;transform-style:preserve-3d;position:relative;}
+      .ck-tilt{position:relative;}
       /* ── Mobile / touch ── */
       a,button,.feat-card,.level-card,.price-card,.coach-card-premium,.cj-explore-btn,.hero-btn-demo,.btn-primary{-webkit-tap-highlight-color:transparent;}
       .ck-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);
@@ -149,7 +148,7 @@
     }
   }
 
-  // ── 4) 3D tilt + shine on landing cards ──
+  // ── 4) Spotlight shine on landing cards (smooth cursor-tracking highlight without transform override) ──
   function cardTilt() {
     if (!canHover) return;
     const sel = '.feat-card, .level-card, .coach-card-premium, .price-card, .review-card, .achievement-card, .cert-card';
@@ -157,16 +156,8 @@
       card.classList.add('ck-tilt');
       card.addEventListener('pointermove', (e) => {
         const r = card.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        card.style.transition = 'transform 0s';                 // follow the cursor instantly
-        card.style.transform = `perspective(820px) rotateX(${(-py * 5).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg) translateY(-4px)`;
         card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
         card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-      });
-      card.addEventListener('pointerleave', () => {
-        card.style.transition = 'transform .35s cubic-bezier(.2,.7,.3,1)'; // smooth settle back
-        card.style.transform = '';
       });
     });
   }
@@ -178,7 +169,7 @@
     if (!('IntersectionObserver' in window)) return;
     const root = document.getElementById('landing-page') || document.querySelector('.hero')?.closest('section')?.parentElement || document.body;
     const cand = (root || document).querySelectorAll(
-      '.hero img, .hero-stats, .cj-step, .feat-card, .level-card, .price-card, ' +
+      '.hero img, .hero-stats, .lj-station, .feat-card, .level-card, .price-card, ' +
       '.coach-card-premium, .review-card, .cert-card, .achievement-card, ' +
       'section img, blockquote, .lead, .eyebrow'
     );
@@ -211,7 +202,7 @@
   // ── 5) Touch-native richness: tap ripple on buttons + press-scale on cards ──
   function mobileFX() {
     // Material-style ripple on the main tappable buttons.
-    const rippleSel = '.hero-btn-demo, .btn-primary, .cj-explore-btn, .nav-cta, .hero-cta, .p-btn';
+    const rippleSel = '.hero-btn-demo, .btn-primary, .lj-btn, .nav-cta, .hero-cta, .p-btn';
     document.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse') return;                 // touch/pen only
       const el = e.target.closest && e.target.closest(rippleSel);
