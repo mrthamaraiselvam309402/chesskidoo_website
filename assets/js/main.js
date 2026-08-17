@@ -1259,11 +1259,11 @@ ${applicant}`;
             if (role === 'parent'  && CK.parents) CK.parents.init();
           }, 50);
         } else {
-          // On public landing page, stay on landing page and update the login nav link to Dashboard
+          // On public landing page, stay on landing page and keep Log In navigation
           CK.showPage('landing-page');
           const loginBtn = document.getElementById('loginNavBtn');
           if (loginBtn) {
-            loginBtn.textContent = 'Dashboard 🚀';
+            loginBtn.textContent = 'Log In';
             loginBtn.href = '/lms/';
           }
         }

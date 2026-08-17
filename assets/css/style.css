@@ -142,16 +142,16 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   box-shadow: 0 2px 40px rgba(0,0,0,0.25);
 }
 .header-inner {
-  max-width: 1400px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 48px;
-  transition: padding 0.4s ease;
+  padding: 14px 28px;
+  transition: padding 0.3s ease;
 }
-.site-header.scrolled .header-inner { padding: 12px 48px; }
+.site-header.scrolled .header-inner { padding: 10px 28px; }
 /* Logo Styling (Pure CSS vector-scaled Premium Squircles) */
-.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #FFFFFF; }
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #FFFFFF; flex-shrink: 0; }
 .logo-icon-box {
-  width: 40px; height: 40px;
+  width: 38px; height: 38px;
   background: #E8A020; /* Brand gold */
   border-radius: 11px;
   display: flex; align-items: center; justify-content: center;
@@ -160,46 +160,44 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 .logo:hover .logo-icon-box { transform: rotate(-8deg) scale(1.08); }
 .logo-icon-symbol {
-  font-size: 24px;
+  font-size: 22px;
   color: #162235; /* Deep brand navy blue/royal crown piece color */
   line-height: 1;
 }
-.logo-text { font-family: var(--font-display) !important; font-weight: 700; font-size: 1.5rem; color: #FFFFFF; letter-spacing: -0.01em; }
+.logo-text { font-family: var(--font-display) !important; font-weight: 700; font-size: 1.4rem; color: #FFFFFF; letter-spacing: -0.01em; }
 .logo-text span { color: var(--amber) !important; }
 
 /* Navigation Links */
 .nav-links {
   display: flex; align-items: center;
-  gap: 26px;
+  gap: 16px;
   flex: 1;
-  margin-left: 44px;    /* keeps HOME off the logo */
+  margin-left: 24px;
   min-width: 0;
 }
 .nav-link {
-  padding: 6px 0; text-decoration: none; color: rgba(255, 255, 255, 0.65);
+  padding: 6px 2px; text-decoration: none; color: rgba(255, 255, 255, 0.72);
   font-family: var(--font-header);
-  font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
-  white-space: nowrap;  /* two-word items like "WHY US" were breaking onto two lines */
+  font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;
+  white-space: nowrap;
   flex: 0 0 auto;
   background: none; border: none; cursor: pointer;
   position: relative;
   transition: color 0.25s ease;
 }
-/* Nine items plus the logo and Log In get tight well before the mobile
-   breakpoint, so step the type and gaps down rather than letting them wrap. */
-@media (max-width: 1440px) {
-  .nav-links { gap: 20px; margin-left: 32px; }
-  .nav-link { font-size: 0.74rem; letter-spacing: 0.035em; }
+@media (max-width: 1380px) {
+  .header-inner { padding: 12px 20px; }
+  .nav-links { gap: 12px; margin-left: 18px; }
+  .nav-link { font-size: 0.72rem; letter-spacing: 0.02em; }
 }
-@media (max-width: 1240px) {
-  .nav-links { gap: 15px; margin-left: 22px; }
-  .nav-link { font-size: 0.7rem; letter-spacing: 0.02em; }
+@media (max-width: 1260px) {
+  .header-inner { padding: 12px 14px; }
+  .nav-links { gap: 8px; margin-left: 12px; }
+  .nav-link { font-size: 0.68rem; letter-spacing: 0.01em; padding: 4px 1px; }
 }
 .nav-link::after {
   content: '';
   position: absolute;
-  /* Inside the 6px bottom padding, not below it — at -4px the bar sat ~11px
-     under the glyphs and read as detached from the label. */
   bottom: 2px; left: 50%; transform: translateX(-50%) scaleX(0);
   width: 100%; height: 2px;
   background: var(--amber);
@@ -214,27 +212,34 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
 .nav-spacer { flex: 1; }
 
 .nav-cta {
-  padding: 10px 24px; font-size: 0.95rem; margin-left: 8px;
+  padding: 8px 20px; font-size: 0.88rem; margin-left: 8px;
   border-radius: 99px;
   background: var(--amber);
   color: var(--bg-dark) !important;
   font-weight: 700;
   transition: background 0.2s, transform 0.2s;
   box-shadow: 0 4px 15px rgba(232, 160, 32, 0.25);
+  white-space: nowrap; flex-shrink: 0;
 }
 .nav-cta:hover { background: var(--amber-light) !important; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232, 160, 32, 0.4); }
 .nav-cta::after { display: none; }
 
 .nav-login {
-  padding: 9px 22px;
-  font-size: 0.88rem;
+  padding: 7px 18px;
+  font-size: 0.82rem;
   color: #FFFFFF;
-  border: 2px solid #F5C842 !important;
+  border: 1.5px solid #F5C842 !important;
   border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.25s ease;
 }
 .nav-login:hover {
   border-color: #F5C842 !important;
+  background: rgba(245, 200, 66, 0.12) !important;
   box-shadow: 0 0 15px rgba(245, 200, 66, 0.4);
 }
 .nav-login::after { display: none; }
@@ -261,19 +266,13 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   .nav-phone { display: none; }
 }
 
-/* Nine nav items plus the logo and Log In need roughly 1150px on one line, so
-   the drawer takes over well above the old 768px phone breakpoint — below that
-   the bar used to overflow and push Log In off the right edge. */
-@media (max-width: 1100px) {
+@media (max-width: 1180px) {
   .mobile-menu-btn { display: flex; }
   .nav-links {
-    /* Absolute inside the fixed .site-header, so `top: 100%` means "directly
-       under the bar" at any header height — including the shorter scrolled
-       state. The old hardcoded `top: 64px` only matched the phone header. */
     position: absolute; top: 100%; left: 0; right: 0;
     margin-left: 0;
     max-height: calc(100vh - 100%);
-    background: rgba(13, 27, 42, 1);
+    background: rgba(13, 27, 42, 0.98);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     flex-direction: column; padding: 16px 20px 32px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
