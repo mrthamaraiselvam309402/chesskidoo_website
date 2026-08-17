@@ -6019,9 +6019,29 @@
           const d = await res.json();
           allHomework = d.data || d;
           window.allHomework = allHomework;
+        } else if (window.supabaseClient) {
+          const { data: dbHw } = await window.supabaseClient
+            .from("homework_assignments")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (dbHw) {
+            allHomework = dbHw;
+            window.allHomework = allHomework;
+          }
         }
       } catch (error) {
-        console.warn("[Homework] Failed to load homework:", error);
+        if (window.supabaseClient) {
+          try {
+            const { data: dbHw } = await window.supabaseClient
+              .from("homework_assignments")
+              .select("*")
+              .order("created_at", { ascending: false });
+            if (dbHw) {
+              allHomework = dbHw;
+              window.allHomework = allHomework;
+            }
+          } catch (_) {}
+        }
       } finally {
         homeworkLoadPromise = null;
       }
