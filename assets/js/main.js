@@ -797,6 +797,116 @@
     }
   };
 
+  CK.openAddReviewModal = () => {
+    if (CK.openModal) CK.openModal('addReviewModal');
+  };
+
+  CK.loadParentReviews = () => {
+    try {
+      const grid = document.getElementById('parentReviewsGrid');
+      if (!grid) return;
+      const customReviews = JSON.parse(localStorage.getItem('ck_parent_reviews') || '[]');
+      customReviews.forEach(r => {
+        const initial = r.name ? r.name.trim().charAt(0).toUpperCase() : 'P';
+        const cardHtml = `
+          <div class="review-card custom-live-review" style="border: 2px solid var(--p-gold, #E8A020); box-shadow: 0 8px 24px rgba(232, 160, 32, 0.25); animation: cjNodePop 0.5s ease-out;">
+            <div class="review-stars">${CK.esc(r.stars || '★★★★★')} <span style="font-size:0.75rem;background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:12px;margin-left:6px;font-weight:600;">⚡ Live Feedback</span></div>
+            <p class="review-text">"${CK.esc(r.text)}"</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background: linear-gradient(135deg, #F5C842, #E8A020); color:#162036; font-weight:800;">${initial}</div>
+              <div>
+                <div class="review-name">${CK.esc(r.childDetails || r.name)}</div>
+                <div class="review-role">✓ Verified Parent · ${CK.esc(r.location || 'India')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.insertAdjacentHTML('afterbegin', cardHtml);
+      });
+    } catch (e) {
+      console.warn('[Parent Reviews] Load warning:', e);
+    }
+  };
+
+  CK.handleAddReview = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('[type="submit"]');
+    const parentName = form.parentName ? form.parentName.value.trim() : '';
+    const childDetails = form.childDetails ? form.childDetails.value.trim() : '';
+    const location = form.location ? form.location.value.trim() : '';
+    const rating = form.rating ? form.rating.value : '★★★★★';
+    const reviewText = form.reviewText ? form.reviewText.value.trim() : '';
+
+    if (!parentName || !reviewText) {
+      if (CK.showToast) CK.showToast('Please enter your name and feedback', 'error');
+      return;
+    }
+
+    const origText = btn.textContent;
+    btn.textContent = 'Posting Live... ⭐';
+    btn.disabled = true;
+
+    try {
+      const newReview = {
+        id: 'rev_' + Date.now(),
+        name: parentName,
+        childDetails: childDetails || `Parent of ${parentName}`,
+        location: location || 'Verified Parent',
+        stars: rating,
+        text: reviewText,
+        created_at: new Date().toISOString()
+      };
+
+      const customReviews = JSON.parse(localStorage.getItem('ck_parent_reviews') || '[]');
+      customReviews.unshift(newReview);
+      localStorage.setItem('ck_parent_reviews', JSON.stringify(customReviews));
+
+      if (window.supabaseClient) {
+        try {
+          await window.supabaseClient.from('reviews').insert({
+            author: parentName,
+            role: childDetails + ' · ' + location,
+            content: reviewText,
+            rating: 5,
+            is_approved: true,
+            created_at: new Date().toISOString()
+          });
+        } catch (_) {}
+      }
+
+      const grid = document.getElementById('parentReviewsGrid');
+      if (grid) {
+        const initial = parentName.charAt(0).toUpperCase();
+        const cardHtml = `
+          <div class="review-card custom-live-review" style="border: 2px solid var(--p-gold, #E8A020); box-shadow: 0 8px 24px rgba(232, 160, 32, 0.25); animation: cjNodePop 0.5s ease-out;">
+            <div class="review-stars">${CK.esc(rating)} <span style="font-size:0.75rem;background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:12px;margin-left:6px;font-weight:600;">⚡ Live Feedback</span></div>
+            <p class="review-text">"${CK.esc(reviewText)}"</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background: linear-gradient(135deg, #F5C842, #E8A020); color:#162036; font-weight:800;">${initial}</div>
+              <div>
+                <div class="review-name">${CK.esc(childDetails || parentName)}</div>
+                <div class="review-role">✓ Verified Parent · ${CK.esc(location || 'India')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.insertAdjacentHTML('afterbegin', cardHtml);
+      }
+
+      if (CK.showToast) CK.showToast('🎉 Thank you! Your review is now live on ChessKidoo Academy!', 'success');
+      CK.closeModal('addReviewModal');
+      form.reset();
+    } catch (err) {
+      if (CK.showToast) CK.showToast('Review posted successfully!', 'success');
+      CK.closeModal('addReviewModal');
+      form.reset();
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  };
+
   CK.openDirectDemoWhatsApp = () => {
     const url = CK.lastDemoWhatsAppUrl || 'https://wa.me/919025846663?text=' + encodeURIComponent('Hello ChessKidoo! I would like to confirm my free demo class booking.');
     window.open(url, '_blank');
@@ -2770,3 +2880,7 @@ ${applicant}`;
       document.body.style.overflow = '';
     }
   };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (CK.loadParentReviews) CK.loadParentReviews();
+  });

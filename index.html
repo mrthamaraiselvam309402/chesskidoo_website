@@ -1225,10 +1225,14 @@
         <div class="section-head" data-aos="fade-up">
           <div class="eyebrow">Parent Reviews</div>
           <h2 data-translate="reviews_title">Real Stories, Real Results</h2>
-          <p class="lead" data-translate="reviews_lead">From families across India who chose ChessKidoo for their
-            children.</p>
+          <p class="lead" data-translate="reviews_lead">From families across India and worldwide who chose ChessKidoo for their children.</p>
+          <div style="margin-top: 18px;">
+            <button type="button" class="btn btn-primary" onclick="CK.openAddReviewModal()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:30px;font-weight:700;box-shadow:0 8px 24px rgba(232,160,32,0.4);cursor:pointer;transition:transform 0.2s ease;">
+              ➕ Share Your Experience / Add Review
+            </button>
+          </div>
         </div>
-        <div class="reviews-grid">
+        <div class="reviews-grid" id="parentReviewsGrid">
 
           <div class="review-card" data-aos="zoom-in" data-aos-delay="100">
             <div class="review-stars">★★★★★</div>
@@ -3546,6 +3550,58 @@
         <div class="ck-demo-actions">
           <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal('tournamentModal')">Cancel</button>
           <button type="submit" class="btn btn-primary ck-btn-submit">🏆 Submit &amp; WhatsApp Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Parent Review Submission Modal -->
+  <div id="addReviewModal" class="modal-overlay">
+    <div class="modal-card ck-demo-modal-card" style="max-width:520px;">
+      <div class="modal-header ck-demo-modal-header">
+        <button type="button" class="ck-modal-close-btn" onclick="CK.closeModal('addReviewModal')" aria-label="Close">✕</button>
+        <div class="ck-demo-header-badge">⭐ Live Parent Testimonials</div>
+        <h3 class="ck-demo-title">Share Your Parent Review</h3>
+        <p class="ck-demo-subtitle">Post your experience on ChessKidoo Academy. Your review goes live immediately on our website!</p>
+      </div>
+      <form class="modal-body ck-demo-modal-body" id="addReviewForm" onsubmit="CK.handleAddReview(event)">
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Parent / Guardian Name *</label>
+          <input type="text" name="parentName" required placeholder="e.g. Dr. Kavitha Sundaram" class="ck-form-input">
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Child Name &amp; Level *</label>
+            <input type="text" name="childDetails" required placeholder="e.g. Parent of U-12 Rithvik" class="ck-form-input">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Location / Country *</label>
+            <input type="text" name="location" required placeholder="e.g. Chennai / Dubai / USA" class="ck-form-input">
+          </div>
+        </div>
+
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Rating *</label>
+          <select name="rating" required class="ck-form-select">
+            <option value="★★★★★">★★★★★ (5/5 Stars - Outstanding Experience)</option>
+            <option value="★★★★☆">★★★★☆ (4/5 Stars - Very Good Experience)</option>
+          </select>
+        </div>
+
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Your Review &amp; Feedback *</label>
+          <textarea name="reviewText" required rows="4" placeholder="Share how ChessKidoo helped your child improve concentration, tactics, confidence, or tournament performance..." class="ck-form-input" style="min-height:100px;resize:vertical;"></textarea>
+        </div>
+
+        <div class="ck-demo-notice">
+          <span class="ck-notice-icon">⚡</span>
+          <span class="ck-notice-text">Instant Auto-Publish: Your feedback will be published live on the website immediately upon submission.</span>
+        </div>
+
+        <div class="modal-footer ck-demo-actions" style="position:sticky;bottom:-20px;padding-top:12px;background:#162036;">
+          <button type="button" class="p-btn p-btn-ghost" onclick="CK.closeModal('addReviewModal')">Cancel</button>
+          <button type="submit" class="p-btn p-btn-teal" style="flex:1;">⭐ Post Review Live Now</button>
         </div>
       </form>
     </div>
