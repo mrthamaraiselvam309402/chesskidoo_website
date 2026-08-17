@@ -322,6 +322,11 @@
   });
 
   /* ─── Modal System ─── */
+  // Guarantee clean initial body state on boot
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.classList.remove('modal-open');
+    document.body.removeAttribute('aria-hidden');
+  }
   let _modalPreviousFocus = null;
   const _focusableSelectors = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 

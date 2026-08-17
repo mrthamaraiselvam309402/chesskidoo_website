@@ -86,7 +86,6 @@
 /* Body scroll lock when any modal is open */
 body.modal-open {
   overflow: hidden !important;
-  touch-action: none;
 }
 
 .ck-demo-modal-card {

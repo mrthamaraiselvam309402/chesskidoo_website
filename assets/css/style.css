@@ -788,14 +788,14 @@ body.loaded #preloader { opacity: 0; visibility: hidden; pointer-events: none; }
   padding: 24px 12px; opacity: 0; transition: opacity 0.3s ease;
   overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
-.modal-overlay.active { display: flex; opacity: 1; }
+.modal-overlay.active, .modal-overlay.open { display: flex !important; opacity: 1 !important; pointer-events: auto !important; }
 .modal-card {
   background: white; border-radius: 24px; width: 100%; max-width: 500px;
   padding: 40px; transform: scale(0.9); transition: transform 0.3s ease;
   margin: auto 0;
   flex-shrink: 0;
 }
-.modal-overlay.active .modal-card { transform: scale(1); }
+.modal-overlay.active .modal-card, .modal-overlay.open .modal-card { transform: scale(1); }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
 .form-group input:not([type="radio"]):not([type="checkbox"]), .form-group select, .form-group textarea {
