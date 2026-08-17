@@ -175,9 +175,11 @@
     const status = $('homework-status-filter') ? $('homework-status-filter').value : '';
     const [year, monthNumber] = (month || monthKey(homeworkCalendarMonth)).split('-').map(Number);
     const query = ($('homework-search') ? $('homework-search').value : '').toLowerCase().trim();
+    const coachFilter = getCoachFilterPredicate();
+    const myStudents = coachFilter ? (window.allStudents || []).filter(s => coachFilter(s)) : null;
+    const coachStudentIds = myStudents ? new Set(myStudents.map(s => String(s.id))) : null;
     const coachId = window.role === 'coach' ? (window.currentCoachId || window.userId) : null;
-    const coachStudentIds = coachId ? new Set((window.allStudents || []).filter(s => String(s.coach_id) === String(coachId)).map(s => String(s.id))) : null;
-    const coachBatchIds = coachId ? new Set((window.allBatches || []).filter(b => String(b.coach_id) === String(coachId)).map(b => String(b.id))) : null;
+    const coachBatchIds = coachId ? new Set((window.allBatches || []).filter(b => window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)).map(b => String(b.id))) : null;
 
     return sortHomework((window.allHomework || []).filter((assignment) => {
       if (status && assignment.status !== status) return false;
@@ -191,13 +193,16 @@
         if (!hay.includes(query)) return false;
       }
       if (coachStudentIds || coachBatchIds) {
-        const appliesToStudent = assignment.target_type === 'student' && coachStudentIds.has(String(assignment.student_id));
-        const appliesToBatch = assignment.target_type === 'batch' && coachBatchIds.has(String(assignment.batch_id));
+        const appliesToStudent = assignment.target_type === 'student' && coachStudentIds && coachStudentIds.has(String(assignment.student_id));
+        const appliesToBatch = assignment.target_type === 'batch' && coachBatchIds && coachBatchIds.has(String(assignment.batch_id));
         const appliesToAll = assignment.target_type === 'all';
         if (!appliesToStudent && !appliesToBatch && !appliesToAll) return false;
       }
       if (!month) return true;
-      if (!assignment.due_date) return false;
+      if (!assignment.due_date) {
+        // If there's a search query or assignee/status filter or we are in list view, include no-due-date assignments
+        return !!(query || assignee || status || !month);
+      }
       const date = parseDateKey(assignment.due_date);
       return !!date && date.getFullYear() === year && date.getMonth() === monthNumber - 1;
     }));
@@ -453,19 +458,27 @@ let homeworkSubmissionCache = [];
       }
     }
 
-    // ROUTE 2: DOCUMENTS & FILES -> Route to Supabase Storage bucket 'homework_attachments'
+    // ROUTE 2: DOCUMENTS & FILES -> Route to Supabase Storage bucket 'documents' or 'homework_attachments'
     try {
       if (window.supabaseClient && window.supabaseClient.storage) {
         const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
         const filePath = `hw_${Date.now()}_${Math.random().toString(36).substr(2, 6)}.${ext}`;
-        const { data, error } = await window.supabaseClient.storage
-          .from('homework_attachments')
+        let uploadRes = await window.supabaseClient.storage
+          .from('documents')
           .upload(filePath, file, { cacheControl: '3600', upsert: true });
 
-        if (!error && data) {
-          const { data: pubUrlData } = window.supabaseClient.storage
+        let bucketName = 'documents';
+        if (uploadRes.error) {
+          uploadRes = await window.supabaseClient.storage
             .from('homework_attachments')
-            .getPublicUrl(data.path || filePath);
+            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+          bucketName = 'homework_attachments';
+        }
+
+        if (!uploadRes.error && uploadRes.data) {
+          const { data: pubUrlData } = window.supabaseClient.storage
+            .from(bucketName)
+            .getPublicUrl(uploadRes.data.path || filePath);
           if (pubUrlData?.publicUrl) return pubUrlData.publicUrl;
         }
       }
@@ -643,6 +656,8 @@ let homeworkSubmissionCache = [];
   function refreshHomeworkViews() {
     if (window.renderHomeworkPage) window.renderHomeworkPage();
     if (window.renderChildHomework) window.renderChildHomework();
+    if (window.renderCoachHomework) window.renderCoachHomework();
+    if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
   }
 
   async function applyBulkHomeworkStatus() {
@@ -699,9 +714,11 @@ let homeworkSubmissionCache = [];
       }
       if (window.toast) window.toast('Homework deleted', 'success');
       homeworkSelectedIds.delete(id);
+      window.allHomework = (window.allHomework || []).filter(h => String(h.id) !== String(id));
       if (window.loadHomeworkData) await window.loadHomeworkData(true);
       else if (window.loadAllData) await window.loadAllData(true);
       refreshHomeworkViews();
+      if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
     } catch (error) {
       if (window.toast) window.toast(`Failed to delete homework: ${error.message}`, 'error');
     }
@@ -773,23 +790,51 @@ let homeworkSubmissionCache = [];
     let studentObj = (window.allStudents || []).find(s => String(s.id) === String(studentId));
     let sName = studentObj ? (window.getStudentName ? window.getStudentName(studentObj) : (studentObj.name || studentObj.full_name)) : null;
 
+    const subPayload = {
+      assignment_id: assignment.id,
+      student_id: studentId || null,
+      student_name: sName,
+      submission_text: text,
+      submission_url: url,
+      file_urls: uploadedUrls.length > 0 ? uploadedUrls : null
+    };
+
+    let submitted = false;
     try {
       const res = await window.apiCall('/api/homework?action=submit', {
         method: 'POST',
         headers: studentId ? { 'x-portal-student-id': String(studentId) } : {},
-        body: JSON.stringify({
-          assignment_id: assignment.id,
-          student_id: studentId || null,
-          student_name: sName,
-          submission_text: text,
-          submission_url: url,
-          file_urls: uploadedUrls.length > 0 ? uploadedUrls : null
-        })
+        body: JSON.stringify(subPayload)
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Server error ${res.status}`);
+      if (res && res.ok) {
+        submitted = true;
       }
+    } catch (apiErr) {
+      console.warn('[Homework] apiCall submit failed, trying direct Supabase fallback:', apiErr);
+    }
+
+    if (!submitted && window.supabaseClient) {
+      try {
+        const { error: sbErr } = await window.supabaseClient
+          .from('homework_submissions')
+          .upsert(
+            {
+              assignment_id: subPayload.assignment_id,
+              student_id: subPayload.student_id,
+              submission_text: subPayload.submission_text || '',
+              submission_url: subPayload.submission_url || '',
+              file_urls: subPayload.file_urls,
+              status: 'submitted',
+              submitted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: 'assignment_id,student_id' }
+          );
+        if (!sbErr) submitted = true;
+      } catch (e) {}
+    }
+
+    if (submitted) {
       if (window.toast) window.toast('Homework submitted successfully', 'success');
       if ($(`homework-submission-files-${assignment.id}`)) $(`homework-submission-files-${assignment.id}`).value = '';
       if ($(`homework-submission-text-${assignment.id}`)) $(`homework-submission-text-${assignment.id}`).value = '';
@@ -798,29 +843,77 @@ let homeworkSubmissionCache = [];
       else if (window.loadAllData) await window.loadAllData(true);
       await loadHomeworkSubmissions(true);
       refreshHomeworkViews();
-    } catch (error) {
-      if (window.toast) window.toast(`Failed to submit homework: ${error.message}`, 'error');
+    } else {
+      if (window.toast) window.toast('Failed to submit homework. Please check your connection and try again.', 'error');
     }
   }
 
-  async function reviewHomeworkSubmission(submissionId, status) {
-    const feedback = $(`homework-feedback-${submissionId}`)?.value.trim() || '';
-    const score = $(`homework-score-${submissionId}`)?.value.trim();
+  async function reviewHomeworkSubmission(submissionId, status, customFeedback, customScore) {
+    let feedback = customFeedback !== undefined ? customFeedback : ($(`homework-feedback-${submissionId}`)?.value.trim() || '');
+    let score = customScore !== undefined ? customScore : ($(`homework-score-${submissionId}`)?.value.trim() || '');
+
+    // If neither DOM element exists and no feedback provided, offer a prompt on 'needs_revision' or 'approved'
+    if (customFeedback === undefined && !$(`homework-feedback-${submissionId}`)) {
+      if (status === 'needs_revision') {
+        const promptFb = prompt('Enter revision notes / feedback for the student:');
+        if (promptFb === null) return; // User cancelled
+        feedback = promptFb.trim();
+      } else if (status === 'approved') {
+        const promptScore = prompt('Optional: Enter score or grade for this submission (leave empty to skip):');
+        if (promptScore !== null && promptScore.trim()) {
+          score = promptScore.trim();
+        }
+      }
+    }
+
+    let reviewed = false;
     try {
       const res = await window.apiCall(`/api/homework?action=review&id=${encodeURIComponent(submissionId)}`, {
         method: 'PATCH',
         body: JSON.stringify({ status, feedback, score })
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Server error ${res.status}`);
+      if (res && res.ok) {
+        reviewed = true;
       }
-      if (window.toast) window.toast(`Submission marked as ${status}`, 'success');
+    } catch (apiErr) {
+      console.warn('[Homework] apiCall review failed, trying direct Supabase fallback:', apiErr);
+    }
+
+    if (!reviewed && window.supabaseClient) {
+      try {
+        const { error: sbErr } = await window.supabaseClient
+          .from('homework_submissions')
+          .update({
+            status,
+            feedback: feedback || null,
+            score: score || null,
+            reviewed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', submissionId);
+        if (!sbErr) reviewed = true;
+      } catch (e) {}
+    }
+
+    if (reviewed) {
+      if (window.toast) window.toast(`Submission marked as ${status.replace(/_/g, ' ')}`, 'success');
+      
+      // Update local submission cache
+      if (homeworkSubmissionCache && homeworkSubmissionCache.length) {
+        const sub = homeworkSubmissionCache.find(s => String(s.id) === String(submissionId));
+        if (sub) {
+          sub.status = status;
+          if (feedback) sub.feedback = feedback;
+          if (score) sub.score = score;
+          sub.reviewed_at = new Date().toISOString();
+        }
+      }
+
       await loadHomeworkSubmissions(true);
       if (window.loadHomeworkData) await window.loadHomeworkData(true);
       refreshHomeworkViews();
-    } catch (error) {
-      if (window.toast) window.toast(`Failed to review homework: ${error.message}`, 'error');
+    } else {
+      if (window.toast) window.toast('Failed to review homework. Please try again.', 'error');
     }
   }
 
@@ -1047,8 +1140,9 @@ let homeworkSubmissionCache = [];
         .map((batch) => `<option value="${batch.id}">${escapeValue(batchName(batch))}</option>`)
         .join('');
     }
-    const studs = window.role === 'coach'
-      ? (window.allStudents || []).filter(s => String(s.coach_id) === String(window.userId))
+    const coachFilter = getCoachFilterPredicate();
+    const studs = coachFilter
+      ? (window.allStudents || []).filter(s => coachFilter(s))
       : (window.allStudents || []);
     studentSelect.innerHTML = '<option value="">All Students</option>' + studs
       .filter((student) => (student.status || 'active') !== 'archived')
@@ -1065,13 +1159,16 @@ let homeworkSubmissionCache = [];
     const batchId = $('homework-submission-batch-filter') ? $('homework-submission-batch-filter').value : '';
     const studentId = $('homework-submission-student-filter') ? $('homework-submission-student-filter').value : '';
     const status = $('homework-submission-status-filter') ? $('homework-submission-status-filter').value : '';
-    const coachId = window.role === 'coach' ? (window.currentCoachId || window.userId) : null;
-    const coachStudentIds = coachId ? new Set((window.allStudents || []).filter(s => String(s.coach_id) === String(coachId)).map(s => String(s.id))) : null;
-    const batchStudentIds = batchId ? new Set(
-      (window.allBatches || [])
-        .filter(b => String(b.id) === String(batchId))
-        .flatMap(b => (Array.isArray(b.student_ids) ? b.student_ids.map(String) : []))
-    ) : null;
+    const coachFilter = getCoachFilterPredicate();
+    const myStudents = coachFilter ? (window.allStudents || []).filter(s => coachFilter(s)) : (window.allStudents || []);
+    const coachStudentIds = coachFilter ? new Set(myStudents.map(s => String(s.id))) : null;
+    
+    let batchStudentIds = null;
+    if (batchId) {
+      const bObj = (window.allBatches || []).find(b => String(b.id) === String(batchId));
+      batchStudentIds = new Set(getBatchStudentIds(bObj, window.allStudents || []));
+    }
+
     return (homeworkSubmissionCache || []).filter((submission) => {
       if (coachStudentIds && !coachStudentIds.has(String(submission.student_id))) return false;
       if (assignmentId && String(submission.assignment_id) !== assignmentId) return false;

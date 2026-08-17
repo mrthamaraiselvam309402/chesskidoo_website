@@ -12,6 +12,7 @@ const MIME = {
   '.ico':  'image/x-icon',         '.woff': 'font/woff',
   '.woff2': 'font/woff2',          '.ttf':  'font/ttf',
   '.wasm': 'application/wasm',     '.txt':  'text/plain',
+  '.mp4':  'video/mp4',            '.webm': 'video/webm',
 };
 
 export default defineConfig({
@@ -101,6 +102,10 @@ export default defineConfig({
   // During dev, proxy Supabase Edge Functions at /functions/v1/*
   server: {
     port: 5173,
+    host: true,
+    hmr: {
+      clientPort: 5173,
+    },
     proxy: {
       '/functions/v1': {
         target:    'https://vseombfkrvpffnpgbsnk.supabase.co',

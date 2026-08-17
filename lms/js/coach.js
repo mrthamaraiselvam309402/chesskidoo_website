@@ -502,17 +502,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateEl && !dateEl.value) dateEl.value = today;
     const date = dateEl ? (dateEl.value || today) : today;
 
-    const myStudents = (window.allStudents || [])
-      .filter(s => window.ckSameCoach(s.coach_id, coachId))
-      .sort((a, b) => (window.getStudentName ? window.getStudentName(a) : a.name).localeCompare(window.getStudentName ? window.getStudentName(b) : b.name));
+    const myBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, coachId));
+    const batchSelect = document.getElementById('coach-att-batch-filter');
+    if (batchSelect) {
+      const prevBatch = batchSelect.value;
+      batchSelect.innerHTML = '<option value="">All Batches</option>' + myBatches.map(b => 
+        `<option value="${b.id}">${window.escapeHtml ? window.escapeHtml(b.name) : b.name}</option>`
+      ).join('');
+      if (prevBatch && myBatches.some(b => String(b.id) === String(prevBatch))) {
+        batchSelect.value = prevBatch;
+      }
+    }
+    const selectedBatchId = batchSelect ? batchSelect.value : '';
+
+    let myStudents = (window.allStudents || [])
+      .filter(s => window.ckSameCoach(s.coach_id, coachId));
+
+    if (selectedBatchId) {
+      const selBatch = myBatches.find(b => String(b.id) === String(selectedBatchId));
+      const rawIds = Array.isArray(selBatch?.student_ids) ? selBatch.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(selBatch?.student_ids) : []);
+      myStudents = myStudents.filter(s => 
+        rawIds.includes(String(s.id)) || (selBatch && ((s.batch_id && String(s.batch_id) === String(selBatch.id)) || (s.batch && String(s.batch) === String(selBatch.name))))
+      );
+    }
+
+    myStudents.sort((a, b) => (window.getStudentName ? window.getStudentName(a) : (a.name || '')).localeCompare(window.getStudentName ? window.getStudentName(b) : (b.name || '')));
+
     if (myStudents.length === 0) {
-      container.innerHTML = '<tr><td colspan="3" class="coach-loading-cell">No students assigned yet.</td></tr>';
+      container.innerHTML = '<tr><td colspan="3" class="coach-loading-cell">No students match the selected batch/date.</td></tr>';
       if (summary) summary.innerHTML = '';
       return;
     }
 
-    // Scope the day's records to THIS coach's students — filtering by date
-    // alone counted the whole academy in the coach's Present/Absent summary.
+    // Scope the day's records to THIS coach's students
     const myIds = new Set(myStudents.map(s => String(s.id)));
     const dayRecords = (window.allAttendance || [])
       .filter(a => a.date === date && myIds.has(String(a.student_id)));
@@ -958,7 +980,10 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(err.error || `Server error ${res.status}`);
       }
       toast('Assignment deleted', 'success');
-      renderCoachAssignments(window.coachAssignPage);
+      window.allHomework = (window.allHomework || []).filter(h => String(h.id) !== String(id));
+      if (window.loadHomeworkData) await window.loadHomeworkData(true);
+      renderCoachAssignments(window.coachAssignPage || 1);
+      if (typeof window.refreshHomeworkViews === 'function') window.refreshHomeworkViews();
     } catch (e) {
       toast(`Delete failed: ${e.message}`, 'error');
     }

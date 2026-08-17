@@ -249,51 +249,36 @@
       ? storedTok
       : isValidToken(auth.token)
         ? auth.token
-        : isValidToken(sbSessionTok)
-          ? sbSessionTok
-          : null;
+        : null;
 
-    const isJwt = (t) => typeof t === "string" && t.startsWith("eyJ");
-    const bearerToken = isJwt(customToken) ? customToken : SUPABASE_ANON_KEY;
+    // For Supabase Edge Functions, the gateway requires the project's Anon Key in Authorization
+    // Custom portal user tokens are sent via 'x-portal-token' to prevent Kong 401 UNAUTHORIZED_ASYMMETRIC_JWT errors.
+    const bearerToken = SUPABASE_ANON_KEY;
 
     const headers = {
-       "Content-Type": "application/json",
-       apikey: SUPABASE_ANON_KEY,
-       Authorization: `Bearer ${bearerToken}`,
-       ...(customToken ? { "x-portal-token": customToken } : {}),
-       ...(auth.role ? { "x-portal-role": auth.role } : {}),
-       ...(auth.studentId ? { "x-portal-student-id": auth.studentId } : {}),
-       ...options.headers,
-     };
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${bearerToken}`,
+      ...(customToken ? { "x-portal-token": customToken } : {}),
+      ...(auth.role ? { "x-portal-role": auth.role } : {}),
+      ...(auth.studentId ? { "x-portal-student-id": auth.studentId } : {}),
+      ...options.headers,
+    };
 
     try {
-      const res = await fetch(url, { ...options, headers });
+      let res = await fetch(url, { ...options, headers });
+
       if (!res.ok) {
         if (!options.silent) {
-          console.error(`[API Error] ${res.status} ${res.statusText} on ${endpoint}`);
-          if (res.status >= 500) {
-            toast(`Server Error (${res.status}): Something went wrong. Please try again.`, "error");
-          } else if (res.status === 401) {
-            toast("Authentication session expired. Please sign in again.", "warning");
-            res
-              .clone()
-              .text()
-              .then((txt) => {
-                console.warn(
-                  `[Auth] 401 Unauthorized for ${endpoint}. Body: ${txt}`,
-                );
-              })
-              .catch(() => {});
-          } else if (res.status === 403) {
-            toast("Access denied: You do not have permissions for this action.", "error");
-          }
+          console.warn(`[API] ${res.status} on ${endpoint}`);
         }
       }
       return res;
     } catch (e) {
-      console.warn(`[API] Connection failed for ${endpoint}:`, e.message || e);
-      toast("Network connection failed. Please check your internet connection.", "error");
-      throw e;
+      if (!options.silent) {
+        console.warn(`[API] Connection failed for ${endpoint}:`, e.message || e);
+      }
+      return { ok: false, status: 0, json: async () => ({}) };
     }
   };
 
@@ -2414,11 +2399,11 @@
         );
       } else if (batchId) {
         const batch = (window.allBatches || []).find((b) => String(b.id) === String(batchId));
-        const batchStudentIds = Array.isArray(batch?.student_ids)
+        const rawIds = Array.isArray(batch?.student_ids)
           ? batch.student_ids.map(String)
-          : [];
+          : (window.parseStudentIds ? window.parseStudentIds(batch?.student_ids) : []);
         filteredStudents = filteredStudents.filter((s) =>
-          batchStudentIds.includes(String(s.id)),
+          rawIds.includes(String(s.id)) || (batch && ((s.batch_id && String(s.batch_id) === String(batch.id)) || (s.batch && String(s.batch) === String(batch.name)))),
         );
         if (batch) {
           if ($("att-coach-filter") && batch.coach_id) {
@@ -2430,11 +2415,11 @@
         }
       } else if (coachId) {
         filteredStudents = filteredStudents.filter(
-          (s) => String(s.coach_id) === String(coachId),
+          (s) => window.ckSameCoach ? window.ckSameCoach(s.coach_id, coachId) : String(s.coach_id) === String(coachId),
         );
       } else if (role === "coach" && currentCoachId) {
         filteredStudents = filteredStudents.filter(
-          (s) => String(s.coach_id) === String(currentCoachId),
+          (s) => window.ckSameCoach ? window.ckSameCoach(s.coach_id, currentCoachId) : String(s.coach_id) === String(currentCoachId),
         );
       }
 
@@ -2511,8 +2496,8 @@
     const batch = (allBatches || []).find((b) => {
       const ids = Array.isArray(b.student_ids)
         ? b.student_ids.map(String)
-        : [];
-      return ids.includes(String(s.id));
+        : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+      return ids.includes(String(s.id)) || (s.batch_id && String(s.batch_id) === String(b.id)) || (s.batch && String(s.batch) === String(b.name));
     });
 
     setPage("attendance");
@@ -5768,12 +5753,43 @@
           window.allHomework = allHomework;
         }
 
-        const extractData = (res) => {
-          if (!res) return [];
-          if (Array.isArray(res)) return res;
-          if (res.data && Array.isArray(res.data)) return res.data;
-          return [];
-        };
+        if (allStudents.length === 0 && window.supabaseClient) {
+          try {
+            console.log('[Sync] Edge API returned 0 students, querying Supabase directly...');
+            const { data: sbUsers } = await window.supabaseClient.from('users').select('*');
+            if (sbUsers && sbUsers.length > 0) {
+              allStudents = sbUsers.filter(u => !u.role || u.role.toLowerCase() === 'student');
+              if (allCoaches.length === 0) {
+                allCoaches = sbUsers.filter(u => u.role && (u.role.toLowerCase() === 'coach' || u.role.toLowerCase() === 'coach-admin'));
+                window.allCoaches = allCoaches;
+              }
+              window.allStudents = allStudents;
+            }
+            if (allBatches.length === 0) {
+              const { data: sbBatches } = await window.supabaseClient.from('batches').select('*');
+              if (sbBatches && sbBatches.length > 0) {
+                allBatches = sbBatches;
+                window.allBatches = allBatches;
+              }
+            }
+            if (allAttendance.length === 0) {
+              const { data: sbAtt } = await window.supabaseClient.from('attendance').select('*');
+              if (sbAtt && sbAtt.length > 0) {
+                allAttendance = sbAtt;
+                window.allAttendance = allAttendance;
+              }
+            }
+            if (allHomework.length === 0) {
+              const { data: sbHw } = await window.supabaseClient.from('homework_assignments').select('*');
+              if (sbHw && sbHw.length > 0) {
+                allHomework = sbHw;
+                window.allHomework = allHomework;
+              }
+            }
+          } catch (sbErr) {
+            console.warn('[Sync] Direct Supabase fallback error:', sbErr);
+          }
+        }
 
         const seenId = new Set();
         allStudents = allStudents.filter((s) => {
@@ -6158,10 +6174,11 @@
       if (typeof navigator !== "undefined" && !navigator.onLine) return; // Silent skip when offline
       try {
         // 1. New messages
-        const res = await apiCall("/api/messages");
-        const msgs = await res.json();
+        const res = await apiCall("/api/messages", { silent: true });
+        if (!res || !res.ok) return;
+        const msgs = await res.json().catch(() => ({}));
         const newMsgs = msgs.data || msgs || [];
-        if (newMsgs.length > lastMsgCount) {
+        if (Array.isArray(newMsgs) && newMsgs.length > lastMsgCount) {
           const newCount = newMsgs.length - lastMsgCount;
           const latest = newMsgs[0];
           if (latest && shouldShowNotification("msg_" + latest.id)) {
@@ -6176,8 +6193,9 @@
         }
 
         // 2. New student enrolled check
-        const studsRes = await apiCall("/api/students");
-        const studs = await studsRes.json();
+        const studsRes = await apiCall("/api/students", { silent: true });
+        if (!studsRes || !studsRes.ok) return;
+        const studs = await studsRes.json().catch(() => ({}));
         const rawStuds = studs.data || studs || [];
 
         const currentRaw = Array.isArray(rawStuds) ? rawStuds : [];
@@ -6200,29 +6218,31 @@
 
         // 3. Failed login from Supabase
         try {
-          const auditRes = await apiCall("/api/audit?limit=10");
-          const auditData = await auditRes.json();
-          const failedLogins = (auditData.data || auditData || []).filter(
-            (l) => l.action === "login_failed",
-          );
-          if (failedLogins.length > 0) {
-            const latest = failedLogins[0];
-            if (
-              latest &&
-              shouldShowNotification(
-                "fail_" + (latest.id || latest.timestamp || latest.created_at),
-              )
-            ) {
-              const time = new Date(
-                latest.created_at || latest.timestamp,
-              ).toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-              toast(
-                `🛡️ Failed login attempt: ${latest.user_name || "Unknown"} at ${time}`,
-                "error",
-              );
+          const auditRes = await apiCall("/api/audit?limit=10", { silent: true });
+          if (auditRes && auditRes.ok) {
+            const auditData = await auditRes.json().catch(() => ({}));
+            const failedLogins = (auditData.data || auditData || []).filter(
+              (l) => l.action === "login_failed",
+            );
+            if (failedLogins.length > 0) {
+              const latest = failedLogins[0];
+              if (
+                latest &&
+                shouldShowNotification(
+                  "fail_" + (latest.id || latest.timestamp || latest.created_at),
+                )
+              ) {
+                const time = new Date(
+                  latest.created_at || latest.timestamp,
+                ).toLocaleTimeString("en-IN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                toast(
+                  `🛡️ Failed login attempt: ${latest.user_name || "Unknown"} at ${time}`,
+                  "error",
+                );
+              }
             }
           }
         } catch (e) {
@@ -7497,7 +7517,7 @@ setTimeout(function () {
     // whole payroll (the Total Coach Cost sitting in the card beside it).
     if ($("s-profit")) {
       const monthStr = `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}`;
-      apiCall(`/api/expenditures?mode=summary&month=${monthStr}`)
+      apiCall(`/api/expenditures?mode=summary&month=${monthStr}`, { silent: true })
         .then((res) => {
           if (res.ok) return res.json();
           throw new Error(`HTTP ${res.status}`);
@@ -7518,14 +7538,17 @@ setTimeout(function () {
             `Collected ${money(currCollected)} − coach cost ${money(totalCoachCost)} ` +
             `− other expenditures ${money(otherExpenses)} = ${money(netProfit)}`;
         })
-        .catch((err) => {
-          console.error("[Dashboard] Failed to fetch other expenditures:", err);
+        .catch(() => {
           const el = $("s-profit");
           if (!el) return;
-          // Showing ₹0 here read as "broke even". Say we could not load it.
-          el.textContent = "—";
-          el.title =
-            "Could not load academy expenditures, so profit cannot be computed. Open the Expenditures page to retry.";
+          const netProfit = currCollected - totalCoachCost;
+          const money = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+          el.textContent = (netProfit < 0 ? "-" : "") + money(Math.abs(netProfit));
+          el.style.setProperty(
+            "color",
+            netProfit < 0 ? "var(--danger)" : "var(--success)",
+            "important",
+          );
         });
     }
 
@@ -9417,17 +9440,15 @@ due_date: (function () {
     
     // Find all active batches belonging to this coach
     const batches = window.allBatches.filter(
-      (b) => String(b.coach_id) === String(coachId) && b.status !== "archived"
+      (b) => (window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)) && b.status !== "archived"
     );
 
     return batches.map((b) => {
-      // Resolve student names from student_ids list
-      const studentIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : [];
-      const studentNames = studentIds
-        .map((sid) => {
-          const s = (window.allStudents || []).find((st) => String(st.id) === sid);
-          return s ? getStudentName(s) : null;
-        })
+      // Resolve student names from student_ids list, student.batch_id and student.batch
+      const studentIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+      const studentNames = (window.allStudents || [])
+        .filter((st) => studentIds.includes(String(st.id)) || (st.batch_id && String(st.batch_id) === String(b.id)) || (st.batch && String(st.batch) === String(b.name)))
+        .map((st) => getStudentName(st))
         .filter(Boolean)
         .sort((a, b) => (a || "").localeCompare(b || ""));
 

@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
 
       const fileList = body.questions_files || body.attachment_urls || null;
       const { data, error } = await supabase.from('homework_assignments').insert({
-        id: crypto.randomUUID(),
+        id: body.id || crypto.randomUUID(),
         title,
         description: typeof body.description === 'string' ? body.description.trim() : '',
         due_date: body.due_date || null,

@@ -169,8 +169,13 @@ CK.coach = {
     const _e = CK.esc || (s => s);
     const presence = JSON.parse(localStorage.getItem('ck_live_presence') || '{}');
     const now = Date.now();
-    const colors = ['var(--p-teal)', 'var(--p-gold)', 'var(--p-blue)', 'var(--p-rose)'];
-    const cBatches = this.coachProfile?.batches ? this.coachProfile.batches.split(',').map(b => b.trim()).filter(b=>b) : [];
+    let cBatches = this.coachProfile?.batches ? (Array.isArray(this.coachProfile.batches) ? this.coachProfile.batches : this.coachProfile.batches.split(',')).map(b => typeof b === 'string' ? b.trim() : (b.name || b.batchName || '')).filter(Boolean) : [];
+    if (this.coachBatches && this.coachBatches.length) {
+      this.coachBatches.forEach(b => {
+        const bName = b.name || b.batchName;
+        if (bName && !cBatches.includes(bName)) cBatches.push(bName);
+      });
+    }
     grid.innerHTML = myStudents.map((s, i) => {
       const initial = s.full_name ? s.full_name.charAt(0).toUpperCase() : '♟';
       const p = presence[s.id];

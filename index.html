@@ -2,6 +2,26 @@
 <html lang="en">
 
 <head>
+  <script>
+    // Force unregister dev Service Worker and purge old caches on local server
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      var isDev = Boolean(
+        location.hostname === 'localhost' ||
+        location.hostname === '[::1]' ||
+        location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+      );
+      if (isDev) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for (var i = 0; i < regs.length; i++) regs[i].unregister();
+        });
+        if (window.caches) {
+          caches.keys().then(function(keys) {
+            for (var i = 0; i < keys.length; i++) caches.delete(keys[i]);
+          });
+        }
+      }
+    }
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description"
@@ -408,21 +428,21 @@
         <div class="tvid-grid" data-aos="fade-up">
           <figure class="tvid-card">
             <video class="tvid-player" controls preload="metadata" playsinline
-                   src="assets/videos/testimonial-1.mp4#t=0.1">
+                   src="/assets/videos/testimonial-1.mp4">
               Sorry, your browser doesn't support embedded videos.
             </video>
             <figcaption class="tvid-caption">🎥 Student Experience &amp; Journey</figcaption>
           </figure>
           <figure class="tvid-card">
             <video class="tvid-player" controls preload="metadata" playsinline
-                   src="assets/videos/testimonial-2.mp4#t=0.1">
+                   src="/assets/videos/testimonial-2.mp4">
               Sorry, your browser doesn't support embedded videos.
             </video>
             <figcaption class="tvid-caption">🎥 Parent Review — Academy Life</figcaption>
           </figure>
           <figure class="tvid-card">
             <video class="tvid-player" controls preload="metadata" playsinline
-                   src="assets/videos/ranjith-testimonial.mp4#t=0.1">
+                   src="/assets/videos/ranjith-testimonial.mp4">
               Sorry, your browser doesn't support embedded videos.
             </video>
             <figcaption class="tvid-caption">🎥 Ranjith's Parent Experience &amp; Review</figcaption>
@@ -4339,22 +4359,20 @@
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', { scope: '/' })
-          .then(reg => {
-            console.log('[ChessKidoo] SW registered, scope:', reg.scope);
-            // Prompt to update when a new SW is waiting
-            reg.addEventListener('updatefound', () => {
-              const nw = reg.installing;
-              nw.addEventListener('statechange', () => {
-                if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-                  CK.showToast && CK.showToast('Update available — refresh to get the latest version.', 'info');
-                }
-              });
-            });
-          })
-          .catch(e => console.warn('[ChessKidoo] SW registration failed:', e));
-      });
+      const isLocal = Boolean(
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '[::1]' ||
+        window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+      );
+      if (isLocal) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for (let reg of regs) reg.unregister();
+        });
+      } else {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+        });
+      }
     }
   </script>
 
@@ -4707,16 +4725,6 @@
 
 </body>
 
-<script>
-(function() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').catch(function(err) {
-        console.warn('[CK] Service worker registration failed:', err);
-      });
-    });
-  }
-})();
-</script>
+
 
 </html>

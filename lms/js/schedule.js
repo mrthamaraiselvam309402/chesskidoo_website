@@ -186,18 +186,18 @@
           const myBatch = window.allBatches.find((b) => {
             const ids = Array.isArray(b.student_ids)
               ? b.student_ids.map(String)
-              : [];
-            return ids.includes(String(student.id));
+              : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+            return ids.includes(String(student.id)) || (student.batch_id && String(student.batch_id) === String(b.id)) || (student.batch && String(student.batch) === String(b.name));
           });
           if (myBatch) {
             const coaches = window.allCoaches || window.coaches || [];
             const c = coaches.find(
-              (co) => String(co.id) === String(myBatch.coach_id),
+              (co) => String(co.id) === String(myBatch.coach_id) || (window.ckSameCoach && window.ckSameCoach(co.id, myBatch.coach_id)),
             );
             return {
               regDays: myBatch.days || "TBD",
               regTime: myBatch.time_slot || "TBD",
-              regCoachName: c ? c.name : "TBD",
+              regCoachName: c ? (c.name || c.full_name) : "TBD",
               // notes can hold free text alongside the class link — extract
               // the URL instead of rendering the whole field as an href.
               meetLink:
@@ -630,25 +630,24 @@
     // Populate batch dropdown
     const batchSelect = document.getElementById("sch-batch-select");
     if (batchSelect && window.allBatches) {
-      const currentOpts = batchSelect.options.length;
-      if (currentOpts <= 1) {
-        const sortedBatches = [...window.allBatches].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        batchSelect.innerHTML =
-          '<option value="">-- Select Batch --</option>' +
-          sortedBatches
-            .map(
-              (b) =>
-                `<option value="${b.id}">${window.escapeHtml ? window.escapeHtml(b.name) : b.name} (${window.parseStudentIds ? window.parseStudentIds(b.student_ids).length : 0} students)</option>`,
-            )
-            .join("");
-      }
+      const prevVal = batchSelect.value;
+      const sortedBatches = [...window.allBatches].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      batchSelect.innerHTML =
+        '<option value="">-- Select Batch --</option>' +
+        sortedBatches
+          .map(
+            (b) =>
+              `<option value="${b.id}">${window.escapeHtml ? window.escapeHtml(b.name) : b.name} (${window.parseStudentIds ? window.parseStudentIds(b.student_ids).length : (Array.isArray(b.student_ids) ? b.student_ids.length : 0)} students)</option>`,
+          )
+          .join("");
+      if (prevVal) batchSelect.value = prevVal;
     }
 
     const coachId = window.currentCoachId || window.userId;
     const role = window.role || "admin";
     const students = (window.allStudents || []).filter((s) => {
       if ((s.status || "active").toLowerCase() === "archived") return false;
-      if (role === "coach" && coachId && String(s.coach_id) !== String(coachId))
+      if (role === "coach" && coachId && !window.ckSameCoach?.(s.coach_id, coachId) && String(s.coach_id) !== String(coachId))
         return false;
       return true;
     });
@@ -695,9 +694,12 @@
     );
     if (!batch) return;
     const cbs = document.querySelectorAll(".sch-group-cb");
-    const batchStudentIds = window.parseStudentIds(batch.student_ids);
+    const rawIds = Array.isArray(batch.student_ids) ? batch.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(batch.student_ids) : []);
+    const students = window.allStudents || [];
     cbs.forEach((cb) => {
-      cb.checked = batchStudentIds.includes(String(cb.value));
+      const s = students.find(x => String(x.id) === String(cb.value));
+      const inBatch = rawIds.includes(String(cb.value)) || (s && ((s.batch_id && String(s.batch_id) === String(batch.id)) || (s.batch && String(s.batch) === String(batch.name))));
+      cb.checked = inBatch;
     });
   };
 

@@ -111,13 +111,23 @@ ALTER TABLE public.puzzle_scores ADD COLUMN IF NOT EXISTS date TEXT;
 ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS pgn TEXT;
 ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS "assignedTo" TEXT[];
 ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS "dueDate" TEXT;
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS coach TEXT;
 ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS moves JSONB;
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS attachments JSONB;
 
 -- 12. ALTER HW_SUBMISSIONS TABLE
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS student_name TEXT;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS accuracy INTEGER;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS "movesStudied" INTEGER;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS "totalMoves" INTEGER;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS note TEXT;
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS files JSONB;
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'submitted';
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS grade TEXT;
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS feedback TEXT;
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS reviewed BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS "reviewedAt" TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS completed BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS "submittedAt" TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.hw_submissions ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();

@@ -120,9 +120,13 @@ CK.admin = {
     let batches = [];
     if (CK.db.getBatches) batches = await CK.db.getBatches();
     else batches = JSON.parse(localStorage.getItem('ck_db_batches') || '[]');
+    if (batches.length === 0 && window.allBatches) batches = window.allBatches;
     
     batches.forEach(b => {
-      batchOptions += `<option value="${_e(b.batchName)}">${_e(b.batchName)}</option>`;
+      const bName = b.name || b.batchName;
+      if (bName) {
+        batchOptions += `<option value="${_e(bName)}">${_e(bName)}</option>`;
+      }
     });
     batchSelects.forEach(id => {
       const el = document.getElementById(id);
@@ -767,7 +771,7 @@ CK.admin = {
           <div style="background:var(--p-surface3);padding:14px;border-radius:10px;">
             <div style="font-size:.72rem;color:var(--p-text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Coach & Batch</div>
             <div style="font-weight:700;font-size:1rem;color:#fff;">${_e(s.coach || '—')}</div>
-            <div style="font-size:.82rem;color:var(--p-text-muted);margin-top:2px;">${_e(s.batch || 'Evening')} · ${_e(s.schedule || '17:00')}</div>
+            <div style="font-size:.82rem;color:var(--p-text-muted);margin-top:2px;">${_e(s.batch || 'Unassigned')} · ${_e(s.schedule || '17:00')}</div>
           </div>
           <div style="background:var(--p-surface3);padding:14px;border-radius:10px;">
             <div style="font-size:.72rem;color:var(--p-text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Fee Status</div>
@@ -1047,11 +1051,14 @@ CK.admin = {
     });
 
     const coaches = (await CK.db.getProfiles('coach')) || [];
-    const allBatches = [];
+    let allBatches = [];
+    if (CK.db.getBatches) allBatches = await CK.db.getBatches();
+    if (allBatches.length === 0 && window.allBatches) allBatches = window.allBatches;
+    const batchNames = allBatches.map(b => b.name || b.batchName).filter(Boolean);
     coaches.forEach(c => {
       if (c.batches) c.batches.split(',').forEach(b => {
         const bt = b.trim();
-        if (bt && !allBatches.includes(bt)) allBatches.push(bt);
+        if (bt && !batchNames.includes(bt)) batchNames.push(bt);
       });
     });
 
@@ -1062,9 +1069,9 @@ CK.admin = {
       const classTitle = levelMap[s.level] || s.level || 'Beginner Basics';
       const coachName = s.coach || '—';
       const scheduleTime = s.schedule || '17:00';
-      const batchLabel = s.batch || 'Evening';
+      const batchLabel = s.batch || 'Unassigned';
       
-      const batchOpts = allBatches.map(b => `<option value="${_e(b)}" ${s.batch === b ? 'selected' : ''}>${_e(b)}</option>`).join('');
+      const batchOpts = ['<option value="">-- Batch --</option>'].concat(batchNames.map(b => `<option value="${_e(b)}" ${s.batch === b ? 'selected' : ''}>${_e(b)}</option>`)).join('');
 
       return `
         <tr>
@@ -1365,21 +1372,7 @@ CK.admin = {
              normalizedTiming.includes(b.toLowerCase().replace(/[^a-z0-9]/g, ''));
     });
 
-    if (matchingBatch) {
-      return matchingBatch;
-    }
-
-    const shortCoach = this.getCoachShortName(coachName);
-    let maxBatchNum = 0;
-    coachBatches.forEach(b => {
-      const match = b.match(/Batch\s+(\d+)/i);
-      if (match) {
-        const num = parseInt(match[1]);
-        if (num > maxBatchNum) maxBatchNum = num;
-      }
-    });
-    const nextBatchNum = maxBatchNum + 1;
-    return `${shortCoach} Batch ${nextBatchNum} ${timing}`;
+    return matchingBatch || null;
   },
 
   async autoGenerateStudentBatch() {
@@ -1395,20 +1388,11 @@ CK.admin = {
 
     const suggestedBatch = await this.calculateNextBatch(coachName, scheduleText);
     if (suggestedBatch) {
-      let optionExists = false;
       for (let i = 0; i < batchSelect.options.length; i++) {
         if (batchSelect.options[i].value === suggestedBatch) {
-          optionExists = true;
           batchSelect.selectedIndex = i;
           break;
         }
-      }
-      if (!optionExists) {
-        const opt = document.createElement('option');
-        opt.value = suggestedBatch;
-        opt.textContent = suggestedBatch;
-        opt.selected = true;
-        batchSelect.appendChild(opt);
       }
     }
   },
@@ -1515,7 +1499,7 @@ CK.admin = {
       setF('admin_s_level',    s.level || 'Beginner');
       setF('admin_s_rating',   s.rating || 800);
       setF('admin_s_coach',    s.coach || '');
-      setF('admin_s_batch',    s.batch || 'Evening');
+      setF('admin_s_batch',    s.batch || '');
       setF('admin_s_schedule', s.schedule || '17:00');
       setF('admin_s_join',     s.join_date || '2026-04-20');
       setF('admin_s_fee',      s.fee || 5000);
@@ -1528,6 +1512,8 @@ CK.admin = {
       setF('admin_s_phone', '');
       setF('admin_s_email', '');
       setF('admin_s_password', '');
+      setF('admin_s_coach', '');
+      setF('admin_s_batch', '');
       setF('admin_s_rating', 800);
       setF('admin_s_fee', 5000);
     }
@@ -1589,7 +1575,7 @@ CK.admin = {
       level:    getV('admin_s_level')    || 'Beginner',
       rating:   parseInt(getV('admin_s_rating')) || 800,
       coach:    getV('admin_s_coach'),
-      batch:    getV('admin_s_batch')    || 'Evening',
+      batch:    getV('admin_s_batch')    || '',
       schedule: getV('admin_s_schedule') || '17:00',
       join_date: getV('admin_s_join'),
       fee:      getV('admin_s_fee')      || 5000,

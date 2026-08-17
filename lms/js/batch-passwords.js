@@ -54,10 +54,11 @@
       const sortedBatches = [...batches].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
       sortedBatches.forEach(b => {
+        const rawIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
         const batchStudents = students
-          .filter(s => String(s.batch_id) === String(b.id))
-          .sort((a, b) => (window.getStudentName ? window.getStudentName(a) : a.name).localeCompare(window.getStudentName ? window.getStudentName(b) : b.name));
-        const coach = coaches.find(c => String(c.id) === String(b.coach_id));
+          .filter(s => String(s.batch_id) === String(b.id) || rawIds.includes(String(s.id)) || (s.batch && String(s.batch) === String(b.name)))
+          .sort((a, b) => (window.getStudentName ? window.getStudentName(a) : (a.name || '')).localeCompare(window.getStudentName ? window.getStudentName(b) : (b.name || '')));
+        const coach = coaches.find(c => String(c.id) === String(b.coach_id) || (window.ckSameCoach && window.ckSameCoach(c.id, b.coach_id)));
         const coachName = coach ? (coach.name || coach.full_name || 'Unassigned') : 'Unassigned';
 
       const batchPassword = batchPasswordMap.get(b.id) || null;
@@ -118,7 +119,7 @@
                               <div style="display:inline-flex; align-items:center; gap:6px;">
                                 <input type="text" id="student-pwd-input-${s.id}" placeholder="New password..." class="input-field" 
                                        style="width:110px; padding:4px 6px; font-size:11px; margin:0; height:26px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:4px;" autocomplete="new-password">
-                                <button class="btn btn-outline btn-sm" onclick="resetIndividualPassword('${s.id}', '${window.escapeHtml(s.name || 'Student')}')" style="height:26px; font-size:11px; padding:0 8px; font-weight:600; display:inline-flex; align-items:center; gap:2px;">
+                                <button class="btn btn-outline btn-sm" onclick="resetIndividualPassword('${s.id}', '${window.escapeHtml(window.getStudentName ? window.getStudentName(s) : (s.name || 'Student'))}')" style="height:26px; font-size:11px; padding:0 8px; font-weight:600; display:inline-flex; align-items:center; gap:2px;">
                                   Set Password
                                 </button>
                               </div>

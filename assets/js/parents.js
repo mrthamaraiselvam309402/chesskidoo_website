@@ -516,7 +516,7 @@ CK.parents = (() => {
           <div class="pay-line-items">
             <div class="pay-line">
               <span>Batch</span>
-              <span>${_e(c.batch || 'Evening')}</span>
+              <span>${_e(c.batch || 'Unassigned')}</span>
             </div>
             <div class="pay-line">
               <span>Level</span>

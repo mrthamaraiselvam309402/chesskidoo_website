@@ -685,12 +685,14 @@ CK.classroom = (() => {
   function _filterMyAssignments(allAssignments) {
     const userId = me();
     const prof = (window.CK && CK.currentUser) ? CK.currentUser : {};
-    const myBatch = prof.batch || prof.session || null;
+    const myBatch = prof.batch || prof.session || prof.batch_id || null;
     return (allAssignments || []).filter(a => {
       const to = a.assignedTo || a.assigned_to;
       if (!to || (Array.isArray(to) && to.length === 0)) return true;
-      const arr = Array.isArray(to) ? to : [to];
-      return arr.includes('all') || arr.includes(userId) || arr.includes(prof.id) || arr.includes(prof.email) || (myBatch && arr.includes(myBatch));
+      const arr = (Array.isArray(to) ? to : [to]).map(String);
+      const matchesStudent = arr.includes('all') || arr.includes(String(userId)) || (prof.id && arr.includes(String(prof.id))) || (prof.email && arr.includes(String(prof.email)));
+      const matchesBatch = myBatch && (arr.includes(String(myBatch)) || arr.includes('batch:' + String(myBatch)) || (prof.batch_id && (arr.includes(String(prof.batch_id)) || arr.includes('batch:' + String(prof.batch_id)))));
+      return matchesStudent || matchesBatch;
     });
   }
 
@@ -848,6 +850,9 @@ CK.classroom = (() => {
     if (_hwBoard) { _hwBoard.destroy(); _hwBoard = null; }
     _hwAssignment = null;
     await renderStudentHomework();
+    if (typeof renderStudentHomeworkSection === 'function') {
+      await renderStudentHomeworkSection('studentHomeworkSection');
+    }
   }
 
   function _applyHwPos() {
@@ -1198,23 +1203,49 @@ CK.classroom = (() => {
     await renderCoachAssignments();
   }
 
-  // Fill the coach "Assign To" dropdown with their real students (+ All).
+  // Fill the coach "Assign To" dropdown with batches and real students (+ All).
   async function populateAssignTo() {
     const sel = document.getElementById('ccHwAssignTo');
     if (!sel) return;
     const _e = (window.CK && CK.esc) ? CK.esc : (s => String(s == null ? '' : s));
     let students = [];
+    let batches = [];
     try { students = (await CK.db.getProfiles('student')) || []; } catch (e) {}
+    try { if (CK.db && CK.db.getBatches) batches = (await CK.db.getBatches()) || []; } catch (e) {}
+    if (!batches.length && window.allBatches) batches = window.allBatches;
+    
     const coach = (window.CK && CK.currentUser) ? CK.currentUser : {};
     const coachName = coach.full_name || coach.name;
-    const mine = students.filter(s => !coachName || !s.coach || s.coach === coachName || s.coach === coach.id);
+    const coachId = coach.id || coach.userid;
+    
+    const mine = students.filter(s => !coachName || !s.coach || s.coach === coachName || s.coach === coachId || s.coach_id === coachId || (window.ckSameCoach && window.ckSameCoach(s.coach_id || s.coach, coachId)));
     const list = mine.length ? mine : students;
+
+    const myBatches = batches.filter(b => !coachId || !b.coach_id || b.coach_id === coachId || (window.ckSameCoach && window.ckSameCoach(b.coach_id, coachId)));
+    const batchList = myBatches.length ? myBatches : batches;
+
     const prev = sel.value;
-    sel.innerHTML = ['<option value="all">👥 All Students</option>']
-      .concat(list.map(s => {
+    let opts = ['<option value="all">👥 All Students</option>'];
+
+    if (batchList.length) {
+      opts.push('<optgroup label="── Batches ──">');
+      batchList.forEach(b => {
+        const bName = b.name || b.batch || b.id;
+        opts.push(`<option value="batch:${_e(b.id || bName)}">📦 Batch: ${_e(bName)}</option>`);
+      });
+      opts.push('</optgroup>');
+    }
+
+    if (list.length) {
+      opts.push('<optgroup label="── Individual Students ──">');
+      list.forEach(s => {
         const label = s.full_name || s.name || s.email || s.id;
-        return `<option value="${_e(s.id)}">${_e(label)}${s.batch ? ' · ' + _e(s.batch) : ''}</option>`;
-      })).join('');
+        opts.push(`<option value="${_e(s.id)}">👤 ${_e(label)}${s.batch ? ' · ' + _e(s.batch) : ''}</option>`);
+      });
+      opts.push('</optgroup>');
+    }
+
+    sel.innerHTML = opts.join('');
     if (prev) sel.value = prev;
   }
 
@@ -1225,9 +1256,18 @@ CK.classroom = (() => {
     const _cnt0 = document.getElementById('ccAssignCount'); if (_cnt0) _cnt0.textContent = '0';
     if (!assignments.length) { container.innerHTML = '<div class="cls-empty">📭 No homework assigned yet.<br>Create one on the left — it appears for your students instantly.</div>'; return; }
     const _e = (window.CK && CK.esc) ? CK.esc : (s => String(s == null ? '' : s));
-    let students = [];
-    try { students = (await CK.db.getProfiles('student')) || []; } catch (e) {}
-    const nameOf = (id) => { const u = students.find(x => x.id === id || x.userid === id || x.email === id); return u ? (u.full_name || u.name || id) : id; };
+    let batches = [];
+    try { if (CK.db && CK.db.getBatches) batches = (await CK.db.getBatches()) || []; } catch (e) {}
+    if (!batches.length && window.allBatches) batches = window.allBatches;
+    const nameOf = (id) => {
+      if (typeof id === 'string' && id.startsWith('batch:')) {
+        const bId = id.replace('batch:', '');
+        const b = (batches || []).find(x => String(x.id) === String(bId) || String(x.name) === String(bId));
+        return 'Batch: ' + (b ? (b.name || b.batch || bId) : bId);
+      }
+      const u = students.find(x => x.id === id || x.userid === id || x.email === id);
+      return u ? (u.full_name || u.name || id) : id;
+    };
     const recipients = (a) => {
       const to = a.assignedTo || a.assigned_to;
       if (!to || (Array.isArray(to) && (to.length === 0 || to.includes('all')))) return 'All students';

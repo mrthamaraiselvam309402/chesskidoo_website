@@ -3192,12 +3192,12 @@ CK.student = {
     // Try server-side edge function first (no CORS issues)
     try {
       const session = await window.supabaseClient?.auth.getSession();
-      const token = session?.data?.session?.access_token;
-      const baseUrl = window.APP_CONFIG?.SUPABASE_URL;
+      const token = session?.data?.session?.access_token || window.APP_CONFIG?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
+      const baseUrl = window.APP_CONFIG?.SUPABASE_URL || window.SUPABASE_URL;
       if (token && baseUrl) {
         const res = await fetch(
           `${baseUrl}/functions/v1/fide-profile?id=${encodeURIComponent(idStr)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { apikey: token, Authorization: `Bearer ${token}` } }
         );
         if (res.ok) {
           const d = await res.json();

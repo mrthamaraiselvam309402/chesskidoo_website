@@ -317,9 +317,11 @@
           const { error } = await window.supabaseClient
             .from('users')
             .upsert(profile);
-          if (error) console.warn("[ChessKidoo DB] Supabase save failed, saving to local only:", error);
+          if (error && error.code !== '42501') {
+            console.warn("[ChessKidoo DB] Supabase save notice:", error.message || error);
+          }
         } catch (e) {
-          console.warn("[ChessKidoo DB] Supabase error during save:", e);
+          // Fall back silently to local storage
         }
       }
 
@@ -553,21 +555,46 @@
 
     // --- BATCHES OPERATIONS ---
     async getBatches() {
-      // Generate batches dynamically from coaches if not stored
+      if (canUseSupabase()) {
+        try {
+          const { data, error } = await window.supabaseClient.from('batches').select('*');
+          if (!error && data && data.length > 0) {
+            const mapped = data.map(b => ({
+              id: b.id,
+              name: b.name,
+              batchName: b.name,
+              coach: b.coach_id,
+              coach_id: b.coach_id,
+              days: b.days,
+              time_slot: b.time_slot,
+              level: b.level,
+              status: b.status,
+              student_ids: b.student_ids
+            }));
+            setLocal('batches', mapped);
+            return mapped;
+          }
+        } catch (e) {
+          console.warn("[ChessKidoo DB] Batches fetch error, falling back:", e);
+        }
+      }
+
       let stored = getLocal('batches');
       if (stored && stored.length > 0) return stored;
 
+      // Extract real batches from profiles if any
       const coaches = await this.getProfiles('coach');
       const batches = [];
       const seen = new Set();
       
       coaches.forEach(coach => {
         if (coach.batches) {
-          const coachBatches = coach.batches.split(',').map(b => b.trim()).filter(b => b);
+          const coachBatches = (Array.isArray(coach.batches) ? coach.batches : String(coach.batches).split(','))
+            .map(b => typeof b === 'string' ? b.trim() : (b.name || b.batchName || '')).filter(b => b);
           coachBatches.forEach(batchStr => {
             if (!seen.has(batchStr)) {
               seen.add(batchStr);
-              batches.push({ batchName: batchStr, coach: coach.full_name || 'Coach' });
+              batches.push({ id: 'b-' + batchStr, name: batchStr, batchName: batchStr, coach: coach.full_name || 'Coach' });
             }
           });
         }
@@ -1109,7 +1136,24 @@
     async saveAssignment(a) {
       if (!a.id) a.id = 'as-' + Date.now();
       if (canUseSupabase()) {
-        try { await window.supabaseClient.from('assignments').upsert(a); } catch(e) {}
+        try {
+          const record = {
+            id: a.id,
+            title: a.title || '',
+            pgn: a.pgn || '',
+            type: a.type || 'study',
+            assignedTo: a.assignedTo || a.assigned_to || ['all'],
+            dueDate: a.dueDate || a.due_date || '',
+            description: a.description || '',
+            coach: a.coach || '',
+            moves: a.moves || null,
+            attachments: a.attachments || a.attachment_urls || null,
+            created: a.created || Date.now()
+          };
+          await window.supabaseClient.from('assignments').upsert(record);
+        } catch(e) {
+          console.warn('[DB] Supabase saveAssignment error:', e);
+        }
       }
       const all = JSON.parse(localStorage.getItem('ck_assignments') || '[]');
       const idx = all.findIndex(x => x.id === a.id);
@@ -1139,19 +1183,40 @@
         } catch(e) {}
       }
       const all = JSON.parse(localStorage.getItem('ck_hw_submissions') || '[]');
-      if (assignmentId && studentId) return all.filter(s => s.assignment_id === assignmentId && s.student_id === studentId);
-      if (assignmentId) return all.filter(s => s.assignment_id === assignmentId);
-      if (studentId)    return all.filter(s => s.student_id === studentId);
+      if (assignmentId && studentId) return all.filter(s => (s.assignment_id === assignmentId || s.assignmentId === assignmentId) && (s.student_id === studentId || s.studentId === studentId));
+      if (assignmentId) return all.filter(s => s.assignment_id === assignmentId || s.assignmentId === assignmentId);
+      if (studentId)    return all.filter(s => s.student_id === studentId || s.studentId === studentId);
       return all;
     },
     async saveSubmission(s) {
       if (!s.id) s.id = 'sub-' + Date.now();
+      const assignmentId = s.assignment_id || s.assignmentId;
+      const studentId = s.student_id || s.studentId;
       if (canUseSupabase()) {
-        try { await window.supabaseClient.from('hw_submissions').upsert(s); } catch(e) {}
+        try {
+          const record = {
+            id: s.id,
+            assignment_id: assignmentId,
+            student_id: studentId,
+            student_name: s.student_name || s.studentName || '',
+            accuracy: s.accuracy !== undefined ? s.accuracy : null,
+            movesStudied: s.movesStudied !== undefined ? s.movesStudied : null,
+            totalMoves: s.totalMoves !== undefined ? s.totalMoves : null,
+            note: s.note || s.submission_text || '',
+            files: s.files || s.file_urls || null,
+            completed: s.completed !== undefined ? s.completed : true,
+            status: s.status || (s.completed ? 'submitted' : 'in_progress'),
+            submittedAt: s.submittedAt || s.submitted_at || new Date().toISOString()
+          };
+          await window.supabaseClient.from('hw_submissions').upsert(record);
+        } catch(e) {
+          console.warn('[DB] Supabase saveSubmission error:', e);
+        }
       }
       const all = JSON.parse(localStorage.getItem('ck_hw_submissions') || '[]');
-      const idx = all.findIndex(x => x.id === s.id || (x.assignment_id === s.assignment_id && x.student_id === s.student_id));
-      if (idx !== -1) all[idx] = s; else all.push(s);
+      const idx = all.findIndex(x => x.id === s.id || ((x.assignment_id === assignmentId || x.assignmentId === assignmentId) && (x.student_id === studentId || x.studentId === studentId)));
+      if (idx !== -1) all[idx] = { ...all[idx], ...s, assignment_id: assignmentId, student_id: studentId };
+      else all.push({ ...s, assignment_id: assignmentId, student_id: studentId });
       localStorage.setItem('ck_hw_submissions', JSON.stringify(all));
       return s;
     },
