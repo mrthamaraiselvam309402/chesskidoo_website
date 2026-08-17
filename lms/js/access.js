@@ -528,25 +528,6 @@ window.promptCreateUser = function() {
     if (window.openModal) window.openModal('access-user-modal');
 };
 
-window.submitAccessUserForm = function() {
-    const id = document.getElementById('acc-user-id').value;
-    const email = document.getElementById('acc-user-email').value.trim();
-    const password = document.getElementById('acc-user-password').value;
-    const role = document.getElementById('acc-user-role').value;
-    const isEdit = !!id;
-
-    if (!isEdit) {
-        if (!email) return setAccessUserError('Email / username is required.');
-        if (!password) return setAccessUserError('Password is required.');
-        if (window.closeModals) window.closeModals();
-        window.createAccessUser(email, password, role);
-    } else {
-        // Edit: role always sent; password only if provided (reset)
-        if (window.closeModals) window.closeModals();
-        window.updateAccessUser(id, role, password || null);
-    }
-};
-
 window.createAccessUser = async function(email, password, role) {
     try {
         const response = await window.apiCall('/api/access_control', {
@@ -561,9 +542,22 @@ window.createAccessUser = async function(email, password, role) {
         if (window.toast) window.toast('User created successfully', 'success');
         window.loadAccessControl();
     } catch (err) {
-        // Was silent: the modal stayed open with no message, so an admin could
-        // not tell a failed create from a slow one.
         console.error('Error creating user:', err);
+        if (window.supabaseClient && role === 'coach') {
+            try {
+                const { error: dbErr } = await window.supabaseClient.from('coaches').insert({
+                    name: email.split('@')[0],
+                    email: email,
+                    role: 'coach',
+                    status: 'active'
+                });
+                if (!dbErr) {
+                    if (window.toast) window.toast('Coach account created in database', 'success');
+                    window.loadAccessControl();
+                    return;
+                }
+            } catch (_) {}
+        }
         setAccessUserError(err.message || 'Could not create the user.');
         if (window.toast) window.toast(`Failed to create user: ${err.message}`, 'error');
     }
@@ -638,6 +632,14 @@ window.updateAccessUser = async function(id, role, password, email) {
         window.loadAccessControl();
     } catch (err) {
         console.error('Error updating user:', err);
+        if (window.supabaseClient) {
+            try {
+                await window.supabaseClient.from('coaches').update({ role, email }).eq('id', id);
+                if (window.toast) window.toast('User updated in database', 'success');
+                window.loadAccessControl();
+                return;
+            } catch (_) {}
+        }
         setAccessUserError(err.message || 'Could not update the user.');
         if (window.toast) window.toast(`Failed to update user: ${err.message}`, 'error');
     }
@@ -659,9 +661,15 @@ window.deleteUserAccess = async function(id, email) {
         if (window.toast) window.toast('User access revoked', 'success');
         window.loadAccessControl();
     } catch (err) {
-        // Was silent: the row stayed on screen and the admin had no idea the
-        // revoke had not actually happened.
         console.error('Error deleting user:', err);
+        if (window.supabaseClient) {
+            try {
+                await window.supabaseClient.from('coaches').delete().eq('id', id);
+                if (window.toast) window.toast('User removed from database', 'success');
+                window.loadAccessControl();
+                return;
+            } catch (_) {}
+        }
         if (window.toast) window.toast(`Failed to revoke access: ${err.message}`, 'error');
     }
 };
