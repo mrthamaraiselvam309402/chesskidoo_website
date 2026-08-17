@@ -518,7 +518,20 @@
 
   // Populates the parent-portal Attendance tab (was previously never rendered).
   function renderChildAttendance() {
-    const s = currentStudent || window.currentStudent;
+    let s = currentStudent || window.currentStudent;
+    if (!s) {
+      try {
+        const auth = JSON.parse(sessionStorage.getItem("twoknights_auth") || localStorage.getItem("twoknights_auth") || "{}");
+        const students = allStudents || window.allStudents || [];
+        if (auth.studentId && students.length) {
+          s = students.find((st) => String(st.id) === String(auth.studentId));
+          if (s) {
+            currentStudent = s;
+            window.currentStudent = s;
+          }
+        }
+      } catch (_) {}
+    }
     if (!s) return;
     const attList = window.allAttendance || allAttendance || [];
     const myAtt = attList
@@ -2611,16 +2624,40 @@
     }
 
     try {
+      let saved = false;
       const res = await apiCall("/api/attendance", {
         method: "POST",
         body: JSON.stringify(records),
       });
       if (res.ok) {
+        saved = true;
+      } else if (window.supabaseClient) {
+        const { error: sbErr } = await window.supabaseClient
+          .from("attendance")
+          .upsert(records);
+        if (!sbErr) saved = true;
+      }
+      if (saved) {
         toast(`Attendance recorded for ${records.length} students!`, "success");
         closeModals();
         loadAllData(true);
+      } else {
+        toast("Failed to save attendance", "error");
       }
     } catch (e) {
+      if (window.supabaseClient) {
+        try {
+          const { error: sbErr } = await window.supabaseClient
+            .from("attendance")
+            .upsert(records);
+          if (!sbErr) {
+            toast(`Attendance recorded for ${records.length} students!`, "success");
+            closeModals();
+            loadAllData(true);
+            return;
+          }
+        } catch (_) {}
+      }
       toast("Error saving attendance", "error");
     }
   }

@@ -62,9 +62,19 @@
 
   function getBatchStudentIds(batch, students = []) {
     const ids = new Set();
-    (batch && Array.isArray(batch.student_ids) ? batch.student_ids : []).forEach((id) => ids.add(String(id)));
+    if (batch) {
+      const rawIds = Array.isArray(batch.student_ids) 
+        ? batch.student_ids 
+        : (window.parseStudentIds ? window.parseStudentIds(batch.student_ids) : []);
+      rawIds.forEach((id) => ids.add(String(id)));
+    }
     students.forEach((student) => {
-      if (student && String(student.batch_id) === String(batch && batch.id)) ids.add(String(student.id));
+      if (student && batch) {
+        if (student.batch_id && String(student.batch_id) === String(batch.id)) ids.add(String(student.id));
+        if (student.batch && (String(student.batch) === String(batch.name) || String(student.batch) === String(batch.batch_name) || String(student.batch) === String(batch.id))) {
+          ids.add(String(student.id));
+        }
+      }
     });
     return Array.from(ids);
   }
@@ -72,13 +82,29 @@
   function assignmentAppliesToStudent(assignment, studentId, students = []) {
     if (!assignment || !studentId) return false;
     const sid = String(studentId);
-    if (assignment.target_type === 'all') return true;
-    if (assignment.target_type === 'student') return String(assignment.student_id) === sid;
-    if (assignment.target_type === 'batch') {
-      const student = students.find((item) => String(item.id) === sid);
-      if (student && String(student.batch_id) === String(assignment.batch_id)) return true;
-      const batch = (assignment && assignment._batch) || (window.allBatches || []).find(b => String(b.id) === String(assignment.batch_id));
-      return batch ? getBatchStudentIds(batch, students).includes(sid) : false;
+    const targetType = (assignment.target_type || 'all').toLowerCase();
+    if (targetType === 'all' || !assignment.target_type) return true;
+
+    if (targetType === 'student') {
+      const assignedStudentId = String(assignment.student_id || assignment.target_value || assignment.target_id || '');
+      return assignedStudentId === sid;
+    }
+
+    if (targetType === 'batch') {
+      const assignedBatchId = String(assignment.batch_id || assignment.target_value || assignment.target_id || '');
+      const assignedBatchName = String(assignment.batch_name || assignment.target_value || '');
+      const student = (students || []).find((item) => String(item.id) === sid);
+      
+      if (student) {
+        if (student.batch_id && (String(student.batch_id) === assignedBatchId || String(student.batch_id) === assignedBatchName)) return true;
+        if (student.batch && (String(student.batch) === assignedBatchId || String(student.batch) === assignedBatchName)) return true;
+      }
+
+      const batches = window.allBatches || [];
+      const batch = (assignment && assignment._batch) || batches.find(b => String(b.id) === assignedBatchId || String(b.name) === assignedBatchId || String(b.name) === assignedBatchName || String(b.batch_name) === assignedBatchName);
+      if (batch) {
+        return getBatchStudentIds(batch, students).includes(sid);
+      }
     }
     return false;
   }
@@ -86,12 +112,18 @@
   function assignmentAppliesToBatch(assignment, batchId, students = [], batches = []) {
     if (!assignment || !batchId) return false;
     const bid = String(batchId);
-    if (assignment.target_type === 'all') return true;
-    if (assignment.target_type === 'batch') return String(assignment.batch_id) === bid;
-    if (assignment.target_type === 'student') {
-      const direct = students.some((student) => String(student.id) === String(assignment.student_id) && String(student.batch_id) === bid);
+    const targetType = (assignment.target_type || 'all').toLowerCase();
+    if (targetType === 'all' || !assignment.target_type) return true;
+    if (targetType === 'batch') {
+      const assignedBatchId = String(assignment.batch_id || assignment.target_value || assignment.target_id || '');
+      const assignedBatchName = String(assignment.batch_name || assignment.target_value || '');
+      return assignedBatchId === bid || assignedBatchName === bid;
+    }
+    if (targetType === 'student') {
+      const assignedStudentId = String(assignment.student_id || assignment.target_value || assignment.target_id || '');
+      const direct = students.some((student) => String(student.id) === assignedStudentId && (String(student.batch_id) === bid || String(student.batch) === bid));
       if (direct) return true;
-      return batches.some((batch) => String(batch.id) === bid && getBatchStudentIds(batch, students).includes(String(assignment.student_id)));
+      return batches.some((batch) => (String(batch.id) === bid || String(batch.name) === bid) && getBatchStudentIds(batch, students).includes(assignedStudentId));
     }
     return false;
   }
@@ -1259,16 +1291,55 @@ let homeworkSubmissionCache = [];
     loadHomeworkSubmissions();
   }
 
+  function resolveCurrentStudent() {
+    if (window.currentStudent && window.currentStudent.id) return window.currentStudent;
+    try {
+      const auth = JSON.parse(sessionStorage.getItem('twoknights_auth') || localStorage.getItem('twoknights_auth') || '{}');
+      const students = window.allStudents || [];
+      if (auth.studentId && students.length) {
+        const found = students.find(s => String(s.id) === String(auth.studentId));
+        if (found) {
+          window.currentStudent = found;
+          return found;
+        }
+      }
+      if (auth.user && students.length) {
+        const userNorm = String(auth.user).toLowerCase().trim();
+        const found = students.find(s => 
+          (s.email && s.email.toLowerCase().trim() === userNorm) ||
+          (s.name && s.name.toLowerCase().trim() === userNorm) ||
+          (s.phone && s.phone.trim() === userNorm)
+        );
+        if (found) {
+          window.currentStudent = found;
+          return found;
+        }
+      }
+    } catch (_) {}
+    return window.currentStudent || null;
+  }
+
   function renderChildHomework() {
     const list = $('child-homework-list');
-    const student = window.currentStudent || null;
+    const student = resolveCurrentStudent();
     if (!list) return;
     if (!student) {
-      list.innerHTML = '<div class="loading-state"><span class="spinner"></span> Loading student context</div>';
+      list.innerHTML = '<div class="loading-state"><span class="spinner"></span> Loading student context...</div>';
       return;
     }
 
-    const items = sortHomework((window.allHomework || []).filter((assignment) => assignmentAppliesToStudent(assignment, student.id, window.allStudents || [])));
+    const homeworkList = window.allHomework || [];
+    if (homeworkList.length === 0 && window.loadHomeworkData && !window._hwLoading) {
+      window._hwLoading = true;
+      window.loadHomeworkData(true).then(() => {
+        window._hwLoading = false;
+        renderChildHomework();
+      }).catch(() => {
+        window._hwLoading = false;
+      });
+    }
+
+    const items = sortHomework(homeworkList.filter((assignment) => assignmentAppliesToStudent(assignment, student.id, window.allStudents || [])));
     if (!items.length) {
       list.innerHTML = '<div class="empty-state"><span class="empty-icon">📝</span><p>No homework assigned right now.</p></div>';
       return;
