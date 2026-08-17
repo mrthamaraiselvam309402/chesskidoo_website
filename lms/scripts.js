@@ -24,6 +24,34 @@
   };
   window.formatTime = formatTime;
 
+  window.ckSameCoach = function (a, b) {
+    if (!a || !b) return false;
+    const norm = (v) =>
+      String(v || '')
+        .toLowerCase()
+        .trim()
+        .replace(/^(coach_|coach-)/, '')
+        .replace(/[^a-z0-9]/g, '');
+    const na = norm(a);
+    const nb = norm(b);
+    if (!na || !nb) return false;
+    if (na === nb) return true;
+    return na.includes(nb) || nb.includes(na);
+  };
+
+  window.parseStudentIds = function (raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+      } catch (_) {}
+      return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
   const openWhatsApp = (dialCode, localNumber, msg) => {
     const cleanDial = (dialCode || "").toString().replace(/\D/g, "");
     const cleanNum = (localNumber || "").toString().replace(/\D/g, "");
