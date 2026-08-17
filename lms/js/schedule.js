@@ -161,67 +161,64 @@
   // Parses the embedded schedule tag from the notes column. Supports the new
   // sanitization-safe [SCHEDULE64:...] format and the legacy [SCHEDULE:{...}].
   window.extractScheduleJSON = function (notesString, student = null) {
-    if (!notesString) {
-      // FALLBACK: Check student's days column first, then batch lookup
-      if (student) {
-        // First try: use student's days column
-        if (student.days) {
-          const dayArray = String(student.days)
-            .split(",")
-            .map((d) => d.trim())
-            .filter(Boolean);
-          const timeVal = student.session_time || student.batch_time || "TBD";
+    if (notesString) {
+      const m64 = notesString.match(/\[SCHEDULE64:([A-Za-z0-9+/=]+)\]/);
+      if (m64 && m64[1]) {
+        const decoded = decodeSchedulePayload(m64[1]);
+        if (decoded) return decoded;
+      }
+      const match = notesString.match(/\[SCHEDULE:({.*?})\]/);
+      if (match && match[1]) {
+        try {
+          return JSON.parse(match[1]);
+        } catch (e) {
+          console.warn("Failed to parse legacy schedule JSON", e);
+        }
+      }
+    }
+
+    // FALLBACK: Check student's days column first, then live batch lookup
+    if (student) {
+      // First try: use student's days column
+      if (student.days) {
+        const dayArray = String(student.days)
+          .split(",")
+          .map((d) => d.trim())
+          .filter(Boolean);
+        const timeVal = student.session_time || student.batch_time || "TBD";
+        return {
+          regDays: dayArray.join(" & "),
+          regTime: timeVal,
+          regCoachName: student.coach_name || student.coaching_coach || "TBD",
+          meetLink: student.notes
+            ? student.notes.match(/https?:\/\/[^\s]+/)?.[0] || ""
+            : "",
+          isMatrixOverride: false,
+        };
+      }
+      // Second try: Look up student's live batch schedule dynamically
+      if (student.id && window.allBatches) {
+        const myBatch = window.allBatches.find((b) => {
+          const ids = Array.isArray(b.student_ids)
+            ? b.student_ids.map(String)
+            : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+          return ids.includes(String(student.id)) || (student.batch_id && String(student.batch_id) === String(b.id)) || (student.batch && String(student.batch) === String(b.name));
+        });
+        if (myBatch) {
+          const coaches = window.allCoaches || window.coaches || [];
+          const c = coaches.find(
+            (co) => String(co.id) === String(myBatch.coach_id) || (window.ckSameCoach && window.ckSameCoach(co.id, myBatch.coach_id)),
+          );
           return {
-            regDays: dayArray.join(" & "),
-            regTime: timeVal,
-            regCoachName: student.coach_name || student.coaching_coach || "TBD",
-            meetLink: student.notes
-              ? student.notes.match(/https?:\/\/[^\s]+/)?.[0] || ""
-              : "",
+            regDays: myBatch.days || "TBD",
+            regTime: myBatch.time_slot || "TBD",
+            regCoachName: c ? (c.name || c.full_name) : "TBD",
+            meetLink:
+              (myBatch.notes || "").match(/https?:\/\/[^\s"'<>]+/)?.[0] ||
+              "",
             isMatrixOverride: false,
           };
         }
-        // Second try: Look up student's live batch schedule dynamically
-        if (student.id && window.allBatches) {
-          const myBatch = window.allBatches.find((b) => {
-            const ids = Array.isArray(b.student_ids)
-              ? b.student_ids.map(String)
-              : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
-            return ids.includes(String(student.id)) || (student.batch_id && String(student.batch_id) === String(b.id)) || (student.batch && String(student.batch) === String(b.name));
-          });
-          if (myBatch) {
-            const coaches = window.allCoaches || window.coaches || [];
-            const c = coaches.find(
-              (co) => String(co.id) === String(myBatch.coach_id) || (window.ckSameCoach && window.ckSameCoach(co.id, myBatch.coach_id)),
-            );
-            return {
-              regDays: myBatch.days || "TBD",
-              regTime: myBatch.time_slot || "TBD",
-              regCoachName: c ? (c.name || c.full_name) : "TBD",
-              // notes can hold free text alongside the class link — extract
-              // the URL instead of rendering the whole field as an href.
-              meetLink:
-                (myBatch.notes || "").match(/https?:\/\/[^\s"'<>]+/)?.[0] ||
-                "",
-              isMatrixOverride: false,
-            };
-          }
-        }
-      }
-      return null;
-    }
-    const m64 = notesString.match(/\[SCHEDULE64:([A-Za-z0-9+/=]+)\]/);
-    if (m64 && m64[1]) {
-      const decoded = decodeSchedulePayload(m64[1]);
-      if (decoded) return decoded;
-    }
-    const match = notesString.match(/\[SCHEDULE:({.*?})\]/);
-    if (match && match[1]) {
-      try {
-        return JSON.parse(match[1]);
-      } catch (e) {
-        console.warn("Failed to parse legacy schedule JSON", e);
-        return null;
       }
     }
     return null;

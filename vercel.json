@@ -11,12 +11,32 @@
       "destination": "/lms/index.html"
     },
     {
-      "source": "/api/chesscom-games-proxy",
-      "destination": "/api/chesscom-proxy?type=games"
+      "source": "/api/lichess",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/lichess-sync"
+    },
+    {
+      "source": "/api/lichess/:match*",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/lichess-sync/:match*"
+    },
+    {
+      "source": "/api/chesscom-proxy",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=profile"
+    },
+    {
+      "source": "/api/chesscom-proxy/:match*",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=profile"
     },
     {
       "source": "/api/chesscom-clubs-proxy",
-      "destination": "/api/chesscom-proxy?type=clubs"
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=clubs"
+    },
+    {
+      "source": "/api/chesscom-games-proxy",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=games"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/:path*"
     },
     {
       "source": "/((?!assets/|public/|api/|lms|sw\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|clear\\.html|.*\\.[a-zA-Z0-9]+$).*)",
