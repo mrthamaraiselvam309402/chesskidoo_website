@@ -1102,10 +1102,42 @@ let homeworkSubmissionCache = [];
         </div>` : ''}
       </div>
       ${assignment.description ? `<div style="margin-top:12px; color:var(--ivory-dim); font-size:13px; line-height:1.65; white-space:pre-wrap;">${escapeValue(assignment.description)}</div>` : '<div style="margin-top:12px;color:var(--ivory-dim);font-size:13px;">No detailed instructions provided.</div>'}
-      ${assignment.attachment_urls && Array.isArray(assignment.attachment_urls) && assignment.attachment_urls.length > 0 ? `<div style="margin-top:12px; font-size:12px; color:var(--gold);">
-          <strong>Attachments:</strong><br>
-          ${assignment.attachment_urls.map((url, i) => `<a href="${safeUrl(url)}" target="_blank" rel="noopener" style="display:block; margin-top:4px;">📎 File ${i + 1}</a>`).join('')}
-        </div>` : ''}
+      ${(() => {
+        let files = [];
+        const parseList = (val) => {
+          if (!val) return [];
+          if (Array.isArray(val)) return val;
+          if (typeof val === 'string') {
+            try {
+              const p = JSON.parse(val);
+              if (Array.isArray(p)) return p;
+            } catch (_) {}
+            return [val];
+          }
+          return [];
+        };
+        files.push(...parseList(assignment.attachment_urls));
+        files.push(...parseList(assignment.questions_files));
+        files = Array.from(new Set(files.filter(Boolean)));
+        if (!files.length) return '';
+        return `
+          <div style="margin-top:14px; padding:10px 12px; background:rgba(218,163,62,0.04); border:1px solid rgba(218,163,62,0.2); border-radius:8px;">
+            <strong style="font-size:12px; color:var(--gold); display:flex; align-items:center; gap:4px;">📂 Study Materials & Attachments (${files.length}):</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+              ${files.map((url, i) => {
+                let name = `Material ${i + 1}`;
+                if (typeof url === 'string' && url.startsWith('http')) {
+                  const part = url.split('/').pop().split('?')[0];
+                  if (part && part.length < 35) name = decodeURIComponent(part);
+                } else if (typeof url === 'string' && url.startsWith('data:image')) {
+                  name = `Image Attachment ${i + 1}`;
+                }
+                return `<a href="${safeUrl(url)}" target="_blank" rel="noopener" class="btn btn-outline-grey btn-sm" style="font-size:11px; padding:4px 10px; color:var(--gold); border-color:rgba(218,163,62,0.3); text-decoration:none;">📎 ${escapeValue(name)}</a>`;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      })()}
       ${!isAdminUser() ? renderChildSubmissionPanel(assignment) : ''}
     </div>`;
   }
