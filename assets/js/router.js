@@ -22,18 +22,21 @@
   CK.handleRoute = () => {
     const hash = window.location.hash.replace('#', '');
     if (!hash || hash === 'home') {
-      // If a user is already logged in, keep them in their portal instead
-      // of bouncing them to the public landing page on refresh.
       const u = CK.checkAuth();
       if (u && u.role) {
         const role = String(u.role).toLowerCase();
-        CK.showPage(`${role}-page`);
-        setTimeout(() => {
-          if (role === 'admin'   && CK.admin)   CK.admin.init();
-          if (role === 'student' && CK.student) CK.student.init();
-          if (role === 'coach'   && CK.coach)   CK.coach.init();
-          if (role === 'parent'  && CK.parents) CK.parents.init();
-        }, 100);
+        const portalEl = document.getElementById(`${role}-page`);
+        if (portalEl) {
+          CK.showPage(`${role}-page`);
+          setTimeout(() => {
+            if (role === 'admin'   && CK.admin)   CK.admin.init();
+            if (role === 'student' && CK.student) CK.student.init();
+            if (role === 'coach'   && CK.coach)   CK.coach.init();
+            if (role === 'parent'  && CK.parents) CK.parents.init();
+          }, 100);
+        } else {
+          CK.showHome();
+        }
       } else {
         CK.showHome();
       }
@@ -57,13 +60,18 @@
         CK.showToast('Please log in to access this portal.', 'warning');
         CK.showLogin();
       } else {
-        CK.showPage(`${hash}-page`);
-        setTimeout(() => {
-          if (hash === 'admin'   && CK.admin)   CK.admin.init();
-          if (hash === 'student' && CK.student) CK.student.init();
-          if (hash === 'coach'   && CK.coach)   CK.coach.init();
-          if (hash === 'parent'  && CK.parents) CK.parents.init();
-        }, 100);
+        const portalEl = document.getElementById(`${hash}-page`);
+        if (portalEl) {
+          CK.showPage(`${hash}-page`);
+          setTimeout(() => {
+            if (hash === 'admin'   && CK.admin)   CK.admin.init();
+            if (hash === 'student' && CK.student) CK.student.init();
+            if (hash === 'coach'   && CK.coach)   CK.coach.init();
+            if (hash === 'parent'  && CK.parents) CK.parents.init();
+          }, 100);
+        } else {
+          window.location.href = '/lms/';
+        }
       }
       return;
     }

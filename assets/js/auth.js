@@ -169,12 +169,17 @@
       }
 
       setTimeout(() => {
-        CK.showPage(`${role}-page`);
-        if (CK.notifs) CK.notifs.init(profile);
-        if (role === 'admin'   && CK.admin)   CK.admin.init();
-        if (role === 'student' && CK.student) CK.student.init();
-        if (role === 'coach'   && CK.coach)   CK.coach.init();
-        if (role === 'parent'  && CK.parents) CK.parents.init();
+        const portalEl = document.getElementById(`${role}-page`);
+        if (portalEl) {
+          CK.showPage(`${role}-page`);
+          if (CK.notifs) CK.notifs.init(profile);
+          if (role === 'admin'   && CK.admin)   CK.admin.init();
+          if (role === 'student' && CK.student) CK.student.init();
+          if (role === 'coach'   && CK.coach)   CK.coach.init();
+          if (role === 'parent'  && CK.parents) CK.parents.init();
+        } else {
+          window.location.href = '/lms/';
+        }
       }, 500);
 
     } catch (err) {
@@ -281,12 +286,17 @@
       CK.showToast(`Welcome, ${profile.full_name || 'Champion'}! ♟`, 'success');
 
       setTimeout(() => {
-        CK.showPage(`${role}-page`);
-        if (CK.notifs) CK.notifs.init(profile);
-        if (role === 'admin'   && CK.admin)   CK.admin.init();
-        if (role === 'student' && CK.student) CK.student.init();
-        if (role === 'coach'   && CK.coach)   CK.coach.init();
-        if (role === 'parent'  && CK.parents) CK.parents.init();
+        const portalEl = document.getElementById(`${role}-page`);
+        if (portalEl) {
+          CK.showPage(`${role}-page`);
+          if (CK.notifs) CK.notifs.init(profile);
+          if (role === 'admin'   && CK.admin)   CK.admin.init();
+          if (role === 'student' && CK.student) CK.student.init();
+          if (role === 'coach'   && CK.coach)   CK.coach.init();
+          if (role === 'parent'  && CK.parents) CK.parents.init();
+        } else {
+          window.location.href = '/lms/';
+        }
       }, 500);
     } catch (err) {
       console.warn('[ChessKidoo Auth] OAuth callback error:', err);

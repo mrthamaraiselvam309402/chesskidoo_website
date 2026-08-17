@@ -112,8 +112,17 @@
 
   /* ─── SPA Router ─── */
   CK.showPage = (id) => {
+    let target = document.getElementById(id);
+    if (!target) {
+      // If a portal page is requested on the landing domain, redirect to LMS
+      if (['admin-page', 'student-page', 'coach-page', 'parent-page'].includes(id)) {
+        window.location.href = '/lms/';
+        return;
+      }
+      // Safe fallback to landing page so the screen is NEVER left blank
+      target = document.getElementById('landing-page');
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(id);
     if (target) {
       target.classList.add('active');
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -122,7 +131,7 @@
     // Toggle global site header visibility
     const header = document.getElementById('header');
     if (header) {
-      if (id === 'landing-page') {
+      if (target && target.id === 'landing-page') {
         header.classList.remove('header-hidden');
       } else {
         header.classList.add('header-hidden');
@@ -1232,13 +1241,24 @@ ${applicant}`;
 
       if (restoredUser?.role) {
         const role = restoredUser.role.toLowerCase();
-        CK.showPage(`${role}-page`);
-        setTimeout(() => {
-          if (role === 'admin'   && CK.admin)   CK.admin.init();
-          if (role === 'student' && CK.student) CK.student.init();
-          if (role === 'coach'   && CK.coach)   CK.coach.init();
-          if (role === 'parent'  && CK.parents) CK.parents.init();
-        }, 50);
+        const portalEl = document.getElementById(`${role}-page`);
+        if (portalEl) {
+          CK.showPage(`${role}-page`);
+          setTimeout(() => {
+            if (role === 'admin'   && CK.admin)   CK.admin.init();
+            if (role === 'student' && CK.student) CK.student.init();
+            if (role === 'coach'   && CK.coach)   CK.coach.init();
+            if (role === 'parent'  && CK.parents) CK.parents.init();
+          }, 50);
+        } else {
+          // On public landing page, stay on landing page and update the login nav link to Dashboard
+          CK.showPage('landing-page');
+          const loginBtn = document.getElementById('loginNavBtn');
+          if (loginBtn) {
+            loginBtn.textContent = 'Dashboard 🚀';
+            loginBtn.href = '/lms/';
+          }
+        }
       } else {
         // Check for OAuth callback (returning from Google login)
         if (CK._handleAuthCallback) {
