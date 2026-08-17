@@ -811,15 +811,16 @@ let homeworkSubmissionCache = [];
     }
 
     // Determine target student ID from active student context or session
-    let studentId = window.currentStudent?.id || window.currentStudentId || window.studentId;
+    let curStudent = (typeof resolveCurrentStudent === 'function') ? resolveCurrentStudent() : (window.currentStudent || null);
+    let studentId = curStudent?.id || window.currentStudentId || window.studentId;
     if (!studentId) {
       try {
-        const authObj = JSON.parse(sessionStorage.getItem('twoknights_auth') || '{}');
+        const authObj = JSON.parse(sessionStorage.getItem('twoknights_auth') || localStorage.getItem('twoknights_auth') || '{}');
         studentId = authObj.studentId || authObj.user;
       } catch (e) {}
     }
 
-    let studentObj = (window.allStudents || []).find(s => String(s.id) === String(studentId));
+    let studentObj = curStudent || (window.allStudents || []).find(s => String(s.id) === String(studentId));
     let sName = studentObj ? (window.getStudentName ? window.getStudentName(studentObj) : (studentObj.name || studentObj.full_name)) : null;
 
     const subPayload = {

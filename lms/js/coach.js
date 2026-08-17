@@ -495,9 +495,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const today = new Date().toISOString().split('T')[0];
+    const isCoach = (window.role || '').toLowerCase() === 'coach';
     const dateEl = document.getElementById('coach-att-date');
-    if (dateEl && !dateEl.value) dateEl.value = today;
-    const date = dateEl ? (dateEl.value || today) : today;
+    if (dateEl) {
+      if (isCoach) {
+        dateEl.value = today;
+        dateEl.min = today;
+        dateEl.max = today;
+        dateEl.title = 'Coaches can mark attendance for today only. Past or future dates must be entered by an Admin.';
+      } else if (!dateEl.value) {
+        dateEl.value = today;
+      }
+    }
+    const date = isCoach ? today : (dateEl ? (dateEl.value || today) : today);
 
     const myBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, coachId));
     const myBatchStudentIds = new Set();
@@ -630,10 +640,19 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.saveCoachAttendance = async function () {
+    const today = new Date().toISOString().split('T')[0];
+    const isCoach = (window.role || '').toLowerCase() === 'coach';
     const dateEl = document.getElementById('coach-att-date');
-    const date = dateEl ? dateEl.value : '';
+    let date = dateEl ? (dateEl.value || today) : today;
+    if (isCoach) {
+      date = today;
+    }
     if (!date) {
       toast('Please select a date', 'error');
+      return;
+    }
+    if (isCoach && date !== today) {
+      toast('Coaches can only mark attendance for today (' + today + '). Past or future attendance must be updated by an Admin.', 'error');
       return;
     }
 
