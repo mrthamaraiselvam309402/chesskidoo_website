@@ -1305,6 +1305,23 @@ ${applicant}`;
     }
   };
 
+  CK.filterFaq = (category, btn) => {
+    document.querySelectorAll('.faq-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const items = document.querySelectorAll('.faq-item');
+    items.forEach(item => {
+      const cat = item.getAttribute('data-faq-cat');
+      if (category === 'all' || cat === category) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+        item.classList.remove('active');
+        const fc = item.querySelector('.faq-content');
+        if (fc) fc.style.maxHeight = null;
+      }
+    });
+  };
+
   // True 3D Mouse Tilt and Refractive Shine Effect for Curriculum Level Cards
   const initLevelCards3D = () => {
     const cards = document.querySelectorAll('.level-card');

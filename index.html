@@ -1505,23 +1505,6 @@
               </div>
             </div>
 
-            <!-- Job Card 4 -->
-            <div class="ck-job-card" data-aos="fade-up" data-aos-delay="300">
-              <div class="ck-job-badge">📞 Operations &amp; Support</div>
-              <h3 class="ck-job-title">Student Success &amp; Lead Executive</h3>
-              <div class="ck-job-meta">
-                <span>📍 Remote / Erode HQ</span>
-                <span>⏱️ Full-Time</span>
-                <span>⭐ English &amp; Tamil/Hindi</span>
-              </div>
-              <p class="ck-job-desc">
-                Guide interested parents through demo class bookings, manage student schedules, answer WhatsApp queries, and assist in onboarding international students across timezones.
-              </p>
-              <div class="ck-job-footer">
-                <span class="ck-job-salary">Fixed Pay + Performance Bonus</span>
-                <button type="button" class="btn btn-primary ck-job-btn" onclick="CK.openJobModal('Student Success Executive')">💼 Apply Position</button>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1854,146 +1837,185 @@
         </div>
       </section>
 
-      <!-- FAQ Section -->
-      <section id="faq" class="section-padding"
-        style="background: var(--cream-dark); border-radius: 32px; padding: 80px 24px; max-width: 1000px; margin: 0 auto; width: 100%;">
-        <div class="container">
-          <div class="section-head" data-aos="fade-up" style="text-align: center; margin-bottom: 50px;">
-            <div class="eyebrow">FAQ</div>
-            <h2 style="font-family: var(--font-display); font-size: 2.5rem; color: var(--navy); margin-bottom: 12px;"
-              data-translate="faq_title">Frequently Asked Questions</h2>
-            <p class="lead" style="color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;"
-              data-translate="faq_lead">Everything parents want to know before booking a demo class.</p>
+      <!-- Modernized FAQ Section -->
+      <section id="faq" class="section-padding faq-section-modern">
+        <div class="container" style="max-width: 1040px;">
+          <div class="section-head" data-aos="fade-up" style="text-align: center; margin-bottom: 36px;">
+            <div class="eyebrow" style="color: var(--amber); font-weight: 800; letter-spacing: 2px;">❓ Got Questions?</div>
+            <h2 style="font-family: var(--font-display); font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 900; color: var(--navy); margin-bottom: 12px;" data-translate="faq_title">Frequently Asked Questions</h2>
+            <p class="lead" style="color: #475569; font-size: 1.05rem; max-width: 620px; margin: 0 auto; line-height: 1.6;" data-translate="faq_lead">Everything parents want to know before booking a demo class — clear, simple, and transparent.</p>
+          </div>
+
+          <!-- FAQ Category Filter Pills -->
+          <div class="faq-filter-pills" data-aos="fade-up">
+            <button type="button" class="faq-pill active" onclick="CK.filterFaq('all', this)">🎯 All Questions</button>
+            <button type="button" class="faq-pill" onclick="CK.filterFaq('classes', this)">♟️ Classes &amp; Age</button>
+            <button type="button" class="faq-pill" onclick="CK.filterFaq('demo', this)">📅 Free Demo</button>
+            <button type="button" class="faq-pill" onclick="CK.filterFaq('tournaments', this)">🏆 Tournaments &amp; FIDE</button>
+            <button type="button" class="faq-pill" onclick="CK.filterFaq('portal', this)">📊 Portal &amp; Fees</button>
           </div>
 
           <div class="faq-accordion-wrap" data-aos="fade-up">
             <!-- Item 1 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q1">What is the minimum age to join ChessKidoo?</span>
+            <div class="faq-item" data-faq-cat="classes">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">🌱 Ages 5+</span>
+                  <span class="faq-question" data-translate="faq_q1">What is the minimum age to join ChessKidoo?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a1">We welcome young minds starting from age 5 and
-                  up. Our coaches specialize in teaching early learners with playful, interactive, and gamified methods
-                  that make learning chess an absolute joy!</div>
+                <div class="faq-content-inner" data-translate="faq_a1">
+                  We welcome young minds starting from <strong>age 5 and up</strong>. Our coaches specialize in teaching early learners with playful, interactive, and gamified methods that turn abstract rules into an engaging visual journey!
+                </div>
               </div>
             </div>
 
             <!-- Item 2 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q2">Are the classes online or offline?</span>
+            <div class="faq-item" data-faq-cat="classes">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">🌐 Online &amp; Offline</span>
+                  <span class="faq-question" data-translate="faq_q2">Are the classes online or offline?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a2">All our classes are held online via premium,
-                  high-definition Google Meet sessions. Every session is highly interactive and live with FIDE-certified
-                  coaches, combined with automated game reviews on our custom student portal.</div>
+                <div class="faq-content-inner" data-translate="faq_a2">
+                  We offer <strong>both formats</strong>! Online classes are conducted worldwide via high-definition, live interactive Google Meet sessions with FIDE-certified coaches. We also run <strong>offline academy centres in Tamil Nadu</strong> (Erode, Bhavani, Komarapalayam).
+                </div>
               </div>
             </div>
 
             <!-- Item 3 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q3">Does my child need prior chess knowledge?</span>
+            <div class="faq-item" data-faq-cat="classes">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">♟️ Zero Prior Experience</span>
+                  <span class="faq-question" data-translate="faq_q3">Does my child need prior chess knowledge?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a3">Not at all! Our Beginner level starts from
-                  absolute scratch, covering how the pieces move, simple piece captures, and essential fundamentals. We
-                  build their knowledge step-by-step up to advanced tactics.</div>
+                <div class="faq-content-inner" data-translate="faq_a3">
+                  <strong>Not at all!</strong> Our Beginner (Pawn) level starts from absolute scratch — board setup, piece movement, basic tactics, and fundamentals. We build knowledge and confidence step-by-step up to advanced tactical calculation.
+                </div>
               </div>
             </div>
 
             <!-- Item 4 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q4">How does the free demo class work?</span>
+            <div class="faq-item" data-faq-cat="demo">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">📅 45-Min Private Session</span>
+                  <span class="faq-question" data-translate="faq_q4">How does the free demo class work?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a4">The free demo is a private 45-minute live
-                  interactive session with a senior FIDE-certified coach. The coach assesses your child's current
-                  logical thinking, maps their skill level, and guides them through their first mini-game.</div>
+                <div class="faq-content-inner" data-translate="faq_a4">
+                  The free demo is a <strong>private 45-minute live 1-on-1 session</strong> with a senior FIDE-certified coach. The coach assesses your child's current logical thinking, maps their skill level, and guides them through their first fun mini-game. <em>No credit card required.</em>
+                </div>
               </div>
             </div>
 
             <!-- Item 5 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q5">Will my child be prepared for FIDE-rated
-                  tournaments?</span>
+            <div class="faq-item" data-faq-cat="tournaments">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">🏆 Official FIDE Track</span>
+                  <span class="faq-question" data-translate="faq_q5">Will my child be prepared for FIDE-rated tournaments?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a5">Yes, absolutely! Our Advanced and elite coaching
-                  modules are specifically tailored around state, national, and FIDE-rated tournament schedules,
-                  covering advanced chess psychology, professional opening theory, and end-game mastery.</div>
+                <div class="faq-content-inner" data-translate="faq_a5">
+                  <strong>Yes, absolutely!</strong> Our Intermediate, Advanced, and Master modules are specifically structured around district, state, national, and official FIDE-rated tournament schedules, covering tournament psychology, professional opening repertoires, and deep endgame technique.
+                </div>
               </div>
             </div>
 
             <!-- Item 6 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q6">Can I track my child's progress?</span>
+            <div class="faq-item" data-faq-cat="portal">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">📊 Real-Time Tracking</span>
+                  <span class="faq-question" data-translate="faq_q6">Can I track my child's progress and attendance?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a6">Yes! Parents get access to our real-time Student
-                  Portal. Here, you can monitor classroom attendance, homework completion grades, tournament standings,
-                  FIDE rating progression charts, and direct coach feedback notes.</div>
+                <div class="faq-content-inner" data-translate="faq_a6">
+                  <strong>Yes!</strong> Every family gets access to our dedicated <strong>Student &amp; Parent Portal</strong> to monitor attendance, weekly homework grades, tournament standings, FIDE rating progression charts, and direct coach feedback notes.
+                </div>
               </div>
             </div>
 
             <!-- Item 7 -->
-            <div class="faq-item">
-              <button class="faq-trigger" onclick="CK.toggleFaq(this)">
-                <span class="faq-question" data-translate="faq_q7">Can I change or cancel my plan?</span>
+            <div class="faq-item" data-faq-cat="portal">
+              <button type="button" class="faq-trigger" onclick="CK.toggleFaq(this)">
+                <div class="faq-q-left">
+                  <span class="faq-tag-badge">↩️ Flexible &amp; Transparent</span>
+                  <span class="faq-question" data-translate="faq_q7">Can I change or cancel my plan?</span>
+                </div>
                 <span class="faq-icon-arrow">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </span>
               </button>
               <div class="faq-content">
-                <div class="faq-content-inner" data-translate="faq_a7">Our learning plans are highly flexible. You can
-                  upgrade, downgrade, or suspend your child's subscription plan at any time without any hidden
-                  cancellation fees or long-term commitments.</div>
+                <div class="faq-content-inner" data-translate="faq_a7">
+                  Our learning plans are <strong>100% flexible</strong>. You can upgrade, pause, or reschedule classes at any time. Make-up classes are always provided for planned absences, without any hidden cancellation fees or long-term lock-ins.
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- FAQ Support Help Banner -->
+          <div class="faq-help-strip" data-aos="fade-up">
+            <div class="faq-help-content" style="display: flex; align-items: center; gap: 14px;">
+              <div class="faq-help-icon" style="font-size: 2rem;">💬</div>
+              <div>
+                <h4 style="margin:0 0 4px; font-size:1.15rem; font-weight:800; color:#0f172a;">Still have questions about batch timings or fees?</h4>
+                <p style="margin:0; font-size:0.92rem; color:#475569;">Our admissions team is available 7 days a week to guide you on WhatsApp.</p>
+              </div>
+            </div>
+            <div class="faq-help-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <a href="https://wa.me/919025846663?text=Hi%20ChessKidoo%2C%20I%20have%20a%20question%20about%20chess%20classes" target="_blank" class="btn btn-primary" style="padding:10px 22px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
+                <span>💬 Chat on WhatsApp</span>
+              </a>
+              <button type="button" onclick="CK.openDemoModal()" class="btn btn-ghost" style="padding:10px 20px; font-size:0.88rem; color:#0f172a; border-color:rgba(15,23,42,0.2);">
+                📅 Book Free Demo
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
