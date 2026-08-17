@@ -494,15 +494,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Default to today when the picker is empty. The old order read
-    // dateEl.value first, so on first load `date` was "" — no existing
-    // attendance ever matched, and saving demanded "Please select a date".
     const today = new Date().toISOString().split('T')[0];
     const dateEl = document.getElementById('coach-att-date');
     if (dateEl && !dateEl.value) dateEl.value = today;
     const date = dateEl ? (dateEl.value || today) : today;
 
     const myBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, coachId));
+    const myBatchStudentIds = new Set();
+    myBatches.forEach(b => {
+      const rawIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+      rawIds.forEach(id => myBatchStudentIds.add(String(id)));
+    });
+
     const batchSelect = document.getElementById('coach-att-batch-filter');
     if (batchSelect) {
       const prevBatch = batchSelect.value;
@@ -515,14 +518,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const selectedBatchId = batchSelect ? batchSelect.value : '';
 
-    let myStudents = (window.allStudents || [])
-      .filter(s => window.ckSameCoach(s.coach_id, coachId));
+    let myStudents = (window.allStudents || []).filter(s => {
+      if (window.ckSameCoach(s.coach_id, coachId)) return true;
+      if (myBatchStudentIds.has(String(s.id))) return true;
+      if (s.batch_id && myBatches.some(b => String(b.id) === String(s.batch_id))) return true;
+      if (s.batch && myBatches.some(b => String(b.name) === String(s.batch) || String(b.batch_name) === String(s.batch))) return true;
+      return false;
+    });
 
     if (selectedBatchId) {
       const selBatch = myBatches.find(b => String(b.id) === String(selectedBatchId));
       const rawIds = Array.isArray(selBatch?.student_ids) ? selBatch.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(selBatch?.student_ids) : []);
       myStudents = myStudents.filter(s => 
-        rawIds.includes(String(s.id)) || (selBatch && ((s.batch_id && String(s.batch_id) === String(selBatch.id)) || (s.batch && String(s.batch) === String(selBatch.name))))
+        rawIds.includes(String(s.id)) || (selBatch && ((s.batch_id && String(s.batch_id) === String(selBatch.id)) || (s.batch && (String(s.batch) === String(selBatch.name) || String(s.batch) === String(selBatch.batch_name)))))
       );
     }
 
@@ -534,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Scope the day's records to THIS coach's students
     const myIds = new Set(myStudents.map(s => String(s.id)));
     const dayRecords = (window.allAttendance || [])
       .filter(a => a.date === date && myIds.has(String(a.student_id)));
@@ -554,11 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCoachAttStats();
   };
 
-  // Live Present/Absent/Late/Excused tally for the marking table.
-  // This was called from renderCoachAttendanceMarking(), the per-row
-  // onchange, and after save/reset — but never defined, so every attendance
-  // render and every status change threw a ReferenceError and the summary
-  // counters never moved while marking.
   window.updateCoachAttStats = function () {
     const summary = document.getElementById('coach-attendance-summary');
     if (!summary) return;
@@ -641,6 +643,22 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const myBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, coachId));
+    const myBatchStudentIds = new Set();
+    myBatches.forEach(b => {
+      const rawIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+      rawIds.forEach(id => myBatchStudentIds.add(String(id)));
+    });
+
+    const isMyStudent = (student) => {
+      if (!student) return false;
+      if (window.ckSameCoach(student.coach_id, coachId)) return true;
+      if (myBatchStudentIds.has(String(student.id))) return true;
+      if (student.batch_id && myBatches.some(b => String(b.id) === String(student.batch_id))) return true;
+      if (student.batch && myBatches.some(b => String(b.name) === String(student.batch) || String(b.batch_name) === String(student.batch))) return true;
+      return false;
+    };
+
     const rows = document.querySelectorAll('#coach-att-marking-body tr');
     const skipped = [];
     const records = Array.from(rows)
@@ -652,12 +670,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!select || !select.value) return null;
         const studentId = select.dataset.sid;
         const student = (window.allStudents || []).find((s) => String(s.id) === String(studentId));
-        // coach_id is stored in mixed formats across the roster: dashed UUIDs,
-        // the same UUIDs with dashes stripped, and legacy "c_name" slugs.
-        // A raw !== comparison silently dropped every student whose format did
-        // not match the signed-in coach's id, so marking appeared to do nothing.
         if (!student) return null;
-        if (!window.ckSameCoach(student.coach_id, coachId)) { skipped.push(student.full_name || student.name || studentId); return null; }
+        if (!isMyStudent(student)) { skipped.push(student.full_name || student.name || studentId); return null; }
         const cw = cwInput ? cwInput.value : '';
         const hw = hwInput ? hwInput.value : '';
         const general = notesInput ? notesInput.value : '';
@@ -673,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (records.length === 0) {
       toast(
         skipped.length
-          ? `No attendance saved — ${skipped.length} student(s) are not linked to your coach ID. Ask an admin to fix the roster.`
+          ? `No attendance saved — ${skipped.length} student(s) are not linked to your coach ID or batches.`
           : 'No attendance marked',
         'error'
       );
@@ -686,14 +700,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      let saved = false;
       const res = await apiCall('/api/attendance', {
         method: 'POST',
         body: JSON.stringify(records),
       });
       if (res.ok) {
+        saved = true;
+      } else if (window.supabaseClient) {
+        const { error: sbErr } = await window.supabaseClient
+          .from('attendance')
+          .upsert(records);
+        if (!sbErr) saved = true;
+      }
+
+      if (saved) {
         toast('Attendance saved for ' + records.length + ' students', 'success');
 
-        // Optimistically update in-memory allAttendance array
         if (!window.allAttendance) window.allAttendance = [];
         records.forEach((rec) => {
           const idx = window.allAttendance.findIndex(
@@ -706,7 +729,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        // Trigger child attendance re-render if current student view is active
+        if (typeof window.loadAllData === 'function') {
+          window.loadAllData(true);
+        }
+
         if ((window.currentStudent || window.studentId) && typeof window.renderChildAttendance === 'function') {
           window.renderChildAttendance();
         }
@@ -717,6 +743,19 @@ document.addEventListener('DOMContentLoaded', () => {
         toast('Failed to save attendance', 'error');
       }
     } catch (e) {
+      if (window.supabaseClient) {
+        try {
+          const { error: sbErr } = await window.supabaseClient
+            .from('attendance')
+            .upsert(records);
+          if (!sbErr) {
+            toast('Attendance saved for ' + records.length + ' students', 'success');
+            if (typeof window.loadAllData === 'function') window.loadAllData(true);
+            renderCoachAttendanceMarking();
+            return;
+          }
+        } catch (_) {}
+      }
       toast('Error saving attendance', 'error');
     }
   };
