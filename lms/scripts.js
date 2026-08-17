@@ -352,6 +352,13 @@
     });
   }
 
+  function extractData(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (val && Array.isArray(val.data)) return val.data;
+    return [];
+  }
+
   // Sync local currentStudent with window.currentStudent for external modules
   function setCurrentStudent(student) {
     currentStudent = student;

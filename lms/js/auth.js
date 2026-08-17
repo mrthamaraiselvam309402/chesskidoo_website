@@ -32,11 +32,11 @@ window.doLogin = async function() {
 
     try {
         // 1. Auth API - Primary Secure Authentication via Supabase Edge Function
-        const authRes = await window.apiCall(`${window.API_BASE}/auth`, {
+        const authRes = await window.apiCall('/api/auth', {
             method: 'POST',
-            body: JSON.stringify({ action: 'login', username: user, password: pass })
+            body: JSON.stringify({ action: 'login', username: user, password: pass }),
+            silent: true
         }).catch(err => {
-            console.error('API Auth failed:', err);
             return null;
         });
         
