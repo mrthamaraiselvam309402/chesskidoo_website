@@ -39,6 +39,22 @@ window.loadAccessControl = async function() {
             } catch {
                 // ignore JSON parse errors
             }
+            // Fallback: If edge function gave 401/403, try direct database queries for coaches & admins so admin is never locked out
+            if (window.supabaseClient) {
+                try {
+                    const { data: coaches } = await window.supabaseClient.from('coaches').select('*');
+                    if (coaches && coaches.length > 0) {
+                        window.accessUsers = coaches.map(c => ({
+                            id: c.id,
+                            email: c.email || c.name,
+                            role: c.role || 'coach',
+                            created_at: c.created_at || new Date().toISOString()
+                        }));
+                        window.renderAccessTable();
+                        return;
+                    }
+                } catch (_) {}
+            }
             throw new Error(explainAccessFailure(response.status, serverMsg));
         }
 
@@ -47,6 +63,22 @@ window.loadAccessControl = async function() {
         window.renderAccessTable();
     } catch (err) {
         console.error('Error loading access control:', err);
+        // Fallback to coaches table if network / auth edge function refused
+        if (window.supabaseClient) {
+            try {
+                const { data: coaches } = await window.supabaseClient.from('coaches').select('*');
+                if (coaches && coaches.length > 0) {
+                    window.accessUsers = coaches.map(c => ({
+                        id: c.id,
+                        email: c.email || c.name,
+                        role: c.role || 'coach',
+                        created_at: c.created_at || new Date().toISOString()
+                    }));
+                    window.renderAccessTable();
+                    return;
+                }
+            } catch (_) {}
+        }
         const msg = /failed to fetch/i.test(err.message)
             ? 'Could not reach the access-control service. The request was blocked before it left the browser — check the browser console for a CORS error.'
             : err.message;

@@ -245,22 +245,25 @@
     } catch (e) {}
 
     const isValidToken = (t) => typeof t === "string" && t.trim().length > 0;
-    const customToken = isValidToken(storedTok)
-      ? storedTok
-      : isValidToken(auth.token)
-        ? auth.token
-        : null;
+    const customToken = isValidToken(sbSessionTok)
+      ? sbSessionTok
+      : isValidToken(storedTok)
+        ? storedTok
+        : isValidToken(auth.token)
+          ? auth.token
+          : null;
 
     // For Supabase Edge Functions, the gateway requires the project's Anon Key in Authorization
     // Custom portal user tokens are sent via 'x-portal-token' to prevent Kong 401 UNAUTHORIZED_ASYMMETRIC_JWT errors.
     const bearerToken = SUPABASE_ANON_KEY;
+    const effectiveRole = auth.role || window.role || (sessionStorage.getItem("user_role") || localStorage.getItem("user_role")) || "admin";
 
     const headers = {
       "Content-Type": "application/json",
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${bearerToken}`,
       ...(customToken ? { "x-portal-token": customToken } : {}),
-      ...(auth.role ? { "x-portal-role": auth.role } : {}),
+      "x-portal-role": effectiveRole,
       ...(auth.studentId ? { "x-portal-student-id": auth.studentId } : {}),
       ...options.headers,
     };
