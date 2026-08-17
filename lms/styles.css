@@ -1805,9 +1805,6 @@ textarea:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold
   border-color: rgba(218,163,62,0.35);
   box-shadow: 0 10px 26px rgba(0,0,0,0.35);
 }
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
 .coach-insight-item:last-child { border-bottom: none; }
 .coach-insight-label {
   font-size: 13px;
