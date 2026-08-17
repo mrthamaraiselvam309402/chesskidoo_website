@@ -509,6 +509,15 @@
         window.renderChildHomework();
       }
     }
+    if (tabId === "elibrary") {
+      if (window.loadElibraryData) {
+        window.loadElibraryData().then(() => {
+          if (typeof window.renderChildElibrary === "function") window.renderChildElibrary();
+        });
+      } else if (typeof window.renderChildElibrary === "function") {
+        window.renderChildElibrary();
+      }
+    }
     if (
       tabId === "schedule" &&
       typeof window.renderChildSchedule === "function" &&
@@ -6514,6 +6523,7 @@
     access: "Access Control",
     schedules: "Schedule Manager",
     homework: "Homework Manager",
+    elibrary: "E-Library & Recorded Lectures Manager",
     attendance: "Attendance Manager",
     productivity: "Operations Productivity Center",
     chessable: "Chessable Profiles",
@@ -6525,6 +6535,7 @@
     "coach-events": "My Events",
     "coach-attendance": "My Attendance",
     "coach-homework": "My Homework",
+    "coach-elibrary": "Coach E-Library Hub",
     "coach-chess": "Chess Stats",
   };
 
@@ -6546,8 +6557,9 @@
       "chessable",
       "attendance",
       "homework",
+      "elibrary",
     ];
-    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-chess"];
+    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-elibrary", "coach-chess", "elibrary"];
     if (adminPages.includes(p) && role !== "admin" && role !== "master" && !coachAccessiblePages.includes(p)) {
       toast("Access denied", "error");
       setPage(role === "parent" ? "child" : "coach-dash");
@@ -6565,6 +6577,8 @@
     if (role === "parent") {
       const hwPage = $("page-homework");
       if (hwPage) hwPage.style.setProperty("display", "none", "important");
+      const elibPage = $("page-elibrary");
+      if (elibPage) elibPage.style.setProperty("display", "none", "important");
     }
     document
       .querySelectorAll(".nav-item")
@@ -6588,6 +6602,14 @@
       const dateEl = $("att-date");
       if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split("T")[0];
       window.renderAttendanceList();
+    }
+    if (p === "elibrary" || p === "coach-elibrary") {
+      if (window.loadElibraryData) {
+        window.loadElibraryData().then(() => {
+          if (p === "elibrary" && typeof window.renderAdminElibraryPage === "function") window.renderAdminElibraryPage();
+          if (p === "coach-elibrary" && typeof window.renderCoachElibraryPage === "function") window.renderCoachElibraryPage();
+        });
+      }
     }
 
     // Mobile & tablet auto-close sidebar on menu selection

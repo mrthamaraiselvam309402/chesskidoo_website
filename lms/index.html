@@ -154,6 +154,7 @@
     <div class="nav-item coach-only" id="nav-coach-events" onclick="setPage('coach-events')"><span class="ico">🏆</span> Events</div>
     <div class="nav-item coach-only" id="nav-coach-attendance" onclick="setPage('coach-attendance')"><span class="ico">📋</span> Attendance</div>
     <div class="nav-item coach-only" id="nav-coach-homework" onclick="setPage('coach-homework')"><span class="ico">📚</span> Homework</div>
+    <div class="nav-item coach-only" id="nav-coach-elibrary" onclick="setPage('coach-elibrary')"><span class="ico">📖</span> E-Library Hub</div>
     <div class="nav-item coach-only" id="nav-coach-chess" onclick="setPage('coach-chess')"><span class="ico">♟️</span> Chess Stats</div>
     <div class="nav-item admin-only" id="nav-stud" onclick="setPage('stud')"><span class="ico">👨‍🎓</span> Students</div>
     <div class="nav-item admin-only" id="nav-coach-mgmt" onclick="setPage('coach-mgmt')"><span class="ico">👨‍🏫</span> Coaches</div>
@@ -169,6 +170,7 @@
          <div class="nav-item admin-only" id="nav-events" onclick="setPage('events');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">🏆</span> Event Manager</div>
          <div class="nav-item admin-only" id="nav-attendance" onclick="setPage('attendance');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📋</span> Attendance Manager</div>
          <div class="nav-item admin-only" id="nav-homework" onclick="setPage('homework');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📚</span> Homework Manager</div>
+         <div class="nav-item admin-only" id="nav-elibrary" onclick="setPage('elibrary');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📖</span> E-Library Manager</div>
       </div>
 
     <!-- ── External academy tools ──
@@ -194,6 +196,7 @@
     <div class="nav-item parent-only" id="nav-parent-schedule" onclick="goChildTab('schedule')"><span class="ico">🗓️</span> Class Schedule</div>
     <div class="nav-item parent-only" id="nav-parent-growth" onclick="goChildTab('growth')"><span class="ico">📊</span> Skill & ELO Growth</div>
     <div class="nav-item parent-only" id="nav-parent-learning" onclick="goChildTab('learning')"><span class="ico">📚</span> Chess Study Hub</div>
+    <div class="nav-item parent-only" id="nav-parent-elibrary" onclick="goChildTab('elibrary')"><span class="ico">📖</span> E-Library & Videos</div>
     <div class="nav-item parent-only" id="nav-parent-events" onclick="goChildTab('events')"><span class="ico">🎫</span> Upcoming Events</div>
     <div class="nav-item parent-only" id="nav-parent-attendance" onclick="goChildTab('attendance')"><span class="ico">🗓️</span> Attendance Logs</div>
     <div class="nav-item parent-only" id="nav-parent-homework" onclick="goChildTab('homework')"><span class="ico">📝</span> Homework</div>
@@ -980,6 +983,77 @@
       </div>
     </div>
 
+    <!-- E-Library Manager (Admin) -->
+    <div id="page-elibrary" class="page admin-only">
+      <div class="coach-shell">
+        <div class="coach-section-block">
+          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div>
+              <h2 class="coach-section-title" style="margin:0 0 6px;">📖 E-Library & Recorded Lectures Manager</h2>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0;">Upload study guides, chess worksheets, opening vaults, and link recorded Google Meet / Zoom class sessions for all students.</p>
+            </div>
+            <button class="btn btn-gold" onclick="window.openAddElibraryModal()">
+              <span class="ico">➕</span> Add New Material / Video
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="coach-section-block" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm elib-filter-pill active" onclick="window.filterElibrary('all', this)">🎯 All Items</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('recordings', this)">🎥 Recorded Classes</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('openings', this)">♟️ Openings</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('tactics', this)">⚡ Tactics</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('endgames', this)">👑 Endgames</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('masterclasses', this)">📖 Masterclasses</button>
+            </div>
+            <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:240px; margin:0;">
+          </div>
+        </div>
+
+        <div id="admin-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:22px;">
+          <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-Library Hub (Coach) -->
+    <div id="page-coach-elibrary" class="page coach-only">
+      <div class="coach-shell">
+        <div class="coach-section-block">
+          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div>
+              <h2 class="coach-section-title" style="margin:0 0 6px;">📖 Coach E-Library & Class Recordings Hub</h2>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0;">Share class recordings, opening lines, tactics sheets, and endgame studies with your enrolled students.</p>
+            </div>
+            <button class="btn btn-gold" onclick="window.openAddElibraryModal()">
+              <span class="ico">➕</span> Upload Material / Class Video
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="coach-section-block" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm elib-filter-pill active" onclick="window.filterElibrary('all', this)">🎯 All Items</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('recordings', this)">🎥 Class Recordings</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('openings', this)">♟️ Openings</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('tactics', this)">⚡ Tactics</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('endgames', this)">👑 Endgames</button>
+            </div>
+            <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:240px; margin:0;">
+          </div>
+        </div>
+
+        <div id="coach-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:22px;">
+          <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- My Child -->
     <div id="page-child" class="page parent-only">
       <div id="child-loading" class="loading-state"><span class="spinner"></span> Loading…</div>
@@ -1037,6 +1111,7 @@
           <button class="tab-link" onclick="setChildTab('schedule', this)">Schedule</button>
           <button class="tab-link" onclick="setChildTab('attendance', this)">Attendance</button>
           <button class="tab-link" onclick="setChildTab('homework', this)">Homework</button>
+          <button class="tab-link" onclick="setChildTab('elibrary', this)">📖 E-Library</button>
           <button class="tab-link" onclick="setChildTab('growth', this)">Growth</button>
           <button class="tab-link" onclick="setChildTab('learning', this)">Resources</button>
           <button class="tab-link" onclick="setChildTab('events', this)">Events</button>
@@ -1432,6 +1507,33 @@
 
           <div id="resource-grid" class="resource-grid">
             <div class="loading-state"><span class="spinner"></span> Loading Library…</div>
+          </div>
+        </div>
+
+        <!-- Dedicated Student E-Library Hub -->
+        <div id="child-tab-elibrary" class="child-tab-content">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; flex-wrap: wrap; gap:16px; border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <div>
+              <h3 style="color:var(--gold); margin:0 0 4px; font-family:var(--font-head); font-size:20px;">📖 ChessKidoo E-Library & Class Recordings</h3>
+              <p style="margin:0; font-size:13px; color:var(--ivory-dim);">Watch recorded class lectures, download tactics sheets, and review grandmaster opening repertoires.</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:220px; margin:0; padding:8px 12px; font-size:13px;">
+            </div>
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;">
+            <button class="btn btn-outline btn-sm elib-filter-pill active" onclick="window.filterElibrary('all', this)">🎯 All Materials</button>
+            <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('recordings', this)">🎥 Recorded Classes</button>
+            <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('openings', this)">♟️ Openings</button>
+            <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('tactics', this)">⚡ Tactics</button>
+            <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('endgames', this)">👑 Endgames</button>
+            <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('masterclasses', this)">📖 Masterclasses</button>
+          </div>
+
+          <div id="child-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+            <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
           </div>
         </div>
 
@@ -2015,7 +2117,10 @@
               📥 Download Invitation Image
             </button>
             <button class="btn btn-gold" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; padding:8px 12px;" onclick="shareScheduleViaWhatsApp()">
-              💬 Share/Inform via WhatsApp
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.83.496 3.614 1.436 5.197L2 22l4.928-1.292a9.946 9.946 0 005.076 1.3c5.524 0 10.004-4.48 10.004-10.004C22.008 6.48 17.528 2 12.004 2zm0 1.636c4.618 0 8.368 3.75 8.368 8.368 0 4.618-3.75 8.368-8.368 8.368a8.32 8.32 0 01-4.256-1.162l-.305-.181-3.16.828.844-3.08-.2-.317a8.33 8.33 0 01-1.29-4.456c0-4.618 3.75-8.368 8.368-8.368zm-3.61 3.655a.612.612 0 00-.441.206c-.15.163-.572.56-.572 1.365s.585 1.583.667 1.696c.081.112 1.152 1.76 2.793 2.47.39.168.694.27.931.345.393.125.75.107 1.032.065.315-.047.969-.396 1.105-.778.136-.381.136-.708.095-.778-.041-.07-.15-.112-.314-.194-.163-.082-.968-.478-1.118-.533-.15-.054-.259-.082-.368.082-.109.164-.423.533-.518.642-.095.109-.19.123-.354.041a4.464 4.464 0 01-1.31-.81 4.92 4.92 0 01-.908-1.13c-.095-.164-.01-.253.072-.335.075-.075.164-.19.246-.286.082-.095.109-.163.163-.272.055-.109.027-.205-.013-.287-.041-.082-.368-.887-.505-1.217-.133-.32-.27-.276-.368-.281-.095-.005-.204-.005-.314-.005z"/>
+              </svg>
+              Share/Inform via WhatsApp
             </button>
           </div>
 
@@ -4223,6 +4328,7 @@
       <script src="/lms/js/homework.js?v=2.0&t=20260817" charset="utf-8"></script>
       <script src="/lms/js/expenditures.js?v=1.1&t=20260601d" charset="utf-8"></script>
       <script src="/lms/js/calculator.js?v=1.0" charset="utf-8"></script>
+      <script src="/lms/js/elibrary.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/reporting.js?v=v13&t=20260602c" charset="utf-8"></script>
       <script src="/lms/js/ai-assistant.js?v=v4&t=20260601" charset="utf-8"></script>
       <script src="/lms/js/auth.js?v=v5&t=20260730a" charset="utf-8"></script>
@@ -4379,6 +4485,58 @@
              <button class="btn btn-outline-grey" style="flex:1;" onclick="closeModals()">Cancel</button>
            </div>
          </div>
-       </div>
+        </div>
+
+        <!-- Add E-Library Material Modal -->
+        <div class="modal" id="add-elibrary-modal">
+          <div class="modal-box" style="max-width:600px; width:95%; background:var(--bg2);">
+            <div class="modal-title">📖 Add Study Material / Recorded Session</div>
+            <div style="display:grid; gap:14px; margin-top:16px;">
+              <div>
+                <label class="label">Material / Video Title *</label>
+                <input type="text" id="elib-form-title" class="input-field" placeholder="e.g. Masterclass: Lucena & Philidor Rook Endgames">
+              </div>
+              <div>
+                <label class="label">Short Description / Key Takeaways</label>
+                <textarea id="elib-form-desc" class="input-field" rows="3" placeholder="Brief summary of what the student will learn from this session..."></textarea>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                  <label class="label">Category</label>
+                  <select id="elib-form-cat" class="input-field">
+                    <option value="recordings">🎥 Class Recording</option>
+                    <option value="openings">♟️ Opening Repertoire</option>
+                    <option value="tactics">⚡ Tactics & Calculation</option>
+                    <option value="endgames">👑 Endgame Mastery</option>
+                    <option value="masterclasses">📖 Grandmaster Lecture</option>
+                    <option value="tournaments">🏆 Tournament Prep</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">Target Level</label>
+                  <select id="elib-form-level" class="input-field">
+                    <option value="All Levels">All Levels</option>
+                    <option value="Beginner">Beginner (Pawn)</option>
+                    <option value="Intermediate">Intermediate (Knight/Bishop)</option>
+                    <option value="Advanced">Advanced (Rook)</option>
+                    <option value="Master">Master (Queen/King)</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="label">Resource URL / Video Link (YouTube, Drive, Loom, PDF) *</label>
+                <input type="url" id="elib-form-url" class="input-field" placeholder="https://drive.google.com/... or https://youtube.com/watch?v=...">
+              </div>
+              <div>
+                <label class="label">Duration / Format (Optional)</label>
+                <input type="text" id="elib-form-duration" class="input-field" placeholder="e.g. 45 mins / PDF Handbook">
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:20px;">
+              <button class="btn btn-gold" style="flex:1;" onclick="window.submitAddElibraryForm()">Publish to E-Library</button>
+              <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('add-elibrary-modal').classList.remove('active')">Cancel</button>
+            </div>
+          </div>
+        </div>
   </body>
 </html>

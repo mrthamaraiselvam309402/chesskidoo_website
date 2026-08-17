@@ -3819,3 +3819,38 @@ body[data-theme="light"] .trace-chip.failed {
     width: 100%;
   }
 }
+
+/* ── E-Library & Recorded Sessions Hub ── */
+.elib-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(232, 168, 48, 0.4) !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.35) !important;
+}
+
+.elib-filter-pill {
+  transition: all 0.2s ease;
+  border-radius: 99px !important;
+  padding: 6px 14px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.elib-filter-pill.active {
+  background: var(--gold, #e8a830) !important;
+  color: #111827 !important;
+  border-color: var(--gold, #e8a830) !important;
+  box-shadow: 0 4px 12px rgba(232, 168, 48, 0.35) !important;
+}
+
+@media (max-width: 640px) {
+  #admin-elibrary-grid,
+  #coach-elibrary-grid,
+  #child-elibrary-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .elib-filter-pill {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+}
+

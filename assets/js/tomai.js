@@ -87,16 +87,16 @@
     if (c.portal === 'admin')
       return ['How do I add a student?', 'Show me reports', 'Manage fees', 'Mark attendance'];
     if (c.portal === 'student')
-      return ['Show my puzzles', 'When is my next class?', 'Pay my fee', 'Try the Arena'];
+      return ['🧩 Give me a puzzle', '♟️ Analyze my game', 'When is my next class?', 'Try the Arena'];
     if (c.portal === 'coach')
       return ['Start a live session', 'Assign a puzzle', 'Mark attendance', 'My students'];
     if (c.portal === 'parent')
       return ["Show my child's progress", "Pay fees", "Contact coach", "Attendance"];
     if (c.page === 'arena')
-      return ['How are levels different?', 'What is a brilliant move?', 'Show my certificate', 'How does the engine work?'];
+      return ['🧩 Give me a puzzle', 'What is a brilliant move?', 'Show my certificate', 'How does the engine work?'];
     if (c.page === 'more-games')
-      return ['What is Knight\'s Star Catcher?', 'How to play Memory Match?', 'Show me Quiz Blitz'];
-    return ['What classes do you offer?', 'How much are the fees?', 'How to play chess?', 'Open the Arena'];
+      return ['🧩 Give me a puzzle', 'What is Knight\'s Star Catcher?', 'How to play Memory Match?', 'Show me Quiz Blitz'];
+    return ['🧩 Give me a puzzle', '♟️ Analyze my game', 'What classes do you offer?', 'How much are the fees?'];
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -539,16 +539,33 @@
     const delay = 350 + Math.min(800, text.length * 16);
     setTimeout(() => {
       renderTyping(false);
-      const intent = findBestIntent(text);
       let reply, suggest, action;
-      if (intent) {
-        reply   = callOrValue(intent.answer);
-        suggest = callOrValue(intent.suggest);
-        action  = intent.action;
-      } else {
-        reply   = fallbackAnswer();
-        suggest = contextSuggestions();
+
+      // Check super-brain first (interactive puzzles, game analyzer, GM openings)
+      if (window.tomLocalAnswer) {
+        const brainAns = window.tomLocalAnswer(text);
+        if (brainAns) {
+          reply = brainAns;
+          if (text.toLowerCase().includes('puzzle') || text.toLowerCase().includes('tactic')) {
+            suggest = ['💡 Give me a hint', '📖 Show solution', '🧩 Another puzzle', '♟️ Analyze My Game'];
+          } else {
+            suggest = ['🧩 Give Me a Puzzle', '♟️ Analyze My Game', '📖 Opening Advice', '👑 Endgame Tips'];
+          }
+        }
       }
+
+      if (!reply) {
+        const intent = findBestIntent(text);
+        if (intent) {
+          reply   = callOrValue(intent.answer);
+          suggest = callOrValue(intent.suggest);
+          action  = intent.action;
+        } else {
+          reply   = fallbackAnswer();
+          suggest = contextSuggestions();
+        }
+      }
+
       TOM._history.push({ role: 'bot', text: reply });
       trimHistory(); persist(); renderMessages();
       renderChips(suggest);
