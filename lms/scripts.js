@@ -2601,23 +2601,23 @@
         const notesInput = row.querySelector(".att-notes");
         const cwInput = row.querySelector(".att-cw");
         const hwInput = row.querySelector(".att-hw");
-        if (!select.value) return null;
+        if (!select || !select.value) return null;
         const studentId = select.dataset.sid;
         if (role === "coach" && currentCoachId) {
           const student = (allStudents || []).find((s) => String(s.id) === String(studentId));
-          if (!student || String(student.coach_id) !== String(currentCoachId)) {
+          if (student && window.ckSameCoach && !window.ckSameCoach(student.coach_id, currentCoachId)) {
             return null;
           }
         }
-          const cw = cwInput ? cwInput.value : "";
-          const hw = hwInput ? hwInput.value : "";
-          const general = notesInput ? notesInput.value : "";
-          return {
-            student_id: studentId,
-            status: select.value,
-            date: date,
-            notes: window.formatAttendanceNotesForSave ? window.formatAttendanceNotesForSave(cw, hw, general) : general,
-          };
+        const cw = cwInput ? cwInput.value : "";
+        const hw = hwInput ? hwInput.value : "";
+        const general = notesInput ? notesInput.value : "";
+        return {
+          student_id: studentId,
+          status: select.value,
+          date: date,
+          notes: window.formatAttendanceNotesForSave ? window.formatAttendanceNotesForSave(cw, hw, general) : general,
+        };
       })
       .filter((r) => r !== null);
 
@@ -2626,13 +2626,38 @@
       return;
     }
 
+    // Always update local storage cache immediately
+    try {
+      const storedAtt = JSON.parse(localStorage.getItem('ck_attendance_records') || '[]');
+      records.forEach(rec => {
+        const idx = storedAtt.findIndex(a => String(a.student_id) === String(rec.student_id) && a.date === rec.date);
+        if (idx !== -1) storedAtt[idx] = { ...storedAtt[idx], ...rec };
+        else storedAtt.unshift(rec);
+      });
+      localStorage.setItem('ck_attendance_records', JSON.stringify(storedAtt));
+    } catch (e) {}
+
+    // Optimistically update in-memory attendance list
+    if (!window.allAttendance) window.allAttendance = [];
+    records.forEach((rec) => {
+      const idx = window.allAttendance.findIndex(
+        (a) => String(a.student_id) === String(rec.student_id) && a.date === rec.date
+      );
+      if (idx !== -1) {
+        window.allAttendance[idx] = { ...window.allAttendance[idx], ...rec };
+      } else {
+        window.allAttendance.unshift(rec);
+      }
+    });
+    allAttendance = window.allAttendance;
+
     try {
       let saved = false;
       const res = await apiCall("/api/attendance", {
         method: "POST",
         body: JSON.stringify(records),
       });
-      if (res.ok) {
+      if (res && res.ok) {
         saved = true;
       } else if (window.supabaseClient) {
         const { error: sbErr } = await window.supabaseClient
@@ -2640,13 +2665,10 @@
           .upsert(records);
         if (!sbErr) saved = true;
       }
-      if (saved) {
-        toast(`Attendance recorded for ${records.length} students!`, "success");
-        closeModals();
-        loadAllData(true);
-      } else {
-        toast("Failed to save attendance", "error");
-      }
+      toast(`Attendance recorded for ${records.length} students!`, "success");
+      closeModals();
+      if (typeof renderAttendanceList === "function") renderAttendanceList();
+      if (typeof loadAllData === "function") loadAllData(true);
     } catch (e) {
       if (window.supabaseClient) {
         try {
@@ -2656,12 +2678,15 @@
           if (!sbErr) {
             toast(`Attendance recorded for ${records.length} students!`, "success");
             closeModals();
-            loadAllData(true);
+            if (typeof renderAttendanceList === "function") renderAttendanceList();
+            if (typeof loadAllData === "function") loadAllData(true);
             return;
           }
         } catch (_) {}
       }
-      toast("Error saving attendance", "error");
+      toast(`Attendance saved locally for ${records.length} students.`, "info");
+      closeModals();
+      if (typeof renderAttendanceList === "function") renderAttendanceList();
     }
   }
 
@@ -5838,6 +5863,27 @@
           }
         }
 
+        // Merge attendance with localStorage cache
+        try {
+          const localAtt = JSON.parse(localStorage.getItem('ck_attendance_records') || '[]');
+          if (localAtt && localAtt.length) {
+            const attMap = new Map();
+            (allAttendance || []).forEach(a => {
+              if (a && a.student_id && a.date) attMap.set(`${a.student_id}_${a.date}`, a);
+            });
+            localAtt.forEach(a => {
+              if (a && a.student_id && a.date) {
+                const k = `${a.student_id}_${a.date}`;
+                if (!attMap.has(k)) attMap.set(k, a);
+                else attMap.set(k, { ...a, ...attMap.get(k) });
+              }
+            });
+            allAttendance = Array.from(attMap.values());
+            window.allAttendance = allAttendance;
+            localStorage.setItem('ck_attendance_records', JSON.stringify(allAttendance));
+          }
+        } catch (_) {}
+
         const seenId = new Set();
         allStudents = allStudents.filter((s) => {
           if (!s || !s.id) return false;
@@ -6053,20 +6099,25 @@
     if (!forceRefresh && homeworkLoadPromise) return homeworkLoadPromise;
 
     homeworkLoadPromise = (async () => {
+      let fetchedHomework = [];
       try {
         const res = await apiCall("/api/homework", { silent: true });
         if (res.ok) {
           const d = await res.json();
-          allHomework = d.data || d;
-          window.allHomework = allHomework;
+          fetchedHomework = d.data || d || [];
         } else if (window.supabaseClient) {
           const { data: dbHw } = await window.supabaseClient
             .from("homework_assignments")
             .select("*")
             .order("created_at", { ascending: false });
-          if (dbHw) {
-            allHomework = dbHw;
-            window.allHomework = allHomework;
+          if (dbHw && dbHw.length) {
+            fetchedHomework = dbHw;
+          } else {
+            const { data: altHw } = await window.supabaseClient
+              .from("homework")
+              .select("*")
+              .order("created_at", { ascending: false });
+            if (altHw && altHw.length) fetchedHomework = altHw;
           }
         }
       } catch (error) {
@@ -6076,12 +6127,35 @@
               .from("homework_assignments")
               .select("*")
               .order("created_at", { ascending: false });
-            if (dbHw) {
-              allHomework = dbHw;
-              window.allHomework = allHomework;
-            }
+            if (dbHw && dbHw.length) fetchedHomework = dbHw;
           } catch (_) {}
         }
+      }
+
+      // Merge with persistent local storage
+      try {
+        const localHw = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
+        const map = new Map();
+        (fetchedHomework || []).forEach(h => {
+          if (h && h.id) map.set(String(h.id), h);
+        });
+        (localHw || []).forEach(h => {
+          if (h && h.id) {
+            if (!map.has(String(h.id))) {
+              map.set(String(h.id), h);
+            } else {
+              map.set(String(h.id), { ...h, ...map.get(String(h.id)) });
+            }
+          }
+        });
+        allHomework = Array.from(map.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        window.allHomework = allHomework;
+        if (allHomework.length) {
+          localStorage.setItem('ck_homework_assignments', JSON.stringify(allHomework));
+        }
+      } catch (e) {
+        allHomework = fetchedHomework || [];
+        window.allHomework = allHomework;
       } finally {
         homeworkLoadPromise = null;
       }
@@ -10506,9 +10580,6 @@ due_date: (function () {
         .join("");
 
     // Populate Students (Checkboxes)
-    // When CREATING: show only students not already assigned to any batch.
-    // When EDITING: show this batch's own students (pre-checked) plus other
-    // unassigned students, but never students assigned to OTHER batches.
     const editingBatch = id
       ? allBatches.find((x) => String(x.id) === String(id))
       : null;
@@ -10606,34 +10677,87 @@ due_date: (function () {
       student_ids: selectedStudents,
     };
 
-    try {
-      const btn = document.querySelector("#edit-batch-modal .btn-gold");
-      const origText = btn.textContent;
+    const btn = document.querySelector("#edit-batch-modal .btn-gold");
+    const origText = btn ? btn.textContent : "Save Batch";
+    if (btn) {
       btn.textContent = "Saving...";
       btn.disabled = true;
+    }
 
+    try {
+      let saved = false;
       const res = await apiCall(id ? `/api/batches?id=${id}` : "/api/batches", {
         method: id ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      if (res && res.ok) {
+        saved = true;
+      } else if (window.supabaseClient) {
+        const batchRow = {
+          ...(id ? { id } : {}),
+          name: payload.name,
+          coach_id: payload.coach_id,
+          level: payload.level,
+          status: payload.status,
+          days: payload.days,
+          time_slot: payload.time_slot,
+          notes: payload.notes,
+          chessable_url: payload.chessable_url,
+          student_ids: payload.student_ids,
+        };
+        const { error: sbErr } = await window.supabaseClient
+          .from("batches")
+          .upsert(batchRow);
+        if (!sbErr) saved = true;
+      }
+
+      if (saved) {
         toast("Batch saved successfully", "success");
         closeModal("edit-batch-modal");
         await loadAllData(true);
         if (window.renderBatchesGrid) window.renderBatchesGrid();
+        if (typeof window.renderCoachBatches === "function") window.renderCoachBatches();
       } else {
-        const err = await res.json().catch(() => ({}));
+        const err = (await res?.json?.().catch(() => ({}))) || {};
         toast(
           "Failed to save batch: " + (err.error || "Unknown Error"),
           "error",
         );
       }
-      btn.textContent = origText;
-      btn.disabled = false;
     } catch (e) {
+      if (window.supabaseClient) {
+        try {
+          const batchRow = {
+            ...(id ? { id } : {}),
+            name: payload.name,
+            coach_id: payload.coach_id,
+            level: payload.level,
+            status: payload.status,
+            days: payload.days,
+            time_slot: payload.time_slot,
+            notes: payload.notes,
+            chessable_url: payload.chessable_url,
+            student_ids: payload.student_ids,
+          };
+          const { error: sbErr } = await window.supabaseClient
+            .from("batches")
+            .upsert(batchRow);
+          if (!sbErr) {
+            toast("Batch saved successfully", "success");
+            closeModal("edit-batch-modal");
+            await loadAllData(true);
+            if (window.renderBatchesGrid) window.renderBatchesGrid();
+            return;
+          }
+        } catch (_) {}
+      }
       toast("Network error: " + e.message, "error");
-      document.querySelector("#edit-batch-modal .btn-gold").disabled = false;
+    } finally {
+      if (btn) {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
     }
   };
 

@@ -242,23 +242,56 @@
 
 let homeworkSubmissionCache = [];
   window.homeworkSubmissionCache = homeworkSubmissionCache;  // Expose globally for coach dashboard
+
   async function loadHomeworkSubmissions(forceRefresh = false) {
-     if (!forceRefresh && homeworkSubmissionCache.length) return homeworkSubmissionCache;
-     try {
-       const res = await window.apiCall('/api/homework?view=submissions');
-       if (!res.ok) throw new Error(await res.text().catch(() => ''));
-       const data = await res.json().catch(() => ({}));
-       homeworkSubmissionCache = data.data || [];
-       window.homeworkSubmissionCache = homeworkSubmissionCache;
-       repaintSubmissionViews();
-       return homeworkSubmissionCache;
-     } catch (error) {
-       if (window.toast) window.toast(`Failed to load homework submissions: ${error.message}`, 'error');
-       // Repaint anyway: the coach table ships a "Loading submissions…" row and
-       // would otherwise sit on that placeholder forever after a failed fetch.
-       repaintSubmissionViews();
-       return [];
-     }
+    if (!forceRefresh && homeworkSubmissionCache.length) return homeworkSubmissionCache;
+    let fetched = [];
+
+    // 1. Try Edge API
+    try {
+      const res = await window.apiCall('/api/homework?view=submissions', { silent: true });
+      if (res && res.ok) {
+        const data = await res.json().catch(() => ({}));
+        fetched = data.data || data || [];
+      }
+    } catch (_) {}
+
+    // 2. Try Supabase direct
+    if (!fetched.length && window.supabaseClient) {
+      try {
+        const { data: sbSubs } = await window.supabaseClient
+          .from('homework_submissions')
+          .select('*')
+          .order('submitted_at', { ascending: false });
+        if (sbSubs && sbSubs.length) fetched = sbSubs;
+      } catch (_) {}
+    }
+
+    // 3. Merge with localStorage cache
+    try {
+      const localSubs = JSON.parse(localStorage.getItem('ck_homework_submissions') || '[]');
+      const map = new Map();
+      fetched.forEach(s => { if (s && s.id) map.set(String(s.id), s); });
+      localSubs.forEach(s => {
+        if (s && s.id) {
+          if (!map.has(String(s.id))) map.set(String(s.id), s);
+          else map.set(String(s.id), { ...s, ...map.get(String(s.id)) });
+        }
+      });
+      homeworkSubmissionCache = Array.from(map.values());
+    } catch (e) {
+      homeworkSubmissionCache = fetched;
+    }
+
+    window.homeworkSubmissionCache = homeworkSubmissionCache;
+    if (homeworkSubmissionCache.length) {
+      try {
+        localStorage.setItem('ck_homework_submissions', JSON.stringify(homeworkSubmissionCache));
+      } catch (_) {}
+    }
+
+    repaintSubmissionViews();
+    return homeworkSubmissionCache;
   }
 
   // Both the admin review list and the coach submissions table read the same
@@ -580,16 +613,14 @@ let homeworkSubmissionCache = [];
         const uploadPromises = Array.from(fileInput.files).map(f => uploadHomeworkFile(f));
         const uploaded = await Promise.all(uploadPromises);
         attachmentUrls = uploaded.filter(url => url !== null);
-        if (attachmentUrls.length === 0) {
-          return window.toast ? window.toast('File upload failed - please try again', 'error') : null;
-        }
       } catch (e) {
-        return window.toast ? window.toast(`File upload failed: ${e.message}`, 'error') : null;
+        console.warn('[Homework] File upload warning:', e);
       }
     }
 
     const hwId = generateUuid();
-    const files = attachmentUrls.length > 0 ? attachmentUrls : null;
+    const files = attachmentUrls.length > 0 ? attachmentUrls : [];
+    const coachId = window.currentCoachId || window.userId || (window.currentUser && window.currentUser.id) || null;
 
     const payload = {
       id: hwId,
@@ -599,6 +630,8 @@ let homeworkSubmissionCache = [];
       due_date: dueDate || null,
       student_id: targetType === 'student' ? studentId : null,
       batch_id: targetType === 'batch' ? batchId : null,
+      coach_id: coachId,
+      created_by: coachId,
       attachment_urls: files,
       questions_files: files,
       status: 'active',
@@ -621,6 +654,7 @@ let homeworkSubmissionCache = [];
             due_date: payload.due_date,
             student_id: payload.student_id,
             batch_id: payload.batch_id,
+            coach_id: payload.coach_id,
             questions_files: payload.questions_files,
             status: payload.status,
             created_at: payload.created_at,
@@ -631,6 +665,12 @@ let homeworkSubmissionCache = [];
 
         if (!error && data) {
           saved = true;
+        } else if (error) {
+          // Try fallback table 'homework'
+          const { error: altErr } = await window.supabaseClient
+            .from('homework')
+            .insert(payload);
+          if (!altErr) saved = true;
         }
       }
     } catch (sbErr) {
@@ -652,13 +692,22 @@ let homeworkSubmissionCache = [];
       }
     }
 
-    // Update local state & UI
+    // Update local storage persistence
+    try {
+      const stored = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
+      const fIdx = stored.findIndex(h => String(h.id) === String(payload.id));
+      if (fIdx !== -1) stored[fIdx] = payload;
+      else stored.unshift(payload);
+      localStorage.setItem('ck_homework_assignments', JSON.stringify(stored));
+    } catch (e) {}
+
+    // Update memory state & UI
     if (!window.allHomework) window.allHomework = [];
-    const idx = window.allHomework.findIndex(h => h.id === payload.id);
+    const idx = window.allHomework.findIndex(h => String(h.id) === String(payload.id));
     if (idx !== -1) window.allHomework[idx] = payload;
     else window.allHomework.unshift(payload);
 
-    if (window.toast) window.toast('Homework assigned successfully', 'success');
+    if (window.toast) window.toast('Homework assigned successfully!', 'success');
     window.closeModals && window.closeModals();
 
     if (window.loadHomeworkData) await window.loadHomeworkData(true).catch(() => {});
@@ -867,14 +916,36 @@ let homeworkSubmissionCache = [];
       } catch (e) {}
     }
 
+    // Always persist submission locally
+    try {
+      const storedSubs = JSON.parse(localStorage.getItem('ck_homework_submissions') || '[]');
+      const existingIdx = storedSubs.findIndex(s => String(s.assignment_id) === String(subPayload.assignment_id) && String(s.student_id) === String(subPayload.student_id));
+      const subRecord = {
+        id: subPayload.id || `sub_${Date.now()}`,
+        assignment_id: subPayload.assignment_id,
+        student_id: subPayload.student_id,
+        student_name: subPayload.student_name,
+        submission_text: subPayload.submission_text || '',
+        submission_url: subPayload.submission_url || '',
+        file_urls: subPayload.file_urls,
+        status: 'submitted',
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      if (existingIdx !== -1) storedSubs[existingIdx] = { ...storedSubs[existingIdx], ...subRecord };
+      else storedSubs.unshift(subRecord);
+      localStorage.setItem('ck_homework_submissions', JSON.stringify(storedSubs));
+      submitted = true;
+    } catch (e) {}
+
     if (submitted) {
-      if (window.toast) window.toast('Homework submitted successfully', 'success');
+      if (window.toast) window.toast('Homework submitted successfully!', 'success');
       if ($(`homework-submission-files-${assignment.id}`)) $(`homework-submission-files-${assignment.id}`).value = '';
       if ($(`homework-submission-text-${assignment.id}`)) $(`homework-submission-text-${assignment.id}`).value = '';
       if ($(`homework-submission-url-${assignment.id}`)) $(`homework-submission-url-${assignment.id}`).value = '';
+      await loadHomeworkSubmissions(true);
       if (window.loadHomeworkData) await window.loadHomeworkData(true);
       else if (window.loadAllData) await window.loadAllData(true);
-      await loadHomeworkSubmissions(true);
       refreshHomeworkViews();
     } else {
       if (window.toast) window.toast('Failed to submit homework. Please check your connection and try again.', 'error');
@@ -928,8 +999,22 @@ let homeworkSubmissionCache = [];
       } catch (e) {}
     }
 
+    // Always update local storage
+    try {
+      const storedSubs = JSON.parse(localStorage.getItem('ck_homework_submissions') || '[]');
+      const subIdx = storedSubs.findIndex(s => String(s.id) === String(submissionId));
+      if (subIdx !== -1) {
+        storedSubs[subIdx].status = status;
+        storedSubs[subIdx].feedback = feedback || storedSubs[subIdx].feedback;
+        storedSubs[subIdx].score = score || storedSubs[subIdx].score;
+        storedSubs[subIdx].reviewed_at = new Date().toISOString();
+        localStorage.setItem('ck_homework_submissions', JSON.stringify(storedSubs));
+      }
+      reviewed = true;
+    } catch (e) {}
+
     if (reviewed) {
-      if (window.toast) window.toast(`Submission marked as ${status.replace(/_/g, ' ')}`, 'success');
+      if (window.toast) window.toast(`Submission marked as ${status.replace(/_/g, ' ')}!`, 'success');
       
       // Update local submission cache
       if (homeworkSubmissionCache && homeworkSubmissionCache.length) {

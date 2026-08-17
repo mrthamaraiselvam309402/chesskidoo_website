@@ -90,13 +90,24 @@ window.toggleCellAttendance = async function(studentId, date, currentStatus) {
    
    // Re-render
    if (typeof window.renderMonthlyMatrix === 'function') window.renderMonthlyMatrix();
+   if (typeof window.renderChildAttendance === 'function') window.renderChildAttendance();
+
+   // LocalStorage persistence
+   try {
+     localStorage.setItem('ck_attendance_records', JSON.stringify(window.allAttendance || allAttendance || []));
+   } catch (_) {}
   
-  // API Call silently in background
-  // Note: Empty status means removal - we don't send API call to avoid creating empty records
-  if (newStatus !== '') {
-    apiCall('/api/attendance', { method: 'POST', body: JSON.stringify([{student_id: studentId, date: date, status: newStatus}]) }).catch(()=>{});
-  }
-};
+   // API / Supabase Call in background
+   if (newStatus !== '') {
+     const payload = [{ student_id: studentId, date: date, status: newStatus, notes: '' }];
+     apiCall('/api/attendance', { method: 'POST', body: JSON.stringify(payload) })
+       .catch(async () => {
+         if (window.supabaseClient) {
+           await window.supabaseClient.from('attendance').upsert(payload).catch(() => {});
+         }
+       });
+   }
+ };
 
 // --- MASTER SCHEDULE MATRIX (100% DYNAMIC) ---
 // No more hardcoded data. Everything comes from live student/coach data via
