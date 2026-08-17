@@ -227,7 +227,7 @@
     const storedTok = sessionStorage.getItem("sb-access-token") || localStorage.getItem("sb-access-token");
     let auth = {};
     try {
-      auth = JSON.parse(sessionStorage.getItem("twoknights_auth") || localStorage.getItem("twoknights_auth") || "{}");
+      auth = JSON.parse(sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth") || localStorage.getItem("chesskidoo_auth") || localStorage.getItem("twoknights_auth") || "{}");
     } catch (e) {}
 
     let sbSessionTok = null;
@@ -521,7 +521,7 @@
     let s = currentStudent || window.currentStudent;
     if (!s) {
       try {
-        const auth = JSON.parse(sessionStorage.getItem("twoknights_auth") || localStorage.getItem("twoknights_auth") || "{}");
+        const auth = JSON.parse(sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth") || localStorage.getItem("chesskidoo_auth") || localStorage.getItem("twoknights_auth") || "{}");
         const students = allStudents || window.allStudents || [];
         if (auth.studentId && students.length) {
           s = students.find((st) => String(st.id) === String(auth.studentId));
@@ -929,7 +929,7 @@
     return str;
   };
 
-  window.recordedVideos = JSON.parse(localStorage.getItem('twoknights_videos') || '[]');
+  window.recordedVideos = JSON.parse(localStorage.getItem('chesskidoo_videos') || '[]');
 
   window.openAddVideoModal = function () {
     if ($('vid-title')) $('vid-title').value = '';
@@ -966,7 +966,7 @@
     };
 
     window.recordedVideos.unshift(newVideo);
-    localStorage.setItem('twoknights_videos', JSON.stringify(window.recordedVideos));
+    localStorage.setItem('chesskidoo_videos', JSON.stringify(window.recordedVideos));
     if (window.toast) window.toast('Class video saved successfully!', 'success');
     window.closeModals();
     window.renderRecordedVideos();
@@ -975,7 +975,7 @@
   window.deleteRecordedVideo = function (id) {
     if (!confirm('Delete this recorded class video?')) return;
     window.recordedVideos = (window.recordedVideos || []).filter(v => v.id !== id);
-    localStorage.setItem('twoknights_videos', JSON.stringify(window.recordedVideos));
+    localStorage.setItem('chesskidoo_videos', JSON.stringify(window.recordedVideos));
     if (window.toast) window.toast('Video deleted', 'info');
     window.renderRecordedVideos();
   };
@@ -2244,8 +2244,8 @@
             <strong style="color: #34495e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Academy Registry Issuer</strong><br>
             <span style="font-size: 15px; font-weight: 700; color: #2c3e50; display: inline-block; margin: 4px 0;">ChessKidoo Chess Academy</span><br>
             Institution Reg. No.: <strong>UDYAM-TN-08-0107781</strong><br>
-            Email: twoknightschessacademy@gmail.com<br>
-            Web: twoknightacademy.vercel.app &middot; Ph: +91 80155 12962
+            Email: contact@chesskidoo.com<br>
+            Web: chesskidoo.com &middot; Ph: +91 80155 12962
           </div>
         </div>
 
@@ -5966,7 +5966,7 @@
         };
         try {
           localStorage.setItem(
-            "twoknights_data_cache",
+            "chesskidoo_data_cache",
             JSON.stringify(dataCache),
           );
         } catch (e) {}
@@ -6800,7 +6800,7 @@ setTimeout(function () {
   }
 
   function recordSession(action) {
-    const auth = JSON.parse(localStorage.getItem("twoknights_auth") || "{}");
+    const auth = JSON.parse(localStorage.getItem("chesskidoo_auth") || localStorage.getItem("twoknights_auth") || "{}");
     if (!auth.role) return;
 
     const sessions = JSON.parse(localStorage.getItem("user_sessions") || "[]");
@@ -6866,7 +6866,7 @@ setTimeout(function () {
 
   function logAudit(table, recordId, action, oldValue, newValue) {
     // Save to Supabase database
-    const auth = JSON.parse(sessionStorage.getItem("twoknights_auth") || "{}");
+    const auth = JSON.parse(sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth") || "{}");
     const data = {
       table_name: table,
       record_id: recordId,
@@ -6906,7 +6906,7 @@ setTimeout(function () {
     const activeList = $("active-users-list");
     const adminHistoryList = $("admin-history-list");
     const parentHistoryList = $("parent-history-list");
-    const auth = JSON.parse(sessionStorage.getItem("twoknights_auth") || "{}");
+    const auth = JSON.parse(sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth") || "{}");
     const currentUser = auth.user || "Unknown";
     const sessions = getLoginHistory();
     const activeSessions = getActiveSessions();
@@ -7962,7 +7962,7 @@ setTimeout(function () {
       let currentCoachId = window.currentCoachId || window.userId;
       
       if (!currentCoachId) {
-        const auth = sessionStorage.getItem("twoknights_auth");
+        const auth = sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth");
         if (auth) {
           try {
             const data = JSON.parse(auth);
@@ -7978,7 +7978,7 @@ setTimeout(function () {
       }
       
       if (!currentCoachId && allCoaches && allCoaches.length > 0) {
-        const auth = sessionStorage.getItem("twoknights_auth");
+        const auth = sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth");
         if (auth) {
           try {
             const data = JSON.parse(auth);
@@ -14855,13 +14855,13 @@ Best regards,
   function toggleTheme() {
     const newTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
     document.body.dataset.theme = newTheme;
-    localStorage.setItem("twoknights_theme", newTheme);
+    localStorage.setItem("chesskidoo_theme", newTheme);
     // Re-render dashboard if visible to update chart colors
     if ($("page-dash").classList.contains("active")) renderDash();
   }
 
   // Load theme on page load
-  const savedTheme = localStorage.getItem("twoknights_theme");
+  const savedTheme = localStorage.getItem("chesskidoo_theme");
   if (savedTheme) document.body.dataset.theme = savedTheme;
 
   // BOARDROOM REPORTING LOGIC MOVED TO js/reporting.js
@@ -15126,7 +15126,7 @@ Best regards,
       ]);
       XLSX.utils.book_append_sheet(wb, summarySheet, "Financial Summary");
 
-      const fileName = `twoknights_Academy_Data_${new Date().toISOString().split("T")[0]}.xlsx`;
+      const fileName = `ChessKidoo_Academy_Data_${new Date().toISOString().split("T")[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
 
       toast("Academy Data Exported (Excel — full workbook)", "success");
@@ -15328,7 +15328,7 @@ Best regards,
       // Export file
       XLSX.writeFile(
         wb,
-        `twoknights_Strategic_Archive_${new Date().toISOString().split("T")[0]}.xlsx`,
+        `ChessKidoo_Strategic_Archive_${new Date().toISOString().split("T")[0]}.xlsx`,
       );
       toast("Strategic Archive Exported Successfully!", "success");
     } catch (err) {
@@ -15360,7 +15360,7 @@ Best regards,
 window.addEventListener("DOMContentLoaded", () => {
      initUI(); // Setup UI event handlers
 
-      const auth = sessionStorage.getItem("twoknights_auth");
+      const auth = sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth");
       if (auth) {
         try {
           const data = JSON.parse(auth);
@@ -15375,7 +15375,7 @@ window.addEventListener("DOMContentLoaded", () => {
           finishLogin(data.user || "User", data.role, data.studentId);
           resetSessionTimer();
         } catch (e) {
-          sessionStorage.removeItem("twoknights_auth");
+          sessionStorage.removeItem("chesskidoo_auth"); sessionStorage.removeItem("twoknights_auth"); localStorage.removeItem("chesskidoo_auth"); localStorage.removeItem("twoknights_auth");
           $("login-screen").style.display = "flex";
           document.body.classList.add("login-mode");
         }
@@ -16396,7 +16396,7 @@ window.deleteStudent = deleteStudent;
       "Dec",
     ];
     const dateStr = `${months[targetMonth]}_${targetYear}`;
-    link.setAttribute("download", `twoknights_students_export_${dateStr}.csv`);
+    link.setAttribute("download", `ChessKidoo_students_export_${dateStr}.csv`);
 
     document.body.appendChild(link);
     link.click();

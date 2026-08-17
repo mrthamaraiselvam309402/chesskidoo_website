@@ -756,7 +756,7 @@
       .html2canvas(target, { backgroundColor: null, scale: 2 })
       .then((canvas) => {
         const link = document.createElement("a");
-        link.download = `twoknights_Schedule_${stName.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
+        link.download = `chesskidoo_Schedule_${stName.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
         window.toast("Image downloaded!", "success");
@@ -935,7 +935,7 @@
 VERSION:2.0
 PRODID:-//ChessKidoo Chess Academy//Class Schedule//EN
 BEGIN:VEVENT
-UID:class-${student.id}@twoknightacademy.vercel.app
+UID:class-${student.id}@chesskidoo.com
 DTSTAMP:${startStr}
 DTSTART:${startStr}
 SUMMARY:ChessKidoo Class
@@ -954,7 +954,7 @@ DESCRIPTION:Regular chess class timing: ${schedData.regTime || "TBD"}. Coach: ${
     });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `twoknights_Classes_${student.name.replace(/[^a-zA-Z0-9]/g, "_")}.ics`;
+    link.download = `chesskidoo_Classes_${student.name.replace(/[^a-zA-Z0-9]/g, "_")}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

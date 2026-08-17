@@ -21,7 +21,7 @@
     // and admins were blocked from their own bulk edit/delete actions.
     if (window.role) return String(window.role).toLowerCase();
     try {
-      const auth = JSON.parse(sessionStorage.getItem('twoknights_auth') || '{}');
+      const auth = JSON.parse(sessionStorage.getItem('chesskidoo_auth') || sessionStorage.getItem('twoknights_auth') || '{}');
       return (auth.role || '').toLowerCase();
     } catch {
       return '';
@@ -815,7 +815,7 @@ let homeworkSubmissionCache = [];
     let studentId = curStudent?.id || window.currentStudentId || window.studentId;
     if (!studentId) {
       try {
-        const authObj = JSON.parse(sessionStorage.getItem('twoknights_auth') || localStorage.getItem('twoknights_auth') || '{}');
+        const authObj = JSON.parse(sessionStorage.getItem('chesskidoo_auth') || sessionStorage.getItem('twoknights_auth') || localStorage.getItem('chesskidoo_auth') || localStorage.getItem('twoknights_auth') || '{}');
         studentId = authObj.studentId || authObj.user;
       } catch (e) {}
     }
@@ -1295,7 +1295,7 @@ let homeworkSubmissionCache = [];
   function resolveCurrentStudent() {
     if (window.currentStudent && window.currentStudent.id) return window.currentStudent;
     try {
-      const auth = JSON.parse(sessionStorage.getItem('twoknights_auth') || localStorage.getItem('twoknights_auth') || '{}');
+      const auth = JSON.parse(sessionStorage.getItem('chesskidoo_auth') || sessionStorage.getItem('twoknights_auth') || localStorage.getItem('chesskidoo_auth') || localStorage.getItem('twoknights_auth') || '{}');
       const students = window.allStudents || [];
       if (auth.studentId && students.length) {
         const found = students.find(s => String(s.id) === String(auth.studentId));

@@ -53,7 +53,7 @@ async function getEncryptionKey() {
 
     if (!keyStr) {
       const encoder = new TextEncoder()
-      const data = encoder.encode('twoknights-encryption-v1')
+      const data = encoder.encode('chesskidoo-encryption-v1')
       const hash = await crypto.subtle.digest('SHA-256', data)
       keyStr = uint8ArrayToBase64(new Uint8Array(hash))
       localStorage.setItem(ENCRYPTION_KEY_NAME, keyStr)

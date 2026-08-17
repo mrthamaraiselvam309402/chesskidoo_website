@@ -69,8 +69,8 @@ function explainAccessFailure(status, serverMsg) {
         let stored = {};
         try {
             stored = JSON.parse(
-                sessionStorage.getItem('twoknights_auth') ||
-                localStorage.getItem('twoknights_auth') ||
+                sessionStorage.getItem('chesskidoo_auth') || sessionStorage.getItem('twoknights_auth') ||
+                localStorage.getItem('chesskidoo_auth') || localStorage.getItem('twoknights_auth') ||
                 '{}'
             );
         } catch (e) {}

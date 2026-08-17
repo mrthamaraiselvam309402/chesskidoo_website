@@ -1,7 +1,7 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-const allowedOrigins = ['https://twoknights-ai-admin.vercel.app', 'https://chesskidoo-ai-admin.vercel.app', 'https://twoknightacademy.vercel.app', 'http://localhost:3000', 'http://localhost:5000'];
+const allowedOrigins = ['https://chesskidoo.com', 'https://www.chesskidoo.com', 'https://chesskidoo-ai-admin.vercel.app', 'https://twoknights-ai-admin.vercel.app', 'https://chesskidoo-ai-admin.vercel.app', 'https://chesskidoo.com', 'https://twoknightacademy.vercel.app', 'http://localhost:3000', 'http://localhost:5000'];
 
 export default async function handler(request, response) {
   const origin = request.headers?.origin || '';

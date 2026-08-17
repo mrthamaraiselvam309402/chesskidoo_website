@@ -82,7 +82,8 @@ window.doLogin = async function() {
                     token: sbJwt,
                     userId: data.coach_id // Set userId for coach role compatibility
                 });
-                sessionStorage.setItem('twoknights_auth', authDataStr);
+                sessionStorage.setItem('chesskidoo_auth', authDataStr);
+      sessionStorage.setItem('twoknights_auth', authDataStr);
                 localStorage.setItem('twoknights_auth', authDataStr);
                 if (sbJwt) {
                     sessionStorage.setItem('sb-access-token', sbJwt);
@@ -135,7 +136,8 @@ window.doLogin = async function() {
                     userId: u.user_metadata?.coach_id || u.id
                 };
                 const authDataStr = JSON.stringify(authObj);
-                sessionStorage.setItem('twoknights_auth', authDataStr);
+                sessionStorage.setItem('chesskidoo_auth', authDataStr);
+      sessionStorage.setItem('twoknights_auth', authDataStr);
                 localStorage.setItem('twoknights_auth', authDataStr);
                 if (token) {
                     sessionStorage.setItem('sb-access-token', token);
@@ -193,7 +195,7 @@ window.doLogin = async function() {
 };
 
   window.doLogout = async function() {
-      const auth = sessionStorage.getItem('twoknights_auth');
+      const auth = sessionStorage.getItem('chesskidoo_auth') || sessionStorage.getItem('twoknights_auth') || localStorage.getItem('chesskidoo_auth') || localStorage.getItem('twoknights_auth');
       let token = null;
       if (auth) {
         try {
@@ -211,7 +213,10 @@ window.doLogin = async function() {
         }).catch(() => {});
       }
 
-      sessionStorage.removeItem('twoknights_auth');
+      sessionStorage.removeItem('chesskidoo_auth');
+    sessionStorage.removeItem('twoknights_auth');
+    localStorage.removeItem('chesskidoo_auth');
+    localStorage.removeItem('twoknights_auth');
       sessionStorage.removeItem('sb-access-token');
       window.role = null;
       

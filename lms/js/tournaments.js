@@ -637,7 +637,7 @@
     if (window.toast) window.toast('Generating poster…', 'info');
     html2canvas(poster.firstElementChild, { backgroundColor: null, scale: 2 }).then(canvas => {
       const link = document.createElement('a');
-      link.download = `twoknights_${t.title.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+      link.download = `chesskidoo_${t.title.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       document.body.removeChild(poster);
@@ -678,7 +678,7 @@
 VERSION:2.0
 PRODID:-//ChessKidoo Chess Academy//Tournament Finder//EN
 BEGIN:VEVENT
-UID:${t.id}@twoknightacademy.vercel.app
+UID:${t.id}@chesskidoo.com
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'}
 DTSTART:${startDate}
 DTEND:${endDate}

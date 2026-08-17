@@ -35,7 +35,7 @@ window.renderCoachDashboard = function() {
   let coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
 
   if (!coachId && window.allCoaches && window.allCoaches.length > 0) {
-    const auth = sessionStorage.getItem("twoknights_auth");
+    const auth = sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth");
     if (auth) {
       try {
         const data = JSON.parse(auth);
@@ -96,7 +96,7 @@ function getCurrentCoachIdFromStorage() {
     if (window.currentCoachId) return window.currentCoachId;
     if (window.userId) return window.userId;
     
-    const auth = sessionStorage.getItem("twoknights_auth");
+    const auth = sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth");
     if (auth) {
       const data = JSON.parse(auth);
       if (data.coachId) return data.coachId;
