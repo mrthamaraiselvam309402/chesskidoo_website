@@ -332,7 +332,6 @@
     m.classList.add('active', 'open');
     m.style.display = m.classList.contains('p-modal-overlay') ? 'grid' : 'flex';
     m.removeAttribute('aria-hidden');
-    document.body.setAttribute('aria-hidden', 'true');
     document.body.classList.add('modal-open');
     // Focus first focusable element inside modal
     requestAnimationFrame(() => {
@@ -364,7 +363,6 @@
     } else {
       document.querySelectorAll('.modal-overlay, .p-modal-overlay').forEach(closeOne);
     }
-    document.body.removeAttribute('aria-hidden');
     document.body.classList.remove('modal-open');
     if (_modalPreviousFocus && typeof _modalPreviousFocus.focus === 'function') {
       _modalPreviousFocus.focus();
@@ -372,7 +370,11 @@
     }
   };
 
-  CK.openDemoModal = () => CK.openModal('contactModal');
+  CK.openDemoModal = () => {
+    CK.currentStep = 1;
+    if (CK.updateWizardUI) CK.updateWizardUI();
+    CK.openModal('contactModal');
+  };
   CK.closeDemoModal = () => CK.closeModal('contactModal');
   CK.currentStep = 1;
 
@@ -1102,6 +1104,12 @@ ${applicant}`;
 
   window.openTournamentModal = CK.openTournamentModal;
   window.openJobModal = CK.openJobModal;
+  window.openDemoModal = CK.openDemoModal;
+  window.closeDemoModal = CK.closeDemoModal;
+  window.openAddReviewModal = CK.openAddReviewModal;
+  window.openNriModal = CK.openNriModal;
+  window.openModal = CK.openModal;
+  window.closeModal = CK.closeModal;
 
   CK.togglePassword = (id) => {
     const input = document.querySelector(`#${id} input[name="password"]`) || document.querySelector(`input[name="${id}"]`);
