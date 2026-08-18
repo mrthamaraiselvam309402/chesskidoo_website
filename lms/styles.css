@@ -3854,9 +3854,65 @@ body[data-theme="light"] .trace-chip.failed {
 }
 
 /* ── Study PGN, Tactics & Speed Trainer Styles ── */
+.chesscom-board-wrap,
+.pgn-chess-grid {
+  display: grid !important;
+  grid-template-columns: repeat(8, 1fr) !important;
+  grid-template-rows: repeat(8, 1fr) !important;
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+  max-width: 480px !important;
+  margin: 0 auto !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  border: 3px solid #4a3627 !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55) !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+.pgn-square,
+.tactics-square {
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  transition: filter 0.1s ease;
+}
+
 .pgn-square:hover,
 .tactics-square:hover {
   filter: brightness(1.08);
+}
+
+.piece-svg-box {
+  width: 88% !important;
+  height: 88% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35)) !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+}
+
+.piece-svg-box svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: block !important;
 }
 
 .pgn-move-btn {

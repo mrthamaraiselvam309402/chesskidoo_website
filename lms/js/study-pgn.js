@@ -474,7 +474,7 @@
     const lastMove = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
 
     let html = `
-      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:480px; margin:0 auto; border-radius:6px; overflow:hidden; border:3px solid #4a3627; box-shadow:0 12px 36px rgba(0,0,0,0.55); position:relative;">
+      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:480px; margin:0 auto; border-radius:6px; overflow:hidden; border:3px solid #4a3627; box-shadow:0 12px 36px rgba(0,0,0,0.55); position:relative; box-sizing:border-box;">
     `;
 
     const rows = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
@@ -500,19 +500,19 @@
 
         html += `
           <div class="pgn-square" data-square="${squareName}" onclick="StudyPGN.onBoardSquareClicked('${squareName}')"
-               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
+               style="background:${bgColor}; aspect-ratio:1/1; width:100%; height:100%; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative; box-sizing:border-box; overflow:hidden;">
             ${pieceSvg ? `
-              <div class="piece-svg-box" style="width:88%; height:88%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.32)); pointer-events:none;">
+              <div class="piece-svg-box" style="width:88%; height:88%; max-width:100%; max-height:100%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.32)); pointer-events:none; box-sizing:border-box;">
                 ${pieceSvg}
               </div>
             ` : ''}
 
             ${isLegalDest ? `
-              <div style="position:absolute; width:${piece ? '88%' : '26%'}; height:${piece ? '88%' : '26%'}; border-radius:${piece ? '50%' : '50%'}; ${piece ? 'border:4px solid rgba(0,0,0,0.25);' : 'background:rgba(0,0,0,0.18);'} pointer-events:none;"></div>
+              <div style="position:absolute; width:${piece ? '88%' : '26%'}; height:${piece ? '88%' : '26%'}; border-radius:50%; ${piece ? 'border:4px solid rgba(0,0,0,0.25);' : 'background:rgba(0,0,0,0.18);'} pointer-events:none; z-index:2; box-sizing:border-box;"></div>
             ` : ''}
 
-            ${c === (isFlipped ? 7 : 0) ? `<span style="position:absolute; top:2px; left:4px; font-size:11px; font-weight:800; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,sans-serif; pointer-events:none;">${8 - r}</span>` : ''}
-            ${r === (isFlipped ? 0 : 7) ? `<span style="position:absolute; bottom:2px; right:4px; font-size:11px; font-weight:800; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,sans-serif; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
+            ${c === (isFlipped ? 7 : 0) ? `<span style="position:absolute; top:2px; left:4px; font-size:11px; font-weight:800; line-height:1; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,system-ui,sans-serif; pointer-events:none;">${8 - r}</span>` : ''}
+            ${r === (isFlipped ? 0 : 7) ? `<span style="position:absolute; bottom:2px; right:4px; font-size:11px; font-weight:800; line-height:1; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,system-ui,sans-serif; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
           </div>
         `;
       });
@@ -852,7 +852,7 @@
         </span>
         <span style="font-size:12px; color:var(--ivory-dim);">Puzzle #${StudyPGN.currentPuzzle?.id || 'Daily'}</span>
       </div>
-      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:6px; overflow:hidden; border:3px solid #4a3627; box-shadow:0 12px 36px rgba(0,0,0,0.55); position:relative;">
+      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:6px; overflow:hidden; border:3px solid #4a3627; box-shadow:0 12px 36px rgba(0,0,0,0.55); position:relative; box-sizing:border-box;">
     `;
 
     for (let r = 0; r < 8; r++) {
@@ -867,14 +867,14 @@
 
         html += `
           <div class="tactics-square" data-square="${squareName}" onclick="StudyPGN.onTacticsSquareClicked('${squareName}')"
-               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
+               style="background:${bgColor}; aspect-ratio:1/1; width:100%; height:100%; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative; box-sizing:border-box; overflow:hidden;">
             ${pieceSvg ? `
-              <div class="piece-svg-box" style="width:88%; height:88%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.32)); pointer-events:none;">
+              <div class="piece-svg-box" style="width:88%; height:88%; max-width:100%; max-height:100%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.32)); pointer-events:none; box-sizing:border-box;">
                 ${pieceSvg}
               </div>
             ` : ''}
-            ${c === 0 ? `<span style="position:absolute; top:2px; left:4px; font-size:11px; font-weight:800; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,sans-serif; pointer-events:none;">${8 - r}</span>` : ''}
-            ${r === 7 ? `<span style="position:absolute; bottom:2px; right:4px; font-size:11px; font-weight:800; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,sans-serif; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
+            ${c === 0 ? `<span style="position:absolute; top:2px; left:4px; font-size:11px; font-weight:800; line-height:1; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,system-ui,sans-serif; pointer-events:none;">${8 - r}</span>` : ''}
+            ${r === 7 ? `<span style="position:absolute; bottom:2px; right:4px; font-size:11px; font-weight:800; line-height:1; opacity:0.85; color:${isLight ? '#769656' : '#eeeed2'}; font-family:Inter,system-ui,sans-serif; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
           </div>
         `;
       }
