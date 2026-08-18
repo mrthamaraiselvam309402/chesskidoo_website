@@ -473,6 +473,7 @@
 
   // ── NEW ADVANCED LOGIC ──
   function setChildTab(tabId, btn) {
+    if (tabId === "learning" || tabId === "resources") tabId = "elibrary";
     document
       .querySelectorAll(".child-tab-content")
       .forEach((c) => c.classList.remove("active"));

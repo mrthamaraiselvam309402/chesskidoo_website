@@ -404,11 +404,32 @@
     const container = document.getElementById('child-elibrary-grid');
     if (!container) return;
     const items = getFilteredItems();
-    if (!items.length) {
+
+    let classroomsHtml = '';
+    if (window.currentStudent && Array.isArray(window.allBatches)) {
+      const myBatches = window.allBatches.filter(b => b.student_ids && b.student_ids.map(String).includes(String(window.currentStudent.id)) && b.chessable_url);
+      if (myBatches.length > 0) {
+        classroomsHtml = myBatches.map(b => `
+          <div class="elib-card" style="border:1.5px solid var(--gold); background:rgba(218,163,62,0.06); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;">♟️ BATCH CLASSROOM</span>
+              <span style="font-size:12px; color:var(--ivory-dim);">Live Course</span>
+            </div>
+            <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${b.name}</h4>
+            <p style="margin:0; font-size:12.5px; color:var(--ivory-dim); line-height:1.5;">Official interactive classroom study link for your batch.</p>
+            <div style="margin-top:auto; padding-top:8px;">
+              <a href="${b.chessable_url}" target="_blank" rel="noopener" class="btn btn-gold btn-sm" style="width:100%; text-align:center; display:block; text-decoration:none;">🚀 Join Interactive Classroom</a>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    if (!items.length && !classroomsHtml) {
       container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No learning resources found in this category yet. Check back soon!</div>`;
       return;
     }
-    container.innerHTML = items.map(item => renderItemCard(item)).join('');
+    container.innerHTML = classroomsHtml + items.map(item => renderItemCard(item)).join('');
   };
 
   // ── Filter Triggers ──

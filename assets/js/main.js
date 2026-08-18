@@ -244,7 +244,7 @@
       return;
     }
 
-    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'tournaments', 'about', 'ck-world', 'careers', 'pricing', 'faq', 'reviews', 'why-choose', 'cta'];
+    const landingSections = ['home', 'features', 'levels', 'coaches', 'achievements', 'tournaments', 'about', 'ck-world', 'ck-centres', 'centres', 'careers', 'pricing', 'faq', 'reviews', 'why-choose', 'cta'];
     const isLandingSection = landingSections.includes(section);
     
     if (isLandingSection) {
@@ -255,7 +255,7 @@
       
       // Delay slightly if we just switched pages to ensure DOM is ready for scroll
       setTimeout(() => {
-        const el = document.getElementById(section);
+        const el = document.getElementById(section) || (section === 'ck-world' ? document.getElementById('ck-centres') : null) || (section === 'ck-centres' ? document.getElementById('ck-world') : null);
         if (el) {
           const headerOffset = 80;
           const elementPosition = el.getBoundingClientRect().top;
