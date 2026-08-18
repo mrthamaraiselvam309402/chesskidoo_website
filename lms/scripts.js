@@ -8757,6 +8757,69 @@ setTimeout(function () {
     setPage("child");
   }
 
+  function viewCoach(id) {
+    const c = (allCoaches || []).find((x) => String(x.id) === String(id));
+    if (!c) {
+      toast("Coach not found", "error");
+      return;
+    }
+
+    // Set impersonation context
+    window.__adminImpersonatingCoach = true;
+    window.currentCoachId = String(c.id);
+    window.userId = String(c.id);
+    window.currentCoach = c;
+
+    // Populate and show coach preview banner
+    const banner = $("preview-coach-banner");
+    if (banner) {
+      banner.style.setProperty("display", "flex", "important");
+      const nameEl = $("preview-coach-name");
+      if (nameEl) nameEl.textContent = getCoachName(c);
+
+      const switcher = $("preview-coach-switcher");
+      if (switcher) {
+        switcher.innerHTML = (allCoaches || [])
+          .map((item) => `<option value="${item.id}" ${String(item.id) === String(c.id) ? "selected" : ""}>${escapeHtml(getCoachName(item))}</option>`)
+          .join("");
+      }
+    }
+
+    // Allow coach-only navigation elements to show
+    document.querySelectorAll(".coach-only").forEach((el) => {
+      if (el.classList.contains("page")) return;
+      el.style.setProperty("display", "flex", "important");
+    });
+
+    // Switch directly to coach dashboard
+    setPage("coach-dash");
+    toast(`Viewing Coach Portal: ${getCoachName(c)}`, "info");
+  }
+
+  function quickSwitchPreviewCoach(id) {
+    viewCoach(id);
+  }
+
+  function exitCoachPreview() {
+    window.__adminImpersonatingCoach = false;
+    window.currentCoachId = null;
+    window.currentCoach = null;
+
+    // Hide coach preview banner
+    const banner = $("preview-coach-banner");
+    if (banner) banner.style.setProperty("display", "none", "important");
+
+    // Hide coach-only navigation if admin
+    const isAdmin = role === "admin" || role === "master";
+    document.querySelectorAll(".coach-only").forEach((el) => {
+      if (el.classList.contains("page")) return;
+      el.style.display = "none";
+    });
+
+    setPage("coach-mgmt");
+    toast("Exited Coach Portal preview mode.", "info");
+  }
+
   function openEdit(id) {
     const s = allStudents.find((x) => String(x.id) === String(id));
     if (!s) return;
@@ -9528,7 +9591,46 @@ due_date: (function () {
   };
 
   window.viewCoach = function (id) {
-    const c = allCoaches.find((x) => String(x.id) === String(id));
+    const c = (allCoaches || []).find((x) => String(x.id) === String(id));
+    if (!c) {
+      toast("Coach not found", "error");
+      return;
+    }
+
+    // Set impersonation context
+    window.__adminImpersonatingCoach = true;
+    window.currentCoachId = String(c.id);
+    window.userId = String(c.id);
+    window.currentCoach = c;
+
+    // Populate and show coach preview banner
+    const banner = $("preview-coach-banner");
+    if (banner) {
+      banner.style.setProperty("display", "flex", "important");
+      const nameEl = $("preview-coach-name");
+      if (nameEl) nameEl.textContent = getCoachName(c);
+
+      const switcher = $("preview-coach-switcher");
+      if (switcher) {
+        switcher.innerHTML = (allCoaches || [])
+          .map((item) => `<option value="${item.id}" ${String(item.id) === String(c.id) ? "selected" : ""}>${escapeHtml(getCoachName(item))}</option>`)
+          .join("");
+      }
+    }
+
+    // Allow coach-only navigation elements to show
+    document.querySelectorAll(".coach-only").forEach((el) => {
+      if (el.classList.contains("page")) return;
+      el.style.setProperty("display", "flex", "important");
+    });
+
+    // Switch directly to coach dashboard
+    setPage("coach-dash");
+    toast(`Viewing Coach Portal: ${getCoachName(c)}`, "info");
+  };
+
+  window.openCoachDetailsModal = function (id) {
+    const c = (allCoaches || []).find((x) => String(x.id) === String(id));
     if (!c) return;
 
     const studs = allStudents.filter(
@@ -9554,10 +9656,6 @@ due_date: (function () {
         window.SUPABASE_URL &&
         !photo2.includes(window.SUPABASE_URL)
       ) {
-        console.warn(
-          "[Avatar] External coach photo (modal) ignored for",
-          getCoachName(c),
-        );
         photo2 = null;
       }
     }

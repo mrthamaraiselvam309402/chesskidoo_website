@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.renderCoachDashboard = function() {
-  if (window.role !== 'coach') return;
+  if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
 
   let coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
 
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
   window.renderCoachStudents = function () {
-    if (window.role !== 'coach') return;
+    if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
     const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
     if (!coachId) return;
 
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.renderCoachBatches = function () {
-    if (window.role !== 'coach') return;
+    if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
     const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
     if (!coachId) return;
 
