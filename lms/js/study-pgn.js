@@ -1,10 +1,10 @@
 /**
- * ChessKidoo LMS — Study PGN, Daily Tactics Streaks & Board Visualization Engine (v2.0)
+ * ChessKidoo LMS — Study PGN, Daily Tactics Streaks & Board Visualization Engine (v2.1)
  * ──────────────────────────────────────────────────────────────────────────────────────────
- * 1. Interactive PGN Study Board (Chess.com theme, Lichess opening tree, Stockfish Cloud API, Guess the Move).
+ * 1. High-Fidelity Interactive PGN Board (Vector SVG piece set, Chess.com styling, Stockfish Cloud API).
  * 2. TOM AI Move-by-Move Guidance (pedagogical explanations for every move in the PGN).
  * 3. Daily Tactics Workout & Gamified Streaks (Live Lichess Daily Puzzle API + Calibrated Levels).
- * 4. Board Visualization & Speed Calculation Trainer (Square Color, Coordinate Radar, Knight Pathfinder).
+ * 4. Speed Calculation & Board Visualization Trainer (Square Color, Coordinate Radar).
  * 5. Coach & Admin Topic Assignment & Student Practice Monitoring Dashboard.
  */
 (function () {
@@ -15,26 +15,25 @@
   const STORAGE_ASSIGNED_TOPICS = 'ck_assigned_study_topics';
   const STORAGE_VISION_SCORES = 'ck_student_vision_scores';
   const STORAGE_COMPLETED_TOPICS = 'ck_completed_study_topics';
+  const STORAGE_COINS = 'ck_student_coins';
 
-  // ── Chess.com Style Piece Images with SVG / Unicode Fallback ──
-  const CHESSCOM_PIECES = {
-    'P': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png',
-    'N': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png',
-    'B': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wb.png',
-    'R': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png',
-    'Q': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wq.png',
-    'K': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png',
-    'p': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bp.png',
-    'n': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bn.png',
-    'b': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bb.png',
-    'r': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/br.png',
-    'q': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bq.png',
-    'k': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bk.png'
-  };
+  // ── High-Fidelity Pure Vector Chess Piece SVGs (Matches Landing Page & Arena) ──
+  const PIECE_SVG = {
+    // White Pieces
+    K: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 16.5 3.5 22 0v-4c-5.5-3.5-16.5-3.5-22 0z"/><path d="M11.5 27c5.5-3 16.5-3 22 0m-21-3.5c0-1.5 1.5-2.5 3-2.5s4.5 1.5 7 1.5 5.5-1.5 7-1.5 3 1 3 2.5"/></g></svg>`,
+    Q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 2-1 .5-2.5 0 0 0-1.5-1.5-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/><circle cx="2" cy="14" r="1.5"/><circle cx="9" cy="11" r="1.5"/><circle cx="16.5" cy="11" r="1.5"/><circle cx="22.5" cy="9.5" r="1.5"/><circle cx="28.5" cy="11" r="1.5"/><circle cx="36" cy="11" r="1.5"/><circle cx="43" cy="14" r="1.5"/></g></svg>`,
+    R: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23"/></g></svg>`,
+    B: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" fill="none"/></g></svg>`,
+    N: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" /><path d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10" /><path d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z" fill="#111418" stroke="#111418" stroke-width="1"/><path d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z" transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)" fill="#111418" stroke="#111418" stroke-width="1"/></g></svg>`,
+    P: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#111418" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/></g></svg>`,
 
-  const UNICODE_PIECES = {
-    'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚',
-    'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
+    // Black Pieces
+    k: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 16.5 3.5 22 0v-4c-5.5-3.5-16.5-3.5-22 0z"/><path d="M11.5 27c5.5-3 16.5-3 22 0m-21-3.5c0-1.5 1.5-2.5 3-2.5s4.5 1.5 7 1.5 5.5-1.5 7-1.5 3 1 3 2.5"/><path d="M11.5 33.5h22" stroke="#e2e8f0" stroke-width="1.2"/><path d="M11.5 30h22" stroke="#e2e8f0" stroke-width="1.2"/></g></svg>`,
+    q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 2-1 .5-2.5 0 0 0-1.5-1.5-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/><circle cx="2" cy="14" r="1.5" fill="#e2e8f0"/><circle cx="9" cy="11" r="1.5" fill="#e2e8f0"/><circle cx="16.5" cy="11" r="1.5" fill="#e2e8f0"/><circle cx="22.5" cy="9.5" r="1.5" fill="#e2e8f0"/><circle cx="28.5" cy="11" r="1.5" fill="#e2e8f0"/><circle cx="36" cy="11" r="1.5" fill="#e2e8f0"/><circle cx="43" cy="14" r="1.5" fill="#e2e8f0"/><path d="M11 31h23" stroke="#e2e8f0" stroke-width="1.2"/></g></svg>`,
+    r: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23"/><path d="M13 34h19" stroke="#e2e8f0" stroke-width="1.2"/></g></svg>`,
+    b: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke="#e2e8f0" stroke-width="1.2"/></g></svg>`,
+    n: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" /><path d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10" /><path d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z" fill="#e2e8f0" stroke="#e2e8f0" stroke-width="1"/><path d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z" transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)" fill="#e2e8f0" stroke="#e2e8f0" stroke-width="1"/><path d="M 20 13 L 23 16" stroke="#e2e8f0" stroke-width="1.2"/></g></svg>`,
+    p: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#1e222b" stroke="#0a0c0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/><path d="M17.5 37h10M19 32.5h7" stroke="#e2e8f0" stroke-width="1.2" fill="none"/></g></svg>`
   };
 
   // ── Safe HTML Escape ──
@@ -58,7 +57,7 @@
       white: 'Paul Morphy',
       black: 'Duke of Brunswick & Count Isouard',
       result: '1-0',
-      description: 'The most famous game in chess history illustrating rapid piece development, open lines, and deflection sacrifices.',
+      description: 'The most famous game in chess history illustrating rapid development, open lines, and deflection sacrifices.',
       pgn: `[Event "Paris Opera"]
 [Site "Paris FRA"]
 [Date "1858.??.??"]
@@ -184,7 +183,6 @@
 
   // ── Global State Object ──
   window.StudyPGN = {
-    // PGN Board State
     currentGame: null,
     chess: null,
     moveHistory: [],
@@ -214,7 +212,6 @@
     visionStreak: 0,
     visionTargetSquare: '',
 
-    // Init
     init: function () {
       this.ensureChessEngine();
       this.loadSavedRecords();
@@ -227,13 +224,40 @@
   // ── Ensure Chess Engine Ready ──
   StudyPGN.ensureChessEngine = function () {
     if (!window.Chess) {
-      console.warn('[StudyPGN] Chess.js not loaded. Initializing basic chess state.');
+      console.warn('[StudyPGN] Initializing chess.js engine fallback');
       return false;
     }
     if (!StudyPGN.chess) {
       StudyPGN.chess = new window.Chess();
     }
     return true;
+  };
+
+  // ── Coin / Reward System ──
+  StudyPGN.getCoins = function () {
+    const studentId = window.currentStudent ? String(window.currentStudent.id) : 'default';
+    try {
+      const coinsRec = JSON.parse(localStorage.getItem(STORAGE_COINS) || '{}');
+      return coinsRec[studentId] || 0;
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  StudyPGN.awardCoins = function (amount, reason = 'Study Practice') {
+    const studentId = window.currentStudent ? String(window.currentStudent.id) : 'default';
+    let coinsRec = {};
+    try {
+      coinsRec = JSON.parse(localStorage.getItem(STORAGE_COINS) || '{}');
+    } catch (e) {}
+    const cur = coinsRec[studentId] || 0;
+    const updated = cur + amount;
+    coinsRec[studentId] = updated;
+    localStorage.setItem(STORAGE_COINS, JSON.stringify(coinsRec));
+
+    if (window.toast) {
+      window.toast(`🪙 +${amount} Chess Coins for ${reason}! Total: 🪙 ${updated}`, 'success');
+    }
   };
 
   // ── Local Storage & Records Sync ──
@@ -283,6 +307,8 @@
       localStorage.setItem(STORAGE_TACTICS_RECORDS, JSON.stringify(rec));
       this.dailyStreak = studRec.streak;
       this.hasSolvedToday = true;
+
+      StudyPGN.awardCoins(15, 'Daily Tactics Mastery');
     } catch (e) {}
 
     StudyPGN.updateStreakUI();
@@ -424,7 +450,7 @@
     }
   };
 
-  // ── Render Chess.com Style Board ──
+  // ── Render High-Fidelity Vector SVG Board ──
   StudyPGN.renderBoard = function (containerId = 'pgn-study-board') {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -460,7 +486,7 @@
         const squareName = String.fromCharCode(97 + c) + (8 - r);
         const piece = board[r][c];
 
-        // Chess.com Neo Colors
+        // Chess.com Neo High-Contrast Colors
         const isHighlight = lastMove && (lastMove.from === squareName || lastMove.to === squareName);
         const isSelected = StudyPGN.selectedSquare === squareName;
         const isLegalDest = StudyPGN.legalMovesForSelected.some(m => m.to === squareName);
@@ -470,16 +496,15 @@
         if (isSelected) bgColor = '#f5f682';
 
         const pieceKey = piece ? (piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase()) : '';
-        const pieceImgUrl = pieceKey ? CHESSCOM_PIECES[pieceKey] : '';
-        const pieceChar = pieceKey ? UNICODE_PIECES[pieceKey] : '';
+        const pieceSvg = pieceKey && PIECE_SVG[pieceKey] ? PIECE_SVG[pieceKey] : '';
 
         html += `
           <div class="pgn-square" data-square="${squareName}" onclick="StudyPGN.onBoardSquareClicked('${squareName}')"
                style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
-            ${pieceImgUrl ? `
-              <img src="${pieceImgUrl}" alt="${pieceKey}" style="width:88%; height:88%; object-fit:contain; pointer-events:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-              <span style="display:none; font-size:2.2rem; ${piece.color === 'w' ? 'color:#fff; text-shadow:0 1px 2px #000;' : 'color:#000;'}">${pieceChar}</span>
+            ${pieceSvg ? `
+              <div class="piece-svg-box" style="width:86%; height:86%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.35)); pointer-events:none;">
+                ${pieceSvg}
+              </div>
             ` : ''}
 
             ${isLegalDest ? `
@@ -838,13 +863,15 @@
 
         const bgColor = isLight ? '#eeeed2' : '#769656';
         const pieceKey = piece ? (piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase()) : '';
-        const pieceImgUrl = pieceKey ? CHESSCOM_PIECES[pieceKey] : '';
+        const pieceSvg = pieceKey && PIECE_SVG[pieceKey] ? PIECE_SVG[pieceKey] : '';
 
         html += `
           <div class="tactics-square" data-square="${squareName}" onclick="StudyPGN.onTacticsSquareClicked('${squareName}')"
                style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
-            ${pieceImgUrl ? `
-              <img src="${pieceImgUrl}" alt="${pieceKey}" style="width:88%; height:88%; object-fit:contain; pointer-events:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+            ${pieceSvg ? `
+              <div class="piece-svg-box" style="width:86%; height:86%; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,0.35)); pointer-events:none;">
+                ${pieceSvg}
+              </div>
             ` : ''}
           </div>
         `;
@@ -984,6 +1011,10 @@
     StudyPGN.nextVisionQuestion();
   };
 
+  StudyPGN.endVisionGame = function () {
+    if (window.toast) window.toast(`🏁 Time's up! Calculation Score: ${StudyPGN.visionScore} points!`, 'success');
+  };
+
   // ── Preset Templates Auto-filler ──
   window.loadStudyTopicPreset = function (presetKey) {
     const titleInput = document.getElementById('topic-title-input');
@@ -1097,6 +1128,20 @@
     }
   };
 
+  window.deleteAssignedStudyTopic = function (topicId) {
+    if (!confirm('Are you sure you want to remove this assigned topic?')) return;
+    let topics = [];
+    try { topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]'); } catch (e) {}
+    topics = topics.filter(t => t.id !== topicId);
+    localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics));
+    if (window.toast) window.toast('Topic removed successfully.', 'info');
+
+    StudyPGN.renderAssignedTopicsList();
+    if (window.renderStudyPgnMonitor) {
+      window.renderStudyPgnMonitor(window.role === 'coach' ? 'coach' : 'admin');
+    }
+  };
+
   StudyPGN.renderAssignedTopicsList = function () {
     const container = document.getElementById('assigned-topics-grid');
     if (!container) return;
@@ -1106,7 +1151,7 @@
       topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
     } catch (e) {}
 
-    // Add default template topics if empty
+    // Default template topics if none
     if (!topics.length) {
       topics = [
         {
@@ -1192,12 +1237,6 @@
       description: `Coach Assigned Study Topic: ${t.title}`
     });
 
-    if (window.setPage && (window.role === 'admin' || window.role === 'master' || window.role === 'coach')) {
-      window.setPage('child');
-    }
-    if (window.setChildTab) {
-      window.setChildTab('studypgn');
-    }
     window.setStudyPgnSubTab('lab');
     if (window.toast) window.toast(`♟️ Loaded "${t.title}" into Interactive Study Board!`, 'success');
   };
@@ -1209,6 +1248,7 @@
       completedIds = completedIds.filter(id => id !== topicId);
     } else {
       completedIds.push(topicId);
+      StudyPGN.awardCoins(10, 'Study Topic Practice');
       if (window.toast) window.toast('🎉 Great work! Topic marked as practiced.', 'success');
     }
     localStorage.setItem(STORAGE_COMPLETED_TOPICS, JSON.stringify(completedIds));
@@ -1268,9 +1308,8 @@
 
   // ── Coach & Admin Practice Analytics Monitor ──
   window.renderStudyPgnMonitor = function (roleType = 'admin') {
-    const containerId = roleType === 'coach' ? 'coach-studypgn-students-table-wrap' : 'admin-studypgn-students-table-wrap';
-    const container = document.getElementById(containerId);
-    if (!container) return;
+    const studentsContainerId = roleType === 'coach' ? 'coach-studypgn-students-table-wrap' : 'admin-studypgn-students-table-wrap';
+    const studentsContainer = document.getElementById(studentsContainerId);
 
     const students = Array.isArray(window.allStudents) ? window.allStudents : [];
     let tacticsRec = {};
@@ -1278,153 +1317,74 @@
       tacticsRec = JSON.parse(localStorage.getItem(STORAGE_TACTICS_RECORDS) || '{}');
     } catch (e) {}
 
+    let topics = [];
+    try {
+      topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
+    } catch (e) {}
+
     const todayStr = new Date().toISOString().split('T')[0];
     let totalStreaks = 0;
     let totalSolvedToday = 0;
 
-    let rowsHtml = students.map((s) => {
-      const rec = tacticsRec[String(s.id)] || { streak: 0, lastDate: '', solvedCount: 0 };
-      const isSolvedToday = (rec.lastDate === todayStr);
-      const streak = rec.streak || 0;
-      if (streak > 0) totalStreaks++;
-      if (isSolvedToday) totalSolvedToday++;
+    if (studentsContainer) {
+      let rowsHtml = students.map((s) => {
+        const rec = tacticsRec[String(s.id)] || { streak: 0, lastDate: '', solvedCount: 0 };
+        const isSolvedToday = (rec.lastDate === todayStr);
+        const streak = rec.streak || 0;
+        if (streak > 0) totalStreaks++;
+        if (isSolvedToday) totalSolvedToday++;
 
-      const studentName = escapeHtml(s.name || s.full_name || `Student #${s.id}`);
-      const studentLevel = escapeHtml(s.level || 'Beginner');
+        const studentName = escapeHtml(s.name || s.full_name || `Student #${s.id}`);
+        const studentLevel = escapeHtml(s.level || 'Beginner');
 
-      return `
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-          <td style="padding:12px 14px; font-weight:700; color:#fff;">
-            ${studentName}
-            <div style="font-size:11px; font-weight:400; color:var(--ivory-dim);">${studentLevel}</div>
-          </td>
-          <td style="padding:12px 14px;">
-            ${streak > 0 ? `<span style="background:rgba(234,179,8,0.15); color:#eab308; font-weight:800; padding:4px 10px; border-radius:99px; font-size:12px;">🔥 ${streak} Days</span>` : `<span style="color:#64748b; font-size:12px;">No active streak</span>`}
-          </td>
-          <td style="padding:12px 14px;">
-            ${isSolvedToday ? `<span style="background:rgba(16,185,129,0.15); color:#10b981; font-weight:700; padding:4px 10px; border-radius:99px; font-size:12px;">✅ Solved Today</span>` : `<span style="background:rgba(245,158,11,0.15); color:#f59e0b; font-weight:700; padding:4px 10px; border-radius:99px; font-size:12px;">⏳ Pending</span>`}
-          </td>
-          <td style="padding:12px 14px; font-size:13px; color:#fff;">
-            ${rec.solvedCount || 0} Puzzles
-          </td>
-          <td style="padding:12px 14px; text-align:right;">
-            <button class="btn btn-outline-grey btn-sm" onclick="window.shareStudentTacticsProgressWhatsApp('${escapeHtml(s.id)}')" style="font-size:11px; padding:4px 8px; border-color:rgba(34,197,94,0.4); color:#4ade80;" title="Share progress on WhatsApp">
-              📱 WhatsApp
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    container.innerHTML = `
-      <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border); color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
-            <th style="padding:10px 14px;">Student</th>
-            <th style="padding:10px 14px;">Tactics Streak</th>
-            <th style="padding:10px 14px;">Today's Workout</th>
-            <th style="padding:10px 14px;">Total Solved</th>
-            <th style="padding:10px 14px; text-align:right;">Actions</th>
+        return `
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:12px 14px; font-weight:700; color:#fff;">
+              ${studentName}
+              <div style="font-size:11px; font-weight:400; color:var(--ivory-dim);">${studentLevel}</div>
+            </td>
+            <td style="padding:12px 14px;">
+              ${streak > 0 ? `<span style="background:rgba(234,179,8,0.15); color:#eab308; font-weight:800; padding:4px 10px; border-radius:99px; font-size:12px;">🔥 ${streak} Days</span>` : `<span style="color:#64748b; font-size:12px;">No active streak</span>`}
+            </td>
+            <td style="padding:12px 14px;">
+              ${isSolvedToday ? `<span style="background:rgba(16,185,129,0.15); color:#10b981; font-weight:700; padding:4px 10px; border-radius:99px; font-size:12px;">✅ Solved Today</span>` : `<span style="background:rgba(245,158,11,0.15); color:#f59e0b; font-weight:700; padding:4px 10px; border-radius:99px; font-size:12px;">⏳ Pending</span>`}
+            </td>
+            <td style="padding:12px 14px; font-size:13px; color:#fff;">
+              ${rec.solvedCount || 0} Puzzles
+            </td>
+            <td style="padding:12px 14px; text-align:right;">
+              <button class="btn btn-outline-grey btn-sm" onclick="window.shareStudentTacticsProgressWhatsApp('${escapeHtml(s.id)}')" style="font-size:11px; padding:4px 8px; border-color:rgba(34,197,94,0.4); color:#4ade80;" title="Share progress on WhatsApp">
+                📱 WhatsApp
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No student records found.</td></tr>'}
-        </tbody>
-      </table>
-    `;
+        `;
+      }).join('');
+
+      studentsContainer.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border); color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
+              <th style="padding:10px 14px;">Student</th>
+              <th style="padding:10px 14px;">Tactics Streak</th>
+              <th style="padding:10px 14px;">Today's Workout</th>
+              <th style="padding:10px 14px;">Total Solved</th>
+              <th style="padding:10px 14px; text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No student records found.</td></tr>'}
+          </tbody>
+        </table>
+      `;
+    }
 
     const streakTotalEl = document.getElementById('admin-tactics-streak-total');
     const solvedTodayEl = document.getElementById('admin-tactics-solved-today');
+    const topicsCountEl = document.getElementById('admin-topics-count');
     if (streakTotalEl) streakTotalEl.textContent = `${totalStreaks} Students`;
     if (solvedTodayEl) solvedTodayEl.textContent = String(totalSolvedToday);
-
-    window.renderAssignedTopicsAdminTable(roleType);
-  };
-
-  // ── Render Assigned Topics in Admin/Coach Monitors ──
-  window.renderAssignedTopicsAdminTable = function (roleType = 'admin') {
-    const tableWrapId = roleType === 'coach' ? 'coach-assigned-topics-table-wrap' : 'admin-assigned-topics-table-wrap';
-    const container = document.getElementById(tableWrapId);
-    if (!container) return;
-
-    let topics = [];
-    try {
-      topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
-    } catch (e) {}
-
-    const countEl = document.getElementById('admin-topics-count');
-    if (countEl) countEl.textContent = `${topics.length} Topics`;
-
-    if (!topics.length) {
-      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">No custom study topics assigned yet. Click "Assign New Topic" to create one!</div>`;
-      return;
-    }
-
-    const rows = topics.map(t => {
-      let targetLabel = 'All Batches & Students';
-      if (t.batch_id && t.batch_id !== 'all') {
-        const batch = (window.allBatches || []).find(b => String(b.id) === String(t.batch_id));
-        targetLabel = batch ? `Batch: ${batch.name}` : `Batch #${t.batch_id}`;
-      }
-      if (t.student_id && t.student_id !== 'all') {
-        const stud = (window.allStudents || []).find(s => String(s.id) === String(t.student_id));
-        targetLabel += stud ? ` (${stud.name || stud.full_name})` : ` (Student #${t.student_id})`;
-      }
-
-      return `
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-          <td style="padding:12px 14px; font-weight:700; color:#fff;">
-            ${escapeHtml(t.title)}
-            <div style="font-size:11px; font-weight:400; color:var(--gold);">${escapeHtml(t.category)}</div>
-          </td>
-          <td style="padding:12px 14px; font-size:12.5px; color:var(--ivory-dim);">
-            ${escapeHtml(targetLabel)}
-          </td>
-          <td style="padding:12px 14px; font-size:12px; color:#94a3b8;">
-            ${escapeHtml(t.assigned_by)} · ${escapeHtml(t.assigned_date)}
-          </td>
-          <td style="padding:12px 14px; text-align:right;">
-            <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}')" style="font-size:11px; padding:4px 10px; margin-right:6px;">
-              ♟️ Test Board
-            </button>
-            <button class="btn btn-outline btn-sm" onclick="window.deleteAssignedStudyTopic('${escapeHtml(t.id)}')" style="font-size:11px; padding:4px 10px; color:#ef4444; border-color:rgba(239,68,68,0.4);">
-              🗑️ Delete
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    container.innerHTML = `
-      <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border); color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
-            <th style="padding:10px 14px;">Topic Title &amp; Category</th>
-            <th style="padding:10px 14px;">Assigned Target</th>
-            <th style="padding:10px 14px;">Assigned By</th>
-            <th style="padding:10px 14px; text-align:right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `;
-  };
-
-  window.deleteAssignedStudyTopic = function (topicId) {
-    if (!confirm('Are you sure you want to remove this assigned study topic?')) return;
-    let topics = [];
-    try {
-      topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
-    } catch (e) {}
-    topics = topics.filter(t => t.id !== topicId);
-    localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics));
-
-    if (window.toast) window.toast('Study Topic removed.', 'info');
-    StudyPGN.renderAssignedTopicsList();
-    window.renderStudyPgnMonitor('admin');
-    window.renderStudyPgnMonitor('coach');
+    if (topicsCountEl) topicsCountEl.textContent = `${topics.length} Topics`;
   };
 
   // ── 1-Click WhatsApp Parent Progress Dispatcher ──
