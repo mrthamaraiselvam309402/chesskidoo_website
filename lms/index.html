@@ -5090,20 +5090,13 @@
         </div>
 
         <!-- Assign Study Topic Modal -->
-        <!-- Assign Study Topic Modal -->
         <div class="modal" id="assign-study-topic-modal">
           <div class="modal-box" style="max-width:680px; width:95%; max-height:90vh; overflow-y:auto; background:var(--bg2); border:1px solid rgba(218, 163, 62, 0.35); box-shadow:0 12px 40px rgba(0,0,0,0.7);">
             <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
               <span>♟️ Assign PGN Study Topic</span>
-              <button onclick="document.getElementById('assign-study-topic-modal').classList.remove('active')" style="background:none; border:none; color:var(--ivory-dim); font-size:18px; cursor:pointer;">✕</button>
+              <button onclick="window.closeAssignStudyTopicModal()" style="background:none; border:none; color:var(--ivory-dim); font-size:18px; cursor:pointer;">✕</button>
             </div>
 
-            <!-- Online PGN Import Bar -->
-            <div style="margin-top:14px; padding:12px 14px; background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.25); border-radius:10px;">
-              <label class="label" style="margin-bottom:4px; font-weight:700; color:var(--gold); display:flex; justify-content:space-between;">
-                <span>🌐 Fetch from Lichess / Cloud PGN Server</span>
-                <span style="font-size:10.5px; opacity:0.85;">Supports Lichess Study, Game URL or raw .pgn link</span>
-              </label>
             <!-- Topic Search & Online Import -->
             <div style="background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.2); border-radius:10px; padding:12px; margin-top:14px;">
               <label class="label" style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:6px;">
@@ -5181,59 +5174,100 @@
           </div>
         </div>
 
-        <!-- Import PGN Modal -->
+        <!-- Import PGN & Master Repertoire Modal -->
         <div class="modal" id="import-pgn-modal">
-          <div class="modal-box" style="max-width:580px; width:95%; background:var(--bg2); border:1px solid rgba(218, 163, 62, 0.35);">
-            <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
-              <span>📥 Import PGN Game into Study Board</span>
-              <button onclick="window.closeImportPgnModal()" style="background:none; border:none; color:var(--ivory-dim); font-size:18px; cursor:pointer;">✕</button>
+          <div class="modal-box" style="max-width:660px; width:95%; max-height:90vh; overflow-y:auto; background:var(--bg2); border:1px solid rgba(218, 163, 62, 0.4); box-shadow:0 14px 45px rgba(0,0,0,0.75);">
+            <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(218,163,62,0.2); padding-bottom:12px;">
+              <span style="font-size:18px; color:var(--gold); font-weight:700;">📥 Import PGN &amp; Study Repertoires</span>
+              <button onclick="window.closeImportPgnModal()" style="background:none; border:none; color:var(--ivory-dim); font-size:20px; cursor:pointer;">✕</button>
             </div>
-            <div style="display:grid; gap:14px; margin-top:16px;">
-              <!-- Topic & Opening Search API -->
-              <div style="padding:12px; background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.2); border-radius:8px;">
-                <label class="label" style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:6px;">🔍 Search Openings, Master Games &amp; Topics</label>
-                <div style="display:flex; gap:8px; margin-bottom:8px;">
-                  <input type="text" id="import-search-input" class="input-field" style="margin-bottom:0; flex:1;" placeholder="Type opening or GM e.g. Sicilian, Evans Gambit, Fischer, Kasparov, Morphy..." oninput="window.searchPgnTopics(this.value, 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results')">
-                  <button type="button" class="btn btn-gold btn-sm" onclick="window.searchPgnTopics(document.getElementById('import-search-input').value, 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results')">
+
+            <!-- Sub-Tabs: Topic Search | Local Storage Saved | File & Paste | Online URL -->
+            <div style="display:flex; gap:6px; margin:16px 0 14px; background:rgba(0,0,0,0.3); padding:4px; border-radius:10px; border:1px solid var(--border); flex-wrap:wrap;">
+              <button type="button" class="tab-link active" id="import-tab-search" onclick="window.switchImportPgnSubTab('search', this)" style="padding:6px 12px; font-size:12px; border-radius:6px;">🔍 Topic Search</button>
+              <button type="button" class="tab-link" id="import-tab-local" onclick="window.switchImportPgnSubTab('local', this)" style="padding:6px 12px; font-size:12px; border-radius:6px;">💾 Local Storage &amp; Saved</button>
+              <button type="button" class="tab-link" id="import-tab-file" onclick="window.switchImportPgnSubTab('file', this)" style="padding:6px 12px; font-size:12px; border-radius:6px;">📂 Upload / Paste PGN</button>
+              <button type="button" class="tab-link" id="import-tab-url" onclick="window.switchImportPgnSubTab('url', this)" style="padding:6px 12px; font-size:12px; border-radius:6px;">🌐 Lichess URL</button>
+            </div>
+
+            <!-- SUB-TAB 1: Topic Search -->
+            <div id="import-subview-search" class="import-subview" style="display:block;">
+              <div style="padding:14px; background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.2); border-radius:10px;">
+                <label class="label" style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:6px;">🔍 Search Master Openings, Vault &amp; Topics</label>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                  <input type="text" id="import-search-input" class="input-field" style="margin-bottom:0; flex:1;" placeholder="Type opening or GM e.g. Sicilian Dragon, Evans Gambit, Fischer, Kasparov, Morphy, Pragg..." oninput="window.searchPgnTopics(this.value, 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results')">
+                  <button type="button" class="btn btn-gold btn-sm" onclick="window.searchPgnTopics(document.getElementById('import-search-input').value, 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results')">
                     🔍 Search
                   </button>
                 </div>
 
                 <!-- Popular Search Shortcut Chips -->
-                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
-                  <button type="button" class="elib-filter-pill" style="font-size:10px; padding:3px 8px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Morphy'; window.searchPgnTopics('Morphy', 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results');">⚡ Opera Game</button>
-                  <button type="button" class="elib-filter-pill" style="font-size:10px; padding:3px 8px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Fischer'; window.searchPgnTopics('Fischer', 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results');">👑 Fischer 1972</button>
-                  <button type="button" class="elib-filter-pill" style="font-size:10px; padding:3px 8px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Sicilian'; window.searchPgnTopics('Sicilian', 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results');">🐉 Sicilian Dragon</button>
-                  <button type="button" class="elib-filter-pill" style="font-size:10px; padding:3px 8px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Pragg'; window.searchPgnTopics('Pragg', 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results');">🇮🇳 Pragg vs Hikaru</button>
-                  <button type="button" class="elib-filter-pill" style="font-size:10px; padding:3px 8px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Lucena'; window.searchPgnTopics('Lucena', 'import-pgn-text', 'import-game-title-dummy', 'import-pgn-search-results');">🏰 Lucena Bridge</button>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Morphy'; window.searchPgnTopics('Morphy', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">⚡ Morphy Opera</button>
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Evans Gambit'; window.searchPgnTopics('Evans Gambit', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">⚔️ Evans Gambit</button>
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Sicilian'; window.searchPgnTopics('Sicilian', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">🐉 Sicilian Dragon</button>
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Fischer'; window.searchPgnTopics('Fischer', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">👑 Fischer 1972</button>
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Pragg'; window.searchPgnTopics('Pragg', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">🇮🇳 Pragg vs Hikaru</button>
+                  <button type="button" class="elib-filter-pill" style="font-size:10.5px; padding:4px 9px; border-radius:12px; cursor:pointer;" onclick="document.getElementById('import-search-input').value='Lucena'; window.searchPgnTopics('Lucena', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');">🏰 Lucena Bridge</button>
                 </div>
 
-                <div id="import-pgn-search-results" style="display:none; max-height:200px; overflow-y:auto; margin-top:8px; background:rgba(0,0,0,0.35); border-radius:8px; padding:8px; border:1px solid rgba(255,255,255,0.08);"></div>
-              </div>
-
-              <!-- Online URL Fetch -->
-              <div style="padding:10px 12px; background:rgba(255, 255, 255, 0.03); border:1px solid var(--border); border-radius:8px;">
-                <label class="label" style="font-size:11px; color:var(--ivory-dim); font-weight:700; margin-bottom:4px;">🌐 Or Import from Lichess / Cloud URL</label>
-                <div style="display:flex; gap:8px;">
-                  <input type="text" id="import-online-url" class="input-field" style="margin-bottom:0; flex:1; font-size:12px;" placeholder="https://lichess.org/study/xxxx or https://lichess.org/xxxx">
-                  <button type="button" class="btn btn-outline-grey btn-sm" onclick="window.fetchOnlinePgnFromUrl('import-online-url', 'import-pgn-text')" style="white-space:nowrap;">📥 Fetch</button>
+                <div id="import-pgn-search-results" style="max-height:240px; overflow-y:auto; margin-top:8px; background:rgba(0,0,0,0.35); border-radius:8px; padding:8px; border:1px solid rgba(255,255,255,0.08);">
+                  <!-- Results rendered here -->
                 </div>
-              </div>
-
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <label class="label" style="margin-bottom:0;">Paste PGN Notation</label>
-                  <label class="btn btn-outline-grey btn-sm" style="font-size:11px; cursor:pointer; padding:2px 8px; margin-bottom:0;">
-                    📂 Upload File
-                    <input type="file" accept=".pgn,.txt" style="display:none;" onchange="window.handlePgnFileUpload(this, 'import-pgn-text')">
-                  </label>
-                </div>
-                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN tags and moves here... e.g. 1. e4 e5 2. Nf3..."></textarea>
               </div>
             </div>
-            <div style="display:flex; gap:12px; margin-top:20px;">
-              <button class="btn btn-gold" style="flex:1;" onclick="window.submitImportPgn()">Load into Study Board</button>
-              <button class="btn btn-outline-grey" style="flex:1;" onclick="window.closeImportPgnModal()">Cancel</button>
+
+            <!-- SUB-TAB 2: Local Storage Saved Repertoires -->
+            <div id="import-subview-local" class="import-subview" style="display:none;">
+              <div style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:13px; font-weight:700; color:var(--gold);">💾 Studies Stored in Local Storage</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="window.saveCurrentStudyToLocalStorage()" style="font-size:11px; padding:3px 8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">➕ Bookmark Active Board</button>
+                </div>
+                <div id="import-local-storage-list" style="max-height:260px; overflow-y:auto; display:grid; gap:8px;">
+                  <!-- Dynamically rendered local storage studies -->
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 3: Upload / Paste -->
+            <div id="import-subview-file" class="import-subview" style="display:none;">
+              <div style="display:grid; gap:12px;">
+                <div>
+                  <label class="label">Custom Study Title (Optional)</label>
+                  <input type="text" id="import-game-title-custom" class="input-field" placeholder="e.g. My Sicilian Dragon Training Session">
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="label" style="margin-bottom:0;">Paste PGN Text</label>
+                    <label class="btn btn-outline-grey btn-sm" style="font-size:11px; cursor:pointer; padding:3px 10px; margin-bottom:0; display:inline-flex; align-items:center; gap:4px;">
+                      📂 Upload .PGN / .TXT File
+                      <input type="file" accept=".pgn,.txt" style="display:none;" onchange="window.handlePgnFileUpload(this, 'import-pgn-text', 'import-game-title-custom')">
+                    </label>
+                  </div>
+                  <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN tags and moves here... e.g. 1. e4 e5 2. Nf3 Nc6 3. Bc4..."></textarea>
+                </div>
+                <div style="display:flex; gap:10px;">
+                  <button type="button" class="btn btn-gold" style="flex:1;" onclick="window.submitImportPgn()">♟️ Load into Study Board</button>
+                  <button type="button" class="btn btn-outline-grey" style="white-space:nowrap;" onclick="window.saveCurrentStudyToLocalStorage(document.getElementById('import-game-title-custom').value, document.getElementById('import-pgn-text').value)">💾 Save to Local Storage</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 4: Online URL Fetch -->
+            <div id="import-subview-url" class="import-subview" style="display:none;">
+              <div style="padding:14px; background:rgba(255, 255, 255, 0.03); border:1px solid var(--border); border-radius:10px;">
+                <label class="label" style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:6px;">🌐 Fetch from Lichess / Web URL</label>
+                <p style="font-size:11.5px; color:var(--ivory-dim); margin:0 0 10px;">Supports Lichess Study links (e.g. <code>https://lichess.org/study/xxxx</code>), Game links (<code>https://lichess.org/xxxx</code>), or raw <code>.pgn</code> URLs.</p>
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                  <input type="text" id="import-online-url" class="input-field" style="margin-bottom:0; flex:1;" placeholder="https://lichess.org/study/xxxx or https://lichess.org/xxxx">
+                  <button type="button" class="btn btn-gold btn-sm" onclick="window.fetchOnlinePgnFromUrl('import-online-url', 'import-pgn-text', 'import-game-title-custom', true)" style="white-space:nowrap;">📥 Fetch &amp; Load</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+              <button class="btn btn-outline-grey" onclick="window.closeImportPgnModal()">Close</button>
             </div>
           </div>
         </div>

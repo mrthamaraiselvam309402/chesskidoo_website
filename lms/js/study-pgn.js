@@ -13,6 +13,7 @@
   // ── Storage Keys ──
   const STORAGE_TACTICS_RECORDS = 'ck_student_tactics_records';
   const STORAGE_ASSIGNED_TOPICS = 'ck_assigned_study_topics';
+  const STORAGE_SAVED_STUDIES = 'ck_custom_saved_pgns';
   const STORAGE_VISION_SCORES = 'ck_student_vision_scores';
   const STORAGE_COMPLETED_TOPICS = 'ck_completed_study_topics';
   const STORAGE_COINS = 'ck_student_coins';
@@ -1208,7 +1209,7 @@
   };
 
   // ── Online Server API PGN Importer (Lichess Game/Study & Cloud PGN) ──
-  window.fetchOnlinePgnFromUrl = async function (urlInputId, targetPgnInputId, targetTitleInputId) {
+  window.fetchOnlinePgnFromUrl = async function (urlInputId, targetPgnInputId, targetTitleInputId, autoLoad = false) {
     const urlInput = document.getElementById(urlInputId);
     if (!urlInput || !urlInput.value.trim()) {
       if (window.toast) window.toast('Please enter a Lichess Study, Game, or Cloud PGN URL!', 'warning');
@@ -1271,14 +1272,26 @@
             const eventMatch = pgnContent.match(/\[Event\s+"([^"]+)"\]/);
             if (whiteMatch && blackMatch && whiteMatch[1] !== '?' && blackMatch[1] !== '?') {
               targetTitle.value = `${whiteMatch[1]} vs ${blackMatch[1]}`;
+              detectedTitle = `${whiteMatch[1]} vs ${blackMatch[1]}`;
             } else if (eventMatch && eventMatch[1] !== '?') {
               targetTitle.value = eventMatch[1];
+              detectedTitle = eventMatch[1];
             } else if (detectedTitle) {
               targetTitle.value = detectedTitle;
             }
           }
         }
-        if (window.toast) window.toast('✅ PGN successfully fetched and imported into study form!', 'success');
+
+        if (autoLoad) {
+          StudyPGN.loadPgnString(pgnContent.trim(), {
+            title: detectedTitle || 'Online Study Game',
+            description: `Fetched from: ${rawUrl}`
+          });
+          window.closeImportPgnModal();
+          if (window.toast) window.toast(`♟️ Loaded "${detectedTitle || 'Online Game'}" into Study Board!`, 'success');
+        } else {
+          if (window.toast) window.toast('✅ PGN successfully fetched and imported into study form!', 'success');
+        }
       } else {
         if (window.toast) window.toast('Could not auto-download PGN. You can paste the PGN moves directly.', 'warning');
       }
@@ -1314,24 +1327,19 @@
     if (!container) return;
 
     const q = (query || '').trim().toLowerCase();
-    if (!q) {
-      container.innerHTML = '';
-      container.style.display = 'none';
-      return;
-    }
-
     container.style.display = 'block';
-    container.innerHTML = '<div style="padding:10px; font-size:12px; color:var(--gold); text-align:center;">🔍 Searching Master Games & Repertoire API...</div>';
 
-    // 1. Search in curated grandmaster games
-    const localMatches = CURATED_STUDY_GAMES.filter(g => {
-      const text = `${g.title} ${g.category} ${g.white} ${g.black} ${g.description} ${g.level}`.toLowerCase();
-      return text.includes(q);
-    });
+    // If query is empty, show top curated repertoire games
+    const localMatches = q
+      ? CURATED_STUDY_GAMES.filter(g => {
+          const text = `${g.title} ${g.category} ${g.white} ${g.black} ${g.description} ${g.level}`.toLowerCase();
+          return text.includes(q);
+        })
+      : CURATED_STUDY_GAMES.slice(0, 6);
 
     let html = '';
     if (localMatches.length > 0) {
-      html += `<div style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; margin-bottom:8px;">Academy Repertoire & Masterclasses (${localMatches.length})</div>`;
+      html += `<div style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; margin-bottom:8px;">${q ? `Search Matches (${localMatches.length})` : 'Popular Master Repertoires & Vault'}</div>`;
       html += localMatches.slice(0, 6).map(g => `
         <div style="background:var(--surface); border:1px solid rgba(218,163,62,0.3); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
           <div style="overflow:hidden;">
@@ -1339,7 +1347,7 @@
             <div style="font-size:11px; color:var(--ivory-dim); margin-top:2px;">${escapeHtml(g.category)} · ${escapeHtml(g.white)} vs ${escapeHtml(g.black)} (${g.result})</div>
           </div>
           <button type="button" class="btn btn-gold btn-sm" style="white-space:nowrap; font-size:11px; padding:4px 12px;" onclick="window.selectPgnSearchResult('${g.id}', '${targetPgnInputId}', '${targetTitleInputId}', '${containerId}')">
-            📥 Import
+            ♟️ Load
           </button>
         </div>
       `).join('');
@@ -1362,7 +1370,7 @@
                 <div style="font-size:11px; color:var(--ivory-dim);">Live API Game Download</div>
               </div>
               <button type="button" class="btn btn-gold btn-sm" style="white-space:nowrap; font-size:11px; padding:4px 12px;" onclick="window.applyDirectPgn('${encodeURIComponent(fetchedPgn)}', '${escapeHtml(q)} Master Games', '${targetPgnInputId}', '${targetTitleInputId}', '${containerId}')">
-                📥 Import
+                ♟️ Load
               </button>
             </div>`;
           }
@@ -1827,12 +1835,170 @@
     }
   };
 
-  // ── Import PGN Modal ──
+  // ── Sub-tab Switcher for Import PGN Modal ──
+  window.switchImportPgnSubTab = function (tabName, btn) {
+    const tabs = ['search', 'local', 'file', 'url'];
+    tabs.forEach(t => {
+      const el = document.getElementById(`import-subview-${t}`);
+      if (el) el.style.display = (t === tabName) ? 'block' : 'none';
+    });
+
+    const parent = btn ? btn.parentElement : null;
+    if (parent) {
+      parent.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    if (tabName === 'local') {
+      window.renderImportPgnLocalStorageStudies();
+    } else if (tabName === 'search') {
+      const input = document.getElementById('import-search-input');
+      const q = input ? input.value : '';
+      window.searchPgnTopics(q, 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');
+    }
+  };
+
+  // ── Render Local Storage Saved Studies & Assigned Topics in Import Modal ──
+  window.renderImportPgnLocalStorageStudies = function () {
+    const container = document.getElementById('import-local-storage-list');
+    if (!container) return;
+
+    let assignedTopics = [];
+    let savedCustom = [];
+    try {
+      assignedTopics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
+    } catch (e) {}
+    try {
+      savedCustom = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]');
+    } catch (e) {}
+
+    const allItems = [
+      ...savedCustom.map(x => ({ ...x, isCustom: true })),
+      ...assignedTopics.map(x => ({ ...x, isAssigned: true }))
+    ];
+
+    if (!allItems.length) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:24px; color:var(--ivory-dim); font-size:12.5px;">
+          <div>💾 No saved studies or assigned topics found in local browser storage.</div>
+          <div style="font-size:11px; opacity:0.75; margin-top:4px;">You can bookmark games using the "➕ Bookmark Active Board" button above.</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = allItems.map((item) => {
+      const title = escapeHtml(item.title || 'Saved Study');
+      const cat = escapeHtml(item.category || 'Study PGN');
+      const badgeColor = item.isCustom ? '#38bdf8' : '#fbbf24';
+      const badgeText = item.isCustom ? '💾 Local Bookmark' : '📋 Assigned Topic';
+      const dateStr = escapeHtml(item.assigned_date || item.saved_date || 'Recent');
+
+      return `
+        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="overflow:hidden;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+              <span style="background:${badgeColor}22; color:${badgeColor}; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; border:1px solid ${badgeColor}44;">${badgeText}</span>
+              <span style="font-size:11px; color:var(--ivory-dim);">${cat} · ${dateStr}</span>
+            </div>
+            <div style="font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
+          </div>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn btn-gold btn-sm" style="font-size:11px; padding:4px 10px;" onclick="window.loadSavedLocalStorageTopic('${escapeHtml(item.id)}')">
+              ♟️ Load Board
+            </button>
+            ${item.isCustom ? `
+              <button type="button" class="btn btn-outline-grey btn-sm" style="font-size:11px; padding:4px 8px; color:#ef4444;" onclick="window.deleteLocalStorageStudy('${escapeHtml(item.id)}')">
+                🗑️
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  window.loadSavedLocalStorageTopic = function (id) {
+    let assignedTopics = [];
+    let savedCustom = [];
+    try {
+      assignedTopics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
+    } catch (e) {}
+    try {
+      savedCustom = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]');
+    } catch (e) {}
+
+    const item = [...savedCustom, ...assignedTopics].find(x => String(x.id) === String(id));
+    if (!item || !item.pgn) {
+      if (window.toast) window.toast('Topic record or PGN not found.', 'warning');
+      return;
+    }
+
+    StudyPGN.loadPgnString(item.pgn, {
+      title: item.title || 'Saved Study Topic',
+      description: item.description || `Category: ${item.category || 'Study'}`
+    });
+    window.closeImportPgnModal();
+    if (window.toast) window.toast(`♟️ Loaded "${item.title || 'Study'}" into Study Board!`, 'success');
+  };
+
+  window.saveCurrentStudyToLocalStorage = function (customTitle, customPgn) {
+    let pgn = customPgn;
+    let title = customTitle;
+
+    if (!pgn && StudyPGN.chess) {
+      pgn = StudyPGN.chess.pgn();
+    }
+    if (!pgn || !pgn.trim()) {
+      if (window.toast) window.toast('No PGN moves available to save!', 'warning');
+      return;
+    }
+
+    if (!title || !title.trim()) {
+      const currentGameTitle = document.getElementById('pgn-game-title')?.textContent || document.getElementById('coach-pgn-game-title')?.textContent;
+      title = (currentGameTitle && currentGameTitle !== 'Grandmaster Masterclass Study') ? currentGameTitle : `My Study Session (${new Date().toLocaleDateString()})`;
+    }
+
+    let savedCustom = [];
+    try {
+      savedCustom = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]');
+    } catch (e) {}
+
+    const newEntry = {
+      id: 'saved-' + Date.now(),
+      title: title.trim(),
+      pgn: pgn.trim(),
+      category: 'Custom Repertoire',
+      saved_date: new Date().toISOString().split('T')[0]
+    };
+
+    savedCustom.unshift(newEntry);
+    localStorage.setItem(STORAGE_SAVED_STUDIES, JSON.stringify(savedCustom));
+
+    if (window.toast) window.toast('💾 Saved game to Local Browser Storage!', 'success');
+    window.renderImportPgnLocalStorageStudies();
+  };
+
+  window.deleteLocalStorageStudy = function (id) {
+    let savedCustom = [];
+    try {
+      savedCustom = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]');
+    } catch (e) {}
+
+    savedCustom = savedCustom.filter(x => String(x.id) !== String(id));
+    localStorage.setItem(STORAGE_SAVED_STUDIES, JSON.stringify(savedCustom));
+    if (window.toast) window.toast('Removed study from Local Storage.', 'info');
+    window.renderImportPgnLocalStorageStudies();
+  };
+
+  // ── Import PGN Modal Open / Close ──
   window.openImportPgnModal = function () {
     const modal = document.getElementById('import-pgn-modal');
     if (modal) {
       modal.style.display = 'flex';
       modal.classList.add('active', 'open');
+      const searchTabBtn = document.getElementById('import-tab-search');
+      window.switchImportPgnSubTab('search', searchTabBtn);
     }
   };
 
@@ -1846,12 +2012,13 @@
 
   window.submitImportPgn = function () {
     const pgnText = document.getElementById('import-pgn-text')?.value;
+    const titleText = document.getElementById('import-game-title-custom')?.value;
     if (!pgnText || !pgnText.trim()) {
       if (window.toast) window.toast('Please paste PGN notation.', 'warning');
       return;
     }
     StudyPGN.loadPgnString(pgnText.trim(), {
-      title: 'Imported Custom Study Game',
+      title: (titleText && titleText.trim()) ? titleText.trim() : 'Imported Custom Study Game',
       description: 'Custom game loaded via PGN notation importer.'
     });
     window.closeImportPgnModal();
