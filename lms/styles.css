@@ -3842,10 +3842,6 @@ body[data-theme="light"] .trace-chip.failed {
   box-shadow: 0 4px 12px rgba(232, 168, 48, 0.35) !important;
 }
 
-@media (max-width: 640px) {
-  #admin-elibrary-grid,
-  #coach-elibrary-grid,
-  #child-elibrary-grid {
 .elib-card:hover {
   transform: translateY(-4px);
   border-color: rgba(218, 163, 62, 0.4) !important;
@@ -3856,5 +3852,39 @@ body[data-theme="light"] .trace-chip.failed {
   background: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(218, 163, 62, 0.3) !important;
 }
+
+/* ── Study PGN, Tactics & Speed Trainer Styles ── */
+.pgn-square:hover,
+.tactics-square:hover {
+  filter: brightness(1.08);
+}
+
+.pgn-move-btn {
+  transition: all 0.15s ease;
+}
+
+.pgn-move-btn:hover {
+  background: rgba(218, 163, 62, 0.25) !important;
+  color: var(--gold) !important;
+}
+
+@media (max-width: 860px) {
+  .studypgn-split-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #admin-elibrary-grid,
+  #coach-elibrary-grid,
+  #child-elibrary-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .elib-filter-pill {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
 
 

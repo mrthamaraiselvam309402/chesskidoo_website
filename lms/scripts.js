@@ -519,6 +519,16 @@
         window.renderChildElibrary();
       }
     }
+    if (tabId === "studypgn") {
+      if (window.StudyPGN) {
+        if (!window.StudyPGN.chess) window.StudyPGN.loadCuratedGame(0);
+        window.StudyPGN.renderBoard();
+        window.StudyPGN.renderMoveList();
+        window.StudyPGN.renderGameInfo();
+        window.StudyPGN.renderTacticsBoard();
+        window.StudyPGN.renderAssignedTopicsList();
+      }
+    }
     if (
       tabId === "schedule" &&
       typeof window.renderChildSchedule === "function" &&
@@ -6537,7 +6547,9 @@
     "coach-attendance": "My Attendance",
     "coach-homework": "My Homework",
     "coach-elibrary": "Coach E-Library Hub",
+    "coach-studypgn": "Study Lab & Topics",
     "coach-chess": "Chess Stats",
+    "studypgn": "Study PGN & Analytics",
   };
 
   function setPage(p) {
@@ -6559,8 +6571,9 @@
       "attendance",
       "homework",
       "elibrary",
+      "studypgn",
     ];
-    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-elibrary", "coach-chess", "elibrary"];
+    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-elibrary", "coach-studypgn", "coach-chess", "elibrary", "studypgn"];
     if (adminPages.includes(p) && role !== "admin" && role !== "master" && !coachAccessiblePages.includes(p)) {
       toast("Access denied", "error");
       setPage(role === "parent" ? "child" : "coach-dash");
@@ -6610,6 +6623,11 @@
           if (p === "elibrary" && typeof window.renderAdminElibraryPage === "function") window.renderAdminElibraryPage();
           if (p === "coach-elibrary" && typeof window.renderCoachElibraryPage === "function") window.renderCoachElibraryPage();
         });
+      }
+    }
+    if (p === "studypgn" || p === "coach-studypgn") {
+      if (typeof window.renderStudyPgnMonitor === "function") {
+        window.renderStudyPgnMonitor(p === "coach-studypgn" ? "coach" : "admin");
       }
     }
 

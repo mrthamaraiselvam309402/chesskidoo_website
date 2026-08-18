@@ -491,16 +491,19 @@
             <span>📅 ${escapeHtml(item.date || '')}</span>
           </div>
 
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             ${isVideo ? `
               <button class="btn btn-primary" style="flex:1; padding:9px 14px; font-size:0.85rem; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 15px rgba(218,163,62,0.3);" onclick="window.openElibraryVideo('${escapeHtml(item.title)}', '${escapeHtml(item.url)}')">
                 <span>▶ Watch Session</span>
               </button>
             ` : `
               <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="btn btn-gold" style="flex:1; padding:9px 14px; font-size:0.85rem; font-weight:800; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
-                <span>📥 Download Resource</span>
+                <span>📥 Download</span>
               </a>
             `}
+            <button class="btn btn-outline" style="flex:1; padding:9px 12px; font-size:0.82rem; border-radius:10px; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.openStudyPgnFromElibrary('${escapeHtml(item.title)}', '${escapeHtml(item.category)}')" title="Study on Interactive Board">
+              <span>♟️ Study Board</span>
+            </button>
             ${canManage ? `
               <button class="btn btn-outline" style="padding:9px 12px; font-size:0.82rem; border-radius:10px; border-color:rgba(218,163,62,0.35); color:var(--gold);" onclick="window.editElibraryItem('${escapeHtml(item.id)}')" title="Configure Student Access">
                 <span>👤 Access</span>
@@ -511,6 +514,19 @@
       </div>
     `;
   }
+
+  // ── Open in Study PGN Board ──
+  window.openStudyPgnFromElibrary = function (title, category) {
+    // If in parent portal, switch to studypgn tab
+    if (window.setChildTab) {
+      if (window.setPage) window.setPage('child');
+      window.setChildTab('studypgn');
+      if (window.StudyPGN) {
+        window.StudyPGN.loadCuratedGame(0);
+      }
+      if (window.toast) window.toast(`♟️ Loaded "${title}" into Interactive Study Board!`, 'info');
+    }
+  };
 
   // ── Open Video Player ──
   window.openElibraryVideo = function (title, url) {

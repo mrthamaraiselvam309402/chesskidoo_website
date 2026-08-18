@@ -155,10 +155,12 @@
     <div class="nav-item coach-only" id="nav-coach-attendance" onclick="setPage('coach-attendance')"><span class="ico">📋</span> Attendance</div>
     <div class="nav-item coach-only" id="nav-coach-homework" onclick="setPage('coach-homework')"><span class="ico">📚</span> Homework</div>
     <div class="nav-item coach-only" id="nav-coach-elibrary" onclick="setPage('coach-elibrary')"><span class="ico">📖</span> E-Library Hub</div>
+    <div class="nav-item coach-only" id="nav-coach-studypgn" onclick="setPage('coach-studypgn')"><span class="ico">♟️</span> Study Lab &amp; Topics</div>
     <div class="nav-item coach-only" id="nav-coach-chess" onclick="setPage('coach-chess')"><span class="ico">♟️</span> Chess Stats</div>
     <div class="nav-item admin-only" id="nav-stud" onclick="setPage('stud')"><span class="ico">👨‍🎓</span> Students</div>
     <div class="nav-item admin-only" id="nav-coach-mgmt" onclick="setPage('coach-mgmt')"><span class="ico">👨‍🏫</span> Coaches</div>
     <div class="nav-item admin-only" id="nav-elibrary" onclick="setPage('elibrary')"><span class="ico">📖</span> E-Library Manager</div>
+    <div class="nav-item admin-only" id="nav-studypgn" onclick="setPage('studypgn')"><span class="ico">♟️</span> Study Lab &amp; Analytics</div>
     
     <!-- Academy Manager Group -->
      <div class="nav-item admin-only" onclick="toggleAcademyManager()" style="justify-content: space-between;">
@@ -1114,6 +1116,83 @@
       </div>
     </div>
 
+    <!-- Study Lab & Analytics Page (Admin) -->
+    <div id="page-studypgn" class="page admin-only">
+      <div class="coach-shell">
+        <div class="coach-section-block">
+          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.12); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 14px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
+                <span>♟️ Academy PGN &amp; Training Lab</span>
+              </div>
+              <h2 class="coach-section-title" style="margin:0 0 6px;">♟️ Study PGN, Tactics &amp; Student Practice Analytics</h2>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Assign custom opening repertoires and PGN studies to batches or students, and monitor real-time daily tactics streaks.</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-gold" onclick="window.openAssignStudyTopicModal()" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="ico">➕</span> Assign Study Topic
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-studypgn-monitor-container">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div class="card" style="padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+              <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">🔥 Active Daily Streaks</div>
+              <div id="admin-tactics-streak-total" style="font-size:24px; font-weight:800; color:#eab308;">14 Students</div>
+            </div>
+            <div class="card" style="padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+              <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">⭐ Puzzles Solved Today</div>
+              <div id="admin-tactics-solved-today" style="font-size:24px; font-weight:800; color:#38bdf8;">48</div>
+            </div>
+            <div class="card" style="padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+              <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">📚 Assigned Topics</div>
+              <div id="admin-topics-count" style="font-size:24px; font-weight:800; color:#10b981;">6 Topics</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+            <h3 style="margin:0 0 16px; color:#fff; font-size:16px; font-weight:700;">Student Daily Tactics &amp; PGN Practice Log</h3>
+            <div id="admin-studypgn-students-table-wrap" style="overflow-x:auto;">
+              <!-- Dynamic Practice Log -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Study Lab & Topics Page (Coach) -->
+    <div id="page-coach-studypgn" class="page coach-only">
+      <div class="coach-shell">
+        <div class="coach-section-block">
+          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.12); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 14px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
+                <span>♟️ Coach Training Hub</span>
+              </div>
+              <h2 class="coach-section-title" style="margin:0 0 6px;">♟️ Coach Study Lab &amp; Batch Practice Monitor</h2>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Assign tailored PGN topics, monitor student puzzle streaks, and review calculation speeds.</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-gold" onclick="window.openAssignStudyTopicModal()" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="ico">➕</span> Assign Study Topic
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="coach-studypgn-monitor-container">
+          <div class="card" style="padding:20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+            <h3 style="margin:0 0 16px; color:#fff; font-size:16px; font-weight:700;">My Batch Students — Daily Practice &amp; Topics Status</h3>
+            <div id="coach-studypgn-students-table-wrap" style="overflow-x:auto;">
+              <!-- Dynamic Practice Log for Coach -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- My Child -->
     <div id="page-child" class="page parent-only">
       <div id="child-loading" class="loading-state"><span class="spinner"></span> Loading…</div>
@@ -1172,6 +1251,7 @@
           <button class="tab-link" onclick="setChildTab('attendance', this)">Attendance</button>
           <button class="tab-link" onclick="setChildTab('homework', this)">Homework</button>
           <button class="tab-link" onclick="setChildTab('elibrary', this)">📖 E-Library</button>
+          <button class="tab-link" onclick="setChildTab('studypgn', this)">♟️ Study PGN &amp; Tactics</button>
           <button class="tab-link" onclick="setChildTab('growth', this)">Growth</button>
           <button class="tab-link" onclick="setChildTab('events', this)">Events</button>
           <button class="tab-link" onclick="setChildTab('reports', this)">Reports</button>
@@ -1588,6 +1668,175 @@
 
           <div id="child-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
             <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
+          </div>
+        </div>
+
+        <!-- Dedicated Student Study PGN & Tactics Hub -->
+        <div id="child-tab-studypgn" class="child-tab-content">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap: wrap; gap:14px; border-bottom:1px solid var(--border); padding-bottom:14px;">
+            <div>
+              <h3 style="color:var(--gold); margin:0 0 4px; font-family:var(--font-head); font-size:20px;">♟️ Study PGN &amp; Daily Tactics Hub</h3>
+              <p style="margin:0; font-size:13px; color:var(--ivory-dim);">Interactive Grandmaster game analysis, Lichess opening tree, daily calculation streaks, and speed trainers.</p>
+            </div>
+            <!-- Sub Navigation Pills -->
+            <div class="tabs-nav" style="margin:0; background:rgba(0,0,0,0.3); padding:4px; border-radius:10px; border:1px solid var(--border); display:flex; gap:4px; flex-wrap:wrap;">
+              <button class="tab-link active" id="btn-studypgn-lab" onclick="window.setStudyPgnSubTab('lab', this)" style="padding:6px 14px; font-size:12px; border-radius:6px;">♟️ Master PGN Lab</button>
+              <button class="tab-link" id="btn-studypgn-tactics" onclick="window.setStudyPgnSubTab('tactics', this)" style="padding:6px 14px; font-size:12px; border-radius:6px;">🔥 Daily Tactics</button>
+              <button class="tab-link" id="btn-studypgn-vision" onclick="window.setStudyPgnSubTab('vision', this)" style="padding:6px 14px; font-size:12px; border-radius:6px;">⚡ Vision Trainer</button>
+              <button class="tab-link" id="btn-studypgn-topics" onclick="window.setStudyPgnSubTab('topics', this)" style="padding:6px 14px; font-size:12px; border-radius:6px;">📋 Assigned Topics</button>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 1: MASTER PGN LAB -->
+          <div id="studypgn-subview-lab" class="studypgn-subview">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 20px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h4 id="pgn-game-title" style="margin:0 0 4px; font-size:16px; color:#fff; font-weight:700;">Grandmaster Masterclass Study</h4>
+                <div id="pgn-game-players" style="font-size:13px; color:var(--ivory-dim);">⚪ Paul Morphy vs ⚫ Duke of Brunswick · 1-0</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <select id="pgn-curated-game-select" onchange="window.StudyPGN.loadCuratedGame(parseInt(this.value, 10))" class="input-field" style="max-width:260px; margin:0; padding:6px 10px; font-size:12.5px;">
+                  <option value="0">🎭 Morphy: The Opera Game (1858)</option>
+                  <option value="1">⚔️ Anderssen: The Immortal Game (1851)</option>
+                  <option value="2">🐉 Kasparov vs Anand: Sicilian Dragon</option>
+                  <option value="3">👑 Lucena: Rook &amp; Pawn Bridge Technique</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="window.openImportPgnModal()" style="border-color:rgba(218,163,62,0.4); color:var(--gold);">📥 Import PGN</button>
+                <button class="btn btn-outline btn-sm" id="pgn-btn-guess" onclick="window.StudyPGN.toggleGuessTheMove()" style="border-color:rgba(218,163,62,0.4); color:var(--gold);">🎯 Guess GM Move</button>
+              </div>
+            </div>
+
+            <!-- Guess the Move banner -->
+            <div id="pgn-guess-panel" style="display:none; background:rgba(218,163,62,0.12); border:1px solid var(--gold); border-radius:10px; padding:12px 18px; margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:13.5px; font-weight:700; color:var(--gold);">🎯 Guess the Move Mode Active! Click the square of your candidate move.</span>
+                <span id="pgn-guess-score-text" style="font-size:13px; font-weight:700; color:#fff;">Score: 0 / 0</span>
+              </div>
+            </div>
+
+            <!-- Main Interactive Split View -->
+            <div style="display:grid; grid-template-columns: minmax(320px, 480px) 1fr; gap:24px; align-items:start;" class="studypgn-split-grid">
+              <!-- Left Board Column -->
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                  <!-- Evaluation Bar -->
+                  <div style="width:12px; height:440px; background:#1e293b; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); position:relative; display:flex; flex-direction:column; justify-content:flex-end;">
+                    <div id="pgn-eval-bar" style="width:100%; height:50%; background:#ffffff; transition:height 0.3s ease;"></div>
+                  </div>
+                  <div id="pgn-study-board" style="flex:1;"></div>
+                </div>
+
+                <!-- Board Controls Toolbar -->
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.firstMove()" title="First Move">⏮</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.prevMove()" title="Previous Move">◀</button>
+                  <button class="btn btn-outline btn-sm" id="pgn-btn-autoplay" onclick="window.StudyPGN.toggleAutoplay()" title="Autoplay">▶ Play</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move">▶</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move">⏭</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board">🔄 Flip</button>
+                  <span id="pgn-eval-text" style="align-self:center; font-size:12px; font-weight:700; color:var(--gold); margin-left:8px;">+0.0</span>
+                </div>
+              </div>
+
+              <!-- Right Notation & Explorer Column -->
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Move List Container -->
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; height:240px;">
+                  <div style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>📜 Move Notation</span>
+                    <span style="font-size:11px; opacity:0.6; color:var(--ivory-dim);">Click move to jump</span>
+                  </div>
+                  <div id="pgn-movelist-container" style="flex:1; overflow-y:auto; display:grid; gap:2px; padding-right:4px;"></div>
+                </div>
+
+                <!-- Lichess Master Opening Explorer API -->
+                <div id="pgn-lichess-explorer" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; min-height:160px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 2: DAILY TACTICS WORKOUT -->
+          <div id="studypgn-subview-tactics" class="studypgn-subview" style="display:none;">
+            <div style="display:grid; grid-template-columns: minmax(320px, 440px) 1fr; gap:24px; align-items:start;" class="studypgn-split-grid">
+              <div>
+                <div id="tactics-board-container"></div>
+                <div style="display:flex; gap:10px; margin-top:12px;">
+                  <button class="btn btn-outline btn-sm" style="flex:1; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.StudyPGN.showTacticsHint()">💡 Ask TOM AI Hint</button>
+                  <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.StudyPGN.loadDailyPuzzle()">🔄 Next Puzzle</button>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Streak Banner -->
+                <div class="card" style="padding:20px; background:linear-gradient(135deg, rgba(234,179,8,0.15), rgba(30,41,59,0.9)); border:1px solid var(--gold); border-radius:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span id="tactics-flame-badge" style="background:rgba(234,179,8,0.25); color:var(--gold); font-size:12px; font-weight:800; padding:4px 12px; border-radius:99px;">🔥 ACTIVE STREAK</span>
+                    <span id="tactics-streak-count" style="font-size:18px; font-weight:800; color:#fff;">🔥 0 Day Streak</span>
+                  </div>
+                  <h4 id="tactics-puzzle-title" style="margin:0 0 6px; color:#fff; font-size:16px;">Daily Master Puzzle</h4>
+                  <p id="tactics-hint-text" style="margin:0; font-size:13px; color:var(--ivory-dim); line-height:1.5;">Click "💡 Ask TOM AI Hint" if you need a clue!</p>
+                </div>
+
+                <!-- Daily Workout Badges -->
+                <div class="card" style="padding:18px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+                  <h5 style="margin:0 0 12px; color:var(--gold); font-size:13px; text-transform:uppercase;">🏅 Tactics Mastery Badges</h5>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                      <div style="font-size:24px;">⚡</div>
+                      <div style="font-size:12px; font-weight:700; color:#fff;">Fork Master</div>
+                      <div style="font-size:10px; color:var(--ivory-dim);">5 Knight Forks</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                      <div style="font-size:24px;">👑</div>
+                      <div style="font-size:12px; font-weight:700; color:#fff;">Endgame Ace</div>
+                      <div style="font-size:10px; color:var(--ivory-dim);">Lucena Technique</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center;">
+                      <div style="font-size:24px;">🔥</div>
+                      <div style="font-size:12px; font-weight:700; color:#fff;">7-Day Flame</div>
+                      <div style="font-size:10px; color:var(--ivory-dim);">1 Week Practice</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 3: VISION SPEED TRAINER -->
+          <div id="studypgn-subview-vision" class="studypgn-subview" style="display:none;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+              <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div style="font-size:32px; margin-bottom:8px;">⚡</div>
+                  <h4 style="margin:0 0 6px; color:#fff; font-size:17px; font-weight:700;">Square Color Sprint</h4>
+                  <p style="margin:0 0 16px; font-size:13px; color:var(--ivory-dim); line-height:1.5;">30-second rapid sprint to identify whether coordinate squares (e.g. c4, f7, g6) are Light or Dark.</p>
+                </div>
+                <button class="btn btn-gold" onclick="window.StudyPGN.startVisionGame('color')">▶ Start Color Sprint</button>
+              </div>
+
+              <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div style="font-size:32px; margin-bottom:8px;">🎯</div>
+                  <h4 style="margin:0 0 6px; color:#fff; font-size:17px; font-weight:700;">Coordinate Radar Clicker</h4>
+                  <p style="margin:0 0 16px; font-size:13px; color:var(--ivory-dim); line-height:1.5;">Find coordinates on an empty board as fast as possible to build rapid spatial vision.</p>
+                </div>
+                <button class="btn btn-gold" onclick="window.StudyPGN.startVisionGame('color')">▶ Start Coordinate Radar</button>
+              </div>
+
+              <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div style="font-size:32px; margin-bottom:8px;">🐎</div>
+                  <h4 style="margin:0 0 6px; color:#fff; font-size:17px; font-weight:700;">Knight Pathfinder</h4>
+                  <p style="margin:0 0 16px; font-size:13px; color:var(--ivory-dim); line-height:1.5;">Calculate the shortest route for a knight from start square to target square.</p>
+                </div>
+                <button class="btn btn-gold" onclick="window.StudyPGN.startVisionGame('color')">▶ Start Knight Route</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 4: ASSIGNED TOPICS -->
+          <div id="studypgn-subview-topics" class="studypgn-subview" style="display:none;">
+            <div id="assigned-topics-grid" style="display:grid; gap:14px;"></div>
           </div>
         </div>
 
@@ -4405,6 +4654,7 @@
       <script src="/lms/js/expenditures.js?v=1.1&t=20260601d" charset="utf-8"></script>
       <script src="/lms/js/calculator.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/elibrary.js?v=1.0" charset="utf-8"></script>
+      <script src="/lms/js/study-pgn.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/reporting.js?v=v13&t=20260602c" charset="utf-8"></script>
       <script src="/lms/js/ai-assistant.js?v=v4&t=20260601" charset="utf-8"></script>
       <script src="/lms/js/auth.js?v=v5&t=20260730a" charset="utf-8"></script>
@@ -4684,6 +4934,94 @@
               <button class="btn btn-gold" style="flex:1;" onclick="window.saveGrantAccessForm()">Save Student Permissions</button>
               <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('grant-elibrary-modal').classList.remove('active')">Cancel</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Assign Study Topic Modal -->
+        <div class="modal" id="assign-study-topic-modal">
+          <div class="modal-box" style="max-width:650px; width:95%; max-height:88vh; overflow-y:auto; background:var(--bg2);">
+            <div class="modal-title">♟️ Assign PGN Study Topic</div>
+            <div style="display:grid; gap:14px; margin-top:16px;">
+              <div>
+                <label class="label">Topic Title *</label>
+                <input type="text" id="topic-title-input" class="input-field" placeholder="e.g. Italian Game: Evans Gambit Repertoire">
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                  <label class="label">Category</label>
+                  <select id="topic-cat-select" class="input-field">
+                    <option value="Openings">♟️ Opening Repertoire</option>
+                    <option value="Tactics">⚡ Tactics &amp; Combinations</option>
+                    <option value="Endgames">👑 Endgame Mastery</option>
+                    <option value="Masterclasses">📖 GM Lecture</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">Assign to Batch</label>
+                  <select id="topic-batch-select" class="input-field">
+                    <option value="all">-- All Enrolled Batches --</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="label">Assign to Specific Student (Optional)</label>
+                <select id="topic-student-select" class="input-field">
+                  <option value="all">-- All Students in Batch --</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">PGN Notation / Moves Sequence *</label>
+                <textarea id="topic-pgn-input" class="input-field" rows="5" placeholder="Paste PGN moves here... e.g. 1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4..."></textarea>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:20px;">
+              <button class="btn btn-gold" style="flex:1;" onclick="window.saveAssignedStudyTopic()">Assign Topic</button>
+              <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('assign-study-topic-modal').classList.remove('active')">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Import PGN Modal -->
+        <div class="modal" id="import-pgn-modal">
+          <div class="modal-box" style="max-width:550px; width:95%; background:var(--bg2);">
+            <div class="modal-title">📥 Import PGN Game into Study Board</div>
+            <div style="display:grid; gap:14px; margin-top:16px;">
+              <div>
+                <label class="label">Paste PGN Notation</label>
+                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN tags and moves here..."></textarea>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:20px;">
+              <button class="btn btn-gold" style="flex:1;" onclick="window.submitImportPgn()">Load into Study Board</button>
+              <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('import-pgn-modal').classList.remove('active')">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vision Trainer Modal -->
+        <div class="modal" id="vision-trainer-modal">
+          <div class="modal-box" style="max-width:500px; width:95%; text-align:center; background:var(--bg2);">
+            <div class="modal-title">⚡ Square Color Sprint</div>
+            <div style="display:flex; justify-content:space-between; margin:16px 0 20px; font-size:14px; color:var(--ivory-dim);">
+              <span>⏱️ Time: <strong id="vision-time-remaining" style="color:#fff;">30s</strong></span>
+              <span>⭐ Score: <strong id="vision-current-score" style="color:var(--gold);">0</strong></span>
+            </div>
+            
+            <div style="padding:28px 20px; background:rgba(0,0,0,0.3); border:2px solid var(--gold); border-radius:16px; margin-bottom:24px;">
+              <div style="font-size:12px; color:var(--ivory-dim); text-transform:uppercase; margin-bottom:6px;">Target Square</div>
+              <div id="vision-target-square" style="font-size:48px; font-weight:900; color:#fff; letter-spacing:2px;">E4</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+              <button class="btn" style="background:#f0d9b5; color:#1e293b; font-weight:800; font-size:18px; padding:16px; border-radius:12px;" onclick="window.StudyPGN.submitVisionAnswer('light')">
+                ⬜ LIGHT
+              </button>
+              <button class="btn" style="background:#b58863; color:#ffffff; font-weight:800; font-size:18px; padding:16px; border-radius:12px;" onclick="window.StudyPGN.submitVisionAnswer('dark')">
+                ⬛ DARK
+              </button>
+            </div>
+
+            <button class="btn btn-outline-grey" style="width:100%;" onclick="document.getElementById('vision-trainer-modal').classList.remove('active')">Stop Training</button>
           </div>
         </div>
   </body>
