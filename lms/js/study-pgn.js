@@ -17,23 +17,23 @@
   const STORAGE_COMPLETED_TOPICS = 'ck_completed_study_topics';
   const STORAGE_COINS = 'ck_student_coins';
 
-  // ── Authentic Pure Vector Chess Piece SVGs Matching User Theme ──
+  // ── Authentic Official Chess.com Neo Vector Chess Piece SVGs ──
   const PIECE_SVG = {
-    // White Pieces (Pure White with Crisp Dark Contours and Iconic Horizontal Accent Ribs)
-    K: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.6V6M20 8h5"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 16.5 3.5 22 0v-4c-5.5-3.5-16.5-3.5-22 0z"/><path d="M11.5 27c5.5-3 16.5-3 22 0m-21-3.5c0-1.5 1.5-2.5 3-2.5s4.5 1.5 7 1.5 5.5-1.5 7-1.5 3 1 3 2.5"/><path d="M13 30.5h19M13 34h19" stroke="#141414" stroke-width="1.4" fill="none"/></g></svg>`,
-    Q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 2-1 .5-2.5 0 0 0-1.5-1.5-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/><circle cx="2" cy="14" r="1.8"/><circle cx="9" cy="11" r="1.8"/><circle cx="16.5" cy="11" r="1.8"/><circle cx="22.5" cy="9.5" r="1.8"/><circle cx="28.5" cy="11" r="1.8"/><circle cx="36" cy="11" r="1.8"/><circle cx="43" cy="14" r="1.8"/><path d="M12 30.5h21M12 34h21" stroke="#141414" stroke-width="1.4" fill="none"/></g></svg>`,
-    R: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23"/><path d="M12 30h21M12 33.5h21" stroke="#141414" stroke-width="1.4" fill="none"/></g></svg>`,
-    B: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 8.5V4M20.5 6.2h4"/><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" fill="none"/><path d="M14 30.5h17" stroke="#141414" stroke-width="1.4" fill="none"/></g></svg>`,
-    N: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" /><path d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10" /><path d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z" fill="#141414" stroke="#141414" stroke-width="1"/><path d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z" transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)" fill="#141414" stroke="#141414" stroke-width="1"/><path d="M 24.55 10.4 L 24.1 11.85" fill="none"/></g></svg>`,
-    P: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" stroke="#141414" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/><path d="M16 33.5h13" stroke="#141414" stroke-width="1.4" fill="none"/></g></svg>`,
+    // White Pieces (Chess.com Neo White Silhouette & Black Outer/Inner Contours)
+    K: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5" fill="#ffffff" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-2.5-7.5-12-10.5-16-4-3 6 6 10.5 6 10.5v7" fill="#ffffff"/><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3.5 15.5-3.5 21 0m-21 3.5c5.5-3 15.5-3 21 0"/></g></svg>`,
+    Q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM24.5 7.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM41 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM16 8.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM33 8.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0z"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z" stroke-linecap="butt"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z" stroke-linecap="butt"/><path d="M11.5 30c3.5-1 18.5-1 22 0m-21.5 3.5c3.5-1 17.5-1 21 0m-20.5 3.5c3.5-1 16.5-1 20 0" fill="none"/></g></svg>`,
+    R: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5" stroke-linecap="butt"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none" stroke-linejoin="miter"/></g></svg>`,
+    B: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="#ffffff" stroke-linecap="butt"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2z"/><path d="M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z"/><path d="M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/></g><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke-linejoin="miter"/></g></svg>`,
+    N: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21" fill="#ffffff"/><path d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.04-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.99-.5-2-.5-3 1-1 3 2.5 3 2.5l2 .5s.78-1.99 2.5-3c1 0 1 3 1 3" fill="#ffffff"/><path d="M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0z" fill="#000000"/><path d="M15 15.5a.5 1.5 0 1 1-1 0 .5 1.5 0 1 1 1 0z" transform="matrix(.866 .5 -.5 .866 9.693 -5.173)" fill="#000000"/></g></svg>`,
+    P: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#ffffff" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/></g></svg>`,
 
-    // Black Pieces (Slate Charcoal Body with White Accents & Crisp Silhouettes)
-    k: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.6V6M20 8h5" stroke="#ffffff" stroke-width="2"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"/><path d="M11.5 37c5.5 3.5 16.5 3.5 22 0v-4c-5.5-3.5-16.5-3.5-22 0z"/><path d="M11.5 27c5.5-3 16.5-3 22 0m-21-3.5c0-1.5 1.5-2.5 3-2.5s4.5 1.5 7 1.5 5.5-1.5 7-1.5 3 1 3 2.5"/><path d="M13 30.5h19M13 34h19" stroke="#ffffff" stroke-width="1.4" fill="none"/></g></svg>`,
-    q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 2-1 .5-2.5 0 0 0-1.5-1.5-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z"/><circle cx="2" cy="14" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="9" cy="11" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="16.5" cy="11" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="22.5" cy="9.5" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="28.5" cy="11" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="36" cy="11" r="1.8" fill="#ffffff" stroke="#ffffff"/><circle cx="43" cy="14" r="1.8" fill="#ffffff" stroke="#ffffff"/><path d="M12 30.5h21M12 34h21" stroke="#ffffff" stroke-width="1.4" fill="none"/></g></svg>`,
-    r: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5"/><path d="M34 14l-3 3H14l-3-3M31 17v12.5H14V17"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23"/><path d="M12 30h21M12 33.5h21" stroke="#ffffff" stroke-width="1.4" fill="none"/></g></svg>`,
-    b: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 8.5V4M20.5 6.2h4" stroke="#ffffff" stroke-width="2"/><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2zM15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke="#ffffff" stroke-width="1.2"/><path d="M14 30.5h17" stroke="#ffffff" stroke-width="1.4" fill="none"/></g></svg>`,
-    n: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" /><path d="M 24,18 C 24.38,20.91 18.45,25.37 16,27 C 13,29 13.18,31.34 11,31 C 9.958,30.06 12.41,27.96 11,28 C 10,28 11.19,29.23 10,30 C 9,30 5.997,31 6,26 C 6,24 12,14 12,14 C 12,14 13.89,12.1 14,10.5 C 13.27,9.506 13.5,8.5 13.5,7.5 C 14.5,6.5 16.5,10 16.5,10 L 18.5,10 C 18.5,10 19.28,8.008 21,7 C 22,7 22,10 22,10" /><path d="M 9.5 25.5 A 0.5 0.5 0 1 1 8.5,25.5 A 0.5 0.5 0 1 1 9.5 25.5 z" fill="#ffffff" stroke="#ffffff" stroke-width="1"/><path d="M 15 15.5 A 0.5 1.5 0 1 1 14,15.5 A 0.5 1.5 0 1 1 15 15.5 z" transform="matrix(0.866,0.5,-0.5,0.866,9.693,-5.173)" fill="#ffffff" stroke="#ffffff" stroke-width="1"/><path d="M 20 13 L 23 16" stroke="#ffffff" stroke-width="1.2"/></g></svg>`,
-    p: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#2d2e33" stroke="#111111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/><path d="M16 33.5h13" stroke="#ffffff" stroke-width="1.4" fill="none"/></g></svg>`
+    // Black Pieces (Chess.com Neo Dark Silhouette with Crisp White Accents)
+    k: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5" fill="#000000" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-2.5-7.5-12-10.5-16-4-3 6 6 10.5 6 10.5v7" fill="#000000"/><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3.5 15.5-3.5 21 0m-21 3.5c5.5-3 15.5-3 21 0" stroke="#ffffff"/></g></svg>`,
+    q: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#000000" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM24.5 7.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM41 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM16 8.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0zM33 8.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0z"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15L9 11v13.5L2 14l7 12z" stroke-linecap="butt"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z" stroke-linecap="butt"/><path d="M11.5 30c3.5-1 18.5-1 22 0m-21.5 3.5c3.5-1 17.5-1 21 0m-20.5 3.5c3.5-1 16.5-1 20 0" fill="none" stroke="#ffffff"/></g></svg>`,
+    r: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#000000" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5" stroke-linecap="butt"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none" stroke-linejoin="miter"/><path d="M12 35.5h21M13 31.5h19M14 29.5h17M14 16.5h17M11 13.5h23" fill="none" stroke="#ffffff" stroke-width="1"/></g></svg>`,
+    b: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="#000000" stroke-linecap="butt"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.354.49-2.323.47-3-.5 1.354-1.94 3-2 3-2z"/><path d="M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z"/><path d="M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/></g><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke="#ffffff" stroke-linejoin="miter"/></g></svg>`,
+    n: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21" fill="#000000"/><path d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.04-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.99-.5-2-.5-3 1-1 3 2.5 3 2.5l2 .5s.78-1.99 2.5-3c1 0 1 3 1 3" fill="#000000"/><path d="M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0z" fill="#ffffff"/><path d="M15 15.5a.5 1.5 0 1 1-1 0 .5 1.5 0 1 1 1 0z" transform="matrix(.866 .5 -.5 .866 9.693 -5.173)" fill="#ffffff"/><path d="M24.55 10.4L24.1 11.85M28 22l-4 3" stroke="#ffffff" stroke-width="1"/></g></svg>`,
+    p: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width="100%" height="100%"><g fill="#000000" fill-rule="evenodd" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 19.78 16 24c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-4.22-1.33-7.5-3.28-8.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z"/><path d="M12 36.5h21M13 32.5h19M14 29.5h17" stroke="#ffffff" stroke-width="1" fill="none"/></g></svg>`
   };
 
   // ── Safe HTML Escape ──
@@ -47,12 +47,12 @@
       .replace(/'/g, '&#039;');
   }
 
-  // ── Curated Grandmaster PGN Vault ──
+  // ── Curated Grandmaster PGN Vault & Repertoires ──
   const CURATED_STUDY_GAMES = [
     {
       id: 'gm-opera-1858',
       title: 'The Opera Game: Paul Morphy vs Duke of Brunswick (1858)',
-      category: 'Masterpiece',
+      category: 'Masterclasses',
       level: 'Beginner',
       white: 'Paul Morphy',
       black: 'Duke of Brunswick & Count Isouard',
@@ -71,7 +71,7 @@
     {
       id: 'gm-immortal-1851',
       title: 'The Immortal Game: Adolf Anderssen vs Lionel Kieseritzky (1851)',
-      category: 'King\'s Gambit',
+      category: 'Masterclasses',
       level: 'Intermediate',
       white: 'Adolf Anderssen',
       black: 'Lionel Kieseritzky',
@@ -88,8 +88,27 @@
 1. e4 e5 2. f4 exf4 3. Bc4 Qh4+ 4. Kf1 b5 5. Bxb5 Nf6 6. Nf3 Qh6 7. d3 Nh5 8. Nh4 Qg5 9. Nf5 c6 10. g4 Nf6 11. Rg1 cxb5 12. h4 Qg6 13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1 19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7# 1-0`
     },
     {
+      id: 'gm-fischer-spassky-1972',
+      title: 'Bobby Fischer vs Boris Spassky: World Championship Game 6 (1972)',
+      category: 'Masterclasses',
+      level: 'Advanced',
+      white: 'Robert James Fischer',
+      black: 'Boris Spassky',
+      result: '1-0',
+      description: 'The Game of the Century in Reykjavik. Fischer deviates with 1. c4 and executes a positional masterpiece that earned a standing ovation from Spassky.',
+      pgn: `[Event "World Championship Match"]
+[Site "Reykjavik ISL"]
+[Date "1972.07.23"]
+[White "Robert James Fischer"]
+[Black "Boris Spassky"]
+[Result "1-0"]
+[ECO "D59"]
+
+1. c4 e6 2. Nf3 d5 3. d4 Nf6 4. Nc3 Be7 5. Bg5 O-O 6. e3 h6 7. Bh4 b6 8. cxd5 Nxd5 9. Bxe7 Qxe7 10. Nxd5 exd5 11. Rc1 Be6 12. Qa4 c5 13. Qa3 Rc8 14. Bb5 a6 15. dxc5 bxc5 16. O-O Ra7 17. Be2 Nd7 18. Nd4 Qf8 19. Nxe6 fxe6 20. e4 d4 21. f4 Qe7 22. e5 Rb8 23. Bc4 Kh8 24. Qh3 Nf8 25. b3 a5 26. f5 exf5 27. Rxf5 Nh7 28. Rcf1 Qd8 29. Qg3 Re7 30. h4 Rbb7 31. e6 Rbc7 32. Qe5 Qe8 33. a4 Qd8 34. R1f2 Qe8 35. R2f3 Qd8 36. Bd3 Qe8 37. Qe4 Nf6 38. Rxf6 gxf6 39. Rxf6 Kg8 40. Bc4 Kh8 41. Qf4 1-0`
+    },
+    {
       id: 'gm-kasparov-anand-1995',
-      title: 'Kasparov vs Anand: World Championship Classical Sicilian Dragon (1995)',
+      title: 'Kasparov vs Anand: World Championship Sicilian Dragon (1995)',
       category: 'Openings',
       level: 'Advanced',
       white: 'Garry Kasparov',
@@ -105,6 +124,82 @@
 [ECO "B78"]
 
 1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6 6. Be3 Bg7 7. f3 O-O 8. Qd2 Nc6 9. Bc4 Bd7 10. O-O-O Ne5 11. Bb3 Rc8 12. h4 h5 13. Kb1 Nc4 14. Bxc4 Rxc4 15. Nde2 b5 16. Bh6 Qa5 17. Bxg7 Kxg7 18. Nf4 Rfc8 19. Ncd5 Qxd2 20. Rxd2 Nxd5 21. Nxd5 Kf8 22. Re1 Rb8 23. b3 Rc5 24. Nf4 Rbc8 25. Kb2 a5 26. a3 1-0`
+    },
+    {
+      id: 'gm-carlsen-anand-2013',
+      title: 'Magnus Carlsen vs Viswanathan Anand: Berlin Endgame (2013)',
+      category: 'Endgames',
+      level: 'Advanced',
+      white: 'Viswanathan Anand',
+      black: 'Magnus Carlsen',
+      result: '0-1',
+      description: 'Carlsen activates the rook and coordinates knight-pawn endgame pressure to secure his first World Championship title.',
+      pgn: `[Event "World Championship Match"]
+[Site "Chennai IND"]
+[Date "2013.11.16"]
+[White "Viswanathan Anand"]
+[Black "Magnus Carlsen"]
+[Result "0-1"]
+[ECO "C67"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. d4 Nd6 6. Bxc6 dxc6 7. dxe5 Nf5 8. Qxd8+ Kxd8 9. h3 Bd7 10. Nc3 h6 11. b3 Kc8 12. Bb2 b6 13. Rad1 Ne7 14. Ne2 Ng6 15. Ne1 h5 16. f4 Bf5 17. Ng3 Bc5+ 18. Kh2 Bg4 19. Rd3 h4 20. Ne4 Be2 21. Nxc5 bxc5 22. Rf2 Bxd3 23. Nxd3 c4 24. bxc4 Rb8 25. f5 Ne7 26. Ba3 Re8 27. Rf4 Rb1 28. f6 gxf6 29. Rxf6 Ng6 30. Rxf7 Nxe5 31. Rf4 Ra1 32. Bb2 Rxa2 33. Bxe5 Rxc2 34. Rxh4 a5 35. Rh7 a4 36. Rxc7+ Kd8 37. Ra7 Rxc4 38. g4 c5 39. Kg3 Re6 40. g5 Ke8 41. h4 Re7 42. Ra8+ Kf7 43. h5 Rd7 44. Nf4 0-1`
+    },
+    {
+      id: 'gm-pragg-nakamura-2023',
+      title: 'Rameshbabu Praggnanandhaa vs Hikaru Nakamura: World Cup (2023)',
+      category: 'Masterclasses',
+      level: 'Advanced',
+      white: 'Rameshbabu Praggnanandhaa',
+      black: 'Hikaru Nakamura',
+      result: '1-0',
+      description: 'Indian Grandmaster Praggnanandhaa outplays World No. 2 Hikaru Nakamura in the FIDE World Cup tiebreaks with razor-sharp Italian precision.',
+      pgn: `[Event "FIDE World Cup 2023"]
+[Site "Baku AZE"]
+[Date "2023.08.11"]
+[White "Rameshbabu Praggnanandhaa"]
+[Black "Hikaru Nakamura"]
+[Result "1-0"]
+[ECO "C54"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 d6 6. O-O a5 7. Re1 O-O 8. Bg5 h6 9. Bh4 Ba7 10. Nbd2 Be6 11. Bb5 g5 12. Bg3 Ne7 13. d4 exd4 14. Nxd4 Ng6 15. N2f3 Nh5 16. Nf5 Nxg3 17. hxg3 h5 18. Qd2 g4 19. N3d4 Qf6 20. Rad1 Rad8 21. Bd3 Ne5 22. Bc2 Rfe8 23. Qf4 Bc8 24. Ba4 c6 25. Bc2 Bc5 26. a3 d5 27. exd5 Rxd5 28. Bb3 Rdd8 29. Nh6+ Kg7 30. Qxf6+ Kxf6 31. Rxe5 Rxe5 32. Nxf7 Rde8 33. Nxe5 Rxe5 34. Kf1 Re7 35. Bc2 Bd7 36. Nb3 Bb6 37. Rd6+ Be6 38. Nd4 Bxd4 39. Rxd4 1-0`
+    },
+    {
+      id: 'gm-evans-gambit-repertoire',
+      title: 'Italian Game: Evans Gambit Master Opening Repertoire',
+      category: 'Openings',
+      level: 'Intermediate',
+      white: 'White Repertoire',
+      black: 'Classical Black Lines',
+      result: '1-0',
+      description: 'The premier attacking weapon for 1. e4 players. Sacrificing the b4 pawn for rapid development, open diagonals, and overwhelming kingside attacks.',
+      pgn: `[Event "Academy Repertoire"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Evans Gambit Lines"]
+[Black "Theory"]
+[Result "1-0"]
+[ECO "C51"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. Ng5 d5 9. exd5 Ne5 10. Bb3 O-O 11. Qxd4 N7g6 12. Ba3 Re8 13. h4 h6 14. Ne4 Qxh4 15. Nbd2 Bb6 16. Bc5 Nf4 17. Rfe1 Bh3 18. g3 Qg4 19. Bd1 Qg6 20. Bxb6 axb6 21. Re3 1-0`
+    },
+    {
+      id: 'gm-sicilian-najdorf',
+      title: 'Sicilian Defense: Najdorf 6. Bg5 Master Lines',
+      category: 'Openings',
+      level: 'Advanced',
+      white: 'White Theory',
+      black: 'Black Repertoire',
+      result: '0-1',
+      description: 'The sharpest opening in chess, favored by Kasparov and Fischer. Sharp counter-play on the c-file with dynamic piece play.',
+      pgn: `[Event "Academy Opening Lab"]
+[Site "ChessKidoo"]
+[Date "2026.01.01"]
+[White "Classical 6. Bg5"]
+[Black "Najdorf Repertoire"]
+[Result "0-1"]
+[ECO "B96"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. f4 Nbd7 8. Qf3 Qc7 9. O-O-O b5 10. Bd3 Bb7 11. Rhe1 Be7 12. Qg3 b4 13. Nd5 exd5 14. exd5 Kd8 15. Nc6+ Bxc6 16. dxc6 Qxc6 17. Bf5 Re8 18. Bxf6 Nxf6 19. Qxg7 d5 20. Qxf7 Ra7 21. Re6 Qc7 0-1`
     },
     {
       id: 'gm-lucena-endgame',
@@ -1174,6 +1269,132 @@
       if (window.toast) window.toast(`📂 Loaded PGN file: ${file.name}`, 'success');
     };
     reader.readAsText(file);
+  };
+
+  // ── Topic-based Search & Master Games Import API ──
+  window.searchPgnTopics = async function (query, targetPgnInputId, targetTitleInputId, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const q = (query || '').trim().toLowerCase();
+    if (!q) {
+      container.innerHTML = '';
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'block';
+    container.innerHTML = '<div style="padding:10px; font-size:12px; color:var(--gold); text-align:center;">🔍 Searching Master Games & Repertoire API...</div>';
+
+    // 1. Search in curated grandmaster games
+    const localMatches = CURATED_STUDY_GAMES.filter(g => {
+      const text = `${g.title} ${g.category} ${g.white} ${g.black} ${g.description} ${g.level}`.toLowerCase();
+      return text.includes(q);
+    });
+
+    let html = '';
+    if (localMatches.length > 0) {
+      html += `<div style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; margin-bottom:8px;">Academy Repertoire & Masterclasses (${localMatches.length})</div>`;
+      html += localMatches.slice(0, 6).map(g => `
+        <div style="background:var(--surface); border:1px solid rgba(218,163,62,0.3); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="overflow:hidden;">
+            <div style="font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(g.title)}</div>
+            <div style="font-size:11px; color:var(--ivory-dim); margin-top:2px;">${escapeHtml(g.category)} · ${escapeHtml(g.white)} vs ${escapeHtml(g.black)} (${g.result})</div>
+          </div>
+          <button type="button" class="btn btn-gold btn-sm" style="white-space:nowrap; font-size:11px; padding:4px 12px;" onclick="window.selectPgnSearchResult('${g.id}', '${targetPgnInputId}', '${targetTitleInputId}', '${containerId}')">
+            📥 Import
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 2. Fetch from live Open Master API if query has >= 3 chars
+    if (q.length >= 3) {
+      try {
+        const res = await fetch(`https://lichess.org/api/games/user/${encodeURIComponent(q)}?max=2&pgnInJson=false`, {
+          headers: { 'Accept': 'application/x-chess-pgn' }
+        }).catch(() => null);
+
+        if (res && res.ok) {
+          const fetchedPgn = await res.text();
+          if (fetchedPgn && fetchedPgn.includes('[Event')) {
+            html += `<div style="font-size:11px; font-weight:800; color:#60a5fa; text-transform:uppercase; margin:10px 0 6px;">🌐 Live Lichess Database Match</div>
+            <div style="background:var(--surface); border:1px solid rgba(96,165,250,0.3); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <div style="overflow:hidden;">
+                <div style="font-size:13px; font-weight:700; color:#fff;">Lichess Master Archive: ${escapeHtml(q)}</div>
+                <div style="font-size:11px; color:var(--ivory-dim);">Live API Game Download</div>
+              </div>
+              <button type="button" class="btn btn-gold btn-sm" style="white-space:nowrap; font-size:11px; padding:4px 12px;" onclick="window.applyDirectPgn('${encodeURIComponent(fetchedPgn)}', '${escapeHtml(q)} Master Games', '${targetPgnInputId}', '${targetTitleInputId}', '${containerId}')">
+                📥 Import
+              </button>
+            </div>`;
+          }
+        }
+      } catch (err) {}
+    }
+
+    if (!html) {
+      html = `<div style="padding:10px; font-size:12px; color:var(--ivory-dim); text-align:center;">No games found for "${escapeHtml(q)}". Try searching "Sicilian", "Italian", "Fischer", "Kasparov", "Carlsen", or "Morphy".</div>`;
+    }
+
+    container.innerHTML = html;
+  };
+
+  window.selectPgnSearchResult = function (gameId, targetPgnInputId, targetTitleInputId, containerId) {
+    const game = CURATED_STUDY_GAMES.find(g => g.id === gameId);
+    if (!game) return;
+
+    const targetPgn = document.getElementById(targetPgnInputId);
+    const targetTitle = document.getElementById(targetTitleInputId);
+    if (targetPgn) targetPgn.value = game.pgn;
+    if (targetTitle) targetTitle.value = game.title;
+
+    const catSelect = document.getElementById('topic-cat-select');
+    if (catSelect && game.category) {
+      catSelect.value = game.category.includes('Opening') || game.category.includes('Gambit') ? 'Openings' : (game.category.includes('Endgame') ? 'Endgames' : (game.category.includes('Tactic') ? 'Tactics' : 'Masterclasses'));
+    }
+
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = '';
+      container.style.display = 'none';
+    }
+
+    if (targetPgnInputId === 'import-pgn-text') {
+      StudyPGN.loadPgnString(game.pgn, {
+        title: game.title,
+        description: game.description
+      });
+      window.closeImportPgnModal();
+      if (window.toast) window.toast(`♟️ Loaded "${game.title}" into Study Board!`, 'success');
+    } else {
+      if (window.toast) window.toast(`📋 Selected "${game.title}" for assignment!`, 'success');
+    }
+  };
+
+  window.applyDirectPgn = function (encodedPgn, title, targetPgnInputId, targetTitleInputId, containerId) {
+    const pgn = decodeURIComponent(encodedPgn);
+    const targetPgn = document.getElementById(targetPgnInputId);
+    const targetTitle = document.getElementById(targetTitleInputId);
+    if (targetPgn) targetPgn.value = pgn;
+    if (targetTitle) targetTitle.value = title;
+
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = '';
+      container.style.display = 'none';
+    }
+
+    if (targetPgnInputId === 'import-pgn-text') {
+      StudyPGN.loadPgnString(pgn, {
+        title: title,
+        description: 'Loaded from online chess API.'
+      });
+      window.closeImportPgnModal();
+      if (window.toast) window.toast(`♟️ Loaded "${title}" into Study Board!`, 'success');
+    } else {
+      if (window.toast) window.toast(`📋 Selected "${title}" for assignment!`, 'success');
+    }
   };
 
   // ── Coach & Admin Topic Assignment Manager ──

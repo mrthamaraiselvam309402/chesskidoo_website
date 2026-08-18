@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ov);
   };
 
-  window.renderCoachSchedule = function () {
+  window.renderCoachSchedule = function (filterDay = 'all') {
     const container = document.getElementById('coach-schedule-content');
     if (!container) return;
 
@@ -376,31 +376,161 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const today = new Date();
-    const nextMonth = new Date();
-    nextMonth.setDate(today.getDate() + 30);
+    const myStudents = (window.allStudents || []).filter(s => window.ckSameCoach ? window.ckSameCoach(s.coach_id, coachId) : String(s.coach_id) === String(coachId));
+    const myBatches = (window.allBatches || []).filter(b => (window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)) && b.status !== 'archived');
 
-    const myStudents = (window.allStudents || []).filter(s => window.ckSameCoach(s.coach_id, coachId));
-    const myStudentIds = myStudents.map(s => String(s.id));
+    const DAYS_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const SHORT_DAYS = { 'mon': 'Monday', 'monday': 'Monday', 'tue': 'Tuesday', 'tuesday': 'Tuesday', 'wed': 'Wednesday', 'wednesday': 'Wednesday', 'thu': 'Thursday', 'thursday': 'Thursday', 'fri': 'Friday', 'friday': 'Friday', 'sat': 'Saturday', 'saturday': 'Saturday', 'sun': 'Sunday', 'sunday': 'Sunday' };
 
-    const upcoming = (window.allAttendance || [])
-      .filter(a => myStudentIds.includes(String(a.student_id)))
-      .filter(a => {
-        const d = new Date(a.date);
-        return d >= today && d <= nextMonth;
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    // Aggregate sessions by day
+    const scheduleByDay = {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+      Saturday: [],
+      Sunday: []
+    };
 
-    if (upcoming.length === 0) {
-      container.innerHTML = '<div class="coach-loading-cell">No upcoming sessions scheduled.</div>';
-      return;
+    // 1. Process Batch schedules
+    myBatches.forEach(b => {
+      const daysStr = (b.days || b.schedule || '').toLowerCase();
+      const timeStr = b.time_slot || (b.schedule && b.schedule.includes('|') ? b.schedule.split('|')[1].trim() : '5:00 PM - 6:00 PM');
+      
+      // Find students in this batch
+      const bStudentIds = Array.isArray(b.student_ids) ? b.student_ids.map(String) : (window.parseStudentIds ? window.parseStudentIds(b.student_ids) : []);
+      const enrolledStudents = myStudents.filter(st => bStudentIds.includes(String(st.id)) || (st.batch_id && String(st.batch_id) === String(b.id)) || (st.batch && String(st.batch) === String(b.name)));
+
+      DAYS_ORDER.forEach(dayName => {
+        const dLow = dayName.toLowerCase();
+        if (daysStr.includes(dLow) || daysStr.includes(dLow.slice(0, 3))) {
+          scheduleByDay[dayName].push({
+            type: 'batch',
+            batchId: b.id,
+            title: b.name || 'Group Batch',
+            time: timeStr,
+            meetLink: b.meet_link || 'https://meet.google.com/new',
+            students: enrolledStudents
+          });
+        }
+      });
+    });
+
+    // 2. Process 1-on-1 / custom individual student schedules not tied to batches
+    myStudents.forEach(st => {
+      const hasBatch = st.batch_id || st.batch;
+      const stSchedule = (st.regDays || st.schedule || st.session_day || '').toLowerCase();
+      const stTime = st.regTime || st.session_time || '6:00 PM - 7:00 PM';
+
+      if (!hasBatch && stSchedule) {
+        DAYS_ORDER.forEach(dayName => {
+          const dLow = dayName.toLowerCase();
+          if (stSchedule.includes(dLow) || stSchedule.includes(dLow.slice(0, 3))) {
+            scheduleByDay[dayName].push({
+              type: 'individual',
+              studentId: st.id,
+              title: `1-on-1: ${window.getStudentName ? window.getStudentName(st) : (st.name || 'Student')}`,
+              time: stTime,
+              meetLink: st.meet_link || 'https://meet.google.com/new',
+              students: [st]
+            });
+          }
+        });
+      }
+    });
+
+    // Compute stats
+    let totalWeeklySessions = 0;
+    DAYS_ORDER.forEach(d => { totalWeeklySessions += scheduleByDay[d].length; });
+
+    let filterPillsHtml = `
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+        <button class="btn ${filterDay === 'all' ? 'btn-gold' : 'btn-outline-grey'} btn-sm" onclick="window.renderCoachSchedule('all')">
+          📅 All Days (${totalWeeklySessions})
+        </button>
+        ${DAYS_ORDER.map(d => `
+          <button class="btn ${filterDay === d ? 'btn-gold' : 'btn-outline-grey'} btn-sm" onclick="window.renderCoachSchedule('${d}')">
+            ${d.slice(0, 3)} (${scheduleByDay[d].length})
+          </button>
+        `).join('')}
+      </div>
+    `;
+
+    const daysToRender = filterDay === 'all' ? DAYS_ORDER : [filterDay];
+    let scheduleGridHtml = '';
+
+    daysToRender.forEach(dayName => {
+      const sessions = scheduleByDay[dayName];
+      if (filterDay === 'all' && sessions.length === 0) return;
+
+      scheduleGridHtml += `
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:18px; box-shadow:0 4px 16px rgba(0,0,0,0.2);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:18px;">🗓️</span>
+              <h3 style="font-size:16px; font-weight:700; color:var(--gold); margin:0;">${dayName}</h3>
+            </div>
+            <span style="background:rgba(218,163,62,0.15); color:var(--gold); font-size:12px; font-weight:700; padding:3px 10px; border-radius:20px;">
+              ${sessions.length} Session${sessions.length === 1 ? '' : 's'}
+            </span>
+          </div>
+      `;
+
+      if (sessions.length === 0) {
+        scheduleGridHtml += `<div style="color:var(--ivory-dim); font-size:13px; padding:12px 0; text-align:center;">No sessions scheduled for ${dayName}.</div>`;
+      } else {
+        scheduleGridHtml += `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px;">` + sessions.map(sess => `
+          <div style="background:var(--bg2); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <span style="font-weight:700; color:var(--ivory); font-size:15px;">${window.escapeHtml ? window.escapeHtml(sess.title) : sess.title}</span>
+                <span style="background:rgba(59,130,246,0.15); color:#60a5fa; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; font-family:var(--font-mono); white-space:nowrap;">
+                  ⏰ ${window.escapeHtml ? window.escapeHtml(sess.time) : sess.time}
+                </span>
+              </div>
+              <div style="font-size:12px; color:var(--ivory-dim); line-height:1.5;">
+                <strong style="color:var(--ivory);">${sess.students.length} Student${sess.students.length === 1 ? '' : 's'}:</strong>
+                ${sess.students.length ? sess.students.map(s => `<span style="display:inline-block; background:rgba(255,255,255,0.04); padding:1px 6px; border-radius:4px; margin:2px 2px 0 0; font-size:11px;">👤 ${window.escapeHtml ? window.escapeHtml(window.getStudentName ? window.getStudentName(s) : (s.name || 'Student')) : (s.name || 'Student')}</span>`).join('') : '<span style="font-style:italic;">No students assigned yet</span>'}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+              <a href="${sess.meetLink}" target="_blank" class="btn btn-gold btn-sm" style="flex:1; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12px;">
+                📹 Join Class
+              </a>
+              <button class="btn btn-outline-grey btn-sm" onclick="if(window.renderCoachAttendanceMarking){ window.renderCoachAttendanceMarking(); if(window.showPage) window.showPage('page-coach-attendance'); }" style="font-size:12px;">
+                📋 Attendance
+              </button>
+            </div>
+          </div>
+        `).join('') + `</div>`;
+      }
+
+      scheduleGridHtml += `</div>`;
+    });
+
+    if (!scheduleGridHtml) {
+      scheduleGridHtml = '<div class="empty-state" style="padding:40px; text-align:center;"><span class="empty-icon" style="font-size:36px;">📅</span><p style="color:var(--ivory-dim); margin-top:8px;">No active classes scheduled. When you are assigned batches or students, your weekly timetable appears here automatically.</p></div>';
     }
 
-    container.innerHTML = '<div class="coach-table-wrap"><table class="coach-mini-table"><thead><tr><th>Date</th><th>Student</th><th>Session</th></tr></thead><tbody>' + upcoming.map(a => {
-      const student = myStudents.find(s => String(s.id) === String(a.student_id));
-      const name = student ? (window.getStudentName ? window.getStudentName(student) : student.name) : 'Unknown';
-      return '<tr><td style="color:var(--ivory-dim)">' + (a.date ? new Date(a.date).toLocaleDateString() : 'TBD') + '</td><td style="color:var(--ivory)">' + (window.escapeHtml ? window.escapeHtml(name) : name) + '</td><td style="color:var(--ivory-dim)">' + (a.session_type || 'Regular') + '</td></tr>';
-    }).join('') + '</tbody></table></div>';
+    container.innerHTML = `
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px;">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Active Batches</div>
+          <div style="font-size:24px; font-weight:800; color:var(--gold); margin-top:4px;">${myBatches.length}</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Enrolled Students</div>
+          <div style="font-size:24px; font-weight:800; color:var(--blue); margin-top:4px;">${myStudents.length}</div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Weekly Sessions</div>
+          <div style="font-size:24px; font-weight:800; color:#10b981; margin-top:4px;">${totalWeeklySessions}</div>
+        </div>
+      </div>
+      ${filterPillsHtml}
+      ${scheduleGridHtml}
+    `;
   };
 
   window.renderCoachEvents = function () {
