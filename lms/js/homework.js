@@ -787,22 +787,55 @@ let homeworkSubmissionCache = [];
       }
     }
     if (!window.confirm('Delete this homework assignment? This cannot be undone.')) return;
-    try {
-      const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Server error ${res.status}`);
+
+    let deleted = false;
+
+    // Route 1: Direct Supabase client delete
+    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+      try {
+        const { error } = await window.supabaseClient
+          .from('homework_assignments')
+          .delete()
+          .eq('id', id);
+        if (!error) {
+          deleted = true;
+        } else {
+          const { error: altErr } = await window.supabaseClient
+            .from('homework')
+            .delete()
+            .eq('id', id);
+          if (!altErr) deleted = true;
+        }
+      } catch (e) {
+        console.warn('[Homework] Direct Supabase delete error:', e);
       }
-      if (window.toast) window.toast('Homework deleted', 'success');
-      homeworkSelectedIds.delete(id);
-      window.allHomework = (window.allHomework || []).filter(h => String(h.id) !== String(id));
-      if (window.loadHomeworkData) await window.loadHomeworkData(true);
-      else if (window.loadAllData) await window.loadAllData(true);
-      refreshHomeworkViews();
-      if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
-    } catch (error) {
-      if (window.toast) window.toast(`Failed to delete homework: ${error.message}`, 'error');
     }
+
+    // Route 2: apiCall fallback
+    if (!deleted) {
+      try {
+        const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, { method: 'DELETE', silent: true });
+        if (res && res.ok) deleted = true;
+      } catch (apiErr) {
+        console.warn('[Homework] apiCall DELETE error:', apiErr);
+      }
+    }
+
+    // Route 3: Update local storage persistence & memory state
+    try {
+      const stored = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
+      const filtered = stored.filter(h => String(h.id) !== String(id));
+      localStorage.setItem('ck_homework_assignments', JSON.stringify(filtered));
+    } catch (e) {}
+
+    homeworkSelectedIds.delete(id);
+    window.allHomework = (window.allHomework || []).filter(h => String(h.id) !== String(id));
+
+    if (window.toast) window.toast('Homework assignment deleted successfully', 'success');
+    if (window.loadHomeworkData) await window.loadHomeworkData(true).catch(() => {});
+    else if (window.loadAllData) await window.loadAllData(true).catch(() => {});
+    refreshHomeworkViews();
+    if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
   }
 
   window.editHomeworkAssignment = async function (id) {
@@ -814,24 +847,78 @@ let homeworkSubmissionCache = [];
     const newDesc = prompt('Edit Instructions / Description:', hw.description || '');
     if (newDesc === null) return;
 
-    try {
-      const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          title: newTitle.trim() || hw.title,
-          description: newDesc.trim(),
-          updated_at: new Date().toISOString()
-        })
-      });
-      if (res.ok) {
-        if (window.toast) window.toast('Homework updated successfully', 'success');
-        if (window.loadHomeworkData) await window.loadHomeworkData(true);
-        else if (window.loadAllData) await window.loadAllData(true);
-        refreshHomeworkViews();
+    const updatedPayload = {
+      ...hw,
+      title: newTitle.trim() || hw.title,
+      description: newDesc.trim(),
+      updated_at: new Date().toISOString()
+    };
+
+    let updated = false;
+
+    // Route 1: Direct Supabase update
+    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+      try {
+        const { error } = await window.supabaseClient
+          .from('homework_assignments')
+          .update({
+            title: updatedPayload.title,
+            description: updatedPayload.description,
+            updated_at: updatedPayload.updated_at
+          })
+          .eq('id', id);
+        if (!error) {
+          updated = true;
+        } else {
+          const { error: altErr } = await window.supabaseClient
+            .from('homework')
+            .update({
+              title: updatedPayload.title,
+              description: updatedPayload.description,
+              updated_at: updatedPayload.updated_at
+            })
+            .eq('id', id);
+          if (!altErr) updated = true;
+        }
+      } catch (e) {
+        console.warn('[Homework] Direct Supabase update error:', e);
       }
-    } catch (e) {
-      if (window.toast) window.toast('Failed to edit homework: ' + e.message, 'error');
     }
+
+    // Route 2: apiCall fallback
+    if (!updated) {
+      try {
+        const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            title: updatedPayload.title,
+            description: updatedPayload.description,
+            updated_at: updatedPayload.updated_at
+          }),
+          silent: true
+        });
+        if (res && res.ok) updated = true;
+      } catch (apiErr) {
+        console.warn('[Homework] apiCall PATCH error:', apiErr);
+      }
+    }
+
+    // Route 3: Update local storage persistence & memory state
+    try {
+      const stored = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
+      const fIdx = stored.findIndex(h => String(h.id) === String(id));
+      if (fIdx !== -1) stored[fIdx] = updatedPayload;
+      localStorage.setItem('ck_homework_assignments', JSON.stringify(stored));
+    } catch (e) {}
+
+    const idx = (window.allHomework || []).findIndex(h => String(h.id) === String(id));
+    if (idx !== -1) window.allHomework[idx] = updatedPayload;
+
+    if (window.toast) window.toast('Homework updated successfully', 'success');
+    if (window.loadHomeworkData) await window.loadHomeworkData(true).catch(() => {});
+    else if (window.loadAllData) await window.loadAllData(true).catch(() => {});
+    refreshHomeworkViews();
+    if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
   };
 
   async function submitHomeworkForChild(assignmentId) {

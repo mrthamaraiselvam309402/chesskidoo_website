@@ -1262,69 +1262,22 @@
     let chesscomData = null;
     const allGames = [];
 
-    // Fetch Lichess data - prefer Supabase cache, fall back to live proxy
+    // Fetch Lichess data - direct public API with robust error handling
     if (s.lichess_username) {
       try {
         const username = s.lichess_username;
-        let cacheRes;
-        try {
-          cacheRes = await fetch(`/api/lichess?username=${encodeURIComponent(username)}&t=${Date.now()}`);
-        } catch (e) {
-          cacheRes = null;
-        }
-
-        if (cacheRes && cacheRes.ok) {
-          const cacheData = await cacheRes.json();
-          if (cacheData.data) {
-            lichessData = cacheData.data;
-            if (Array.isArray(lichessData.ratingHistory) && lichessData.ratingHistory.length === 1 && Array.isArray(lichessData.ratingHistory[0])) {
-              lichessData.ratingHistory = lichessData.ratingHistory[0];
+        const res = await fetch(`https://lichess.org/api/user/${encodeURIComponent(username)}`).catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && !data.error) {
+            lichessData = data;
+            if (data.seenAt) {
+              s.lichess_seen_at = new Date(data.seenAt).toISOString();
             }
-            if (lichessData.profile?.seenAt) {
-              s.lichess_seen_at = new Date(lichessData.profile.seenAt).toISOString();
-            }
-
-            // Fetch games if we have data
-            const gamesRes = await fetch(`/api/lichess-games-proxy?username=${encodeURIComponent(username)}&max=10&pgnInJson=true&t=${Date.now()}`);
-            if (gamesRes.ok) {
-              const games = await gamesRes.json();
-              allGames.push(...(Array.isArray(games) ? games.map(g => ({ ...g, platform: 'lichess' })) : []));
-            }
-          } else if (cacheData.cached === false && cacheData.error) {
-            // No cache and sync failed - trigger background sync
-            fetch(`/api/lichess`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username })
-            }).catch(() => {});
-          }
-        } else {
-          // Fall back to old proxy for backward compatibility
-          try {
-            const res = await fetch(`/api/lichess-proxy?username=${encodeURIComponent(username)}&t=${Date.now()}`);
-            if (res.ok) {
-              const data = await res.json();
-              if (!data.notFound) {
-                lichessData = data;
-                if (Array.isArray(lichessData.ratingHistory) && lichessData.ratingHistory.length === 1 && Array.isArray(lichessData.ratingHistory[0])) {
-                  lichessData.ratingHistory = lichessData.ratingHistory[0];
-                }
-                if (data.profile?.seenAt) {
-                  s.lichess_seen_at = new Date(data.profile.seenAt).toISOString();
-                }
-                const gamesRes = await fetch(`/api/lichess-games-proxy?username=${encodeURIComponent(username)}&max=10&pgnInJson=true&t=${Date.now()}`);
-                if (gamesRes.ok) {
-                  const games = await gamesRes.json();
-                  allGames.push(...(Array.isArray(games) ? games.map(g => ({ ...g, platform: 'lichess' })) : []));
-                }
-              }
-            }
-          } catch (e) {
-            console.error("Lichess proxy fallback error", e);
           }
         }
       } catch (e) {
-        console.error("Lichess cache fetch error", e);
+        /* silent fallback */
       }
     }
 
@@ -5725,11 +5678,9 @@
       ];
       names.forEach((u, i) => {
         setTimeout(() => {
-          fetch(`/api/lichess?username=${encodeURIComponent(u)}`, {
+          fetch(`https://lichess.org/api/user/${encodeURIComponent(u)}`, {
             signal: typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined,
-          }).catch(() => {
-            fetch(`https://lichess.org/api/user/${encodeURIComponent(u)}`).catch(() => {});
-          });
+          }).catch(() => {});
         }, 800 + i * 500);
       });
       if (names.length) console.log(`[Sync] Warming Lichess cache for ${names.length} linked accounts`);
