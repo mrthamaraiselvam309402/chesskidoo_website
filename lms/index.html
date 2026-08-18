@@ -4972,24 +4972,51 @@
         </div>
 
         <!-- Assign Study Topic Modal -->
+        <!-- Assign Study Topic Modal -->
         <div class="modal" id="assign-study-topic-modal">
-          <div class="modal-box" style="max-width:650px; width:95%; max-height:88vh; overflow-y:auto; background:var(--bg2);">
-            <div class="modal-title">♟️ Assign PGN Study Topic</div>
-            <div style="display:grid; gap:14px; margin-top:16px;">
-              <div>
-                <label class="label" style="display:flex; justify-content:space-between;">
-                  <span>📚 Quick Preset Topic Template</span>
-                  <span style="font-size:11px; color:var(--gold);">Auto-fill from Master Library</span>
-                </label>
-                <select id="topic-preset-select" class="input-field" onchange="window.loadStudyTopicPreset(this.value)">
-                  <option value="">-- Or Choose from Academy Templates --</option>
-                  <option value="evans">⚔️ Italian Game: Evans Gambit Attack</option>
-                  <option value="dragon">🐉 Sicilian Defense: Dragon Variation</option>
-                  <option value="qgd">👑 Queen's Gambit Declined (Carlsen Repertoire)</option>
-                  <option value="lucena">🏰 Rook Endgames: Lucena Bridge Technique</option>
-                  <option value="philidor">🛡️ Philidor Defense &amp; Counter-attack</option>
-                  <option value="fork">⚡ Knight Fork &amp; Pin Combinations</option>
-                </select>
+          <div class="modal-box" style="max-width:680px; width:95%; max-height:90vh; overflow-y:auto; background:var(--bg2); border:1px solid rgba(218, 163, 62, 0.35); box-shadow:0 12px 40px rgba(0,0,0,0.7);">
+            <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>♟️ Assign PGN Study Topic</span>
+              <button onclick="document.getElementById('assign-study-topic-modal').classList.remove('active')" style="background:none; border:none; color:var(--ivory-dim); font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <!-- Online PGN Import Bar -->
+            <div style="margin-top:14px; padding:12px 14px; background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.25); border-radius:10px;">
+              <label class="label" style="margin-bottom:4px; font-weight:700; color:var(--gold); display:flex; justify-content:space-between;">
+                <span>🌐 Fetch from Lichess / Cloud PGN Server</span>
+                <span style="font-size:10.5px; opacity:0.85;">Supports Lichess Study, Game URL or raw .pgn link</span>
+              </label>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="text" id="topic-online-url" class="input-field" style="flex:1; min-width:200px; margin-bottom:0;" placeholder="e.g. https://lichess.org/study/xxxx or https://lichess.org/xxxx">
+                <button class="btn btn-gold btn-sm" onclick="window.fetchOnlinePgnFromUrl('topic-online-url', 'topic-pgn-input', 'topic-title-input')" style="white-space:nowrap; padding:6px 14px;">
+                  📥 Fetch PGN API
+                </button>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:14px; margin-top:14px;">
+              <div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:end;">
+                <div>
+                  <label class="label" style="display:flex; justify-content:space-between;">
+                    <span>📚 Quick Academy Template</span>
+                    <span style="font-size:11px; color:var(--gold);">Auto-fill from Master Vault</span>
+                  </label>
+                  <select id="topic-preset-select" class="input-field" style="margin-bottom:0;" onchange="window.loadStudyTopicPreset(this.value)">
+                    <option value="">-- Or Choose from Academy Templates --</option>
+                    <option value="evans">⚔️ Italian Game: Evans Gambit Attack</option>
+                    <option value="dragon">🐉 Sicilian Defense: Dragon Variation</option>
+                    <option value="qgd">👑 Queen's Gambit Declined (Carlsen Repertoire)</option>
+                    <option value="lucena">🏰 Rook Endgames: Lucena Bridge Technique</option>
+                    <option value="philidor">🛡️ Philidor Defense &amp; Counter-attack</option>
+                    <option value="fork">⚡ Knight Fork &amp; Pin Combinations</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="btn btn-outline-grey btn-sm" style="margin-bottom:0; cursor:pointer; display:inline-flex; align-items:center; gap:6px; height:38px;">
+                    📂 Upload .PGN
+                    <input type="file" id="assign-pgn-file-upload" accept=".pgn,.txt" style="display:none;" onchange="window.handlePgnFileUpload(this, 'topic-pgn-input', 'topic-title-input')">
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -5025,7 +5052,7 @@
               </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:20px;">
-              <button class="btn btn-gold" style="flex:1;" onclick="window.saveAssignedStudyTopic()">Assign Topic</button>
+              <button class="btn btn-gold" style="flex:1;" onclick="window.saveAssignedStudyTopic()">Assign Topic &amp; Sync to Students</button>
               <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('assign-study-topic-modal').classList.remove('active')">Cancel</button>
             </div>
           </div>
@@ -5033,12 +5060,30 @@
 
         <!-- Import PGN Modal -->
         <div class="modal" id="import-pgn-modal">
-          <div class="modal-box" style="max-width:550px; width:95%; background:var(--bg2);">
-            <div class="modal-title">📥 Import PGN Game into Study Board</div>
+          <div class="modal-box" style="max-width:580px; width:95%; background:var(--bg2); border:1px solid rgba(218, 163, 62, 0.35);">
+            <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>📥 Import PGN Game into Study Board</span>
+              <button onclick="document.getElementById('import-pgn-modal').classList.remove('active')" style="background:none; border:none; color:var(--ivory-dim); font-size:18px; cursor:pointer;">✕</button>
+            </div>
             <div style="display:grid; gap:14px; margin-top:16px;">
+              <!-- Online Fetch -->
+              <div style="padding:10px 12px; background:rgba(218, 163, 62, 0.08); border:1px solid rgba(218, 163, 62, 0.2); border-radius:8px;">
+                <label class="label" style="font-size:11px; color:var(--gold); font-weight:700; margin-bottom:4px;">🌐 Import from Lichess / Cloud URL</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="import-online-url" class="input-field" style="margin-bottom:0; flex:1;" placeholder="https://lichess.org/study/xxxx or https://lichess.org/xxxx">
+                  <button class="btn btn-gold btn-sm" onclick="window.fetchOnlinePgnFromUrl('import-online-url', 'import-pgn-text')" style="white-space:nowrap;">📥 Fetch</button>
+                </div>
+              </div>
+
               <div>
-                <label class="label">Paste PGN Notation</label>
-                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN tags and moves here..."></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <label class="label" style="margin-bottom:0;">Paste PGN Notation</label>
+                  <label class="btn btn-outline-grey btn-sm" style="font-size:11px; cursor:pointer; padding:2px 8px; margin-bottom:0;">
+                    📂 Upload File
+                    <input type="file" accept=".pgn,.txt" style="display:none;" onchange="window.handlePgnFileUpload(this, 'import-pgn-text')">
+                  </label>
+                </div>
+                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN tags and moves here... e.g. 1. e4 e5 2. Nf3..."></textarea>
               </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:20px;">
