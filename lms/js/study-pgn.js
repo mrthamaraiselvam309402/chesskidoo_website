@@ -963,7 +963,10 @@
     StudyPGN.visionTimeRemaining = 30;
 
     const modal = document.getElementById('vision-trainer-modal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active', 'open');
+    }
 
     StudyPGN.nextVisionQuestion();
 
@@ -1014,6 +1017,12 @@
   };
 
   StudyPGN.endVisionGame = function () {
+    if (StudyPGN.visionTimer) clearInterval(StudyPGN.visionTimer);
+    const modal = document.getElementById('vision-trainer-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active', 'open');
+    }
     if (window.toast) window.toast(`🏁 Time's up! Calculation Score: ${StudyPGN.visionScore} points!`, 'success');
   };
 
@@ -1172,19 +1181,51 @@
     const modal = document.getElementById('assign-study-topic-modal');
     if (!modal) return;
 
+    const coachId = window.currentCoachId || (window.currentCoach && window.currentCoach.id) || null;
+    const isCoach = window.role === 'coach' && coachId;
+
+    const availableBatches = isCoach
+      ? (window.allBatches || []).filter(b => (window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)))
+      : (window.allBatches || []);
+
+    const availableStudents = isCoach
+      ? (window.allStudents || []).filter(s => (window.ckSameCoach ? window.ckSameCoach(s.coach_id, coachId) : String(s.coach_id) === String(coachId)))
+      : (window.allStudents || []);
+
     const batchSelect = document.getElementById('topic-batch-select');
     const studentSelect = document.getElementById('topic-student-select');
 
-    if (batchSelect && Array.isArray(window.allBatches)) {
+    if (batchSelect) {
       batchSelect.innerHTML = '<option value="all">-- All Enrolled Batches --</option>' +
-        window.allBatches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
-    }
-    if (studentSelect && Array.isArray(window.allStudents)) {
-      studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
-        window.allStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
+        availableBatches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || 'Batch ' + b.id)}</option>`).join('');
+
+      batchSelect.onchange = function () {
+        const selBatchId = this.value;
+        if (!studentSelect) return;
+        const batchStudents = selBatchId === 'all'
+          ? availableStudents
+          : availableStudents.filter(s => String(s.batch_id) === String(selBatchId));
+
+        studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
+          batchStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
+      };
     }
 
-    modal.classList.add('active');
+    if (studentSelect) {
+      studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
+        availableStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
+    }
+
+    modal.style.display = 'flex';
+    modal.classList.add('active', 'open');
+  };
+
+  window.closeAssignStudyTopicModal = function () {
+    const modal = document.getElementById('assign-study-topic-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active', 'open');
+    }
   };
 
   window.saveAssignedStudyTopic = async function () {
@@ -1239,8 +1280,7 @@
     }
 
     if (window.toast) window.toast('✨ Study Topic successfully assigned to students and synced to cloud!', 'success');
-    const modal = document.getElementById('assign-study-topic-modal');
-    if (modal) modal.classList.remove('active');
+    window.closeAssignStudyTopicModal();
 
     StudyPGN.renderAssignedTopicsList();
     if (window.renderStudyPgnMonitor) {
@@ -1408,7 +1448,18 @@
   // ── Import PGN Modal ──
   window.openImportPgnModal = function () {
     const modal = document.getElementById('import-pgn-modal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active', 'open');
+    }
+  };
+
+  window.closeImportPgnModal = function () {
+    const modal = document.getElementById('import-pgn-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active', 'open');
+    }
   };
 
   window.submitImportPgn = function () {
@@ -1421,8 +1472,7 @@
       title: 'Imported Custom Study Game',
       description: 'Custom game loaded via PGN notation importer.'
     });
-    const modal = document.getElementById('import-pgn-modal');
-    if (modal) modal.classList.remove('active');
+    window.closeImportPgnModal();
     if (window.toast) window.toast('♟️ PGN loaded into Interactive Study Board!', 'success');
   };
 
