@@ -158,10 +158,11 @@
     <div class="nav-item coach-only" id="nav-coach-chess" onclick="setPage('coach-chess')"><span class="ico">♟️</span> Chess Stats</div>
     <div class="nav-item admin-only" id="nav-stud" onclick="setPage('stud')"><span class="ico">👨‍🎓</span> Students</div>
     <div class="nav-item admin-only" id="nav-coach-mgmt" onclick="setPage('coach-mgmt')"><span class="ico">👨‍🏫</span> Coaches</div>
+    <div class="nav-item admin-only" id="nav-elibrary" onclick="setPage('elibrary')"><span class="ico">📖</span> E-Library Manager</div>
     
     <!-- Academy Manager Group -->
      <div class="nav-item admin-only" onclick="toggleAcademyManager()" style="justify-content: space-between;">
-       <span><span class="ico">🏫</span> Academy Manager</span>
+       <span><span class="ico">🏫</span> Academy Operations</span>
        <span style="font-size:10px" id="academy-mgr-icon">▼</span>
      </div>
  <div id="academy-manager-group" style="display:none; background:rgba(0,0,0,0.1); border-left: 2px solid var(--border); margin-left: 14px; padding-left: 4px; border-radius: 0 0 8px 0;">
@@ -170,7 +171,6 @@
          <div class="nav-item admin-only" id="nav-events" onclick="setPage('events');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">🏆</span> Event Manager</div>
          <div class="nav-item admin-only" id="nav-attendance" onclick="setPage('attendance');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📋</span> Attendance Manager</div>
          <div class="nav-item admin-only" id="nav-homework" onclick="setPage('homework');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📚</span> Homework Manager</div>
-         <div class="nav-item admin-only" id="nav-elibrary" onclick="setPage('elibrary');" style="font-size: 13px; padding: 10px 14px;"><span class="ico">📖</span> E-Library Manager</div>
       </div>
 
     <!-- ── External academy tools ──
@@ -195,8 +195,7 @@
     <div class="nav-item parent-only" id="nav-child" onclick="goChildTab('overview')"><span class="ico">📈</span> My Child Profile</div>
     <div class="nav-item parent-only" id="nav-parent-schedule" onclick="goChildTab('schedule')"><span class="ico">🗓️</span> Class Schedule</div>
     <div class="nav-item parent-only" id="nav-parent-growth" onclick="goChildTab('growth')"><span class="ico">📊</span> Skill & ELO Growth</div>
-    <div class="nav-item parent-only" id="nav-parent-learning" onclick="goChildTab('learning')"><span class="ico">📚</span> Chess Study Hub</div>
-    <div class="nav-item parent-only" id="nav-parent-elibrary" onclick="goChildTab('elibrary')"><span class="ico">📖</span> E-Library & Videos</div>
+    <div class="nav-item parent-only" id="nav-parent-elibrary" onclick="goChildTab('elibrary')"><span class="ico">📖</span> E-Library & Recordings</div>
     <div class="nav-item parent-only" id="nav-parent-events" onclick="goChildTab('events')"><span class="ico">🎫</span> Upcoming Events</div>
     <div class="nav-item parent-only" id="nav-parent-attendance" onclick="goChildTab('attendance')"><span class="ico">🗓️</span> Attendance Logs</div>
     <div class="nav-item parent-only" id="nav-parent-homework" onclick="goChildTab('homework')"><span class="ico">📝</span> Homework</div>
@@ -983,23 +982,51 @@
       </div>
     </div>
 
-    <!-- E-Library Manager (Admin) -->
+    <!-- E-Library & Study Materials Manager (Admin) -->
     <div id="page-elibrary" class="page admin-only">
       <div class="coach-shell">
         <div class="coach-section-block">
-          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+          <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
             <div>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.12); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 14px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
+                <span>📚 Academic Study Hub</span>
+              </div>
               <h2 class="coach-section-title" style="margin:0 0 6px;">📖 E-Library & Recorded Lectures Manager</h2>
-              <p style="color:var(--ivory-dim); font-size:14px; margin:0;">Upload study guides, chess worksheets, opening vaults, and link recorded Google Meet / Zoom class sessions for all students.</p>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Upload study guides, opening vaults, tactics calculation sheets, and manage granular access permissions per student or batch.</p>
             </div>
-            <button class="btn btn-gold" onclick="window.openAddElibraryModal()">
-              <span class="ico">➕</span> Add New Material / Video
-            </button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-gold" onclick="window.openAddElibraryModal()" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="ico">➕</span> Add New Material / Video
+              </button>
+              <button class="btn btn-outline" onclick="window.openGrantAccessModal()" style="display:inline-flex; align-items:center; gap:8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">
+                <span class="ico">👤</span> Assign to Specific Students
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Filter Bar -->
-        <div class="coach-section-block" style="margin-bottom:20px;">
+        <!-- KPI Summary Cards -->
+        <div id="elib-admin-kpi-row" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px;">
+          <div class="card" style="padding:16px 20px; background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px;">
+            <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">📚 Total Materials</div>
+            <div id="elib-stat-total" style="font-size:24px; font-weight:800; color:#fff;">0</div>
+          </div>
+          <div class="card" style="padding:16px 20px; background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px;">
+            <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">🎥 Video Lessons</div>
+            <div id="elib-stat-videos" style="font-size:24px; font-weight:800; color:#38bdf8;">0</div>
+          </div>
+          <div class="card" style="padding:16px 20px; background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px;">
+            <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">🔒 Student Exclusive</div>
+            <div id="elib-stat-restricted" style="font-size:24px; font-weight:800; color:#eab308;">0</div>
+          </div>
+          <div class="card" style="padding:16px 20px; background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px;">
+            <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">👥 Batch Restricted</div>
+            <div id="elib-stat-batches" style="font-size:24px; font-weight:800; color:#a855f7;">0</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="coach-section-block" style="margin-bottom:20px; padding:18px 20px; background:var(--surface, #1e293b); border-radius:14px; border:1px solid var(--border);">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm elib-filter-pill active" onclick="window.filterElibrary('all', this)">🎯 All Items</button>
@@ -1009,11 +1036,27 @@
               <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('endgames', this)">👑 Endgames</button>
               <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('masterclasses', this)">📖 Masterclasses</button>
             </div>
-            <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:240px; margin:0;">
+            
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select id="elib-filter-access" onchange="window.filterElibraryAccess(this.value)" class="input-field" style="max-width:180px; margin:0; padding:7px 10px; font-size:13px;">
+                <option value="all">🌐 All Access Types</option>
+                <option value="public">🌐 All Students (Open)</option>
+                <option value="batch">👥 Batch Specific</option>
+                <option value="students">🔒 Student Exclusive</option>
+              </select>
+              <select id="elib-filter-level" onchange="window.filterElibraryLevel(this.value)" class="input-field" style="max-width:160px; margin:0; padding:7px 10px; font-size:13px;">
+                <option value="all">All Skill Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Master">Master</option>
+              </select>
+              <input type="text" placeholder="🔍 Search materials..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:200px; margin:0; padding:7px 12px; font-size:13px;">
+            </div>
           </div>
         </div>
 
-        <div id="admin-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:22px;">
+        <div id="admin-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:22px;">
           <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
         </div>
       </div>
@@ -1025,17 +1068,25 @@
         <div class="coach-section-block">
           <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
             <div>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.12); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 14px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
+                <span>♟️ Coach Academic Hub</span>
+              </div>
               <h2 class="coach-section-title" style="margin:0 0 6px;">📖 Coach E-Library & Class Recordings Hub</h2>
               <p style="color:var(--ivory-dim); font-size:14px; margin:0;">Share class recordings, opening lines, tactics sheets, and endgame studies with your enrolled students.</p>
             </div>
-            <button class="btn btn-gold" onclick="window.openAddElibraryModal()">
-              <span class="ico">➕</span> Upload Material / Class Video
-            </button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-gold" onclick="window.openAddElibraryModal()" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="ico">➕</span> Upload Material / Video
+              </button>
+              <button class="btn btn-outline" onclick="window.openGrantAccessModal()" style="display:inline-flex; align-items:center; gap:8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">
+                <span class="ico">👤</span> Assign to Students
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- Filter Bar -->
-        <div class="coach-section-block" style="margin-bottom:20px;">
+        <div class="coach-section-block" style="margin-bottom:20px; padding:18px 20px; background:var(--surface, #1e293b); border-radius:14px; border:1px solid var(--border);">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm elib-filter-pill active" onclick="window.filterElibrary('all', this)">🎯 All Items</button>
@@ -1043,12 +1094,21 @@
               <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('openings', this)">♟️ Openings</button>
               <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('tactics', this)">⚡ Tactics</button>
               <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('endgames', this)">👑 Endgames</button>
+              <button class="btn btn-outline btn-sm elib-filter-pill" onclick="window.filterElibrary('masterclasses', this)">📖 Masterclasses</button>
             </div>
-            <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:240px; margin:0;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select id="coach-elib-filter-access" onchange="window.filterElibraryAccess(this.value)" class="input-field" style="max-width:180px; margin:0; padding:7px 10px; font-size:13px;">
+                <option value="all">🌐 All Access Types</option>
+                <option value="public">🌐 All Students (Open)</option>
+                <option value="batch">👥 Batch Specific</option>
+                <option value="students">🔒 Student Exclusive</option>
+              </select>
+              <input type="text" placeholder="🔍 Search library..." oninput="window.searchElibrary(this.value)" class="input-field" style="max-width:220px; margin:0; padding:7px 12px; font-size:13px;">
+            </div>
           </div>
         </div>
 
-        <div id="coach-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:22px;">
+        <div id="coach-elibrary-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:22px;">
           <div class="loading-state"><span class="spinner"></span> Loading E-Library...</div>
         </div>
       </div>
@@ -4505,7 +4565,7 @@
 
         <!-- Add E-Library Material Modal -->
         <div class="modal" id="add-elibrary-modal">
-          <div class="modal-box" style="max-width:600px; width:95%; background:var(--bg2);">
+          <div class="modal-box" style="max-width:650px; width:95%; max-height:90vh; overflow-y:auto; background:var(--bg2);">
             <div class="modal-title">📖 Add Study Material / Recorded Session</div>
             <div style="display:grid; gap:14px; margin-top:16px;">
               <div>
@@ -4514,7 +4574,7 @@
               </div>
               <div>
                 <label class="label">Short Description / Key Takeaways</label>
-                <textarea id="elib-form-desc" class="input-field" rows="3" placeholder="Brief summary of what the student will learn from this session..."></textarea>
+                <textarea id="elib-form-desc" class="input-field" rows="2" placeholder="Brief summary of what the student will learn from this session..."></textarea>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                 <div>
@@ -4547,10 +4607,82 @@
                 <label class="label">Duration / Format (Optional)</label>
                 <input type="text" id="elib-form-duration" class="input-field" placeholder="e.g. 45 mins / PDF Handbook">
               </div>
+
+              <!-- ── Access & Student Permission Controls ── -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(218,163,62,0.25); border-radius:12px; padding:16px; margin-top:4px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <label class="label" style="color:var(--gold); font-weight:700; margin:0;">🔒 Student Access &amp; Permissions</label>
+                  <span style="font-size:11px; color:var(--ivory-dim);">Control who can view this material</span>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                  <select id="elib-form-access-type" class="input-field" onchange="window.toggleElibAccessType(this.value)">
+                    <option value="all">🌐 All Students (Open in Academy)</option>
+                    <option value="batch">👥 Specific Batch Only</option>
+                    <option value="students">🔒 Specific Students Only (Allow to selected students alone)</option>
+                  </select>
+                </div>
+
+                <!-- Batch Selection Dropdown -->
+                <div id="elib-form-batch-container" style="display:none; margin-bottom:10px;">
+                  <label class="label" style="font-size:12px;">Select Target Batch</label>
+                  <select id="elib-form-batch" class="input-field">
+                    <option value="">-- Choose Batch --</option>
+                  </select>
+                </div>
+
+                <!-- Student Multi-select Searchable Checklist -->
+                <div id="elib-form-students-container" style="display:none;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
+                    <input type="text" id="elib-form-student-search" placeholder="🔍 Search student name..." oninput="window.filterElibStudentList(this.value)" class="input-field" style="margin:0; padding:6px 10px; font-size:12px; flex:1;">
+                    <div style="display:flex; gap:6px;">
+                      <button type="button" class="btn btn-outline btn-sm" onclick="window.selectAllElibStudents()" style="padding:4px 8px; font-size:11px;">Select All</button>
+                      <button type="button" class="btn btn-outline btn-sm" onclick="window.clearAllElibStudents()" style="padding:4px 8px; font-size:11px;">Clear</button>
+                    </div>
+                  </div>
+                  
+                  <div id="elib-form-students-list" style="max-height:180px; overflow-y:auto; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:8px; padding:8px; display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px;">
+                    <!-- Dynamically populated student checkboxes -->
+                  </div>
+                  <div id="elib-form-students-selected-count" style="font-size:11.5px; color:var(--gold); margin-top:6px;">0 students selected</div>
+                </div>
+              </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:20px;">
               <button class="btn btn-gold" style="flex:1;" onclick="window.submitAddElibraryForm()">Publish to E-Library</button>
               <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('add-elibrary-modal').classList.remove('active')">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Grant Access Modal -->
+        <div class="modal" id="grant-elibrary-modal">
+          <div class="modal-box" style="max-width:600px; width:95%; max-height:85vh; overflow-y:auto; background:var(--bg2);">
+            <div class="modal-title">👤 Assign E-Library Materials to Specific Student</div>
+            <p style="color:var(--ivory-dim); font-size:13px; margin:4px 0 16px;">Quickly grant exclusive study materials and recorded masterclasses to an individual student.</p>
+            
+            <div style="display:grid; gap:14px;">
+              <div>
+                <label class="label">Select Student *</label>
+                <select id="grant-elib-student-select" class="input-field" onchange="window.onGrantStudentChanged(this.value)">
+                  <option value="">-- Choose Student --</option>
+                </select>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <label class="label" style="margin:0;">Select Materials to Grant Access</label>
+                  <span id="grant-elib-count" style="font-size:12px; color:var(--gold);">0 selected</span>
+                </div>
+                <div id="grant-elib-materials-list" style="max-height:260px; overflow-y:auto; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:10px; display:grid; gap:8px;">
+                  <!-- Material checkboxes -->
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:20px;">
+              <button class="btn btn-gold" style="flex:1;" onclick="window.saveGrantAccessForm()">Save Student Permissions</button>
+              <button class="btn btn-outline-grey" style="flex:1;" onclick="document.getElementById('grant-elibrary-modal').classList.remove('active')">Cancel</button>
             </div>
           </div>
         </div>

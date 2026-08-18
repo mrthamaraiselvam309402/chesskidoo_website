@@ -3846,11 +3846,15 @@ body[data-theme="light"] .trace-chip.failed {
   #admin-elibrary-grid,
   #coach-elibrary-grid,
   #child-elibrary-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .elib-filter-pill {
-    padding: 6px 10px !important;
-    font-size: 11px !important;
-  }
+.elib-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(218, 163, 62, 0.4) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
 }
+
+.elib-student-checkbox-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(218, 163, 62, 0.3) !important;
+}
+
 

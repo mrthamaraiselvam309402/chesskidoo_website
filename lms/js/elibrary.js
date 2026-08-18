@@ -1,10 +1,12 @@
 /**
- * ChessKidoo LMS — E-Library & Recorded Sessions Hub (v1.0)
+ * ChessKidoo LMS — E-Library & Recorded Sessions Hub (v2.0)
  * ─────────────────────────────────────────────────────────────────
  * Comprehensive E-Library system for:
- * 1. Admin & Coaches: Upload study materials (PDFs, PGNs, notes) & link recorded class sessions (YouTube, Drive, Loom, Zoom)
- * 2. Students & Parents: Browse, filter by level & topic, watch recorded sessions, and download study materials
- * 3. Offline-first resilience with localStorage caching + Supabase sync
+ * 1. Admin & Coaches: Upload study materials & class recordings, edit/delete, and configure
+ *    granular access permissions (All Students, Specific Batch, or Specific Students Alone).
+ * 2. Quick Student Access Manager: Assign exclusive materials to individual students in 1 click.
+ * 3. Students & Parents: Browse, watch recorded sessions, and access batch classrooms securely.
+ * 4. Offline-first resilience with localStorage caching + Supabase sync.
  */
 (function () {
   'use strict';
@@ -20,10 +22,15 @@
       categoryLabel: '♟️ Opening Repertoire',
       level: 'All Levels',
       type: 'video',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Fallback stream
+      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       author: 'Coach Ranjith A S',
       date: '2026-08-15',
       duration: '45 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
       tags: ['Opening', 'Italian', 'e4-e5', 'Tactics']
     },
     {
@@ -38,6 +45,11 @@
       author: 'Senior Coach Panel',
       date: '2026-08-10',
       duration: 'PDF Guide + PGN',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
       tags: ['Tactics', 'Forks', 'Pins', 'Calculations']
     },
     {
@@ -52,6 +64,11 @@
       author: 'Coach Ranjith A S',
       date: '2026-08-05',
       duration: '52 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
       tags: ['Endgame', 'Rook Endgames', 'Lucena', 'Philidor']
     },
     {
@@ -66,6 +83,11 @@
       author: 'FIDE Master Team',
       date: '2026-07-28',
       duration: 'Masterclass PDF',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
       tags: ['Sicilian', 'Najdorf', 'Dragon', 'Counter-Attack']
     },
     {
@@ -80,6 +102,11 @@
       author: 'Academy Coaching Panel',
       date: '2026-08-12',
       duration: '60 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
       tags: ['Recording', 'Live Session', 'Tournament', 'Psychology']
     }
   ];
@@ -88,6 +115,7 @@
   let currentFilter = 'all';
   let currentSearch = '';
   let currentLevelFilter = 'all';
+  let currentAccessFilter = 'all';
 
   // ── Load Data ──
   window.loadElibraryData = async function () {
@@ -110,7 +138,6 @@
           .select('*')
           .order('created_at', { ascending: false });
         if (!error && Array.isArray(data) && data.length > 0) {
-          // Merge local and cloud items
           const map = new Map();
           data.forEach(item => map.set(String(item.id), item));
           local.forEach(item => { if (!map.has(String(item.id))) map.set(String(item.id), item); });
@@ -122,8 +149,23 @@
     }
 
     window.elibraryItems = local;
+    updateStatsCounters();
     return local;
   };
+
+  // ── Stats Counters ──
+  function updateStatsCounters() {
+    const items = window.elibraryItems || [];
+    const totalEl = document.getElementById('elib-stat-total');
+    const videosEl = document.getElementById('elib-stat-videos');
+    const restrictedEl = document.getElementById('elib-stat-restricted');
+    const batchesEl = document.getElementById('elib-stat-batches');
+
+    if (totalEl) totalEl.textContent = items.length;
+    if (videosEl) videosEl.textContent = items.filter(i => i.type === 'video' || i.category === 'recordings' || i.category === 'masterclasses').length;
+    if (restrictedEl) restrictedEl.textContent = items.filter(i => i.access_type === 'students' || (Array.isArray(i.allowed_student_ids) && i.allowed_student_ids.length > 0)).length;
+    if (batchesEl) batchesEl.textContent = items.filter(i => i.access_type === 'batch' || (i.allowed_batch_id && i.allowed_batch_id !== 'all')).length;
+  }
 
   // ── Role Permissions Helper ──
   function canUserManageItem(item) {
@@ -152,6 +194,28 @@
     const coachName = currentCoach ? (currentCoach.name || currentCoach.full_name || 'Coach') : null;
     const coachId = currentCoach ? (currentCoach.id || currentCoach.coach_id || null) : null;
 
+    const accessType = itemData.access_type || 'all';
+    let batchId = '';
+    let batchName = '';
+    let studentIds = [];
+    let studentNames = [];
+
+    if (accessType === 'batch') {
+      batchId = itemData.allowed_batch_id || '';
+      if (batchId && Array.isArray(window.allBatches)) {
+        const b = window.allBatches.find(x => String(x.id) === String(batchId));
+        if (b) batchName = b.name;
+      }
+    } else if (accessType === 'students') {
+      studentIds = Array.isArray(itemData.allowed_student_ids) ? itemData.allowed_student_ids.map(String) : [];
+      if (studentIds.length && Array.isArray(window.allStudents)) {
+        studentNames = studentIds.map(sid => {
+          const s = window.allStudents.find(x => String(x.id) === sid);
+          return s ? (s.name || s.full_name || `Student #${sid}`) : `Student #${sid}`;
+        });
+      }
+    }
+
     const item = {
       id: itemData.id || ('elib-' + Date.now()),
       title: itemData.title.trim(),
@@ -165,6 +229,11 @@
       coach_id: itemData.coach_id || (window.role === 'coach' ? coachId : null),
       date: itemData.date || new Date().toISOString().split('T')[0],
       duration: itemData.duration || (itemData.type === 'video' ? 'Video Lesson' : 'Study Resource'),
+      access_type: accessType,
+      allowed_batch_id: batchId,
+      allowed_batch_name: batchName,
+      allowed_student_ids: studentIds,
+      allowed_student_names: studentNames,
       tags: Array.isArray(itemData.tags) ? itemData.tags : (itemData.tags || '').split(',').map(s => s.trim()).filter(Boolean),
       created_at: itemData.created_at || new Date().toISOString()
     };
@@ -172,7 +241,6 @@
     // Update memory & local storage
     const idx = window.elibraryItems.findIndex(x => String(x.id) === String(item.id));
     if (idx >= 0) {
-      // If coach is updating, ensure they own it
       if (window.role === 'coach' && !canUserManageItem(window.elibraryItems[idx])) {
         if (window.toast) window.toast('Permission denied: Coaches can only edit their own materials.', 'error');
         return false;
@@ -195,6 +263,7 @@
       }
     }
 
+    updateStatsCounters();
     if (window.toast) window.toast(idx >= 0 ? '✨ Study material updated successfully!' : '✨ Study material added to E-Library successfully!', 'success');
     
     // Re-render active views
@@ -226,6 +295,7 @@
       } catch (e) {}
     }
 
+    updateStatsCounters();
     if (window.toast) window.toast('Material removed from E-Library.', 'info');
     window.renderAdminElibraryPage();
     window.renderCoachElibraryPage();
@@ -261,6 +331,7 @@
     const fLevel = document.getElementById('elib-form-level');
     const fUrl = document.getElementById('elib-form-url');
     const fDuration = document.getElementById('elib-form-duration');
+    const fAccess = document.getElementById('elib-form-access-type');
 
     if (fTitle) fTitle.value = item.title || '';
     if (fDesc) fDesc.value = item.description || '';
@@ -269,7 +340,93 @@
     if (fUrl) fUrl.value = item.url || '';
     if (fDuration) fDuration.value = item.duration || '';
 
+    const accessType = item.access_type || (item.allowed_student_ids?.length ? 'students' : (item.allowed_batch_id ? 'batch' : 'all'));
+    if (fAccess) fAccess.value = accessType;
+
+    // Populate batches and students
+    window.populateElibBatchOptions(item.allowed_batch_id);
+    window.populateElibStudentList(item.allowed_student_ids || []);
+    window.toggleElibAccessType(accessType);
+
     modal.classList.add('active');
+  };
+
+  // ── Access Permission Modal Helpers ──
+  window.toggleElibAccessType = function (type) {
+    const batchBox = document.getElementById('elib-form-batch-container');
+    const studBox = document.getElementById('elib-form-students-container');
+    if (batchBox) batchBox.style.display = type === 'batch' ? 'block' : 'none';
+    if (studBox) studBox.style.display = type === 'students' ? 'block' : 'none';
+  };
+
+  window.populateElibBatchOptions = function (selectedId) {
+    const select = document.getElementById('elib-form-batch');
+    if (!select) return;
+    const batches = window.allBatches || [];
+    let opts = '<option value="">-- Choose Batch --</option>';
+    batches.forEach(b => {
+      const isSel = String(b.id) === String(selectedId) ? 'selected' : '';
+      opts += `<option value="${escapeHtml(b.id)}" ${isSel}>${escapeHtml(b.name || 'Unnamed Batch')}</option>`;
+    });
+    select.innerHTML = opts;
+  };
+
+  window.populateElibStudentList = function (selectedIds) {
+    const list = document.getElementById('elib-form-students-list');
+    if (!list) return;
+    const students = window.allStudents || [];
+    const selSet = new Set((selectedIds || []).map(String));
+
+    if (!students.length) {
+      list.innerHTML = `<div style="grid-column:1/-1; font-size:12px; color:#94a3b8; text-align:center; padding:12px;">No active students found in the academy.</div>`;
+      return;
+    }
+
+    list.innerHTML = students.map(s => {
+      const sid = String(s.id);
+      const isChecked = selSet.has(sid) ? 'checked' : '';
+      const name = s.name || s.full_name || `Student #${sid}`;
+      const level = s.level || 'Beginner';
+      return `
+        <label class="elib-student-checkbox-item" data-name="${escapeHtml(name.toLowerCase())}" style="display:flex; align-items:center; gap:8px; font-size:12px; color:#fff; cursor:pointer; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+          <input type="checkbox" class="elib-stud-check" value="${escapeHtml(sid)}" ${isChecked} onchange="window.updateElibSelectedCount()" style="cursor:pointer; accent-color:var(--gold);">
+          <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(name)}</span>
+          <span style="font-size:10px; opacity:0.6; background:rgba(218,163,62,0.15); color:var(--gold); padding:2px 6px; border-radius:4px;">${escapeHtml(level)}</span>
+        </label>
+      `;
+    }).join('');
+
+    window.updateElibSelectedCount();
+  };
+
+  window.filterElibStudentList = function (query) {
+    const q = String(query || '').toLowerCase().trim();
+    const items = document.querySelectorAll('.elib-student-checkbox-item');
+    items.forEach(el => {
+      const name = el.getAttribute('data-name') || '';
+      el.style.display = !q || name.includes(q) ? 'flex' : 'none';
+    });
+  };
+
+  window.selectAllElibStudents = function () {
+    document.querySelectorAll('.elib-stud-check').forEach(cb => {
+      const parent = cb.closest('.elib-student-checkbox-item');
+      if (!parent || parent.style.display !== 'none') {
+        cb.checked = true;
+      }
+    });
+    window.updateElibSelectedCount();
+  };
+
+  window.clearAllElibStudents = function () {
+    document.querySelectorAll('.elib-stud-check').forEach(cb => cb.checked = false);
+    window.updateElibSelectedCount();
+  };
+
+  window.updateElibSelectedCount = function () {
+    const count = document.querySelectorAll('.elib-stud-check:checked').length;
+    const countEl = document.getElementById('elib-form-students-selected-count');
+    if (countEl) countEl.textContent = `${count} student${count === 1 ? '' : 's'} selected`;
   };
 
   function getCategoryLabel(cat) {
@@ -290,48 +447,65 @@
     const badgeColor = item.category === 'recordings' ? '#ef4444' : (item.category === 'openings' ? '#3b82f6' : (item.category === 'tactics' ? '#eab308' : '#10b981'));
     const canManage = canUserManageItem(item);
     
+    // Access pill
+    let accessBadge = '<span style="background:rgba(16,185,129,0.15); color:#10b981; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;">🌐 All Students</span>';
+    if (item.access_type === 'batch' || (item.allowed_batch_id && item.allowed_batch_id !== 'all')) {
+      const bName = item.allowed_batch_name || 'Batch';
+      accessBadge = `<span style="background:rgba(168,85,247,0.15); color:#c084fc; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;">👥 ${escapeHtml(bName)}</span>`;
+    } else if (item.access_type === 'students' || (Array.isArray(item.allowed_student_ids) && item.allowed_student_ids.length > 0)) {
+      const count = item.allowed_student_names?.length || item.allowed_student_ids?.length || 0;
+      const namesStr = (item.allowed_student_names || []).slice(0, 2).join(', ') + (count > 2 ? ` +${count - 2} more` : '');
+      accessBadge = `<span style="background:rgba(234,179,8,0.15); color:#eab308; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;" title="${escapeHtml((item.allowed_student_names || []).join(', '))}">🔒 ${escapeHtml(namesStr || `${count} Students Only`)}</span>`;
+    }
+
     return `
       <div class="elib-card" style="background:var(--surface, #1e293b); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.25); transition:transform 0.25s, border-color 0.25s;">
-        <div style="padding:18px 20px 14px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02);">
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <span style="background:${badgeColor}22; color:${badgeColor}; border:1px solid ${badgeColor}44; font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; text-transform:uppercase;">
+        <div style="padding:16px 18px 12px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); gap:8px;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <span style="background:${badgeColor}22; color:${badgeColor}; border:1px solid ${badgeColor}44; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">
               ${escapeHtml(item.categoryLabel || getCategoryLabel(item.category))}
             </span>
             <span style="background:rgba(255,255,255,0.06); color:var(--ivory-dim, #94a3b8); font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;">
               ${escapeHtml(item.level || 'All Levels')}
             </span>
+            ${accessBadge}
           </div>
           ${canManage ? `
-            <div style="display:flex; gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="window.editElibraryItem('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:11px; color:var(--gold, #daa33e); border-color:rgba(218,163,62,0.3);" title="Edit Material">✏️</button>
+            <div style="display:flex; gap:6px; flex-shrink:0;">
+              <button class="btn btn-outline btn-sm" onclick="window.editElibraryItem('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:11px; color:var(--gold, #daa33e); border-color:rgba(218,163,62,0.3);" title="Edit Material & Access">✏️</button>
               <button class="btn btn-outline btn-sm" onclick="window.deleteElibraryItem('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:11px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Delete Material">🗑️</button>
             </div>
           ` : ''}
         </div>
 
-        <div style="padding:20px; flex:1; display:flex; flex-direction:column;">
-          <h3 style="margin:0 0 10px; font-size:1.15rem; font-weight:800; color:#ffffff; line-height:1.4;">
+        <div style="padding:18px 20px; flex:1; display:flex; flex-direction:column;">
+          <h3 style="margin:0 0 8px; font-size:1.1rem; font-weight:800; color:#ffffff; line-height:1.4;">
             ${isVideo ? '🎥 ' : '📄 '} ${escapeHtml(item.title)}
           </h3>
-          <p style="margin:0 0 16px; font-size:0.92rem; color:#94a3b8; line-height:1.6; flex:1;">
+          <p style="margin:0 0 14px; font-size:0.9rem; color:#94a3b8; line-height:1.5; flex:1;">
             ${escapeHtml(item.description || 'No detailed description provided.')}
           </p>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:#64748b; margin-bottom:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#64748b; margin-bottom:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.04);">
             <span>👨‍🏫 <strong>${escapeHtml(item.author || 'ChessKidoo Coach')}</strong></span>
             <span>📅 ${escapeHtml(item.date || '')}</span>
           </div>
 
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:8px;">
             ${isVideo ? `
-              <button class="btn btn-primary" style="flex:1; padding:10px 16px; font-size:0.88rem; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(218,163,62,0.3);" onclick="window.openElibraryVideo('${escapeHtml(item.title)}', '${escapeHtml(item.url)}')">
+              <button class="btn btn-primary" style="flex:1; padding:9px 14px; font-size:0.85rem; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 15px rgba(218,163,62,0.3);" onclick="window.openElibraryVideo('${escapeHtml(item.title)}', '${escapeHtml(item.url)}')">
                 <span>▶ Watch Session</span>
               </button>
             ` : `
-              <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="btn btn-gold" style="flex:1; padding:10px 16px; font-size:0.88rem; font-weight:800; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
-                <span>📥 Download Material</span>
+              <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="btn btn-gold" style="flex:1; padding:9px 14px; font-size:0.85rem; font-weight:800; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                <span>📥 Download Resource</span>
               </a>
             `}
+            ${canManage ? `
+              <button class="btn btn-outline" style="padding:9px 12px; font-size:0.82rem; border-radius:10px; border-color:rgba(218,163,62,0.35); color:var(--gold);" onclick="window.editElibraryItem('${escapeHtml(item.id)}')" title="Configure Student Access">
+                <span>👤 Access</span>
+              </button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -350,7 +524,6 @@
 
     if (modalTitle) modalTitle.textContent = `🎥 ${title}`;
     
-    // Format embed URL if youtube or drive
     let embedUrl = url;
     if (url.includes('youtube.com/watch?v=')) {
       const vidId = url.split('v=')[1]?.split('&')[0];
@@ -366,24 +539,75 @@
     modal.classList.add('active');
   };
 
-  // ── Filter Helper ──
+  // ── Filter Helper for Admin & Coach ──
   function getFilteredItems() {
     return (window.elibraryItems || []).filter(item => {
       const matchesCat = currentFilter === 'all' || item.category === currentFilter;
       const matchesLevel = currentLevelFilter === 'all' || item.level === currentLevelFilter || item.level === 'All Levels';
+      
+      let matchesAccess = true;
+      if (currentAccessFilter === 'public') {
+        matchesAccess = item.access_type === 'all' || (!item.allowed_batch_id && (!item.allowed_student_ids || !item.allowed_student_ids.length));
+      } else if (currentAccessFilter === 'batch') {
+        matchesAccess = item.access_type === 'batch' || Boolean(item.allowed_batch_id && item.allowed_batch_id !== 'all');
+      } else if (currentAccessFilter === 'students') {
+        matchesAccess = item.access_type === 'students' || (Array.isArray(item.allowed_student_ids) && item.allowed_student_ids.length > 0);
+      }
+
       const q = currentSearch.toLowerCase();
-      const matchesSearch = !q || item.title.toLowerCase().includes(q) || (item.description && item.description.toLowerCase().includes(q)) || (item.author && item.author.toLowerCase().includes(q));
-      return matchesCat && matchesLevel && matchesSearch;
+      const matchesSearch = !q || 
+        item.title.toLowerCase().includes(q) || 
+        (item.description && item.description.toLowerCase().includes(q)) || 
+        (item.author && item.author.toLowerCase().includes(q)) ||
+        (Array.isArray(item.allowed_student_names) && item.allowed_student_names.some(n => n.toLowerCase().includes(q)));
+      
+      return matchesCat && matchesLevel && matchesAccess && matchesSearch;
     });
+  }
+
+  // ── Student Access Authorization Filter ──
+  function isItemAccessibleToStudent(item, student) {
+    if (!student) return true;
+    const sid = String(student.id);
+
+    // 1. Explicit individual student access
+    if (item.access_type === 'students' || (Array.isArray(item.allowed_student_ids) && item.allowed_student_ids.length > 0)) {
+      return (item.allowed_student_ids || []).map(String).includes(sid);
+    }
+
+    // 2. Specific batch access
+    if (item.access_type === 'batch' || (item.allowed_batch_id && item.allowed_batch_id !== 'all')) {
+      if (student.batch_id && String(student.batch_id) === String(item.allowed_batch_id)) return true;
+      if (Array.isArray(window.allBatches)) {
+        const batch = window.allBatches.find(b => String(b.id) === String(item.allowed_batch_id));
+        if (batch && Array.isArray(batch.student_ids) && batch.student_ids.map(String).includes(sid)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // 3. Open to all students (Skill level check)
+    const levelRank = { 'Beginner': 0, 'Intermediate': 1, 'Advanced': 2, 'Master': 3, 'All Levels': 0 };
+    const studentLevel = student.level || 'Beginner';
+    const itemLevel = item.level || 'All Levels';
+    if (itemLevel !== 'All Levels') {
+      if ((levelRank[studentLevel] || 0) < (levelRank[itemLevel] || 0)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   // ── Render Views ──
   window.renderAdminElibraryPage = function () {
     const container = document.getElementById('admin-elibrary-grid');
     if (!container) return;
+    updateStatsCounters();
     const items = getFilteredItems();
     if (!items.length) {
-      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No study materials found matching filters. Click <strong>+ Add Material</strong> to upload!</div>`;
+      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8; background:var(--surface); border:1px dashed var(--border); border-radius:14px;">No study materials found matching active filters. Click <strong>+ Add New Material</strong> to upload!</div>`;
       return;
     }
     container.innerHTML = items.map(item => renderItemCard(item)).join('');
@@ -394,7 +618,7 @@
     if (!container) return;
     const items = getFilteredItems();
     if (!items.length) {
-      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No study materials found matching filters. Click <strong>+ Upload Material</strong> to add one!</div>`;
+      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8; background:var(--surface); border:1px dashed var(--border); border-radius:14px;">No study materials found matching filters. Click <strong>+ Upload Material</strong> to add one!</div>`;
       return;
     }
     container.innerHTML = items.map(item => renderItemCard(item)).join('');
@@ -403,11 +627,15 @@
   window.renderChildElibrary = function () {
     const container = document.getElementById('child-elibrary-grid');
     if (!container) return;
-    const items = getFilteredItems();
+    const currentStudent = window.currentStudent;
+    
+    // Filter accessible items
+    const allFiltered = getFilteredItems();
+    const items = allFiltered.filter(item => isItemAccessibleToStudent(item, currentStudent));
 
     let classroomsHtml = '';
-    if (window.currentStudent && Array.isArray(window.allBatches)) {
-      const myBatches = window.allBatches.filter(b => b.student_ids && b.student_ids.map(String).includes(String(window.currentStudent.id)) && b.chessable_url);
+    if (currentStudent && Array.isArray(window.allBatches)) {
+      const myBatches = window.allBatches.filter(b => b.student_ids && b.student_ids.map(String).includes(String(currentStudent.id)) && b.chessable_url);
       if (myBatches.length > 0) {
         classroomsHtml = myBatches.map(b => `
           <div class="elib-card" style="border:1.5px solid var(--gold); background:rgba(218,163,62,0.06); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:12px;">
@@ -415,10 +643,10 @@
               <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;">♟️ BATCH CLASSROOM</span>
               <span style="font-size:12px; color:var(--ivory-dim);">Live Course</span>
             </div>
-            <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${b.name}</h4>
+            <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(b.name)}</h4>
             <p style="margin:0; font-size:12.5px; color:var(--ivory-dim); line-height:1.5;">Official interactive classroom study link for your batch.</p>
             <div style="margin-top:auto; padding-top:8px;">
-              <a href="${b.chessable_url}" target="_blank" rel="noopener" class="btn btn-gold btn-sm" style="width:100%; text-align:center; display:block; text-decoration:none;">🚀 Join Interactive Classroom</a>
+              <a href="${escapeHtml(b.chessable_url)}" target="_blank" rel="noopener" class="btn btn-gold btn-sm" style="width:100%; text-align:center; display:block; text-decoration:none;">🚀 Join Interactive Classroom</a>
             </div>
           </div>
         `).join('');
@@ -426,7 +654,7 @@
     }
 
     if (!items.length && !classroomsHtml) {
-      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No learning resources found in this category yet. Check back soon!</div>`;
+      container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8; background:var(--surface); border:1px dashed var(--border); border-radius:14px;">No learning resources found in this category yet. Check back soon!</div>`;
       return;
     }
     container.innerHTML = classroomsHtml + items.map(item => renderItemCard(item)).join('');
@@ -445,6 +673,19 @@
     window.renderChildElibrary();
   };
 
+  window.filterElibraryAccess = function (val) {
+    currentAccessFilter = String(val || 'all');
+    window.renderAdminElibraryPage();
+    window.renderCoachElibraryPage();
+  };
+
+  window.filterElibraryLevel = function (val) {
+    currentLevelFilter = String(val || 'all');
+    window.renderAdminElibraryPage();
+    window.renderCoachElibraryPage();
+    window.renderChildElibrary();
+  };
+
   window.searchElibrary = function (val) {
     currentSearch = String(val || '').trim();
     window.renderAdminElibraryPage();
@@ -452,6 +693,7 @@
     window.renderChildElibrary();
   };
 
+  // ── Add Modal Setup ──
   window.openAddElibraryModal = function () {
     const modal = document.getElementById('add-elibrary-modal');
     if (modal) {
@@ -468,12 +710,24 @@
       // Clear fields
       const fTitle = document.getElementById('elib-form-title');
       const fDesc = document.getElementById('elib-form-desc');
+      const fCat = document.getElementById('elib-form-cat');
+      const fLevel = document.getElementById('elib-form-level');
       const fUrl = document.getElementById('elib-form-url');
       const fDuration = document.getElementById('elib-form-duration');
+      const fAccess = document.getElementById('elib-form-access-type');
+
       if (fTitle) fTitle.value = '';
       if (fDesc) fDesc.value = '';
+      if (fCat) fCat.value = 'openings';
+      if (fLevel) fLevel.value = 'All Levels';
       if (fUrl) fUrl.value = '';
       if (fDuration) fDuration.value = '';
+      if (fAccess) fAccess.value = 'all';
+
+      window.populateElibBatchOptions('');
+      window.populateElibStudentList([]);
+      window.toggleElibAccessType('all');
+
       modal.classList.add('active');
     }
   };
@@ -485,9 +739,23 @@
     const level = document.getElementById('elib-form-level')?.value;
     const url = document.getElementById('elib-form-url')?.value;
     const duration = document.getElementById('elib-form-duration')?.value;
+    const accessType = document.getElementById('elib-form-access-type')?.value || 'all';
+    const batchId = document.getElementById('elib-form-batch')?.value || '';
+
+    const checkedStudents = Array.from(document.querySelectorAll('.elib-stud-check:checked')).map(cb => cb.value);
 
     if (!title || !url) {
       if (window.toast) window.toast('Please provide at least a title and resource link!', 'warning');
+      return;
+    }
+
+    if (accessType === 'batch' && !batchId) {
+      if (window.toast) window.toast('Please select a target batch or change access to All Students.', 'warning');
+      return;
+    }
+
+    if (accessType === 'students' && !checkedStudents.length) {
+      if (window.toast) window.toast('Please select at least one student or change access to All Students.', 'warning');
       return;
     }
 
@@ -497,7 +765,10 @@
       category: cat,
       level,
       url,
-      duration: duration || 'Study Resource'
+      duration: duration || 'Study Resource',
+      access_type: accessType,
+      allowed_batch_id: batchId,
+      allowed_student_ids: checkedStudents
     };
 
     if (window._editingElibId) {
@@ -509,6 +780,134 @@
     window.saveElibraryItem(payload);
 
     const modal = document.getElementById('add-elibrary-modal');
+    if (modal) modal.classList.remove('active');
+  };
+
+  // ── Quick Grant to Student Modal ──
+  window.openGrantAccessModal = function (defaultStudentId) {
+    const modal = document.getElementById('grant-elibrary-modal');
+    if (!modal) return;
+
+    const select = document.getElementById('grant-elib-student-select');
+    const students = window.allStudents || [];
+
+    if (select) {
+      let opts = '<option value="">-- Choose Student --</option>';
+      students.forEach(s => {
+        const sid = String(s.id);
+        const name = s.name || s.full_name || `Student #${sid}`;
+        const isSel = String(defaultStudentId) === sid ? 'selected' : '';
+        opts += `<option value="${escapeHtml(sid)}" ${isSel}>${escapeHtml(name)} (${escapeHtml(s.level || 'Beginner')})</option>`;
+      });
+      select.innerHTML = opts;
+    }
+
+    const targetStudentId = defaultStudentId || (select ? select.value : '');
+    window.onGrantStudentChanged(targetStudentId);
+
+    modal.classList.add('active');
+  };
+
+  window.onGrantStudentChanged = function (studentId) {
+    const list = document.getElementById('grant-elib-materials-list');
+    const countEl = document.getElementById('grant-elib-count');
+    if (!list) return;
+
+    const items = window.elibraryItems || [];
+    const sid = String(studentId || '');
+
+    if (!items.length) {
+      list.innerHTML = `<div style="text-align:center; padding:16px; color:#94a3b8; font-size:12.5px;">No materials currently in E-Library.</div>`;
+      if (countEl) countEl.textContent = '0 selected';
+      return;
+    }
+
+    let checkedCount = 0;
+    list.innerHTML = items.map(item => {
+      const isChecked = (item.allowed_student_ids || []).map(String).includes(sid);
+      if (isChecked) checkedCount++;
+      return `
+        <label style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); cursor:pointer;">
+          <input type="checkbox" class="grant-elib-item-check" value="${escapeHtml(item.id)}" ${isChecked ? 'checked' : ''} onchange="window.updateGrantSelectedCount()" style="cursor:pointer; accent-color:var(--gold);">
+          <div style="flex:1;">
+            <div style="color:#fff; font-size:13px; font-weight:700;">${escapeHtml(item.title)}</div>
+            <div style="color:var(--ivory-dim); font-size:11px;">${escapeHtml(item.categoryLabel || item.category)} · ${escapeHtml(item.level || 'All Levels')}</div>
+          </div>
+        </label>
+      `;
+    }).join('');
+
+    if (countEl) countEl.textContent = `${checkedCount} selected`;
+  };
+
+  window.updateGrantSelectedCount = function () {
+    const count = document.querySelectorAll('.grant-elib-item-check:checked').length;
+    const countEl = document.getElementById('grant-elib-count');
+    if (countEl) countEl.textContent = `${count} selected`;
+  };
+
+  window.saveGrantAccessForm = async function () {
+    const select = document.getElementById('grant-elib-student-select');
+    const studentId = select ? select.value : '';
+    if (!studentId) {
+      if (window.toast) window.toast('Please select a student first!', 'warning');
+      return;
+    }
+
+    const sid = String(studentId);
+    const checkedItemIds = new Set(Array.from(document.querySelectorAll('.grant-elib-item-check:checked')).map(cb => String(cb.value)));
+
+    const studentObj = (window.allStudents || []).find(s => String(s.id) === sid);
+    const studentName = studentObj ? (studentObj.name || studentObj.full_name || `Student #${sid}`) : `Student #${sid}`;
+
+    let updatedCount = 0;
+    (window.elibraryItems || []).forEach(item => {
+      let ids = Array.isArray(item.allowed_student_ids) ? [...item.allowed_student_ids.map(String)] : [];
+      let names = Array.isArray(item.allowed_student_names) ? [...item.allowed_student_names] : [];
+
+      const shouldHaveAccess = checkedItemIds.has(String(item.id));
+      const currentlyHasAccess = ids.includes(sid);
+
+      if (shouldHaveAccess && !currentlyHasAccess) {
+        ids.push(sid);
+        names.push(studentName);
+        item.allowed_student_ids = ids;
+        item.allowed_student_names = names;
+        item.access_type = 'students';
+        updatedCount++;
+      } else if (!shouldHaveAccess && currentlyHasAccess) {
+        const pos = ids.indexOf(sid);
+        if (pos >= 0) {
+          ids.splice(pos, 1);
+          names.splice(pos, 1);
+        }
+        item.allowed_student_ids = ids;
+        item.allowed_student_names = names;
+        if (!ids.length && item.access_type === 'students') {
+          item.access_type = 'all';
+        }
+        updatedCount++;
+      }
+    });
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(window.elibraryItems));
+    } catch (e) {}
+
+    if (window.supabaseClient) {
+      try {
+        await window.supabaseClient.from('elibrary').upsert(window.elibraryItems);
+      } catch (e) {}
+    }
+
+    updateStatsCounters();
+    if (window.toast) window.toast(`✨ Permissions updated for ${studentName}!`, 'success');
+
+    window.renderAdminElibraryPage();
+    window.renderCoachElibraryPage();
+    window.renderChildElibrary();
+
+    const modal = document.getElementById('grant-elibrary-modal');
     if (modal) modal.classList.remove('active');
   };
 
