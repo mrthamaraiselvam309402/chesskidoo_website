@@ -546,9 +546,13 @@
   };
 
   // ── Render High-Fidelity Vector SVG Board ──
-  StudyPGN.renderBoard = function (containerId = 'pgn-study-board') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+  StudyPGN.renderBoard = function () {
+    const containers = [
+      document.getElementById('pgn-study-board'),
+      document.getElementById('coach-pgn-study-board')
+    ].filter(Boolean);
+
+    if (!containers.length) return;
 
     if (!StudyPGN.chess) {
       if (window.Chess) StudyPGN.chess = new window.Chess();
@@ -614,7 +618,9 @@
     });
 
     html += `</div>`;
-    container.innerHTML = html;
+    containers.forEach(c => {
+      c.innerHTML = html;
+    });
   };
 
   StudyPGN.onBoardSquareClicked = function (square) {
@@ -655,8 +661,12 @@
 
   // ── Render Move Notation Tree ──
   StudyPGN.renderMoveList = function () {
-    const listContainer = document.getElementById('pgn-movelist-container');
-    if (!listContainer || !StudyPGN.moveHistory) return;
+    const listContainers = [
+      document.getElementById('pgn-movelist-container'),
+      document.getElementById('coach-pgn-movelist-container')
+    ].filter(Boolean);
+
+    if (!listContainers.length || !StudyPGN.moveHistory) return;
 
     let html = '';
     for (let i = 0; i < StudyPGN.moveHistory.length; i += 2) {
@@ -684,12 +694,15 @@
       `;
     }
 
-    listContainer.innerHTML = html;
+    listContainers.forEach(c => {
+      c.innerHTML = html;
+    });
   };
 
   StudyPGN.highlightCurrentMove = function () {
     const btns = document.querySelectorAll('.pgn-move-btn');
     btns.forEach((btn, idx) => {
+      // Each pair is 2 buttons, find matched move index
       if (idx === StudyPGN.currentMoveIndex) {
         btn.classList.add('active');
         btn.style.background = 'var(--gold, #daa33e)';
@@ -706,24 +719,37 @@
   StudyPGN.renderGameInfo = function () {
     const g = StudyPGN.currentGame;
     if (!g) return;
-    const titleEl = document.getElementById('pgn-game-title');
-    const descEl = document.getElementById('pgn-game-desc');
-    const playersEl = document.getElementById('pgn-game-players');
+    const titles = [document.getElementById('pgn-game-title'), document.getElementById('coach-pgn-game-title')].filter(Boolean);
+    const descs = [document.getElementById('pgn-game-desc'), document.getElementById('coach-pgn-game-desc')].filter(Boolean);
+    const players = [document.getElementById('pgn-game-players'), document.getElementById('coach-pgn-game-players')].filter(Boolean);
 
-    if (titleEl) titleEl.textContent = g.title || 'Grandmaster Masterclass Study';
-    if (descEl) descEl.textContent = g.description || '';
-    if (playersEl) playersEl.innerHTML = `<strong>⚪ ${escapeHtml(g.white || 'White')}</strong> vs <strong>⚫ ${escapeHtml(g.black || 'Black')}</strong> · <span style="color:var(--gold); font-weight:700;">${escapeHtml(g.result || '*')}</span>`;
+    titles.forEach(el => el.textContent = g.title || 'Grandmaster Masterclass Study');
+    descs.forEach(el => el.textContent = g.description || '');
+    players.forEach(el => el.innerHTML = `<strong>⚪ ${escapeHtml(g.white || 'White')}</strong> vs <strong>⚫ ${escapeHtml(g.black || 'Black')}</strong> · <span style="color:var(--gold); font-weight:700;">${escapeHtml(g.result || '*')}</span>`);
+
+    // Sync selectors if present
+    const s1 = document.getElementById('pgn-game-selector');
+    const s2 = document.getElementById('coach-pgn-game-selector');
+    const curIdx = CURATED_STUDY_GAMES.findIndex(item => item.title === g.title);
+    if (curIdx >= 0) {
+      if (s1) s1.value = String(curIdx);
+      if (s2) s2.value = String(curIdx);
+    }
   };
 
   // ── TOM AI Move Guidance & Pedagogical Breakdown ──
   StudyPGN.updateAiMoveGuide = function (customMove) {
-    const guideEl = document.getElementById('pgn-tom-ai-guide');
-    if (!guideEl) return;
+    const guideEls = [
+      document.getElementById('pgn-tom-ai-guide'),
+      document.getElementById('coach-pgn-tom-ai-guide')
+    ].filter(Boolean);
+
+    if (!guideEls.length) return;
 
     const move = customMove || (StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null);
 
     if (!move) {
-      guideEl.innerHTML = `
+      const defaultHtml = `
         <div style="display:flex; gap:12px; align-items:flex-start;">
           <div style="font-size:24px;">🤖</div>
           <div>
@@ -732,6 +758,7 @@
           </div>
         </div>
       `;
+      guideEls.forEach(el => el.innerHTML = defaultHtml);
       return;
     }
 
@@ -746,7 +773,7 @@
     else if (san.includes('#')) rationale = `Checkmate! The Grandmaster execution completes the mating net. Outstanding game finish!`;
     else if (san.startsWith('B')) rationale = `Develops the bishop to an active diagonal, targeting opponent weaknesses or pinning minor pieces.`;
 
-    guideEl.innerHTML = `
+    const html = `
       <div style="display:flex; gap:12px; align-items:flex-start;">
         <div style="font-size:24px;">🤖</div>
         <div style="flex:1;">
@@ -758,6 +785,8 @@
         </div>
       </div>
     `;
+
+    guideEls.forEach(el => el.innerHTML = html);
   };
 
   window.askTomAiAboutPosition = function () {
@@ -773,9 +802,9 @@
 
   // ── Stockfish Evaluation Gauge & Cloud API Sync ──
   StudyPGN.updateEvalGauge = function () {
-    const bar = document.getElementById('pgn-eval-bar');
-    const scoreText = document.getElementById('pgn-eval-text');
-    if (!bar || !scoreText || !StudyPGN.chess) return;
+    const bars = [document.getElementById('pgn-eval-bar'), document.getElementById('coach-pgn-eval-bar')].filter(Boolean);
+    const scoreTexts = [document.getElementById('pgn-eval-text'), document.getElementById('coach-pgn-eval-text')].filter(Boolean);
+    if (!bars.length || !StudyPGN.chess) return;
 
     let score = 0;
     const pieceVals = { p: 1, n: 3.2, b: 3.3, r: 5, q: 9.5, k: 0 };
@@ -793,15 +822,15 @@
     const clampedScore = Math.max(-10, Math.min(10, score));
     const whitePct = 50 + (clampedScore * 4.5);
 
-    bar.style.height = `${whitePct}%`;
-    scoreText.textContent = (score >= 0 ? `+${score.toFixed(1)}` : score.toFixed(1));
+    bars.forEach(b => b.style.height = `${whitePct}%`);
+    scoreTexts.forEach(st => st.textContent = (score >= 0 ? `+${score.toFixed(1)}` : score.toFixed(1)));
   };
 
   StudyPGN.fetchStockfishCloudEval = async function () {
     if (!StudyPGN.chess) return;
     const fen = StudyPGN.chess.fen();
-    const scoreText = document.getElementById('pgn-eval-text');
-    const bar = document.getElementById('pgn-eval-bar');
+    const scoreTexts = [document.getElementById('pgn-eval-text'), document.getElementById('coach-pgn-eval-text')].filter(Boolean);
+    const bars = [document.getElementById('pgn-eval-bar'), document.getElementById('coach-pgn-eval-bar')].filter(Boolean);
 
     try {
       const res = await fetch(`https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(fen)}`);
@@ -810,13 +839,13 @@
         if (data && data.pvs && data.pvs[0]) {
           const pv = data.pvs[0];
           if (pv.mate) {
-            if (scoreText) scoreText.textContent = `M${pv.mate}`;
-            if (bar) bar.style.height = pv.mate > 0 ? '100%' : '0%';
+            scoreTexts.forEach(st => st.textContent = `M${pv.mate}`);
+            bars.forEach(b => b.style.height = pv.mate > 0 ? '100%' : '0%');
           } else if (pv.cp != null) {
             const cpVal = pv.cp / 100;
-            if (scoreText) scoreText.textContent = (cpVal >= 0 ? `+${cpVal.toFixed(1)}` : cpVal.toFixed(1));
+            scoreTexts.forEach(st => st.textContent = (cpVal >= 0 ? `+${cpVal.toFixed(1)}` : cpVal.toFixed(1)));
             const whitePct = Math.max(5, Math.min(95, 50 + (cpVal * 4.5)));
-            if (bar) bar.style.height = `${whitePct}%`;
+            bars.forEach(b => b.style.height = `${whitePct}%`);
           }
         }
       }
@@ -825,19 +854,23 @@
 
   // ── Lichess Master Opening Explorer API ──
   StudyPGN.fetchLichessOpeningStats = async function () {
-    const explorerEl = document.getElementById('pgn-lichess-explorer');
-    if (!explorerEl || !StudyPGN.chess) return;
+    const explorerEls = [
+      document.getElementById('pgn-lichess-explorer'),
+      document.getElementById('coach-pgn-lichess-explorer')
+    ].filter(Boolean);
+
+    if (!explorerEls.length || !StudyPGN.chess) return;
 
     const fen = StudyPGN.chess.fen();
     try {
-      explorerEl.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`;
+      explorerEls.forEach(el => el.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`);
 
       const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3`);
       if (!res.ok) throw new Error('API limit or offline');
       const data = await res.json();
 
       if (!data.moves || !data.moves.length) {
-        explorerEl.innerHTML = `<div style="font-size:12px; color:var(--ivory-dim); padding:8px;">End of master opening book. Explore tactical novelties!</div>`;
+        explorerEls.forEach(el => el.innerHTML = `<div style="font-size:12px; color:var(--ivory-dim); padding:8px;">End of master opening book. Explore tactical novelties!</div>`);
         return;
       }
 
@@ -859,7 +892,7 @@
         `;
       }).join('');
 
-      explorerEl.innerHTML = `
+      const html = `
         <div style="padding:4px 0;">
           <div style="font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:6px; display:flex; justify-content:space-between;">
             <span>♟️ Lichess Master Move Tree</span>
@@ -868,8 +901,10 @@
           ${movesHtml}
         </div>
       `;
+
+      explorerEls.forEach(el => el.innerHTML = html);
     } catch (e) {
-      explorerEl.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:6px;">Lichess Master Explorer: Local Grandmaster Vault active.</div>`;
+      explorerEls.forEach(el => el.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;">Live Lichess Master Explorer active. Step moves to view statistics.</div>`);
     }
   };
 
@@ -1524,8 +1559,9 @@
   };
 
   StudyPGN.renderAssignedTopicsList = function () {
-    const container = document.getElementById('assigned-topics-grid');
-    if (!container) return;
+    const studentContainer = document.getElementById('assigned-topics-grid');
+    const coachContainer = document.getElementById('coach-assigned-topics-grid');
+    if (!studentContainer && !coachContainer) return;
 
     let topics = [];
     try {
@@ -1562,50 +1598,95 @@
     const currentStudent = window.currentStudent;
     const isPreviewOrAdmin = window.role === 'admin' || window.role === 'master' || document.getElementById('preview-mode-banner')?.style.display !== 'none';
 
-    const filteredTopics = topics.filter(t => {
-      if (isPreviewOrAdmin) return true;
-      if (t.batch_id === 'all' && t.student_id === 'all') return true;
-      if (currentStudent) {
-        if (t.student_id && String(t.student_id) === String(currentStudent.id)) return true;
-        if (t.batch_id && String(t.batch_id) === String(currentStudent.batch_id)) return true;
-      }
-      return false;
-    });
+    // 1. Render Student view if studentContainer exists
+    if (studentContainer) {
+      const filteredTopics = topics.filter(t => {
+        if (isPreviewOrAdmin) return true;
+        if (t.batch_id === 'all' && t.student_id === 'all') return true;
+        if (currentStudent) {
+          if (t.student_id && String(t.student_id) === String(currentStudent.id)) return true;
+          if (t.batch_id && String(t.batch_id) === String(currentStudent.batch_id)) return true;
+        }
+        return false;
+      });
 
-    if (!filteredTopics.length) {
-      container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border);">No topics assigned for your current batch. Check back soon!</div>`;
-      return;
+      if (!filteredTopics.length) {
+        studentContainer.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border);">No topics assigned for your current batch. Check back soon!</div>`;
+      } else {
+        let completedIds = [];
+        try { completedIds = JSON.parse(localStorage.getItem(STORAGE_COMPLETED_TOPICS) || '[]'); } catch (e) {}
+
+        studentContainer.innerHTML = filteredTopics.map(t => {
+          const isCompleted = completedIds.includes(t.id);
+          return `
+            <div class="card" style="padding:18px 22px; background:var(--surface); border:1px solid ${isCompleted ? 'rgba(16,185,129,0.4)' : 'var(--border)'}; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
+              <div>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                  <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(t.category)}</span>
+                  <span style="font-size:12px; color:var(--ivory-dim);">Assigned by ${escapeHtml(t.assigned_by)} · ${escapeHtml(t.assigned_date)}</span>
+                  ${isCompleted ? `<span style="background:rgba(16,185,129,0.15); color:#10b981; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">✅ Practiced</span>` : ''}
+                </div>
+                <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(t.title)}</h4>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}')">
+                  ♟️ Practice in Study Board
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.toggleTopicCompleted('${escapeHtml(t.id)}')" style="font-size:11px;">
+                  ${isCompleted ? 'Mark Pending' : 'Mark Done'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
-    let completedIds = [];
-    try { completedIds = JSON.parse(localStorage.getItem(STORAGE_COMPLETED_TOPICS) || '[]'); } catch (e) {}
+    // 2. Render Coach view if coachContainer exists
+    if (coachContainer) {
+      const coachId = window.currentCoachId || (window.currentCoach ? window.currentCoach.id : null);
+      const batches = Array.isArray(window.allBatches) ? window.allBatches : [];
 
-    container.innerHTML = filteredTopics.map(t => {
-      const isCompleted = completedIds.includes(t.id);
-      return `
-        <div class="card" style="padding:18px 22px; background:var(--surface); border:1px solid ${isCompleted ? 'rgba(16,185,129,0.4)' : 'var(--border)'}; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
-          <div>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-              <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(t.category)}</span>
-              <span style="font-size:12px; color:var(--ivory-dim);">Assigned by ${escapeHtml(t.assigned_by)} · ${escapeHtml(t.assigned_date)}</span>
-              ${isCompleted ? `<span style="background:rgba(16,185,129,0.15); color:#10b981; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">✅ Practiced</span>` : ''}
+      const coachTopics = topics.filter(t => {
+        if (!coachId || window.role === 'admin' || window.role === 'master') return true;
+        if (t.batch_id === 'all') return true;
+        const b = batches.find(x => String(x.id) === String(t.batch_id));
+        if (b && window.ckSameCoach && window.ckSameCoach(b.coach_id, coachId)) return true;
+        return true;
+      });
+
+      if (!coachTopics.length) {
+        coachContainer.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border); grid-column:1/-1;">No study topics assigned yet. Click "➕ Assign New Topic" to assign opening repertoires to your batches!</div>`;
+      } else {
+        coachContainer.innerHTML = coachTopics.map(t => {
+          const batchName = t.batch_id === 'all' ? 'All Batches' : ((batches.find(b => String(b.id) === String(t.batch_id)) || {}).name || `Batch #${t.batch_id}`);
+          return `
+            <div class="card" style="padding:18px 20px; background:var(--surface2, rgba(0,0,0,0.25)); border:1px solid rgba(218,163,62,0.25); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="background:rgba(218,163,62,0.18); color:var(--gold); font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(t.category)}</span>
+                  <span style="font-size:11px; color:var(--ivory-dim);">${escapeHtml(t.assigned_date)}</span>
+                </div>
+                <h4 style="margin:0 0 6px; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(t.title)}</h4>
+                <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">Target: <strong style="color:#fff;">${escapeHtml(batchName)}</strong></div>
+                <div style="font-size:11px; color:#64748b; font-family:monospace; background:rgba(0,0,0,0.3); padding:6px 8px; border-radius:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(t.pgn.slice(0, 70))}...</div>
+              </div>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}', 'coach')" style="font-size:11.5px; padding:4px 10px;">
+                  ♟️ Analyze in Board
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteAssignedStudyTopic('${escapeHtml(t.id)}')" style="font-size:11.5px; padding:4px 8px;">
+                  🗑️
+                </button>
+              </div>
             </div>
-            <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(t.title)}</h4>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}')">
-              ♟️ Practice in Study Board
-            </button>
-            <button class="btn btn-outline btn-sm" onclick="window.toggleTopicCompleted('${escapeHtml(t.id)}')" style="font-size:11px;">
-              ${isCompleted ? 'Mark Pending' : 'Mark Done'}
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
+          `;
+        }).join('');
+      }
+    }
   };
 
-  window.practiceAssignedTopic = function (topicId) {
+  window.practiceAssignedTopic = function (topicId, sourceRole = 'student') {
     let topics = [];
     try { topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]'); } catch (e) {}
     const t = topics.find(x => x.id === topicId);
@@ -1615,10 +1696,14 @@
     StudyPGN.loadPgnString(t.pgn, {
       title: t.title,
       category: t.category,
-      description: `Coach Assigned Study Topic: ${t.title}`
+      description: `Assigned Study Topic: ${t.title}`
     });
 
-    window.setStudyPgnSubTab('lab');
+    if (sourceRole === 'coach') {
+      window.switchCoachStudyTab('board');
+    } else {
+      window.setStudyPgnSubTab('lab');
+    }
     if (window.toast) window.toast(`♟️ Loaded "${t.title}" into Interactive Study Board!`, 'success');
   };
 
@@ -1636,7 +1721,79 @@
     StudyPGN.renderAssignedTopicsList();
   };
 
-  // ── Sub Tab Switcher ──
+  // ── Coach Study Tab Switcher ──
+  window.switchCoachStudyTab = function (subTab, btn) {
+    document.querySelectorAll('.coach-studypgn-subview').forEach(v => v.style.display = 'none');
+    const target = document.getElementById('coach-studypgn-subview-' + subTab);
+    if (target) target.style.display = 'block';
+
+    const parentNav = btn ? btn.parentElement : document.querySelector('#page-coach-studypgn .tabs-nav');
+    if (parentNav) {
+      parentNav.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    if (subTab === 'board') {
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      StudyPGN.fetchLichessOpeningStats();
+    } else if (subTab === 'topics') {
+      StudyPGN.renderAssignedTopicsList();
+    } else if (subTab === 'monitor') {
+      if (window.renderStudyPgnMonitor) window.renderStudyPgnMonitor('coach');
+    } else if (subTab === 'vault') {
+      StudyPGN.renderCoachVaultCards();
+    }
+  };
+
+  // ── Coach Vault Cards Renderer ──
+  StudyPGN.renderCoachVaultCards = function (filterQuery = '') {
+    const container = document.getElementById('coach-vault-cards-container');
+    if (!container) return;
+
+    const q = (filterQuery || '').toLowerCase().trim();
+    const games = CURATED_STUDY_GAMES.filter(g => {
+      if (!q) return true;
+      const text = `${g.title} ${g.category} ${g.white} ${g.black} ${g.description}`.toLowerCase();
+      return text.includes(q);
+    });
+
+    if (!games.length) {
+      container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border); grid-column:1/-1;">No games found for "${escapeHtml(q)}".</div>`;
+      return;
+    }
+
+    container.innerHTML = games.map((g, idx) => `
+      <div class="card" style="padding:18px; background:var(--surface2, rgba(0,0,0,0.25)); border:1px solid rgba(218,163,62,0.25); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="background:rgba(218,163,62,0.18); color:var(--gold); font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(g.category)}</span>
+            <span style="font-size:11px; color:#60a5fa; font-weight:700;">${escapeHtml(g.level || 'Master')}</span>
+          </div>
+          <h4 style="margin:0 0 6px; color:#fff; font-size:14.5px; font-weight:700;">${escapeHtml(g.title)}</h4>
+          <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">⚪ ${escapeHtml(g.white)} vs ⚫ ${escapeHtml(g.black)} (${g.result})</div>
+          <p style="margin:0; font-size:12px; color:#94a3b8; line-height:1.4;">${escapeHtml(g.description)}</p>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-gold btn-sm" style="flex:1; font-size:11.5px; padding:6px 10px;" onclick="StudyPGN.loadCuratedGame(${idx}); window.switchCoachStudyTab('board');">
+            ♟️ Load Board
+          </button>
+          <button class="btn btn-outline btn-sm" style="font-size:11.5px; padding:6px 10px; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.selectPgnSearchResult('${g.id}', 'topic-pgn-input', 'topic-title-input', ''); window.openAssignStudyTopicModal();">
+            ➕ Assign
+          </button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  StudyPGN.filterVaultGames = function (q) {
+    StudyPGN.renderCoachVaultCards(q);
+  };
+
+  // ── Sub Tab Switcher (Student / Admin) ──
   window.setStudyPgnSubTab = function (subTab, btn) {
     document.querySelectorAll('.studypgn-subview').forEach(v => v.style.display = 'none');
     const target = document.getElementById('studypgn-subview-' + subTab);
@@ -1658,6 +1815,8 @@
       StudyPGN.renderMoveList();
       StudyPGN.renderGameInfo();
       StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      StudyPGN.fetchLichessOpeningStats();
     } else if (subTab === 'tactics') {
       StudyPGN.renderTacticsBoard();
       StudyPGN.updateStreakUI();
@@ -1702,7 +1861,22 @@
     const studentsContainerId = roleType === 'coach' ? 'coach-studypgn-students-table-wrap' : 'admin-studypgn-students-table-wrap';
     const studentsContainer = document.getElementById(studentsContainerId);
 
-    const students = Array.isArray(window.allStudents) ? window.allStudents : [];
+    const allStudents = Array.isArray(window.allStudents) ? window.allStudents : [];
+    const coachId = window.currentCoachId || (window.currentCoach ? window.currentCoach.id : null);
+    const batches = Array.isArray(window.allBatches) ? window.allBatches : [];
+
+    // Filter students for coach
+    const students = (roleType === 'coach' && coachId && window.role !== 'admin' && window.role !== 'master')
+      ? allStudents.filter(s => {
+          if (window.ckSameCoach && window.ckSameCoach(s.coach_id, coachId)) return true;
+          if (s.batch_id) {
+            const b = batches.find(x => String(x.id) === String(s.batch_id));
+            if (b && window.ckSameCoach && window.ckSameCoach(b.coach_id, coachId)) return true;
+          }
+          return false;
+        })
+      : allStudents;
+
     let tacticsRec = {};
     try {
       tacticsRec = JSON.parse(localStorage.getItem(STORAGE_TACTICS_RECORDS) || '{}');
@@ -1764,7 +1938,7 @@
             </tr>
           </thead>
           <tbody>
-            ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No student records found.</td></tr>'}
+            ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No student records found for your batches.</td></tr>'}
           </tbody>
         </table>
       `;

@@ -1170,27 +1170,169 @@
           <div class="coach-section-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
             <div>
               <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.12); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 14px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">
-                <span>♟️ Coach Training Hub</span>
+                <span>♟️ Coach Training &amp; Repertoire Hub</span>
               </div>
-              <h2 class="coach-section-title" style="margin:0 0 6px;">♟️ Coach Study Lab &amp; Batch Practice Monitor</h2>
-              <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Assign tailored PGN topics, monitor student puzzle streaks, and review calculation speeds.</p>
+              <h2 class="coach-section-title" style="margin:0 0 6px;">♟️ Coach Study Lab &amp; Batch Practice Hub</h2>
+              <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Analyze master games on the interactive board, assign opening repertoires &amp; PGN topics to batches, and monitor real-time daily tactics practice.</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn btn-gold" onclick="window.openAssignStudyTopicModal()" style="display:inline-flex; align-items:center; gap:8px;">
                 <span class="ico">➕</span> Assign Study Topic
               </button>
+              <button class="btn btn-outline" onclick="window.openImportPgnModal()" style="display:inline-flex; align-items:center; gap:8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">
+                <span class="ico">📥</span> Import PGN / Search
+              </button>
+              <button class="btn btn-outline-grey" onclick="window.StudyPGN.startVisionGame('color')" style="display:inline-flex; align-items:center; gap:6px;">
+                <span class="ico">⚡</span> Calculation Sprint
+              </button>
             </div>
           </div>
         </div>
 
-        <div id="coach-studypgn-monitor-container">
+        <!-- Coach Study PGN Sub-Tabs -->
+        <div class="tabs-nav" style="margin-bottom:20px; display:flex; gap:10px; border-bottom:1px solid var(--border); padding-bottom:10px; overflow-x:auto;">
+          <button class="tab-link active coach-study-tab" onclick="window.switchCoachStudyTab('board', this)" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>♟️ Interactive Board &amp; Analysis</span>
+          </button>
+          <button class="tab-link coach-study-tab" onclick="window.switchCoachStudyTab('topics', this)" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>📋 Assigned Batch Topics</span>
+          </button>
+          <button class="tab-link coach-study-tab" onclick="window.switchCoachStudyTab('monitor', this)" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>📊 Batch Practice Monitor</span>
+          </button>
+          <button class="tab-link coach-study-tab" onclick="window.switchCoachStudyTab('vault', this)" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>📖 Grandmaster Vault</span>
+          </button>
+        </div>
+
+        <!-- SUB-VIEW 1: COACH INTERACTIVE STUDY BOARD -->
+        <div id="coach-studypgn-subview-board" class="coach-studypgn-subview">
+          <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:24px;">
+            <!-- Game Title & Quick Selector Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+              <div>
+                <h3 id="coach-pgn-game-title" style="margin:0 0 4px; color:#fff; font-size:18px; font-weight:700;">Paul Morphy vs Duke &amp; Count (The Opera Game)</h3>
+                <div id="coach-pgn-game-players" style="font-size:13px; color:var(--ivory-dim);">⚪ Paul Morphy vs ⚫ Duke of Brunswick &amp; Count Isouard · 1-0</div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <select id="coach-pgn-game-selector" class="input-field" style="margin-bottom:0; font-size:12.5px; padding:6px 12px; min-width:240px;" onchange="window.StudyPGN.loadCuratedGame(parseInt(this.value))">
+                  <option value="0">🎭 Morphy: The Opera Game (1858)</option>
+                  <option value="1">⚔️ Anderssen: The Immortal Game (1851)</option>
+                  <option value="2">👑 Fischer vs Spassky: Game 6 (1972)</option>
+                  <option value="3">🐉 Kasparov vs Anand: Sicilian Dragon</option>
+                  <option value="4">🏰 Carlsen vs Caruana: Queen's Gambit</option>
+                  <option value="5">🇮🇳 Praggnanandhaa vs Nakamura (2023)</option>
+                  <option value="6">⚔️ Italian Game: Evans Gambit Attack</option>
+                  <option value="7">🐉 Sicilian Defense: Najdorf Variation</option>
+                  <option value="8">👑 Lucena: Rook &amp; Pawn Bridge</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="window.openImportPgnModal()" style="border-color:rgba(218,163,62,0.4); color:var(--gold); padding:6px 12px;">📥 Import PGN</button>
+                <button class="btn btn-gold btn-sm" onclick="window.openAssignStudyTopicModal()" style="padding:6px 12px;">➕ Assign to Batch</button>
+              </div>
+            </div>
+
+            <!-- Interactive Split Grid -->
+            <div style="display:grid; grid-template-columns: minmax(320px, 480px) 1fr; gap:24px; align-items:start;" class="studypgn-split-grid">
+              <!-- Left Column: Eval Bar + Chessboard + Controls -->
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:flex; gap:14px; align-items:stretch; justify-content:center;">
+                  <!-- Chess.com Style Eval Bar -->
+                  <div style="width:20px; min-height:360px; max-height:480px; background:#0d1420; border-radius:6px; overflow:hidden; border:2px solid #3c3024; position:relative; display:flex; flex-direction:column; justify-content:flex-end; box-shadow:0 4px 14px rgba(0,0,0,0.4); flex-shrink:0;">
+                    <div id="coach-pgn-eval-divider" style="position:absolute; width:100%; height:3px; background:#f59e0b; box-shadow:0 0 10px #f59e0b, 0 0 4px #fbbf24; z-index:2; bottom:50%; margin-bottom:-1.5px; transition:bottom 0.35s ease;"></div>
+                    <div id="coach-pgn-eval-bar" style="width:100%; height:50%; background:#ffffff; transition:height 0.35s ease;"></div>
+                  </div>
+                  <!-- Chess.com 8x8 Board -->
+                  <div id="coach-pgn-study-board" style="flex:1; max-width:480px;"></div>
+                </div>
+
+                <!-- Board Controls Toolbar -->
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.25); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.firstMove()" title="First Move">⏮</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.prevMove()" title="Previous Move">◀</button>
+                  <button class="btn btn-outline btn-sm" id="coach-pgn-btn-autoplay" onclick="window.StudyPGN.toggleAutoplay()" title="Autoplay">▶ Play</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move">▶</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move">⏭</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board">🔄 Flip</button>
+                  <span id="coach-pgn-eval-text" style="align-self:center; font-size:12px; font-weight:700; color:var(--gold); margin-left:8px;">+0.0</span>
+                </div>
+              </div>
+
+              <!-- Right Column: Move Notation & AI Guide -->
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Move List Container -->
+                <div style="background:var(--surface2, rgba(0,0,0,0.25)); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; height:220px;">
+                  <div style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>📜 Move Notation</span>
+                    <span style="font-size:11px; opacity:0.6; color:var(--ivory-dim);">Click move to jump</span>
+                  </div>
+                  <div id="coach-pgn-movelist-container" style="flex:1; overflow-y:auto; display:grid; gap:2px; padding-right:4px;"></div>
+                </div>
+
+                <!-- TOM AI Guidance Assistant -->
+                <div id="coach-pgn-tom-ai-guide" style="background:linear-gradient(135deg, rgba(218,163,62,0.1), rgba(15,23,42,0.9)); border:1px solid rgba(218,163,62,0.35); border-radius:14px; padding:14px 16px;">
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <span style="font-size:20px;">🤖</span>
+                    <span style="font-size:12px; color:var(--ivory-dim);">Loading TOM AI move guidance...</span>
+                  </div>
+                </div>
+
+                <!-- Lichess Master Opening Explorer -->
+                <div id="coach-pgn-lichess-explorer" style="background:var(--surface2, rgba(0,0,0,0.25)); border:1px solid var(--border); border-radius:14px; padding:16px; min-height:140px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 2: ASSIGNED TOPICS TO BATCHES -->
+        <div id="coach-studypgn-subview-topics" class="coach-studypgn-subview" style="display:none;">
+          <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+              <div>
+                <h3 style="margin:0 0 4px; color:#fff; font-size:17px; font-weight:700;">📋 Assigned Repertoires &amp; PGN Topics</h3>
+                <p style="margin:0; font-size:13px; color:var(--ivory-dim);">Topics assigned to your batches or specific students.</p>
+              </div>
+              <button class="btn btn-gold btn-sm" onclick="window.openAssignStudyTopicModal()">➕ Assign New Topic</button>
+            </div>
+            <div id="coach-assigned-topics-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+              <!-- Populated dynamically by StudyPGN.renderAssignedTopicsList() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VIEW 3: BATCH PRACTICE & STREAKS MONITOR -->
+        <div id="coach-studypgn-subview-monitor" class="coach-studypgn-subview" style="display:none;">
           <div class="card" style="padding:20px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
-            <h3 style="margin:0 0 16px; color:#fff; font-size:16px; font-weight:700;">My Batch Students — Daily Practice &amp; Topics Status</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 style="margin:0 0 4px; color:#fff; font-size:16px; font-weight:700;">My Batch Students — Daily Practice &amp; Topics Status</h3>
+                <p style="margin:0; font-size:12.5px; color:var(--ivory-dim);">Real-time daily puzzle streaks, calculation velocity, and topic completion.</p>
+              </div>
+              <button class="btn btn-outline-grey btn-sm" onclick="if(window.renderStudyPgnMonitor) window.renderStudyPgnMonitor('coach');">🔄 Refresh Status</button>
+            </div>
             <div id="coach-studypgn-students-table-wrap" style="overflow-x:auto;">
               <!-- Dynamic Practice Log for Coach -->
             </div>
           </div>
         </div>
+
+        <!-- SUB-VIEW 4: GRANDMASTER MASTERCLASS VAULT -->
+        <div id="coach-studypgn-subview-vault" class="coach-studypgn-subview" style="display:none;">
+          <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+              <div>
+                <h3 style="margin:0 0 4px; color:#fff; font-size:17px; font-weight:700;">📖 Academy Masterclass Repertoire Vault</h3>
+                <p style="margin:0; font-size:13px; color:var(--ivory-dim);">Curated opening repertoires, classic attacking masterclasses, and endgame techniques.</p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="coach-vault-search" class="input-field" style="margin-bottom:0; font-size:12.5px; min-width:200px;" placeholder="Search repertoires..." oninput="window.StudyPGN.filterVaultGames(this.value)">
+              </div>
+            </div>
+            <div id="coach-vault-cards-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
