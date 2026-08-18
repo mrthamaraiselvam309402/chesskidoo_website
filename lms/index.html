@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="/lms/styles.css?v=20260730c_v15"/>
 
    <!-- Local Libraries (self-hosted) -->
+   <script src="/lms/lib/chess.min.js"></script>
    <script src="/lms/lib/chart.umd.min.js"></script>
    <script src="/lms/lib/supabase.umd.min.js"></script>
    <script src="/lms/lib/xlsx.full.min.js"></script>
@@ -1741,7 +1742,7 @@
               <!-- Right Notation & Explorer Column -->
               <div style="display:flex; flex-direction:column; gap:16px;">
                 <!-- Move List Container -->
-                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; height:240px;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; height:220px;">
                   <div style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between;">
                     <span>📜 Move Notation</span>
                     <span style="font-size:11px; opacity:0.6; color:var(--ivory-dim);">Click move to jump</span>
@@ -1749,8 +1750,16 @@
                   <div id="pgn-movelist-container" style="flex:1; overflow-y:auto; display:grid; gap:2px; padding-right:4px;"></div>
                 </div>
 
+                <!-- TOM AI Move Guidance Assistant -->
+                <div id="pgn-tom-ai-guide" style="background:linear-gradient(135deg, rgba(218,163,62,0.1), rgba(15,23,42,0.9)); border:1px solid rgba(218,163,62,0.35); border-radius:14px; padding:14px 16px;">
+                  <div style="display:flex; gap:10px; align-items:center;">
+                    <span style="font-size:20px;">🤖</span>
+                    <span style="font-size:12px; color:var(--ivory-dim);">Loading TOM AI move guidance...</span>
+                  </div>
+                </div>
+
                 <!-- Lichess Master Opening Explorer API -->
-                <div id="pgn-lichess-explorer" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; min-height:160px;"></div>
+                <div id="pgn-lichess-explorer" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; min-height:140px;"></div>
               </div>
             </div>
           </div>
@@ -4942,6 +4951,22 @@
           <div class="modal-box" style="max-width:650px; width:95%; max-height:88vh; overflow-y:auto; background:var(--bg2);">
             <div class="modal-title">♟️ Assign PGN Study Topic</div>
             <div style="display:grid; gap:14px; margin-top:16px;">
+              <div>
+                <label class="label" style="display:flex; justify-content:space-between;">
+                  <span>📚 Quick Preset Topic Template</span>
+                  <span style="font-size:11px; color:var(--gold);">Auto-fill from Master Library</span>
+                </label>
+                <select id="topic-preset-select" class="input-field" onchange="window.loadStudyTopicPreset(this.value)">
+                  <option value="">-- Or Choose from Academy Templates --</option>
+                  <option value="evans">⚔️ Italian Game: Evans Gambit Attack</option>
+                  <option value="dragon">🐉 Sicilian Defense: Dragon Variation</option>
+                  <option value="qgd">👑 Queen's Gambit Declined (Carlsen Repertoire)</option>
+                  <option value="lucena">🏰 Rook Endgames: Lucena Bridge Technique</option>
+                  <option value="philidor">🛡️ Philidor Defense &amp; Counter-attack</option>
+                  <option value="fork">⚡ Knight Fork &amp; Pin Combinations</option>
+                </select>
+              </div>
+
               <div>
                 <label class="label">Topic Title *</label>
                 <input type="text" id="topic-title-input" class="input-field" placeholder="e.g. Italian Game: Evans Gambit Repertoire">

@@ -5725,9 +5725,11 @@
       ];
       names.forEach((u, i) => {
         setTimeout(() => {
-          fetch(`${API_BASE}/lichess?username=${encodeURIComponent(u)}`, {
+          fetch(`/api/lichess?username=${encodeURIComponent(u)}`, {
             signal: typeof AbortSignal !== "undefined" && AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined,
-          }).catch(() => {});
+          }).catch(() => {
+            fetch(`https://lichess.org/api/user/${encodeURIComponent(u)}`).catch(() => {});
+          });
         }, 800 + i * 500);
       });
       if (names.length) console.log(`[Sync] Warming Lichess cache for ${names.length} linked accounts`);

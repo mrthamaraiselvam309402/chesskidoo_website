@@ -1,10 +1,11 @@
 /**
- * ChessKidoo LMS — Study PGN, Daily Tactics Streaks & Board Visualization Engine (v1.0)
+ * ChessKidoo LMS — Study PGN, Daily Tactics Streaks & Board Visualization Engine (v2.0)
  * ──────────────────────────────────────────────────────────────────────────────────────────
- * 1. Interactive PGN Study Board (Lichess-style analysis, GM games, Stockfish evaluations, Guess the Move).
- * 2. Daily Tactics Workout & Gamified Streaks (Live Lichess Daily Puzzle API + Calibrated Levels).
- * 3. Board Visualization & Speed Calculation Trainer (Square Color, Coordinate Radar, Knight Pathfinder).
- * 4. Coach & Admin Topic Assignment & Student Practice Monitoring Dashboard.
+ * 1. Interactive PGN Study Board (Chess.com theme, Lichess opening tree, Stockfish Cloud API, Guess the Move).
+ * 2. TOM AI Move-by-Move Guidance (pedagogical explanations for every move in the PGN).
+ * 3. Daily Tactics Workout & Gamified Streaks (Live Lichess Daily Puzzle API + Calibrated Levels).
+ * 4. Board Visualization & Speed Calculation Trainer (Square Color, Coordinate Radar, Knight Pathfinder).
+ * 5. Coach & Admin Topic Assignment & Student Practice Monitoring Dashboard.
  */
 (function () {
   'use strict';
@@ -13,18 +14,51 @@
   const STORAGE_TACTICS_RECORDS = 'ck_student_tactics_records';
   const STORAGE_ASSIGNED_TOPICS = 'ck_assigned_study_topics';
   const STORAGE_VISION_SCORES = 'ck_student_vision_scores';
+  const STORAGE_COMPLETED_TOPICS = 'ck_completed_study_topics';
+
+  // ── Chess.com Style Piece Images with SVG / Unicode Fallback ──
+  const CHESSCOM_PIECES = {
+    'P': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png',
+    'N': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png',
+    'B': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wb.png',
+    'R': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png',
+    'Q': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wq.png',
+    'K': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png',
+    'p': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bp.png',
+    'n': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bn.png',
+    'b': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bb.png',
+    'r': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/br.png',
+    'q': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bq.png',
+    'k': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bk.png'
+  };
+
+  const UNICODE_PIECES = {
+    'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚',
+    'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
+  };
+
+  // ── Safe HTML Escape ──
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   // ── Curated Grandmaster PGN Vault ──
   const CURATED_STUDY_GAMES = [
     {
       id: 'gm-opera-1858',
-      title: 'The Opera Game: Paul Morphy vs Duke of Brunswick & Count Isouard (1858)',
+      title: 'The Opera Game: Paul Morphy vs Duke of Brunswick (1858)',
       category: 'Masterpiece',
       level: 'Beginner',
       white: 'Paul Morphy',
       black: 'Duke of Brunswick & Count Isouard',
       result: '1-0',
-      description: 'The most famous game in chess history illustrating rapid development, open lines, and deflection sacrifices.',
+      description: 'The most famous game in chess history illustrating rapid piece development, open lines, and deflection sacrifices.',
       pgn: `[Event "Paris Opera"]
 [Site "Paris FRA"]
 [Date "1858.??.??"]
@@ -148,7 +182,7 @@
     }
   ];
 
-  // ── Global State ──
+  // ── Global State Object ──
   window.StudyPGN = {
     // PGN Board State
     currentGame: null,
@@ -161,6 +195,9 @@
     guessScore: 0,
     guessTotal: 0,
     boardOrientation: 'white',
+    selectedSquare: null,
+    legalMovesForSelected: [],
+    activeAssignedTopic: null,
 
     // Daily Tactics State
     currentPuzzle: null,
@@ -170,7 +207,7 @@
     hasSolvedToday: false,
 
     // Visualization State
-    visionMode: 'color', // 'color' | 'radar' | 'knight'
+    visionMode: 'color',
     visionTimer: null,
     visionTimeRemaining: 30,
     visionScore: 0,
@@ -179,6 +216,7 @@
 
     // Init
     init: function () {
+      this.ensureChessEngine();
       this.loadSavedRecords();
       this.loadDailyPuzzle();
       this.loadCuratedGame(0);
@@ -186,7 +224,19 @@
     }
   };
 
-  // ── Local Storage & Record Sync ──
+  // ── Ensure Chess Engine Ready ──
+  StudyPGN.ensureChessEngine = function () {
+    if (!window.Chess) {
+      console.warn('[StudyPGN] Chess.js not loaded. Initializing basic chess state.');
+      return false;
+    }
+    if (!StudyPGN.chess) {
+      StudyPGN.chess = new window.Chess();
+    }
+    return true;
+  };
+
+  // ── Local Storage & Records Sync ──
   StudyPGN.loadSavedRecords = function () {
     try {
       const rec = JSON.parse(localStorage.getItem(STORAGE_TACTICS_RECORDS) || '{}');
@@ -210,7 +260,6 @@
       const rec = JSON.parse(localStorage.getItem(STORAGE_TACTICS_RECORDS) || '{}');
       const studRec = rec[studentId] || { streak: 0, lastDate: '', solvedCount: 0, history: [] };
 
-      // Calculate streak
       const lastDate = studRec.lastDate;
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
@@ -234,27 +283,14 @@
       localStorage.setItem(STORAGE_TACTICS_RECORDS, JSON.stringify(rec));
       this.dailyStreak = studRec.streak;
       this.hasSolvedToday = true;
-
-      // Update cloud if Supabase active
-      if (window.supabaseClient) {
-        window.supabaseClient.from('student_tactics').upsert([{
-          student_id: studentId,
-          student_name: studentName,
-          streak: studRec.streak,
-          last_solved_date: todayStr,
-          total_solved: studRec.solvedCount,
-          updated_at: new Date().toISOString()
-        }]).then(() => {}).catch(() => {});
-      }
     } catch (e) {}
 
     StudyPGN.updateStreakUI();
   };
 
-  // ── Keyboard Shortcuts ──
+  // ── Keyboard Navigation ──
   StudyPGN.setupKeyboardListeners = function () {
     window.addEventListener('keydown', (e) => {
-      // Only active if study lab is in view
       const labTab = document.getElementById('child-tab-studypgn');
       const adminLab = document.getElementById('page-studypgn');
       const coachLab = document.getElementById('page-coach-studypgn');
@@ -286,38 +322,45 @@
     });
   };
 
-  // ── PGN Board Engine ──
+  // ── PGN Loader Engine ──
   StudyPGN.loadCuratedGame = function (index) {
     const game = CURATED_STUDY_GAMES[index] || CURATED_STUDY_GAMES[0];
     StudyPGN.loadPgnString(game.pgn, game);
   };
 
-  StudyPGN.loadPgnString = function (pgnText, metadata) {
+  StudyPGN.loadPgnString = function (pgnText, metadata = {}) {
+    StudyPGN.ensureChessEngine();
     if (!window.Chess) return;
+
     const c = new window.Chess();
-    const success = c.load_pgn(pgnText);
+    const cleanPgn = (pgnText || '').trim();
+    const success = c.load_pgn(cleanPgn);
 
     if (!success) {
-      if (window.toast) window.toast('Invalid PGN notation provided.', 'warning');
+      if (window.toast) window.toast('Unable to parse PGN notation format.', 'warning');
       return;
     }
 
     StudyPGN.currentGame = {
       ...metadata,
-      pgn: pgnText,
+      pgn: cleanPgn,
       headers: c.header ? c.header() : {}
     };
 
     StudyPGN.moveHistory = c.history({ verbose: true });
     StudyPGN.chess = new window.Chess();
     StudyPGN.currentMoveIndex = -1;
+    StudyPGN.selectedSquare = null;
+    StudyPGN.legalMovesForSelected = [];
     StudyPGN.isAutoplaying = false;
     if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
 
     StudyPGN.renderBoard();
     StudyPGN.renderMoveList();
     StudyPGN.renderGameInfo();
+    StudyPGN.updateAiMoveGuide();
     StudyPGN.fetchLichessOpeningStats();
+    StudyPGN.fetchStockfishCloudEval();
   };
 
   StudyPGN.goToMove = function (index) {
@@ -329,10 +372,15 @@
       StudyPGN.chess.move(StudyPGN.moveHistory[i]);
     }
     StudyPGN.currentMoveIndex = targetIdx;
+    StudyPGN.selectedSquare = null;
+    StudyPGN.legalMovesForSelected = [];
+
     StudyPGN.renderBoard();
     StudyPGN.highlightCurrentMove();
     StudyPGN.updateEvalGauge();
+    StudyPGN.updateAiMoveGuide();
     StudyPGN.fetchLichessOpeningStats();
+    StudyPGN.fetchStockfishCloudEval();
   };
 
   StudyPGN.nextMove = function () {
@@ -376,45 +424,70 @@
     }
   };
 
-  // ── Render Board SVG/DOM ──
+  // ── Render Chess.com Style Board ──
   StudyPGN.renderBoard = function (containerId = 'pgn-study-board') {
     const container = document.getElementById(containerId);
-    if (!container || !StudyPGN.chess) return;
+    if (!container) return;
 
-    const board = StudyPGN.chess.board();
+    if (!StudyPGN.chess) {
+      if (window.Chess) StudyPGN.chess = new window.Chess();
+    }
+
+    const board = StudyPGN.chess ? StudyPGN.chess.board() : [
+      [{ type: 'r', color: 'b' }, { type: 'n', color: 'b' }, { type: 'b', color: 'b' }, { type: 'q', color: 'b' }, { type: 'k', color: 'b' }, { type: 'b', color: 'b' }, { type: 'n', color: 'b' }, { type: 'r', color: 'b' }],
+      [{ type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }, { type: 'p', color: 'b' }],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [{ type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }, { type: 'p', color: 'w' }],
+      [{ type: 'r', color: 'w' }, { type: 'n', color: 'w' }, { type: 'b', color: 'w' }, { type: 'q', color: 'w' }, { type: 'k', color: 'w' }, { type: 'b', color: 'w' }, { type: 'n', color: 'w' }, { type: 'r', color: 'w' }]
+    ];
+
     const isFlipped = StudyPGN.boardOrientation === 'black';
-
-    const pieceSymbols = {
-      'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚',
-      'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
-    };
+    const lastMove = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
 
     let html = `
-      <div class="pgn-chess-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:480px; margin:0 auto; border-radius:12px; overflow:hidden; border:2px solid rgba(218,163,62,0.3); box-shadow:0 12px 36px rgba(0,0,0,0.5);">
+      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:480px; margin:0 auto; border-radius:12px; overflow:hidden; border:3px solid #312e2b; box-shadow:0 14px 40px rgba(0,0,0,0.6); position:relative;">
     `;
 
     const rows = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
     const cols = isFlipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
-
-    const lastMove = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
 
     rows.forEach(r => {
       cols.forEach(c => {
         const isLight = (r + c) % 2 === 0;
         const squareName = String.fromCharCode(97 + c) + (8 - r);
         const piece = board[r][c];
-        const isHighlight = lastMove && (lastMove.from === squareName || lastMove.to === squareName);
 
-        const bgColor = isHighlight ? (isLight ? '#cdd26a' : '#aaa23a') : (isLight ? '#f0d9b5' : '#b58863');
-        const pieceChar = piece ? (piece.color === 'w' ? pieceSymbols[piece.type.toUpperCase()] : pieceSymbols[piece.type.toLowerCase()]) : '';
-        const pieceColorStyle = piece ? (piece.color === 'w' ? 'color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.8), 0 0 2px #000;' : 'color:#18181b; text-shadow:0 1px 2px rgba(255,255,255,0.4);') : '';
+        // Chess.com Neo Colors
+        const isHighlight = lastMove && (lastMove.from === squareName || lastMove.to === squareName);
+        const isSelected = StudyPGN.selectedSquare === squareName;
+        const isLegalDest = StudyPGN.legalMovesForSelected.some(m => m.to === squareName);
+
+        let bgColor = isLight ? '#eeeed2' : '#769656';
+        if (isHighlight) bgColor = isLight ? '#f7f769' : '#baca44';
+        if (isSelected) bgColor = '#f5f682';
+
+        const pieceKey = piece ? (piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase()) : '';
+        const pieceImgUrl = pieceKey ? CHESSCOM_PIECES[pieceKey] : '';
+        const pieceChar = pieceKey ? UNICODE_PIECES[pieceKey] : '';
 
         html += `
-          <div class="pgn-square" data-square="${squareName}" onclick="StudyPGN.onSquareClicked('${squareName}')"
-               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; font-size:clamp(1.8rem, 5vw, 2.6rem); cursor:pointer; user-select:none; position:relative; font-family:'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;">
-            <span style="${pieceColorStyle} transform:translateY(-2px);">${pieceChar}</span>
-            ${c === (isFlipped ? 7 : 0) ? `<span style="position:absolute; top:2px; left:3px; font-size:9px; font-weight:700; opacity:0.6; color:${isLight ? '#b58863' : '#f0d9b5'}; font-family:sans-serif;">${8 - r}</span>` : ''}
-            ${r === (isFlipped ? 0 : 7) ? `<span style="position:absolute; bottom:2px; right:3px; font-size:9px; font-weight:700; opacity:0.6; color:${isLight ? '#b58863' : '#f0d9b5'}; font-family:sans-serif;">${String.fromCharCode(97 + c)}</span>` : ''}
+          <div class="pgn-square" data-square="${squareName}" onclick="StudyPGN.onBoardSquareClicked('${squareName}')"
+               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
+            ${pieceImgUrl ? `
+              <img src="${pieceImgUrl}" alt="${pieceKey}" style="width:88%; height:88%; object-fit:contain; pointer-events:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <span style="display:none; font-size:2.2rem; ${piece.color === 'w' ? 'color:#fff; text-shadow:0 1px 2px #000;' : 'color:#000;'}">${pieceChar}</span>
+            ` : ''}
+
+            ${isLegalDest ? `
+              <div style="position:absolute; width:${piece ? '88%' : '26%'}; height:${piece ? '88%' : '26%'}; border-radius:${piece ? '50%' : '50%'}; ${piece ? 'border:4px solid rgba(0,0,0,0.25);' : 'background:rgba(0,0,0,0.18);'} pointer-events:none;"></div>
+            ` : ''}
+
+            ${c === (isFlipped ? 7 : 0) ? `<span style="position:absolute; top:3px; left:4px; font-size:10px; font-weight:800; opacity:0.75; color:${isLight ? '#769656' : '#eeeed2'}; font-family:sans-serif;">${8 - r}</span>` : ''}
+            ${r === (isFlipped ? 0 : 7) ? `<span style="position:absolute; bottom:2px; right:4px; font-size:10px; font-weight:800; opacity:0.75; color:${isLight ? '#769656' : '#eeeed2'}; font-family:sans-serif;">${String.fromCharCode(97 + c)}</span>` : ''}
           </div>
         `;
       });
@@ -424,14 +497,43 @@
     container.innerHTML = html;
   };
 
-  StudyPGN.onSquareClicked = function (square) {
-    // Guess the move handler or interactive board move test
+  StudyPGN.onBoardSquareClicked = function (square) {
+    if (!StudyPGN.chess) return;
+
     if (StudyPGN.isGuessTheMoveMode) {
       StudyPGN.handleGuessMove(square);
+      return;
+    }
+
+    if (!StudyPGN.selectedSquare) {
+      const piece = StudyPGN.chess.get(square);
+      if (piece && piece.color === StudyPGN.chess.turn()) {
+        StudyPGN.selectedSquare = square;
+        StudyPGN.legalMovesForSelected = StudyPGN.chess.moves({ square: square, verbose: true });
+        StudyPGN.renderBoard();
+      }
+    } else {
+      const move = StudyPGN.chess.move({ from: StudyPGN.selectedSquare, to: square, promotion: 'q' });
+      StudyPGN.selectedSquare = null;
+      StudyPGN.legalMovesForSelected = [];
+
+      if (move) {
+        StudyPGN.renderBoard();
+        StudyPGN.updateAiMoveGuide(move);
+        StudyPGN.fetchLichessOpeningStats();
+        StudyPGN.fetchStockfishCloudEval();
+      } else {
+        const piece = StudyPGN.chess.get(square);
+        if (piece && piece.color === StudyPGN.chess.turn()) {
+          StudyPGN.selectedSquare = square;
+          StudyPGN.legalMovesForSelected = StudyPGN.chess.moves({ square: square, verbose: true });
+        }
+        StudyPGN.renderBoard();
+      }
     }
   };
 
-  // ── Render Move Notation List ──
+  // ── Render Move Notation Tree ──
   StudyPGN.renderMoveList = function () {
     const listContainer = document.getElementById('pgn-movelist-container');
     if (!listContainer || !StudyPGN.moveHistory) return;
@@ -446,15 +548,15 @@
       const isBActive = StudyPGN.currentMoveIndex === i + 1;
 
       html += `
-        <div style="display:grid; grid-template-columns:36px 1fr 1fr; gap:6px; align-items:center; padding:4px 8px; border-radius:6px; font-size:13px; font-family:var(--font-mono, monospace);">
-          <span style="color:var(--ivory-dim); opacity:0.6;">${moveNum}.</span>
+        <div style="display:grid; grid-template-columns:36px 1fr 1fr; gap:6px; align-items:center; padding:3px 8px; border-radius:6px; font-size:13px; font-family:monospace;">
+          <span style="color:#64748b; font-weight:700;">${moveNum}.</span>
           <button class="pgn-move-btn ${isWActive ? 'active' : ''}" onclick="StudyPGN.goToMove(${i})"
-                  style="text-align:left; background:${isWActive ? 'var(--gold)' : 'rgba(255,255,255,0.04)'}; color:${isWActive ? '#000' : '#fff'}; font-weight:${isWActive ? '800' : '600'}; padding:4px 8px; border-radius:4px; border:none; cursor:pointer;">
+                  style="text-align:left; background:${isWActive ? 'var(--gold, #daa33e)' : 'rgba(255,255,255,0.04)'}; color:${isWActive ? '#000' : '#fff'}; font-weight:${isWActive ? '800' : '600'}; padding:5px 8px; border-radius:6px; border:none; cursor:pointer;">
             ${wMove.san}
           </button>
           ${bMove ? `
             <button class="pgn-move-btn ${isBActive ? 'active' : ''}" onclick="StudyPGN.goToMove(${i + 1})"
-                    style="text-align:left; background:${isBActive ? 'var(--gold)' : 'rgba(255,255,255,0.04)'}; color:${isBActive ? '#000' : '#fff'}; font-weight:${isBActive ? '800' : '600'}; padding:4px 8px; border-radius:4px; border:none; cursor:pointer;">
+                    style="text-align:left; background:${isBActive ? 'var(--gold, #daa33e)' : 'rgba(255,255,255,0.04)'}; color:${isBActive ? '#000' : '#fff'}; font-weight:${isBActive ? '800' : '600'}; padding:5px 8px; border-radius:6px; border:none; cursor:pointer;">
               ${bMove.san}
             </button>
           ` : '<span></span>'}
@@ -470,7 +572,7 @@
     btns.forEach((btn, idx) => {
       if (idx === StudyPGN.currentMoveIndex) {
         btn.classList.add('active');
-        btn.style.background = 'var(--gold)';
+        btn.style.background = 'var(--gold, #daa33e)';
         btn.style.color = '#000';
         btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       } else {
@@ -493,13 +595,68 @@
     if (playersEl) playersEl.innerHTML = `<strong>⚪ ${escapeHtml(g.white || 'White')}</strong> vs <strong>⚫ ${escapeHtml(g.black || 'Black')}</strong> · <span style="color:var(--gold); font-weight:700;">${escapeHtml(g.result || '*')}</span>`;
   };
 
-  // ── Stockfish Evaluation Gauge ──
+  // ── TOM AI Move Guidance & Pedagogical Breakdown ──
+  StudyPGN.updateAiMoveGuide = function (customMove) {
+    const guideEl = document.getElementById('pgn-tom-ai-guide');
+    if (!guideEl) return;
+
+    const move = customMove || (StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null);
+
+    if (!move) {
+      guideEl.innerHTML = `
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div style="font-size:24px;">🤖</div>
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase; margin-bottom:4px;">TOM AI Move Assistant</div>
+            <p style="margin:0; font-size:13px; color:#94a3b8; line-height:1.5;">Starting position loaded. Step forward with <strong>▶ Next Move</strong> or click on the board to explore candidate master lines!</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const san = move.san;
+    let rationale = `Played <strong>${escapeHtml(san)}</strong>.`;
+
+    if (san === 'e4' || san === 'd4') rationale = `Controls key central squares (d5, e5), opens diagonal pathways for bishop and queen development.`;
+    else if (san === 'Nf3' || san === 'Nc3' || san === 'Nf6' || san === 'Nc6') rationale = `Develops the knight toward the center, pressuring key central outposts before moving wing pieces.`;
+    else if (san.includes('O-O')) rationale = `Castling secures the king behind a protective pawn wall and activates the rook onto the central file.`;
+    else if (san.includes('x')) rationale = `Tactical capture! Clears an attacking line and challenges the opponent's defensive structure.`;
+    else if (san.includes('+')) rationale = `Check! Forces the defending side to respond immediately, creating tempo advantages.`;
+    else if (san.includes('#')) rationale = `Checkmate! The Grandmaster execution completes the mating net. Outstanding game finish!`;
+    else if (san.startsWith('B')) rationale = `Develops the bishop to an active diagonal, targeting opponent weaknesses or pinning minor pieces.`;
+
+    guideEl.innerHTML = `
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="font-size:24px;">🤖</div>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase;">TOM AI Guidance • Move ${escapeHtml(san)}</span>
+            <button class="btn btn-outline btn-sm" onclick="window.askTomAiAboutPosition()" style="font-size:10.5px; padding:2px 8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">🎙️ Ask TOM</button>
+          </div>
+          <p style="margin:0; font-size:13px; color:#e2e8f0; line-height:1.5;">${rationale}</p>
+        </div>
+      </div>
+    `;
+  };
+
+  window.askTomAiAboutPosition = function () {
+    if (!StudyPGN.chess) return;
+    const fen = StudyPGN.chess.fen();
+    const move = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
+    const moveText = move ? move.san : 'Start position';
+
+    if (window.toast) {
+      window.toast(`🤖 TOM AI: Analyzing position after ${moveText}... FEN: ${fen.substring(0, 25)}...`, 'info');
+    }
+  };
+
+  // ── Stockfish Evaluation Gauge & Cloud API Sync ──
   StudyPGN.updateEvalGauge = function () {
     const bar = document.getElementById('pgn-eval-bar');
     const scoreText = document.getElementById('pgn-eval-text');
     if (!bar || !scoreText || !StudyPGN.chess) return;
 
-    // Simple heuristic material + positional estimation
     let score = 0;
     const pieceVals = { p: 1, n: 3.2, b: 3.3, r: 5, q: 9.5, k: 0 };
     const board = StudyPGN.chess.board();
@@ -520,6 +677,32 @@
     scoreText.textContent = (score >= 0 ? `+${score.toFixed(1)}` : score.toFixed(1));
   };
 
+  StudyPGN.fetchStockfishCloudEval = async function () {
+    if (!StudyPGN.chess) return;
+    const fen = StudyPGN.chess.fen();
+    const scoreText = document.getElementById('pgn-eval-text');
+    const bar = document.getElementById('pgn-eval-bar');
+
+    try {
+      const res = await fetch(`https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(fen)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.pvs && data.pvs[0]) {
+          const pv = data.pvs[0];
+          if (pv.mate) {
+            if (scoreText) scoreText.textContent = `M${pv.mate}`;
+            if (bar) bar.style.height = pv.mate > 0 ? '100%' : '0%';
+          } else if (pv.cp != null) {
+            const cpVal = pv.cp / 100;
+            if (scoreText) scoreText.textContent = (cpVal >= 0 ? `+${cpVal.toFixed(1)}` : cpVal.toFixed(1));
+            const whitePct = Math.max(5, Math.min(95, 50 + (cpVal * 4.5)));
+            if (bar) bar.style.height = `${whitePct}%`;
+          }
+        }
+      }
+    } catch (e) {}
+  };
+
   // ── Lichess Master Opening Explorer API ──
   StudyPGN.fetchLichessOpeningStats = async function () {
     const explorerEl = document.getElementById('pgn-lichess-explorer');
@@ -528,13 +711,13 @@
     const fen = StudyPGN.chess.fen();
     try {
       explorerEl.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`;
-      
+
       const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3`);
       if (!res.ok) throw new Error('API limit or offline');
       const data = await res.json();
 
       if (!data.moves || !data.moves.length) {
-        explorerEl.innerHTML = `<div style="font-size:12px; color:var(--ivory-dim); padding:8px;">End of master database book. Explore tactical novelties!</div>`;
+        explorerEl.innerHTML = `<div style="font-size:12px; color:var(--ivory-dim); padding:8px;">End of master opening book. Explore tactical novelties!</div>`;
         return;
       }
 
@@ -557,16 +740,16 @@
       }).join('');
 
       explorerEl.innerHTML = `
-        <div style="padding:8px 0;">
+        <div style="padding:4px 0;">
           <div style="font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:6px; display:flex; justify-content:space-between;">
-            <span>♟️ Lichess Master Moves</span>
+            <span>♟️ Lichess Master Move Tree</span>
             <span>${(data.white + data.draws + data.black).toLocaleString()} Games</span>
           </div>
           ${movesHtml}
         </div>
       `;
     } catch (e) {
-      explorerEl.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:6px;">Lichess Master Explorer: Offline Mode (Local Grandmaster Vault active).</div>`;
+      explorerEl.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:6px;">Lichess Master Explorer: Local Grandmaster Vault active.</div>`;
     }
   };
 
@@ -585,13 +768,12 @@
     if (StudyPGN.isGuessTheMoveMode) {
       StudyPGN.guessScore = 0;
       StudyPGN.guessTotal = 0;
-      if (window.toast) window.toast('🎯 Guess the Move Activated! Play the Grandmaster\'s next move on the board.', 'info');
+      if (window.toast) window.toast('🎯 Guess the Move Activated! Click a piece and play your candidate move on the board.', 'info');
     }
   };
 
   // ── Daily Tactics Workout Engine ──
   StudyPGN.loadDailyPuzzle = async function () {
-    // Try fetching from Lichess Daily Puzzle API
     try {
       const res = await fetch('https://lichess.org/api/puzzle/daily');
       if (res.ok) {
@@ -610,11 +792,8 @@
           return;
         }
       }
-    } catch (e) {
-      console.warn('[StudyPGN] Lichess puzzle daily offline fallback');
-    }
+    } catch (e) {}
 
-    // Fallback to calibrated local puzzle
     const puz = CURATED_TACTICS[Math.floor(Math.random() * CURATED_TACTICS.length)];
     StudyPGN.currentPuzzle = puz;
     StudyPGN.setupPuzzle(puz);
@@ -641,11 +820,6 @@
     const board = StudyPGN.puzzleGame.board();
     const isWhiteTurn = StudyPGN.puzzleGame.turn() === 'w';
 
-    const pieceSymbols = {
-      'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚',
-      'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
-    };
-
     let html = `
       <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:13px; font-weight:700; color:${isWhiteTurn ? '#fff' : '#fbbf24'};">
@@ -653,7 +827,7 @@
         </span>
         <span style="font-size:12px; color:var(--ivory-dim);">Puzzle #${StudyPGN.currentPuzzle?.id || 'Daily'}</span>
       </div>
-      <div class="pgn-chess-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:12px; overflow:hidden; border:2px solid rgba(218,163,62,0.4); box-shadow:0 12px 32px rgba(0,0,0,0.5);">
+      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:12px; overflow:hidden; border:3px solid #312e2b; box-shadow:0 14px 36px rgba(0,0,0,0.6);">
     `;
 
     for (let r = 0; r < 8; r++) {
@@ -662,14 +836,16 @@
         const squareName = String.fromCharCode(97 + c) + (8 - r);
         const piece = board[r][c];
 
-        const bgColor = isLight ? '#f0d9b5' : '#b58863';
-        const pieceChar = piece ? (piece.color === 'w' ? pieceSymbols[piece.type.toUpperCase()] : pieceSymbols[piece.type.toLowerCase()]) : '';
-        const pieceColorStyle = piece ? (piece.color === 'w' ? 'color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.8), 0 0 2px #000;' : 'color:#18181b; text-shadow:0 1px 2px rgba(255,255,255,0.4);') : '';
+        const bgColor = isLight ? '#eeeed2' : '#769656';
+        const pieceKey = piece ? (piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase()) : '';
+        const pieceImgUrl = pieceKey ? CHESSCOM_PIECES[pieceKey] : '';
 
         html += `
           <div class="tactics-square" data-square="${squareName}" onclick="StudyPGN.onTacticsSquareClicked('${squareName}')"
-               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; font-size:clamp(1.6rem, 4.8vw, 2.4rem); cursor:pointer; user-select:none; position:relative; font-family:'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;">
-            <span style="${pieceColorStyle} transform:translateY(-2px);">${pieceChar}</span>
+               style="background:${bgColor}; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative;">
+            ${pieceImgUrl ? `
+              <img src="${pieceImgUrl}" alt="${pieceKey}" style="width:88%; height:88%; object-fit:contain; pointer-events:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));">
+            ` : ''}
           </div>
         `;
       }
@@ -687,7 +863,7 @@
       if (piece && piece.color === StudyPGN.puzzleGame.turn()) {
         selectedTacticsSquare = square;
         document.querySelectorAll('.tactics-square').forEach(el => {
-          if (el.getAttribute('data-square') === square) el.style.outline = '3px solid var(--gold)';
+          if (el.getAttribute('data-square') === square) el.style.outline = '3px solid #f5f682';
         });
       }
     } else {
@@ -706,21 +882,18 @@
     const puzzle = StudyPGN.currentPuzzle;
     if (!puzzle) return;
 
-    // Check if move matches solution
     const moveStr = move.from + move.to;
     const expectedMove = puzzle.moves ? puzzle.moves[StudyPGN.puzzleMoveIndex] : null;
 
     if (!expectedMove || expectedMove.includes(moveStr) || move.san === expectedMove) {
       StudyPGN.puzzleMoveIndex++;
       if (StudyPGN.puzzleMoveIndex >= (puzzle.moves?.length || 1)) {
-        // Solved!
-        if (window.toast) window.toast('🎉 Excellent calculation! Puzzle Solved!', 'success');
+        if (window.toast) window.toast('🎉 Brilliant move! Puzzle Solved!', 'success');
         StudyPGN.recordTacticsSolved(puzzle.id, puzzle.level, 20);
         setTimeout(() => {
           StudyPGN.loadDailyPuzzle();
         }, 1800);
       } else {
-        // Play opponent response
         setTimeout(() => {
           const oppMoveStr = puzzle.moves[StudyPGN.puzzleMoveIndex];
           if (oppMoveStr && oppMoveStr.length >= 4) {
@@ -731,7 +904,7 @@
         }, 500);
       }
     } else {
-      if (window.toast) window.toast('❌ Not the best move! Try recalculating candidate lines.', 'warning');
+      if (window.toast) window.toast('❌ Not the optimal move. Recalculate your tactics!', 'warning');
       setTimeout(() => {
         StudyPGN.puzzleGame.undo();
         StudyPGN.renderTacticsBoard();
@@ -811,11 +984,56 @@
     StudyPGN.nextVisionQuestion();
   };
 
-  StudyPGN.endVisionGame = function () {
-    if (window.toast) window.toast(`🏁 Time's up! Calculation Score: ${StudyPGN.visionScore} points!`, 'success');
+  // ── Preset Templates Auto-filler ──
+  window.loadStudyTopicPreset = function (presetKey) {
+    const titleInput = document.getElementById('topic-title-input');
+    const catSelect = document.getElementById('topic-cat-select');
+    const pgnInput = document.getElementById('topic-pgn-input');
+    if (!presetKey) return;
+
+    const PRESETS = {
+      evans: {
+        title: 'Italian Game: Evans Gambit Attack',
+        category: 'Openings',
+        pgn: `1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. Ng5 d5 9. exd5 Ne5 10. Bb3 O-O 11. Qxd4 N7g6`
+      },
+      dragon: {
+        title: 'Sicilian Defense: Dragon Variation',
+        category: 'Openings',
+        pgn: `1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6 6. Be3 Bg7 7. f3 O-O 8. Qd2 Nc6 9. Bc4 Bd7 10. O-O-O Ne5 11. Bb3 Rc8`
+      },
+      qgd: {
+        title: 'Queen\'s Gambit Declined: Classical Line',
+        category: 'Openings',
+        pgn: `1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3 Nbd7 7. Rc1 c6 8. Bd3 dxc4 9. Bxc4 Nd5`
+      },
+      lucena: {
+        title: 'Rook Endgames: Lucena Bridge Technique',
+        category: 'Endgames',
+        pgn: `[FEN "1K1R4/1P1k4/8/8/8/8/8/2r5 w - - 0 1"] 1. Rd4! Rh1 2. Ka7 Ra1+ 3. Kb6 Rb1+ 4. Ka6 Ra1+ 5. Kb5 Rb1+ 6. Rb4!`
+      },
+      philidor: {
+        title: 'Philidor Defense: Solid Central Structure',
+        category: 'Openings',
+        pgn: `1. e4 e5 2. Nf3 d6 3. d4 exd4 4. Nxd4 Nf6 5. Nc3 Be7 6. Be2 O-O 7. O-O Re8`
+      },
+      fork: {
+        title: 'Tactics: Royal Knight Fork & Center Overload',
+        category: 'Tactics',
+        pgn: `1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4 exd4 6. cxd4 Bb4+ 7. Bd2 Bxd2+ 8. Nbxd2 d5 9. exd5 Nxd5 10. Qb3 Nce7 11. O-O O-O`
+      }
+    };
+
+    const p = PRESETS[presetKey];
+    if (p) {
+      if (titleInput) titleInput.value = p.title;
+      if (catSelect) catSelect.value = p.category;
+      if (pgnInput) pgnInput.value = p.pgn;
+      if (window.toast) window.toast(`✨ Auto-filled template: ${p.title}`, 'info');
+    }
   };
 
-  // ── Coach & Admin Topic Assignment ──
+  // ── Coach & Admin Topic Assignment Manager ──
   window.openAssignStudyTopicModal = function () {
     const modal = document.getElementById('assign-study-topic-modal');
     if (!modal) return;
@@ -828,7 +1046,7 @@
         window.allBatches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join('');
     }
     if (studentSelect && Array.isArray(window.allStudents)) {
-      studentSelect.innerHTML = '<option value="all">-- All Students --</option>' +
+      studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
         window.allStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
     }
 
@@ -842,8 +1060,12 @@
     const batchId = document.getElementById('topic-batch-select')?.value || 'all';
     const studentId = document.getElementById('topic-student-select')?.value || 'all';
 
-    if (!title || !pgn) {
-      if (window.toast) window.toast('Please provide a Topic Title and PGN sequence!', 'warning');
+    if (!title || !title.trim()) {
+      if (window.toast) window.toast('Please provide a Topic Title!', 'warning');
+      return;
+    }
+    if (!pgn || !pgn.trim()) {
+      if (window.toast) window.toast('Please provide PGN moves sequence!', 'warning');
       return;
     }
 
@@ -870,6 +1092,9 @@
     if (modal) modal.classList.remove('active');
 
     StudyPGN.renderAssignedTopicsList();
+    if (window.renderStudyPgnMonitor) {
+      window.renderStudyPgnMonitor(window.role === 'coach' ? 'coach' : 'admin');
+    }
   };
 
   StudyPGN.renderAssignedTopicsList = function () {
@@ -881,37 +1106,108 @@
       topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
     } catch (e) {}
 
+    // Add default template topics if empty
     if (!topics.length) {
-      container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border);">No custom topics assigned yet. Use <strong>+ Assign Study Topic</strong> to create one!</div>`;
+      topics = [
+        {
+          id: 'topic-evans-gambit',
+          title: 'Italian Game: Evans Gambit Master Repertoire',
+          category: 'Openings',
+          batch_id: 'all',
+          student_id: 'all',
+          assigned_by: 'Head Coach',
+          assigned_date: '2026-08-15',
+          pgn: `1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. Ng5 d5 9. exd5 Ne5 10. Bb3 O-O 11. Qxd4 N7g6`
+        },
+        {
+          id: 'topic-lucena-bridge',
+          title: 'Rook Endgames: The Lucena Bridge Winning Method',
+          category: 'Endgames',
+          batch_id: 'all',
+          student_id: 'all',
+          assigned_by: 'Head Coach',
+          assigned_date: '2026-08-16',
+          pgn: `[FEN "1K1R4/1P1k4/8/8/8/8/8/2r5 w - - 0 1"] 1. Rd4! Rh1 2. Ka7 Ra1+ 3. Kb6 Rb1+ 4. Ka6 Ra1+ 5. Kb5 Rb1+ 6. Rb4!`
+        }
+      ];
+      try { localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics)); } catch (e) {}
+    }
+
+    const currentStudent = window.currentStudent;
+    const isPreviewOrAdmin = window.role === 'admin' || window.role === 'master' || document.getElementById('preview-mode-banner')?.style.display !== 'none';
+
+    const filteredTopics = topics.filter(t => {
+      if (isPreviewOrAdmin) return true;
+      if (t.batch_id === 'all' && t.student_id === 'all') return true;
+      if (currentStudent) {
+        if (t.student_id && String(t.student_id) === String(currentStudent.id)) return true;
+        if (t.batch_id && String(t.batch_id) === String(currentStudent.batch_id)) return true;
+      }
+      return false;
+    });
+
+    if (!filteredTopics.length) {
+      container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border);">No topics assigned for your current batch. Check back soon!</div>`;
       return;
     }
 
-    container.innerHTML = topics.map(t => `
-      <div class="card" style="padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
-        <div>
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-            <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">${escapeHtml(t.category)}</span>
-            <span style="font-size:12px; color:var(--ivory-dim);">Assigned by ${escapeHtml(t.assigned_by)}</span>
+    let completedIds = [];
+    try { completedIds = JSON.parse(localStorage.getItem(STORAGE_COMPLETED_TOPICS) || '[]'); } catch (e) {}
+
+    container.innerHTML = filteredTopics.map(t => {
+      const isCompleted = completedIds.includes(t.id);
+      return `
+        <div class="card" style="padding:18px 22px; background:var(--surface); border:1px solid ${isCompleted ? 'rgba(16,185,129,0.4)' : 'var(--border)'}; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+              <span style="background:rgba(218,163,62,0.2); color:var(--gold); font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(t.category)}</span>
+              <span style="font-size:12px; color:var(--ivory-dim);">Assigned by ${escapeHtml(t.assigned_by)} · ${escapeHtml(t.assigned_date)}</span>
+              ${isCompleted ? `<span style="background:rgba(16,185,129,0.15); color:#10b981; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">✅ Practiced</span>` : ''}
+            </div>
+            <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(t.title)}</h4>
           </div>
-          <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${escapeHtml(t.title)}</h4>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}')">
+              ♟️ Practice in Study Board
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.toggleTopicCompleted('${escapeHtml(t.id)}')" style="font-size:11px;">
+              ${isCompleted ? 'Mark Pending' : 'Mark Done'}
+            </button>
+          </div>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="StudyPGN.loadPgnString(\`${escapeHtml(t.pgn)}\`, { title: '${escapeHtml(t.title)}' })">
-          ♟️ Practice in Study Board
-        </button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   };
 
-  // ── Helper: Safe Escape HTML ──
-  function escapeHtml(str) {
-    if (str == null) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
+  window.practiceAssignedTopic = function (topicId) {
+    let topics = [];
+    try { topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]'); } catch (e) {}
+    const t = topics.find(x => x.id === topicId);
+    if (!t) return;
+
+    StudyPGN.activeAssignedTopic = t;
+    StudyPGN.loadPgnString(t.pgn, {
+      title: t.title,
+      category: t.category,
+      description: `Coach Assigned Study Topic: ${t.title}`
+    });
+
+    window.setStudyPgnSubTab('lab');
+    if (window.toast) window.toast(`♟️ Loaded "${t.title}" into Interactive Study Board!`, 'success');
+  };
+
+  window.toggleTopicCompleted = function (topicId) {
+    let completedIds = [];
+    try { completedIds = JSON.parse(localStorage.getItem(STORAGE_COMPLETED_TOPICS) || '[]'); } catch (e) {}
+    if (completedIds.includes(topicId)) {
+      completedIds = completedIds.filter(id => id !== topicId);
+    } else {
+      completedIds.push(topicId);
+      if (window.toast) window.toast('🎉 Great work! Topic marked as practiced.', 'success');
+    }
+    localStorage.setItem(STORAGE_COMPLETED_TOPICS, JSON.stringify(completedIds));
+    StudyPGN.renderAssignedTopicsList();
+  };
 
   // ── Sub Tab Switcher ──
   window.setStudyPgnSubTab = function (subTab, btn) {
@@ -922,13 +1218,19 @@
     const parentNav = btn ? btn.parentElement : document.querySelector('#child-tab-studypgn .tabs-nav');
     if (parentNav) {
       parentNav.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-      if (btn) btn.classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const matchingBtn = document.getElementById('btn-studypgn-' + subTab);
+        if (matchingBtn) matchingBtn.classList.add('active');
+      }
     }
 
     if (subTab === 'lab') {
       StudyPGN.renderBoard();
       StudyPGN.renderMoveList();
       StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
     } else if (subTab === 'tactics') {
       StudyPGN.renderTacticsBoard();
       StudyPGN.updateStreakUI();
@@ -974,7 +1276,7 @@
     let totalStreaks = 0;
     let totalSolvedToday = 0;
 
-    let rowsHtml = students.map((s, idx) => {
+    let rowsHtml = students.map((s) => {
       const rec = tacticsRec[String(s.id)] || { streak: 0, lastDate: '', solvedCount: 0 };
       const isSolvedToday = (rec.lastDate === todayStr);
       const streak = rec.streak || 0;
@@ -1025,7 +1327,6 @@
       </table>
     `;
 
-    // Update KPI counters
     const streakTotalEl = document.getElementById('admin-tactics-streak-total');
     const solvedTodayEl = document.getElementById('admin-tactics-solved-today');
     if (streakTotalEl) streakTotalEl.textContent = `${totalStreaks} Students`;
@@ -1060,9 +1361,10 @@
     window.open(waUrl, '_blank');
   };
 
-  // ── Initial Load ──
-  window.addEventListener('DOMContentLoaded', () => {
+  // ── Initial Load on Ready ──
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => StudyPGN.init());
+  } else {
     StudyPGN.init();
-  });
+  }
 })();
-

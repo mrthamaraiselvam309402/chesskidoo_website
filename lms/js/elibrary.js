@@ -131,7 +131,7 @@
     }
 
     // Attempt Supabase Fetch
-    if (window.supabaseClient) {
+    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
       try {
         const { data, error } = await window.supabaseClient
           .from('elibrary')
@@ -144,7 +144,7 @@
           local = Array.from(map.values());
         }
       } catch (e) {
-        console.warn('[E-Library] Cloud fetch fallback to local:', e);
+        // Quiet fallback to local storage
       }
     }
 
