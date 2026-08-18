@@ -3199,8 +3199,12 @@ button, input, textarea, select, a {
   transition: transform .5s cubic-bezier(.23,1,.32,1);
   border-radius: 2px 2px 0 0;
 }
-.feat-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,.1), 0 0 0 1px rgba(232,160,32,.15); border-color: rgba(232,160,32,.3); }
-.feat-card:hover::after { transform: scaleX(1); }
+.feat-card:hover, .feat-card:active { 
+  transform: translateY(-8px); 
+  box-shadow: 0 20px 50px rgba(0,0,0,.12), 0 0 30px rgba(232,160,32,.48), 0 0 0 2px rgba(232,160,32,.8); 
+  border-color: rgba(232,160,32,.95); 
+}
+.feat-card:hover::after, .feat-card:active::after { transform: scaleX(1); }
 .feat-icon-wrap {
   width: 68px; height: 68px;
   background: linear-gradient(135deg, rgba(232,160,32,.15), rgba(232,160,32,.05));

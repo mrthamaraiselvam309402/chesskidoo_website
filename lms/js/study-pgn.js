@@ -1192,6 +1192,12 @@
       description: `Coach Assigned Study Topic: ${t.title}`
     });
 
+    if (window.setPage && (window.role === 'admin' || window.role === 'master' || window.role === 'coach')) {
+      window.setPage('child');
+    }
+    if (window.setChildTab) {
+      window.setChildTab('studypgn');
+    }
     window.setStudyPgnSubTab('lab');
     if (window.toast) window.toast(`♟️ Loaded "${t.title}" into Interactive Study Board!`, 'success');
   };
@@ -1331,6 +1337,94 @@
     const solvedTodayEl = document.getElementById('admin-tactics-solved-today');
     if (streakTotalEl) streakTotalEl.textContent = `${totalStreaks} Students`;
     if (solvedTodayEl) solvedTodayEl.textContent = String(totalSolvedToday);
+
+    window.renderAssignedTopicsAdminTable(roleType);
+  };
+
+  // ── Render Assigned Topics in Admin/Coach Monitors ──
+  window.renderAssignedTopicsAdminTable = function (roleType = 'admin') {
+    const tableWrapId = roleType === 'coach' ? 'coach-assigned-topics-table-wrap' : 'admin-assigned-topics-table-wrap';
+    const container = document.getElementById(tableWrapId);
+    if (!container) return;
+
+    let topics = [];
+    try {
+      topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
+    } catch (e) {}
+
+    const countEl = document.getElementById('admin-topics-count');
+    if (countEl) countEl.textContent = `${topics.length} Topics`;
+
+    if (!topics.length) {
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">No custom study topics assigned yet. Click "Assign New Topic" to create one!</div>`;
+      return;
+    }
+
+    const rows = topics.map(t => {
+      let targetLabel = 'All Batches & Students';
+      if (t.batch_id && t.batch_id !== 'all') {
+        const batch = (window.allBatches || []).find(b => String(b.id) === String(t.batch_id));
+        targetLabel = batch ? `Batch: ${batch.name}` : `Batch #${t.batch_id}`;
+      }
+      if (t.student_id && t.student_id !== 'all') {
+        const stud = (window.allStudents || []).find(s => String(s.id) === String(t.student_id));
+        targetLabel += stud ? ` (${stud.name || stud.full_name})` : ` (Student #${t.student_id})`;
+      }
+
+      return `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+          <td style="padding:12px 14px; font-weight:700; color:#fff;">
+            ${escapeHtml(t.title)}
+            <div style="font-size:11px; font-weight:400; color:var(--gold);">${escapeHtml(t.category)}</div>
+          </td>
+          <td style="padding:12px 14px; font-size:12.5px; color:var(--ivory-dim);">
+            ${escapeHtml(targetLabel)}
+          </td>
+          <td style="padding:12px 14px; font-size:12px; color:#94a3b8;">
+            ${escapeHtml(t.assigned_by)} · ${escapeHtml(t.assigned_date)}
+          </td>
+          <td style="padding:12px 14px; text-align:right;">
+            <button class="btn btn-gold btn-sm" onclick="window.practiceAssignedTopic('${escapeHtml(t.id)}')" style="font-size:11px; padding:4px 10px; margin-right:6px;">
+              ♟️ Test Board
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.deleteAssignedStudyTopic('${escapeHtml(t.id)}')" style="font-size:11px; padding:4px 10px; color:#ef4444; border-color:rgba(239,68,68,0.4);">
+              🗑️ Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border); color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
+            <th style="padding:10px 14px;">Topic Title &amp; Category</th>
+            <th style="padding:10px 14px;">Assigned Target</th>
+            <th style="padding:10px 14px;">Assigned By</th>
+            <th style="padding:10px 14px; text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  };
+
+  window.deleteAssignedStudyTopic = function (topicId) {
+    if (!confirm('Are you sure you want to remove this assigned study topic?')) return;
+    let topics = [];
+    try {
+      topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
+    } catch (e) {}
+    topics = topics.filter(t => t.id !== topicId);
+    localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics));
+
+    if (window.toast) window.toast('Study Topic removed.', 'info');
+    StudyPGN.renderAssignedTopicsList();
+    window.renderStudyPgnMonitor('admin');
+    window.renderStudyPgnMonitor('coach');
   };
 
   // ── 1-Click WhatsApp Parent Progress Dispatcher ──
