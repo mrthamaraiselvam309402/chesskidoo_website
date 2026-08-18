@@ -431,7 +431,7 @@
           <div class="tom-ai-avatar" aria-hidden="true">${TOM.knightSVG('light')}</div>
           <div class="tom-ai-title">
             <div class="tom-ai-title-name">TOM</div>
-            <div class="tom-ai-title-status">Online · ChessKidoo Assistant</div>
+            <div class="tom-ai-title-status">Online · Multimodal Vision &amp; AI Coach</div>
           </div>
           <div class="tom-ai-header-actions">
             <button class="tom-ai-icon-btn" id="tom-ai-clear" type="button" title="Clear chat" aria-label="Clear chat">🗑</button>
@@ -440,12 +440,18 @@
         </header>
         <div class="tom-ai-messages" id="tom-ai-messages" aria-live="polite"></div>
         <div class="tom-quick-replies" id="tom-ai-chips"></div>
+
+        <!-- Image upload preview thumbnail strip -->
+        <div class="tom-img-preview-bar" id="tom-img-preview-bar" style="display:none;"></div>
+
         <div class="tom-ai-input-row">
+          <button class="tom-ai-upload-btn" id="tom-ai-upload-btn" type="button" title="Upload Chessboard / Homework Image" aria-label="Upload image">📷</button>
+          <input type="file" id="tom-img-file" accept="image/*" style="display:none;">
           <textarea class="tom-ai-input" id="tom-ai-input"
-                    rows="1" placeholder="Ask TOM anything…" aria-label="Message TOM"></textarea>
+                    rows="1" placeholder="Ask TOM anything or upload a position image…" aria-label="Message TOM"></textarea>
           <button class="tom-ai-send" id="tom-ai-send" type="button" title="Send" aria-label="Send message">➤</button>
         </div>
-        <div class="tom-ai-footer">TOM · ChessKidoo Academy Assistant</div>
+        <div class="tom-ai-footer">TOM · Multimodal Vision &amp; Academy Assistant</div>
       </div>`;
     document.body.appendChild(root);
 
@@ -455,10 +461,32 @@
     const clearBtn = document.getElementById('tom-ai-clear');
     const sendBtn  = document.getElementById('tom-ai-send');
     const input    = document.getElementById('tom-ai-input');
+    const uploadBtn = document.getElementById('tom-ai-upload-btn');
+    const fileInput = document.getElementById('tom-img-file');
+
     if (launcher) launcher.addEventListener('click', TOM.toggle);
     if (closeBtn) closeBtn.addEventListener('click', TOM.close);
     if (clearBtn) clearBtn.addEventListener('click', TOM.clear);
     if (sendBtn)  sendBtn.addEventListener('click', () => TOM.sendCurrent());
+
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          alert('Please select a valid image file (PNG, JPG, WebP).');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          TOM._pendingImage = e.target.result;
+          renderImagePreview(e.target.result, file.name);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     if (input) {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -472,8 +500,29 @@
       });
     }
     // Debug log so we can confirm the launcher is in the DOM
-    console.log('[TOM] launcher mounted', launcher);
+    console.log('[TOM] launcher mounted with multimodal vision', launcher);
   }
+
+  function renderImagePreview(src, filename) {
+    const bar = document.getElementById('tom-img-preview-bar');
+    if (!bar) return;
+    bar.innerHTML = `
+      <div class="tom-img-preview-thumb-box">
+        <img src="${src}" class="tom-img-preview-thumb" alt="Preview">
+        <button class="tom-img-preview-remove" onclick="window.CK.tomai.removeImagePreview()" title="Remove image">✕</button>
+      </div>
+      <div class="tom-img-preview-label">📷 Image attached (${escapeHtml(filename || 'Chessboard')})</div>
+    `;
+    bar.style.display = 'flex';
+  }
+
+  TOM.removeImagePreview = function () {
+    TOM._pendingImage = null;
+    const fileInput = document.getElementById('tom-img-file');
+    if (fileInput) fileInput.value = '';
+    const bar = document.getElementById('tom-img-preview-bar');
+    if (bar) { bar.innerHTML = ''; bar.style.display = 'none'; }
+  };
 
   function renderMessages() {
     const box = document.getElementById('tom-ai-messages');
@@ -485,9 +534,10 @@
       const avatar = m.role === 'bot'
         ? `<span class="tom-msg-knight">${TOM.knightSVG('light')}</span>`
         : '🙂';
+      const imgHtml = m.image ? `<img src="${m.image}" class="tom-msg-img" alt="Attached Diagram" onclick="window.open(this.src, '_blank')">` : '';
       div.innerHTML = `
         <div class="tom-msg-avatar">${avatar}</div>
-        <div class="tom-msg-bubble">${mdLite(m.text)}</div>`;
+        <div class="tom-msg-bubble">${imgHtml}${mdLite(m.text)}</div>`;
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
@@ -527,22 +577,31 @@
   // ────────────────────────────────────────────────────────────────
   // 5. Conversation flow
   // ────────────────────────────────────────────────────────────────
-  TOM.send = function (text) {
+  TOM.send = async function (text, attachedImage) {
     text = String(text || '').trim();
-    if (!text) return;
+    const imagePayload = attachedImage || TOM._pendingImage || null;
+    TOM.removeImagePreview();
 
-    TOM._history.push({ role: 'user', text });
+    if (!text && !imagePayload) return;
+
+    TOM._history.push({ role: 'user', text: text || (imagePayload ? '📷 [Uploaded Image for Analysis]' : ''), image: imagePayload });
     trimHistory(); persist(); renderMessages();
     renderChips([]);
     renderTyping(true);
 
     const delay = 350 + Math.min(800, text.length * 16);
-    setTimeout(() => {
+    setTimeout(async () => {
       renderTyping(false);
       let reply, suggest, action;
 
+      // Check if image vision analysis is needed
+      if (imagePayload && window.tomAnalyzeImage) {
+        reply = await window.tomAnalyzeImage(imagePayload, text);
+        suggest = ['💡 Give me a hint', '♟️ Best move line', '🧩 Another puzzle', '📖 Opening Theory'];
+      }
+
       // Check super-brain first (interactive puzzles, game analyzer, GM openings)
-      if (window.tomLocalAnswer) {
+      if (!reply && window.tomLocalAnswer) {
         const brainAns = window.tomLocalAnswer(text);
         if (brainAns) {
           reply = brainAns;

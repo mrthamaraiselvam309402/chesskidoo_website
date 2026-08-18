@@ -2312,85 +2312,87 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
       return rows;
     })();
 
-    // Clean reference-design certificate (user-supplied layout)
+    // Clean reference-design certificate (user-supplied layout) with fluid responsive container
     overlay.innerHTML = `
-      <div class="certificate" id="cert-card">
-        <!-- Corner brackets -->
-        <div class="corner top-left"></div>
-        <div class="corner top-right"></div>
-        <div class="corner bottom-left"></div>
-        <div class="corner bottom-right"></div>
+      <div class="cert-scale-wrapper" id="cert-scale-wrapper">
+        <div class="certificate" id="cert-card">
+          <!-- Corner brackets -->
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
 
-        <!-- Header: full brand logo image (knight + wordmark + tagline) -->
-        <div class="header header-logo-only">
-          <img src="assets/img/cert-logo.png" alt="ChessKidoo — Building Brilliance" class="cert-logo-img"
-               onerror="this.onerror=null;this.src='assets/img/logo.png';this.classList.add('cert-logo-fallback');" />
+          <!-- Header: full brand logo image (knight + wordmark + tagline) -->
+          <div class="header header-logo-only">
+            <img src="assets/img/cert-logo.png" alt="ChessKidoo — Building Brilliance" class="cert-logo-img"
+                 onerror="this.onerror=null;this.src='assets/img/logo.png';this.classList.add('cert-logo-fallback');" />
+          </div>
+
+          <!-- Title -->
+          <div class="title">
+            <h1>CERTIFICATE OF COMPLETION</h1>
+            <div class="divider"></div>
+            <p>This certificate is proudly awarded to</p>
+          </div>
+
+          <!-- Student name + citation (always uppercased for a formal diploma look) -->
+          <div class="student-name">${_certEscape((playerName || 'Champion').toUpperCase())}</div>
+          <div class="student-text">
+            for successfully completing an AI Arena chess match in ChessKiddo at age
+            <strong>${_certEscape(playerAge)}</strong> and demonstrating strategic
+            thinking, focus, tactical excellence, and determination throughout the game.
+          </div>
+
+          <!-- 4-cell details -->
+          <div class="details">
+            <div class="detail">
+              <div class="detail-icon">♖</div>
+              <div class="detail-title">LEVEL PLAYED</div>
+              <div class="detail-value">${levelTier}</div>
+            </div>
+            <div class="detail">
+              <div class="detail-icon">⏱</div>
+              <div class="detail-title">TIME TAKEN</div>
+              <div class="detail-value">${timeStr}</div>
+            </div>
+            <div class="detail">
+              <div class="detail-icon">🏆</div>
+              <div class="detail-title">MATCH RESULT</div>
+              <div class="detail-value">${resultText}</div>
+            </div>
+            <div class="detail">
+              <div class="detail-icon">📅</div>
+              <div class="detail-title">DATE COMPLETED</div>
+              <div class="detail-value">${dateStr}</div>
+            </div>
+          </div>
+
+          <!-- Signatures + central seal -->
+          <div class="signatures">
+            <div class="signature-box">
+              <div class="signature">TOM</div>
+              <div class="signature-line"></div>
+              <div class="signature-role">AI COACH</div>
+              <div class="signature-sub">ChessKiddo AI Training System</div>
+            </div>
+
+            <div class="seal">
+              <div class="seal-knight">♞</div>
+              <div class="seal-text">CERTIFIED &amp;<br>AUTHENTIC</div>
+            </div>
+
+            <div class="signature-box">
+              <div class="signature">Ranjith A S</div>
+              <div class="signature-line"></div>
+              <div class="signature-role">DIRECTOR</div>
+              <div class="signature-sub">ChessKiddo Academy Director</div>
+            </div>
+          </div>
+
+          <!-- Footer tagline + verify ID -->
+          <div class="footer">Building Brilliance Through Chess and AI</div>
+          <div class="cert-verify-strip-clean">VERIFY · ${certId}</div>
         </div>
-
-        <!-- Title -->
-        <div class="title">
-          <h1>CERTIFICATE OF COMPLETION</h1>
-          <div class="divider"></div>
-          <p>This certificate is proudly awarded to</p>
-        </div>
-
-        <!-- Student name + citation (always uppercased for a formal diploma look) -->
-        <div class="student-name">${_certEscape((playerName || 'Champion').toUpperCase())}</div>
-        <div class="student-text">
-          for successfully completing an AI Arena chess match in ChessKiddo at age
-          <strong>${_certEscape(playerAge)}</strong> and demonstrating strategic
-          thinking, focus, tactical excellence, and determination throughout the game.
-        </div>
-
-        <!-- 4-cell details -->
-        <div class="details">
-          <div class="detail">
-            <div class="detail-icon">♖</div>
-            <div class="detail-title">LEVEL PLAYED</div>
-            <div class="detail-value">${levelTier}</div>
-          </div>
-          <div class="detail">
-            <div class="detail-icon">⏱</div>
-            <div class="detail-title">TIME TAKEN</div>
-            <div class="detail-value">${timeStr}</div>
-          </div>
-          <div class="detail">
-            <div class="detail-icon">🏆</div>
-            <div class="detail-title">MATCH RESULT</div>
-            <div class="detail-value">${resultText}</div>
-          </div>
-          <div class="detail">
-            <div class="detail-icon">📅</div>
-            <div class="detail-title">DATE COMPLETED</div>
-            <div class="detail-value">${dateStr}</div>
-          </div>
-        </div>
-
-        <!-- Signatures + central seal -->
-        <div class="signatures">
-          <div class="signature-box">
-            <div class="signature">TOM</div>
-            <div class="signature-line"></div>
-            <div class="signature-role">AI COACH</div>
-            <div class="signature-sub">ChessKiddo AI Training System</div>
-          </div>
-
-          <div class="seal">
-            <div class="seal-knight">♞</div>
-            <div class="seal-text">CERTIFIED &amp;<br>AUTHENTIC</div>
-          </div>
-
-          <div class="signature-box">
-            <div class="signature">Ranjith A S</div>
-            <div class="signature-line"></div>
-            <div class="signature-role">DIRECTOR</div>
-            <div class="signature-sub">ChessKiddo Academy Director</div>
-          </div>
-        </div>
-
-        <!-- Footer tagline + verify ID -->
-        <div class="footer">Building Brilliance Through Chess and AI</div>
-        <div class="cert-verify-strip-clean">VERIFY · ${certId}</div>
       </div>
 
       <div class="cert-action-bar">
@@ -2400,6 +2402,23 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
       </div>
     `;
     overlay.classList.add('active');
+
+    // Dynamic precise scale calculation for every mobile device screen
+    const updateScale = () => {
+      if (!overlay.classList.contains('active')) return;
+      const screenW = window.innerWidth;
+      const padding = screenW < 640 ? 16 : 40;
+      const availW = Math.max(280, screenW - padding);
+      const scale = Math.min(1, availW / 1500);
+      overlay.style.setProperty('--cert-scale', scale.toFixed(4));
+      const wrapper = document.getElementById('cert-scale-wrapper');
+      if (wrapper) {
+        wrapper.style.width = Math.round(1500 * scale) + 'px';
+        wrapper.style.height = Math.round(980 * scale) + 'px';
+      }
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale, { passive: true });
   };
 
   // Public entry — orchestrates prompt → preview.

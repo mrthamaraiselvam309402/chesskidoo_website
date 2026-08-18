@@ -61,9 +61,29 @@
   /* ---- Demo modal fields stack neatly ---- */
   #contactModal .modal-card { max-width: 94vw; }
 
-  /* ---- Tournaments cards ---- */
-  #student-panel-tournaments .p-tournament-card { flex-direction: column; align-items: stretch; }
-  #student-panel-tournaments .p-tournament-card .p-btn { width: 100%; }
+  /* ---- Certificate Mobile Polish ---- */
+  .cert-overlay {
+    padding: 14px 6px !important;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  .cert-scale-wrapper {
+    max-width: calc(100vw - 12px) !important;
+    margin: 0 auto !important;
+  }
+  .cert-action-bar {
+    max-width: 96vw !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+  .cert-action-btn {
+    flex: 1 1 120px !important;
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+  }
 }
 
 /* ===== Small phones (≤400px) ============================================== */

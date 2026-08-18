@@ -125,12 +125,32 @@
     return local;
   };
 
+  // ── Role Permissions Helper ──
+  function canUserManageItem(item) {
+    const role = window.role || (window.currentCoach ? 'coach' : 'student');
+    if (role === 'admin' || role === 'master') return true;
+    if (role === 'coach') {
+      const coach = window.currentCoach;
+      if (!coach) return false;
+      const coachName = (coach.name || coach.full_name || '').toLowerCase().trim();
+      const itemAuthor = (item.author || '').toLowerCase().trim();
+      const coachId = String(coach.id || coach.coach_id || '');
+      const itemCoachId = String(item.coach_id || '');
+      return (coachId && itemCoachId === coachId) || (coachName && itemAuthor.includes(coachName)) || (itemAuthor === coachName);
+    }
+    return false;
+  }
+
   // ── Save Material ──
   window.saveElibraryItem = async function (itemData) {
     if (!itemData.title || !itemData.url) {
       if (window.toast) window.toast('Please provide a title and resource link!', 'warning');
       return false;
     }
+
+    const currentCoach = window.currentCoach;
+    const coachName = currentCoach ? (currentCoach.name || currentCoach.full_name || 'Coach') : null;
+    const coachId = currentCoach ? (currentCoach.id || currentCoach.coach_id || null) : null;
 
     const item = {
       id: itemData.id || ('elib-' + Date.now()),
@@ -141,17 +161,23 @@
       level: itemData.level || 'All Levels',
       type: itemData.type || (itemData.url.match(/\.(pdf|doc|docx|pgn)/i) ? 'document' : 'video'),
       url: itemData.url.trim(),
-      author: itemData.author || (window.currentCoach ? (window.currentCoach.name || 'Coach') : 'Academy Admin'),
+      author: itemData.author || (window.role === 'admin' ? 'Academy Admin' : (coachName || 'ChessKidoo Coach')),
+      coach_id: itemData.coach_id || (window.role === 'coach' ? coachId : null),
       date: itemData.date || new Date().toISOString().split('T')[0],
       duration: itemData.duration || (itemData.type === 'video' ? 'Video Lesson' : 'Study Resource'),
       tags: Array.isArray(itemData.tags) ? itemData.tags : (itemData.tags || '').split(',').map(s => s.trim()).filter(Boolean),
-      created_at: new Date().toISOString()
+      created_at: itemData.created_at || new Date().toISOString()
     };
 
     // Update memory & local storage
     const idx = window.elibraryItems.findIndex(x => String(x.id) === String(item.id));
     if (idx >= 0) {
-      window.elibraryItems[idx] = item;
+      // If coach is updating, ensure they own it
+      if (window.role === 'coach' && !canUserManageItem(window.elibraryItems[idx])) {
+        if (window.toast) window.toast('Permission denied: Coaches can only edit their own materials.', 'error');
+        return false;
+      }
+      window.elibraryItems[idx] = { ...window.elibraryItems[idx], ...item };
     } else {
       window.elibraryItems.unshift(item);
     }
@@ -169,7 +195,7 @@
       }
     }
 
-    if (window.toast) window.toast('✨ Study material added to E-Library successfully!', 'success');
+    if (window.toast) window.toast(idx >= 0 ? '✨ Study material updated successfully!' : '✨ Study material added to E-Library successfully!', 'success');
     
     // Re-render active views
     window.renderAdminElibraryPage();
@@ -180,7 +206,15 @@
 
   // ── Delete Material ──
   window.deleteElibraryItem = async function (id) {
-    if (!confirm('Are you sure you want to delete this study material from E-Library?')) return;
+    const item = window.elibraryItems.find(x => String(x.id) === String(id));
+    if (!item) return;
+
+    if (!canUserManageItem(item)) {
+      if (window.toast) window.toast('Permission denied: You can only delete your own uploaded materials.', 'error');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${item.title}" from E-Library?`)) return;
     window.elibraryItems = window.elibraryItems.filter(x => String(x.id) !== String(id));
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(window.elibraryItems));
@@ -198,6 +232,46 @@
     window.renderChildElibrary();
   };
 
+  // ── Edit Material ──
+  window.editElibraryItem = function (id) {
+    const item = window.elibraryItems.find(x => String(x.id) === String(id));
+    if (!item) return;
+
+    if (!canUserManageItem(item)) {
+      if (window.toast) window.toast('Permission denied: Coaches can only edit their own materials.', 'error');
+      return;
+    }
+
+    const modal = document.getElementById('add-elibrary-modal');
+    if (!modal) return;
+
+    window._editingElibId = item.id;
+    window._editingElibAuthor = item.author;
+    window._editingElibCoachId = item.coach_id;
+
+    const modalTitle = modal.querySelector('.modal-title');
+    if (modalTitle) modalTitle.innerHTML = '✏️ Edit Study Material / Recorded Session';
+
+    const submitBtn = modal.querySelector('button.btn-gold');
+    if (submitBtn) submitBtn.textContent = 'Save Changes';
+
+    const fTitle = document.getElementById('elib-form-title');
+    const fDesc = document.getElementById('elib-form-desc');
+    const fCat = document.getElementById('elib-form-cat');
+    const fLevel = document.getElementById('elib-form-level');
+    const fUrl = document.getElementById('elib-form-url');
+    const fDuration = document.getElementById('elib-form-duration');
+
+    if (fTitle) fTitle.value = item.title || '';
+    if (fDesc) fDesc.value = item.description || '';
+    if (fCat) fCat.value = item.category || 'openings';
+    if (fLevel) fLevel.value = item.level || 'All Levels';
+    if (fUrl) fUrl.value = item.url || '';
+    if (fDuration) fDuration.value = item.duration || '';
+
+    modal.classList.add('active');
+  };
+
   function getCategoryLabel(cat) {
     switch (cat) {
       case 'recordings': return '🎥 Class Recording';
@@ -211,9 +285,10 @@
   }
 
   // ── Render Card HTML ──
-  function renderItemCard(item, canManage) {
+  function renderItemCard(item) {
     const isVideo = item.type === 'video' || item.url.includes('youtube') || item.url.includes('youtu.be') || item.url.includes('drive.google.com') || item.url.includes('loom.com');
     const badgeColor = item.category === 'recordings' ? '#ef4444' : (item.category === 'openings' ? '#3b82f6' : (item.category === 'tactics' ? '#eab308' : '#10b981'));
+    const canManage = canUserManageItem(item);
     
     return `
       <div class="elib-card" style="background:var(--surface, #1e293b); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.25); transition:transform 0.25s, border-color 0.25s;">
@@ -228,6 +303,7 @@
           </div>
           ${canManage ? `
             <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="window.editElibraryItem('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:11px; color:var(--gold, #daa33e); border-color:rgba(218,163,62,0.3);" title="Edit Material">✏️</button>
               <button class="btn btn-outline btn-sm" onclick="window.deleteElibraryItem('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:11px; color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Delete Material">🗑️</button>
             </div>
           ` : ''}
@@ -310,7 +386,7 @@
       container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No study materials found matching filters. Click <strong>+ Add Material</strong> to upload!</div>`;
       return;
     }
-    container.innerHTML = items.map(item => renderItemCard(item, true)).join('');
+    container.innerHTML = items.map(item => renderItemCard(item)).join('');
   };
 
   window.renderCoachElibraryPage = function () {
@@ -321,7 +397,7 @@
       container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No study materials found matching filters. Click <strong>+ Upload Material</strong> to add one!</div>`;
       return;
     }
-    container.innerHTML = items.map(item => renderItemCard(item, true)).join('');
+    container.innerHTML = items.map(item => renderItemCard(item)).join('');
   };
 
   window.renderChildElibrary = function () {
@@ -332,7 +408,7 @@
       container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">No learning resources found in this category yet. Check back soon!</div>`;
       return;
     }
-    container.innerHTML = items.map(item => renderItemCard(item, false)).join('');
+    container.innerHTML = items.map(item => renderItemCard(item)).join('');
   };
 
   // ── Filter Triggers ──
@@ -358,13 +434,25 @@
   window.openAddElibraryModal = function () {
     const modal = document.getElementById('add-elibrary-modal');
     if (modal) {
+      window._editingElibId = null;
+      window._editingElibAuthor = null;
+      window._editingElibCoachId = null;
+
+      const modalTitle = modal.querySelector('.modal-title');
+      if (modalTitle) modalTitle.innerHTML = '📖 Add Study Material / Recorded Session';
+
+      const submitBtn = modal.querySelector('button.btn-gold');
+      if (submitBtn) submitBtn.textContent = 'Publish to E-Library';
+
       // Clear fields
       const fTitle = document.getElementById('elib-form-title');
       const fDesc = document.getElementById('elib-form-desc');
       const fUrl = document.getElementById('elib-form-url');
+      const fDuration = document.getElementById('elib-form-duration');
       if (fTitle) fTitle.value = '';
       if (fDesc) fDesc.value = '';
       if (fUrl) fUrl.value = '';
+      if (fDuration) fDuration.value = '';
       modal.classList.add('active');
     }
   };
@@ -382,14 +470,22 @@
       return;
     }
 
-    window.saveElibraryItem({
+    const payload = {
       title,
       description: desc,
       category: cat,
       level,
       url,
       duration: duration || 'Study Resource'
-    });
+    };
+
+    if (window._editingElibId) {
+      payload.id = window._editingElibId;
+      if (window._editingElibAuthor) payload.author = window._editingElibAuthor;
+      if (window._editingElibCoachId) payload.coach_id = window._editingElibCoachId;
+    }
+
+    window.saveElibraryItem(payload);
 
     const modal = document.getElementById('add-elibrary-modal');
     if (modal) modal.classList.remove('active');

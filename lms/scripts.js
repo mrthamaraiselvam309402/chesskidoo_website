@@ -14443,7 +14443,7 @@ Best regards,
     },
   };
 
-  // ── TEMPORAL REASONING ENGINE ──
+// ── TEMPORAL REASONING ENGINE ──
   const TEMPORAL_ENGINE = {
     getCurrentContext() {
       const now = new Date();
@@ -14477,199 +14477,50 @@ Best regards,
     },
   };
 
-  // ── RESPONSE SYNTHESIZER ──
-  const RESPONSE_SYNTHESIZER = {
-    synthesize(query, toolResults, temporalContext) {
-      let response = "";
-      const sources = toolResults.sources || [];
-      const results = toolResults.results || [];
+  // ── LMS AI Image Attachment Support ──
+  window._pendingLmsAiImage = { admin: null, parent: null };
 
-      // Build contextual response based on query
-      const queryLower = query.toLowerCase();
-
-      if (
-        queryLower.includes("how many") ||
-        queryLower.includes("total") ||
-        queryLower.includes("count")
-      ) {
-        const stats = results.find((r) => r.totalStudents !== undefined);
-        if (stats) {
-          response = `📊 **Academy Statistics** (${temporalContext.date})
-
-`;
-          response += `• **Total Students:** ${stats.totalStudents}
-`;
-          response += `• **Active Coaches:** ${stats.totalCoaches}
-`;
-          response += `• **Total Revenue:** ₹${stats.revenue?.toLocaleString() || 0}
-`;
-          response += `• **Collection Rate:** ${stats.collectionRate}%
-`;
-          response += `• **Paid Students:** ${stats.paid}
-`;
-          response += `• **Due Payments:** ${stats.due}`;
-        }
+  window.handleLmsImageUpload = function (inputEl, targetRole) {
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Please upload an image file (PNG, JPG, WebP)', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      window._pendingLmsAiImage[targetRole] = e.target.result;
+      const bar = document.getElementById(targetRole === 'parent' ? 'parent-ai-img-preview-bar' : 'ai-img-preview-bar');
+      const thumb = document.getElementById(targetRole === 'parent' ? 'parent-ai-img-preview-thumb' : 'ai-img-preview-thumb');
+      const label = document.getElementById(targetRole === 'parent' ? 'parent-ai-img-preview-label' : 'ai-img-preview-label');
+      if (bar && thumb) {
+        thumb.src = e.target.result;
+        if (label) label.textContent = `📷 ${file.name || 'Chess Diagram Attached'}`;
+        bar.style.display = 'flex';
       }
-
-      if (
-        queryLower.includes("market") ||
-        queryLower.includes("stock") ||
-        queryLower.includes("finance")
-      ) {
-        const market = results.find((r) => r.indices);
-        if (market) {
-          response = `📈 **Market Overview** (${temporalContext.time})
-
-`;
-          market.indices.forEach((idx) => {
-            const sign = idx.change >= 0 ? "↑" : "↓";
-            response += `• **${idx.name}:** ${idx.value.toLocaleString()} (${sign}${Math.abs(idx.change)}%)
-`;
-          });
-        }
-      }
-
-      if (
-        queryLower.includes("weather") ||
-        queryLower.includes("temperature")
-      ) {
-        const weather = results.find((r) => r.temperature !== undefined);
-        if (weather) {
-          response = `🌤️ **Current Weather** (${temporalContext.date})
-
-`;
-          response += `• **Temperature:** ${weather.temperature}Â°C
-`;
-          response += `• **Condition:** ${weather.condition}
-`;
-          response += `• **Humidity:** ${weather.humidity}%`;
-        }
-      }
-
-      if (
-        queryLower.includes("sensor") ||
-        queryLower.includes("iot") ||
-        queryLower.includes("monitor")
-      ) {
-        const sensors = results.find((r) => r.sensors);
-        if (sensors) {
-          response = `🔌 **IoT Sensors** (${temporalContext.time})
-
-`;
-          sensors.sensors.forEach((s) => {
-            response += `• **${s.location} - ${s.type}:** ${s.value} ${s.unit}
-`;
-          });
-        }
-      }
-
-      if (queryLower.includes("event") || queryLower.includes("tournament")) {
-        const events = results.find((r) => r.upcoming !== undefined);
-        if (events) {
-          response = `📅 **Events Summary** (${temporalContext.date})
-
-`;
-          response += `• **Upcoming Events:** ${events.upcoming}
-`;
-          response += `• **Past Events:** ${events.past}
-`;
-          response += `• **Total Events:** ${events.total}`;
-        }
-      }
-
-      if (!response) {
-        // Default comprehensive response
-        response = `🏫 **ChessKidoo Academy Report**
-`;
-        response += `${TEMPORAL_ENGINE.getTimeBasedGreeting()}! Here's your academy overview:
-
-`;
-
-        const stats = results.find((r) => r.totalStudents !== undefined);
-        if (stats) {
-          response += `📊 **Statistics:** ${stats.totalStudents} students, ${stats.totalCoaches} coaches
-`;
-          response += `💰 **Revenue:** ₹${stats.revenue?.toLocaleString() || 0} (${stats.collectionRate}% collected)
-`;
-        }
-
-        const events = results.find((r) => r.upcoming !== undefined);
-        if (events) {
-          response += `📅 **Events:** ${events.upcoming} upcoming
-`;
-        }
-
-        response += `
-⏰ Last updated: ${temporalContext.time}`;
-      }
-
-      // Add source attribution
-      if (sources.length > 0) {
-        response += `
-
-📡 *Data sources: ${sources.join(", ")}*`;
-      }
-
-      return response;
-    },
+    };
+    reader.readAsDataURL(file);
   };
 
-  // ── ENHANCED AI QUERY HANDLER ──
-  function animateAIResponse(element, markdownText) {
-    let html = (markdownText || "")
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      .replace(
-        /`(.*?)`/g,
-        '<code style="background:rgba(255,255,255,0.1);padding:2px 4px;border-radius:4px;font-family:var(--font-mono);font-size:0.9em">$1</code>',
-      )
-      .replace(/\n/g, "<br>");
-
-    let i = 0;
-    let isTag = false;
-    let currentHTML = "";
-    element.innerHTML = "";
-
-    function type() {
-      if (i < html.length) {
-        let char = html.charAt(i);
-        currentHTML += char;
-        if (char === "<") isTag = true;
-        if (char === ">") isTag = false;
-
-        element.innerHTML =
-          currentHTML +
-          (i < html.length - 1 && !isTag
-            ? '<span style="border-right: 2px solid var(--gold); animation: blink 1s step-end infinite; margin-left: 2px;">&nbsp;</span>'
-            : "");
-
-        const container = document.getElementById("ai-workspace-msgs");
-        if (container) container.scrollTop = container.scrollHeight;
-
-        let speed = isTag
-          ? 0
-          : char === "." || char === "?" || char === "!"
-            ? 200
-            : char === ","
-              ? 100
-              : 15;
-        i++;
-        setTimeout(type, speed);
-      } else {
-        element.innerHTML = currentHTML;
-      }
-    }
-    type();
-  }
+  window.removeLmsAiImage = function (targetRole) {
+    window._pendingLmsAiImage[targetRole] = null;
+    const fileInput = document.getElementById(targetRole === 'parent' ? 'ai-img-file-parent' : 'ai-img-file-admin');
+    if (fileInput) fileInput.value = '';
+    const bar = document.getElementById(targetRole === 'parent' ? 'parent-ai-img-preview-bar' : 'ai-img-preview-bar');
+    if (bar) bar.style.display = 'none';
+  };
 
   async function sendAIQuery() {
     const input = $("ai-query");
-    if (!input || !input.value.trim()) {
-      toast("Please enter a query", "info");
+    const attachedImg = window._pendingLmsAiImage.admin;
+    const query = (input ? input.value : "").trim();
+
+    if (!query && !attachedImg) {
+      toast("Please enter a query or upload an image", "info");
       return;
     }
 
-    const query = input.value;
+    window.removeLmsAiImage('admin');
     const chatContainer = document.getElementById("ai-workspace-msgs");
 
     // ── PRIVACY GUARDRAIL: Validate parent queries ──
@@ -14694,13 +14545,14 @@ Best regards,
       }
     }
 
-    // Add user message
+    // Add user message (with image preview if present)
     const userMsg = document.createElement("div");
     userMsg.className = "ai-ws-msg user";
-    userMsg.innerHTML = `<div class="ai-ws-avatar">👤</div><div class="ai-ws-bubble">${escapeHtml(query)}</div>`;
+    const imgHtml = attachedImg ? `<img src="${attachedImg}" class="tom-msg-img" style="max-width:240px; border-radius:8px; display:block; margin-bottom:8px; border:1px solid rgba(255,255,255,0.2);" onclick="window.open(this.src,'_blank')" alt="Diagram">` : '';
+    userMsg.innerHTML = `<div class="ai-ws-avatar">👤</div><div class="ai-ws-bubble">${imgHtml}${escapeHtml(query || '📷 [Attached Image for Analysis]')}</div>`;
     chatContainer.appendChild(userMsg);
 
-    input.value = "";
+    if (input) input.value = "";
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     // Show thinking indicator with temporal context
@@ -14709,67 +14561,70 @@ Best regards,
     thinkingMsg.innerHTML = `
       <div class="ai-ws-avatar">🤖</div>
       <div class="ai-ws-bubble msg-thinking">
-        🔄 Analyzing query...
+        🔄 Analyzing ${attachedImg ? 'image & position' : 'query'}...
       </div>
     `;
     chatContainer.appendChild(thinkingMsg);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
-      // ── BUILD ROLE-SPECIFIC CONTEXT ──
-      let context = {};
+      let botResponse = "";
 
-      if (role === "parent") {
-        // PARENT CONTEXT: Isolated, child-specific only
-        context = buildParentAIContext() || {};
-        context.moduleFocus = "parent";
+      if (attachedImg && window.tomAnalyzeImage) {
+        botResponse = await window.tomAnalyzeImage(attachedImg, query);
       } else {
-        // ADMIN CONTEXT: Full academy data
-        const studentsCount = allStudents.length;
-        const coachesCount = allCoaches.length;
-        const totalRevenue = allStudents.reduce(
-          (acc, s) => acc + (getStudentMonthlyFee(s) || 0),
-          0,
-        );
-        const activeStudents = allStudents.filter(
-          (s) => getStudentStatus(s) === "active",
-        ).length;
-        const pendingPayments = allStudents.filter((s) => {
-          const st = getStudentPaymentStatus(s);
-          return st === "Due" || st === "Overdue";
-        }).length;
-        const activeTab =
-          document.querySelector(".nav-item.active")?.dataset.page ||
-          "Dashboard";
+        // ── BUILD ROLE-SPECIFIC CONTEXT ──
+        let context = {};
 
-        const targetMonth = window.reportMonth;
-        const targetYear = window.reportYear;
-        const targetMonthEnd = new Date(
-          Date.UTC(targetYear, targetMonth + 1, 0, 23, 59, 59),
-        );
+        if (role === "parent") {
+          context = buildParentAIContext() || {};
+          context.moduleFocus = "parent";
+        } else {
+          const studentsCount = allStudents.length;
+          const coachesCount = allCoaches.length;
+          const totalRevenue = allStudents.reduce(
+            (acc, s) => acc + (getStudentMonthlyFee(s) || 0),
+            0,
+          );
+          const activeStudents = allStudents.filter(
+            (s) => getStudentStatus(s) === "active",
+          ).length;
+          const pendingPayments = allStudents.filter((s) => {
+            const st = getStudentPaymentStatus(s);
+            return st === "Due" || st === "Overdue";
+          }).length;
+          const activeTab =
+            document.querySelector(".nav-item.active")?.dataset.page ||
+            "Dashboard";
 
-        const coachData = {};
-        allCoaches.forEach((c) => {
-          coachData[c.id] = {
-            id: c.id,
-            name: c.name || c.full_name || "Unknown",
-            specialization: getCoachSpecialty(c) || "Chess Coach",
+          const targetMonth = window.reportMonth;
+          const targetYear = window.reportYear;
+          const targetMonthEnd = new Date(
+            Date.UTC(targetYear, targetMonth + 1, 0, 23, 59, 59),
+          );
+
+          const coachData = {};
+          allCoaches.forEach((c) => {
+            coachData[c.id] = {
+              id: c.id,
+              name: c.name || c.full_name || "Unknown",
+              specialization: getCoachSpecialty(c) || "Chess Coach",
+              students: 0,
+              revenue: 0,
+              pending: 0,
+              projected: 0,
+              cost: getCoachSalary(c) || 0,
+            };
+          });
+
+          const unassignedData = {
+            name: "Unassigned / Academy",
             students: 0,
             revenue: 0,
             pending: 0,
             projected: 0,
-            cost: getCoachSalary(c) || 0,
+            cost: 0,
           };
-        });
-
-        const unassignedData = {
-          name: "Unassigned / Academy",
-          students: 0,
-          revenue: 0,
-          pending: 0,
-          projected: 0,
-          cost: 0,
-        };
 
         allStudents.forEach((s) => {
           const sStatus = getStudentStatus(s);
@@ -14891,31 +14746,32 @@ Best regards,
         };
       }
 
-      // Call AI with role-specific context
-      const aiResponse = await apiCall(`${API_BASE}/ai`, {
-        method: "POST",
-        body: JSON.stringify({
-          message: query,
-          role: role || "admin",
-          context: context,
-        }),
-      });
+        // Call AI with role-specific context
+        const aiResponse = await apiCall(`${API_BASE}/ai`, {
+          method: "POST",
+          body: JSON.stringify({
+            message: query,
+            role: role || "admin",
+            context: context,
+          }),
+        });
 
-      const aiData = await aiResponse.json();
-      let botResponse = aiData.message || "";
+        const aiData = await aiResponse.json();
+        botResponse = aiData.message || "";
 
-      // If the server returned only its generic template (e.g. Gemini key not
-      // configured), answer general/chess/conversational queries locally.
-      if (window.tomResolveAnswer) {
-        botResponse = window.tomResolveAnswer(query, botResponse);
-      } else if (!botResponse) {
-        botResponse =
-          "I apologize, I couldn't process that request. Please try again.";
-      }
+        // If the server returned only its generic template (e.g. Gemini key not
+        // configured), answer general/chess/conversational queries locally.
+        if (window.tomResolveAnswer) {
+          botResponse = window.tomResolveAnswer(query, botResponse);
+        } else if (!botResponse) {
+          botResponse =
+            "I apologize, I couldn't process that request. Please try again.";
+        }
 
-      // ── PRIVACY GUARDRAIL: Validate AI response for parents ──
-      if (role === "parent") {
-        botResponse = validateParentAIResponse(botResponse);
+        // ── PRIVACY GUARDRAIL: Validate AI response for parents ──
+        if (role === "parent") {
+          botResponse = validateParentAIResponse(botResponse);
+        }
       }
 
       thinkingMsg.remove();
@@ -14937,6 +14793,74 @@ Best regards,
     }
   }
   window.sendAIQuery = sendAIQuery;
+
+  async function sendParentAIQuery() {
+    const input = $("parent-ai-query");
+    const attachedImg = window._pendingLmsAiImage.parent;
+    const query = (input ? input.value : "").trim();
+
+    if (!query && !attachedImg) {
+      toast("Please enter a query or upload an image", "info");
+      return;
+    }
+
+    window.removeLmsAiImage('parent');
+    const chatContainer = document.getElementById("parent-ai-workspace-msgs") || document.getElementById("ai-workspace-msgs");
+    if (!chatContainer) return;
+
+    // Add user message
+    const userMsg = document.createElement("div");
+    userMsg.className = "ai-ws-msg user";
+    const imgHtml = attachedImg ? `<img src="${attachedImg}" class="tom-msg-img" style="max-width:240px; border-radius:8px; display:block; margin-bottom:8px; border:1px solid rgba(255,255,255,0.2);" onclick="window.open(this.src,'_blank')" alt="Diagram">` : '';
+    userMsg.innerHTML = `<div class="ai-ws-avatar">👤</div><div class="ai-ws-bubble">${imgHtml}${escapeHtml(query || '📷 [Attached Image for Analysis]')}</div>`;
+    chatContainer.appendChild(userMsg);
+
+    if (input) input.value = "";
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    const thinkingMsg = document.createElement("div");
+    thinkingMsg.className = "ai-ws-msg bot";
+    thinkingMsg.innerHTML = `<div class="ai-ws-avatar">🤖</div><div class="ai-ws-bubble msg-thinking">🔄 Analyzing ${attachedImg ? 'homework / position' : 'query'}...</div>`;
+    chatContainer.appendChild(thinkingMsg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      let botResponse = "";
+      if (attachedImg && window.tomAnalyzeImage) {
+        botResponse = await window.tomAnalyzeImage(attachedImg, query);
+      } else {
+        const context = (typeof buildParentAIContext === 'function' ? buildParentAIContext() : {}) || {};
+        const aiResponse = await apiCall(`${API_BASE}/ai`, {
+          method: "POST",
+          body: JSON.stringify({ message: query, role: "parent", context }),
+        });
+        const aiData = await aiResponse.json().catch(() => ({}));
+        botResponse = aiData.message || "";
+        if (window.tomResolveAnswer) {
+          botResponse = window.tomResolveAnswer(query, botResponse);
+        }
+        if (typeof validateParentAIResponse === 'function') {
+          botResponse = validateParentAIResponse(botResponse);
+        }
+      }
+
+      thinkingMsg.remove();
+      const botMsg = document.createElement("div");
+      botMsg.className = "ai-ws-msg bot";
+      botMsg.innerHTML = `<div class="ai-ws-avatar">🤖</div><div class="ai-ws-bubble"></div>`;
+      chatContainer.appendChild(botMsg);
+      animateAIResponse(botMsg.querySelector(".ai-ws-bubble"), botResponse);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch(err) {
+      thinkingMsg.remove();
+      const errEl = document.createElement("div");
+      errEl.className = "ai-ws-msg bot";
+      errEl.innerHTML = `<div class="ai-ws-avatar">🤖</div><div class="ai-ws-bubble">⚠️ Sorry, could not process request right now.</div>`;
+      chatContainer.appendChild(errEl);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }
+  window.sendParentAIQuery = sendParentAIQuery;
 
   // Initialize RAG on load
   VECTOR_RAG.indexData();

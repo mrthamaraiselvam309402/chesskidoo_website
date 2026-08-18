@@ -1361,8 +1361,8 @@ ${applicant}`;
   CK.translations = {
     en: {
       home: 'Home', features: 'Features', curriculum: 'Curriculum', coaches: 'Coaches',
-      achievements: 'Achievements', tournaments: '🏆 Tournaments', ck_world: 'Our Reach',
-      careers: '💼 Careers', pricing: 'Pricing & NRI', faq: 'FAQ', login: 'Log In',
+      achievements: 'Achievements', tournaments: 'Tournaments', ck_world: 'Our Reach',
+      careers: 'Careers', pricing: 'Pricing & NRI', faq: 'FAQ', login: 'Log In',
       translate: 'Translate',
       hero_title: 'Where kids<br>learn to<br><em>think two</em><br><em>moves</em><br>ahead.',
       hero_badge: "India's #1 Student Tracking System",

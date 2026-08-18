@@ -4179,27 +4179,54 @@
    Replaces the older cert-card-v2 layout. Designed at 1500×980 for a
    crisp html2canvas capture; scaled responsively via --cert-scale.
    ════════════════════════════════════════════════════════════════════ */
+.cert-scale-wrapper {
+  width: calc(1500px * var(--cert-scale, 1));
+  height: calc(980px * var(--cert-scale, 1));
+  max-width: 100vw;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
 .certificate {
   width: 1500px;
   height: 980px;
   background: linear-gradient(135deg, #fffdf8, #faf7f0, #f5f1e8);
   border: 10px solid #c79b2c;
   border-radius: 16px;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 50%;
   overflow: hidden;
   padding: 45px 70px;
   box-shadow: 0 25px 60px rgba(0,0,0,0.18);
   font-family: 'Poppins', sans-serif;
   color: #111;
   /* Scale to fit viewport on smaller screens (kept px-perfect for capture) */
-  transform: scale(var(--cert-scale, 1));
+  transform: translateX(-50%) scale(var(--cert-scale, 1));
   transform-origin: top center;
-  margin-bottom: calc((var(--cert-scale, 1) - 1) * 980px);
   flex-shrink: 0;
   z-index: 10001;
+  box-sizing: border-box;
 }
-@media (max-width: 1580px) { .certificate { --cert-scale: calc((100vw - 80px) / 1500); } }
-@media (max-width: 900px)  { .certificate { --cert-scale: calc((100vw - 24px) / 1500); } }
+
+:root {
+  --cert-scale: 1;
+}
+@media (max-width: 1580px) {
+  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 80px) / 1500); }
+}
+@media (max-width: 900px) {
+  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 24px) / 1500); }
+}
+@media (max-width: 640px) {
+  .cert-overlay { padding: 16px 8px !important; overflow-x: hidden !important; }
+  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 16px) / 1500); }
+}
 
 /* Watermark knight in the centre */
 .certificate::before {
