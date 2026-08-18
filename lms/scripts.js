@@ -6841,12 +6841,16 @@ setTimeout(function () {
 
     const isAdmin = userRole === "admin" || userRole === "master";
     const isParent = userRole === "parent";
+    const isCoach = userRole === "coach";
     document
       .querySelectorAll(".admin-only")
       .forEach((el) => (el.style.display = isAdmin ? "" : "none"));
     document
       .querySelectorAll(".parent-only")
       .forEach((el) => (el.style.display = isParent ? "" : "none"));
+    document
+      .querySelectorAll(".coach-only")
+      .forEach((el) => (el.style.display = isCoach ? "" : "none"));
 
     // Explicitly show master-only elements if master
     // LOGOUT LOGIC MOVED TO js/auth.js
