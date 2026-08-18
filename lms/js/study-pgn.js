@@ -1443,43 +1443,73 @@
   };
 
   // ── Coach & Admin Topic Assignment Manager ──
-  window.openAssignStudyTopicModal = function () {
+  window.openAssignStudyTopicModal = function (prefillTitle = null, prefillPgn = null, prefillCategory = 'Openings') {
     const modal = document.getElementById('assign-study-topic-modal');
     if (!modal) return;
 
+    if (prefillTitle || prefillPgn) {
+      const titleInput = document.getElementById('topic-title-input');
+      const pgnInput = document.getElementById('topic-pgn-input');
+      const catSelect = document.getElementById('topic-cat-select');
+      if (titleInput && prefillTitle) titleInput.value = prefillTitle;
+      if (pgnInput && prefillPgn) pgnInput.value = prefillPgn;
+      if (catSelect && prefillCategory) catSelect.value = prefillCategory;
+    }
+
     const coachId = window.currentCoachId || (window.currentCoach && window.currentCoach.id) || null;
-    const isCoach = window.role === 'coach' && coachId;
+    const isCoach = (window.role === 'coach' || coachId) && window.role !== 'admin' && window.role !== 'master';
+
+    let allBatches = Array.isArray(window.allBatches) ? window.allBatches : [];
+    let allStudents = Array.isArray(window.allStudents) ? window.allStudents : [];
+
+    if (!allBatches.length && window.dataCache && window.dataCache.batches) {
+      allBatches = window.dataCache.batches;
+    }
+    if (!allStudents.length && window.dataCache && window.dataCache.students) {
+      allStudents = window.dataCache.students;
+    }
 
     const availableBatches = isCoach
-      ? (window.allBatches || []).filter(b => (window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)))
-      : (window.allBatches || []);
+      ? allBatches.filter(b => (window.ckSameCoach ? window.ckSameCoach(b.coach_id, coachId) : String(b.coach_id) === String(coachId)))
+      : allBatches;
 
     const availableStudents = isCoach
-      ? (window.allStudents || []).filter(s => (window.ckSameCoach ? window.ckSameCoach(s.coach_id, coachId) : String(s.coach_id) === String(coachId)))
-      : (window.allStudents || []);
+      ? allStudents.filter(s => {
+          if (window.ckSameCoach && window.ckSameCoach(s.coach_id, coachId)) return true;
+          if (String(s.coach_id) === String(coachId)) return true;
+          const coachBatchIds = availableBatches.map(b => String(b.id));
+          if (s.batch_id && coachBatchIds.includes(String(s.batch_id))) return true;
+          return false;
+        })
+      : allStudents;
 
     const batchSelect = document.getElementById('topic-batch-select');
     const studentSelect = document.getElementById('topic-student-select');
 
     if (batchSelect) {
       batchSelect.innerHTML = '<option value="all">-- All Enrolled Batches --</option>' +
-        availableBatches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || 'Batch ' + b.id)}</option>`).join('');
+        availableBatches.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || 'Batch #' + b.id)}</option>`).join('');
 
       batchSelect.onchange = function () {
         const selBatchId = this.value;
         if (!studentSelect) return;
-        const batchStudents = selBatchId === 'all'
+        const batchStudents = (selBatchId === 'all')
           ? availableStudents
-          : availableStudents.filter(s => String(s.batch_id) === String(selBatchId));
+          : availableStudents.filter(s => {
+              if (String(s.batch_id) === String(selBatchId)) return true;
+              const batchObj = availableBatches.find(b => String(b.id) === String(selBatchId));
+              if (batchObj && Array.isArray(batchObj.student_ids) && batchObj.student_ids.map(String).includes(String(s.id))) return true;
+              return false;
+            });
 
         studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
-          batchStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
+          batchStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student #' + s.id)}</option>`).join('');
       };
     }
 
     if (studentSelect) {
       studentSelect.innerHTML = '<option value="all">-- All Students in Batch --</option>' +
-        availableStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student')}</option>`).join('');
+        availableStudents.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name || s.full_name || 'Student #' + s.id)}</option>`).join('');
     }
 
     modal.style.display = 'flex';
