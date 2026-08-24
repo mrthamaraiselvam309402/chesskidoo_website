@@ -628,7 +628,10 @@
     const rawPhone = form.phone ? form.phone.value : '';
     const cleanDigits = rawPhone.replace(/\D/g, '');
     const phone = (window.CK && CK.intl) ? CK.intl.fullPhone(dial, cleanDigits) : `${dial} ${cleanDigits}`;
-    const age = form.age ? form.age.value : '';
+    const childName = form.childName ? form.childName.value.trim() : "";
+    const childAge = form.childAge ? form.childAge.value.trim() : "";
+    const childDetails = form.childDetails ? form.childDetails.value.trim() : [childName, childAge ? `Age ${childAge}` : ""].filter(Boolean).join(" (") + (childAge ? ")" : "");
+    const age = childAge || (form.age ? form.age.value : (childDetails || ""));
     const country = form.country ? form.country.value : '';
     const cityRaw = form.city ? form.city.value.trim() : '';
     const city = [cityRaw, country].filter(Boolean).join(', ') || 'Not specified';
@@ -760,6 +763,9 @@
     const form = e.target;
     const btn = form.querySelector('[type="submit"]');
     const name = form.fullName ? form.fullName.value.trim() : '';
+    const childName = form.childName ? form.childName.value.trim() : '';
+    const childAge = form.childAge ? form.childAge.value : '';
+    const chessLevel = form.chessLevel ? form.chessLevel.value : '';
     const dial = form.dialCode ? form.dialCode.value : '+91';
     const rawPhone = form.phone ? form.phone.value : '';
     const cleanDigits = rawPhone.replace(/\D/g, '');
@@ -767,6 +773,10 @@
     const countryTz = form.countryTimezone ? form.countryTimezone.value : '';
     const category = form.categoryFormat ? form.categoryFormat.value : '';
     const classesPerMonth = form.classesPerMonth ? form.classesPerMonth.value : '';
+    const timeSlot = form.timeSlot ? form.timeSlot.value : '';
+    const email = form.email ? form.email.value.trim() : '';
+    const notes = form.notes ? form.notes.value.trim() : '';
+    const days = Array.from(form.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join(', ');
 
     if (!name || !cleanDigits) {
       if (CK.showToast) CK.showToast('Please enter your full name and WhatsApp contact number', 'error');
@@ -786,14 +796,14 @@
             name,
             phone,
             city: countryTz,
-            notes: `NRI Inquiry | Format: ${category} | Frequency: ${classesPerMonth}`,
+            notes: `NRI Inquiry | Format: ${category} | Frequency: ${classesPerMonth} | Child: ${childName || 'N/A'} | Age: ${childAge || 'N/A'} | Level: ${chessLevel || 'N/A'} | Days: ${days || 'N/A'} | Time: ${timeSlot || 'N/A'} | Email: ${email || 'N/A'} | Notes: ${notes || 'None'}`,
             status: 'new',
             created_at: new Date().toISOString()
           });
         } catch (_) {}
       }
 
-      const msg = `Hello ChessKidoo Academy! 🌍\n\nI am requesting a Custom NRI Fee & Timezone Quote for my child.\n\n👤 *Parent Name:* ${name}\n📞 *WhatsApp:* ${phone}\n🌐 *Country & Timezone:* ${countryTz}\n♟️ *Format Looking For:* ${category}\n📅 *Classes / Month:* ${classesPerMonth}\n\nPlease send custom fee details and available slots! ♟️`;
+      const msg = `Hello ChessKidoo Academy! 🌍\n\nI am requesting a Custom NRI Fee & Timezone Quote for my child.\n\n👤 *Parent Name:* ${name}\n📞 *WhatsApp:* ${phone}\n📧 *Email:* ${email || 'Not provided'}\n👶 *Child's Name:* ${childName || 'Not provided'}\n🎂 *Child's Age:* ${childAge || 'Not provided'}\n♟️ *Current Level:* ${chessLevel || 'Not provided'}\n🌐 *Country & Timezone:* ${countryTz}\n📅 *Preferred Days:* ${days || 'Not specified'}\n🕐 *Preferred Time:* ${timeSlot || 'Not specified'}\n📚 *Format Looking For:* ${category}\n📆 *Classes / Month:* ${classesPerMonth}\n📝 *Notes:* ${notes || 'None'}\n\nPlease send custom fee details and available slots! ♟️`;
       const waUrl = `https://wa.me/919025846663?text=${encodeURIComponent(msg)}`;
 
       if (CK.showToast) CK.showToast('🎉 Custom NRI Quote request ready! Opening WhatsApp...', 'success');
@@ -2116,19 +2126,26 @@ ${applicant}`;
     /* ─── Play vs Computer mode ─── */
     _pvDifficulty: 'Intermediate',
     _pvPlayerColor: 'white',
+    _pvComputerSpeed: 'Medium',
 
     _initPlayMode() {
       this._mode = 'play';
       const pvPanel = document.getElementById('labPvCPanel') || document.getElementById('coachLabPvCPanel');
       if (pvPanel) pvPanel.style.display = 'block';
-      // Don't auto-start; user clicks Start Game to choose time control + difficulty first
+      if (CK.enginePlay && CK.enginePlay.setComputerSpeed) {
+        CK.enginePlay.setComputerSpeed(this._pvComputerSpeed);
+      }
     },
 
-    startPlayVsComputer(difficulty, color, timeControl) {
+    startPlayVsComputer(difficulty, color, timeControl, speed) {
       this._pvDifficulty  = difficulty   || this._pvDifficulty;
       this._pvPlayerColor = color        || this._pvPlayerColor;
       this._pvTimeControl = timeControl  || this._pvTimeControl || 'unlimited';
+      this._pvComputerSpeed = speed || this._pvComputerSpeed || 'Medium';
       if (CK.enginePlay) {
+        if (CK.enginePlay.setComputerSpeed) {
+          CK.enginePlay.setComputerSpeed(this._pvComputerSpeed);
+        }
         CK.enginePlay.initPlayVsComputer(
           'pvBoard',
           'pvStatus',

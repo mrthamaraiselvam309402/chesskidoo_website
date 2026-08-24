@@ -21,29 +21,54 @@ window.toggleLoginChat = function() {
 };
 
 function initSmartPills() {
-    const suggestions = [
+    const role = window.role || 'guest';
+    let suggestions = [];
+    
+    if (role === 'admin' || role === 'coach') {
+      suggestions = [
         "Audit May Arrears",
         "Top Performing Coach?",
         "Growth Recommendation",
         "Summarize Academy Health"
-    ];
+      ];
+    } else if (role === 'parent') {
+      suggestions = [
+        "My child's progress",
+        "Upcoming class schedule",
+        "Attendance report",
+        "Chess tips for beginners"
+      ];
+    } else {
+      suggestions = [
+        "Give me a puzzle",
+        "Explain Sicilian Defense",
+        "Analyze my game",
+        "Chess opening tips"
+      ];
+    }
+    
     const container = document.getElementById('ai-suggestions');
     if (container) {
-        container.innerHTML = '';
-        suggestions.forEach(text => {
-            const pill = document.createElement('div');
-            pill.className = 'ai-ws-pill';
-            pill.textContent = text;
-            pill.onclick = () => {
-                const input = document.getElementById('chat-input');
-                if (input) {
-                    input.value = text;
-                    window.sendChat();
-                }
-            };
-            container.appendChild(pill);
-        });
-        window.pillsInitialized = true;
+      container.innerHTML = '';
+      suggestions.forEach(text => {
+        const pill = document.createElement('div');
+        pill.className = 'ai-ws-pill';
+        pill.textContent = text;
+        pill.onclick = () => {
+          const inputId = role === 'guest' ? 'login-chat-input' : 'chat-input';
+          const input = document.getElementById(inputId);
+          if (input) {
+            input.value = text;
+            if (role === 'guest') {
+              window.sendLoginChat();
+            } else {
+              window.sendChat();
+            }
+          }
+        };
+        container.appendChild(pill);
+      });
+      window.pillsInitialized = true;
     }
 }
 window.initSmartPills = initSmartPills;
@@ -103,12 +128,11 @@ async function handleAITask(inputId, bodyId) {
     } catch (e) {
         console.warn('[AI Assistant] request failed:', e && e.message);
         hideThinking(thinking);
-        // Even if the network failed, try to answer general chess questions locally.
         const local = window.tomLocalAnswer ? window.tomLocalAnswer(msg) : null;
         if (local) {
             appendMsg(bodyId, 'bot', local);
         } else {
-            appendMsg(bodyId, 'bot', 'Neural link interrupted. Please check your connection.', true);
+            appendMsg(bodyId, 'bot', "I am ready to help you with chess tactics, game analysis, and academy training! Try asking 'Give me a puzzle' or 'Explain the Sicilian Defense'.");
         }
     }
 }
@@ -123,11 +147,14 @@ function appendMsg(bodyId, type, text, isError = false) {
         div.style.color = 'var(--danger)';
         div.textContent = text;
     } else {
-        // Safe premium markdown rendering
         let safeHtml = escapeHtml(text);
+        safeHtml = safeHtml.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
         safeHtml = safeHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         safeHtml = safeHtml.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        safeHtml = safeHtml.replace(/`{3}(\w+)?\n?([\s\S]*?)`{3}/g, '<pre style="background:rgba(0,0,0,0.3);padding:10px;border-radius:6px;overflow-x:auto;font-size:12px;"><code>$2</code></pre>');
+        safeHtml = safeHtml.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;font-size:12px;">$1</code>');
         safeHtml = safeHtml.replace(/• /g, '&bull; ');
+        safeHtml = safeHtml.replace(/^\d+\.\s/gm, (match) => match + ' ');
         safeHtml = safeHtml.replace(/\n/g, '<br>');
         div.innerHTML = safeHtml;
     }
@@ -140,7 +167,7 @@ function showThinking(bodyId) {
     if (!body) return null;
     const div = document.createElement('div');
     div.className = 'ai-msg bot thinking';
-    div.innerHTML = '<span class="spinner" style="width:12px; height:12px; margin-right:8px"></span>Grandmaster is calculating strategy...';
+    div.innerHTML = '<span class="spinner" style="width:12px; height:12px; margin-right:8px; animation: spin 1s linear infinite;"></span>TOM AI is analyzing...';
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
     return div;

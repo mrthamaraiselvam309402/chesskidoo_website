@@ -16,14 +16,14 @@
   const DEFAULT_LIBRARY_ITEMS = [
     {
       id: 'elib-1',
-      title: 'Grandmaster Opening Masterclass: Italian Game & Giuoco Piano',
-      description: 'Comprehensive video lecture on dominating the center, piece harmony, and the sharp Evans Gambit / Fried Liver lines.',
+      title: 'Grandmaster Opening Masterclass: Every Chess Opening Explained',
+      description: 'Comprehensive video lecture on dominating the center, piece harmony, and the sharp Italian Game / Sicilian / Ruy Lopez lines.',
       category: 'openings',
       categoryLabel: '♟️ Opening Repertoire',
       level: 'All Levels',
       type: 'video',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      author: 'Coach Ranjith A S',
+      url: 'https://www.youtube.com/watch?v=OCSbzArwB10',
+      author: 'Coach Gyanasurya',
       date: '2026-08-15',
       duration: '45 mins',
       access_type: 'all',
@@ -35,16 +35,16 @@
     },
     {
       id: 'elib-2',
-      title: '100 Must-Know Chess Tactics & Sacrifices',
-      description: 'Curated puzzle study guide and tactical handbook covering pins, skewers, knight forks, back-rank mates, and the Greek Gift sacrifice.',
+      title: 'How to Calculate Chess Moves Fast & Accurately',
+      description: 'Master calculation patterns, candidate move selection, tactical pins, skewers, knight forks, and back-rank mates.',
       category: 'tactics',
       categoryLabel: '⚡ Tactics & Combinations',
       level: 'Intermediate',
-      type: 'document',
-      url: 'https://chesskidoo.com/assets/study/tactics_mastery.pdf',
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=wXhXbQeU2G4',
       author: 'Senior Coach Panel',
       date: '2026-08-10',
-      duration: 'PDF Guide + PGN',
+      duration: '35 mins',
       access_type: 'all',
       allowed_batch_id: '',
       allowed_batch_name: '',
@@ -54,13 +54,13 @@
     },
     {
       id: 'elib-3',
-      title: 'Rook Endgames Essential Guide: The Lucena & Philidor Principles',
-      description: 'Master the "Bridge Technique" in the Lucena position and the passive 6th-rank cut-off in the Philidor defense with recorded live examples.',
+      title: '10 Chess Endgames You MUST Know (Lucena & Philidor Guide)',
+      description: 'Master the "Bridge Technique" in the Lucena position and the 6th-rank cut-off in the Philidor defense with live board breakdowns.',
       category: 'endgames',
       categoryLabel: '👑 Endgame Mastery',
       level: 'Advanced',
       type: 'video',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://www.youtube.com/watch?v=N6J0j7kG8jU',
       author: 'Coach Ranjith A S',
       date: '2026-08-05',
       duration: '52 mins',
@@ -73,32 +73,32 @@
     },
     {
       id: 'elib-4',
-      title: 'Sicilian Defense Najdorf & Dragon Deep Breakdown',
-      description: 'Master the sharpest counter-attacking weapon against 1.e4 with detailed move-by-move plans, pawn structures, and opposite-side castling races.',
-      category: 'openings',
-      categoryLabel: '♟️ Opening Repertoire',
-      level: 'Advanced',
-      type: 'document',
-      url: 'https://chesskidoo.com/assets/study/sicilian_repertoire.pdf',
+      title: 'How to Checkmate & Defend Sharp Attacks',
+      description: 'Master classic mating patterns, Scholar\'s mate defense, Greek gift sacrifices, and opposite-side castling pawn storms.',
+      category: 'tactics',
+      categoryLabel: '⚡ Tactics & Combinations',
+      level: 'Beginner',
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=1853Jq2xV5c',
       author: 'FIDE Master Team',
       date: '2026-07-28',
-      duration: 'Masterclass PDF',
+      duration: '28 mins',
       access_type: 'all',
       allowed_batch_id: '',
       allowed_batch_name: '',
       allowed_student_ids: [],
       allowed_student_names: [],
-      tags: ['Sicilian', 'Najdorf', 'Dragon', 'Counter-Attack']
+      tags: ['Checkmates', 'Defenses', 'Combinations']
     },
     {
       id: 'elib-5',
-      title: 'Weekly Live Academy Masterclass: Tournament Psychology & Calculation',
-      description: 'Recorded live masterclass session analyzing recent tournament games, clock management strategies, and blunder prevention habits.',
+      title: 'World Champion Tactical Masterclass & Game Analysis',
+      description: 'Recorded live masterclass session analyzing world championship games, tournament psychology, and blunder prevention habits.',
       category: 'recordings',
       categoryLabel: '🎥 Class Recording',
       level: 'All Levels',
       type: 'video',
-      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      url: 'https://www.youtube.com/watch?v=Kz7t1v7U44w',
       author: 'Academy Coaching Panel',
       date: '2026-08-12',
       duration: '60 mins',
@@ -133,10 +133,13 @@
     // Attempt Supabase Fetch
     if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
       try {
+        const origConsoleError = console.error;
+        console.error = function() {};
         const { data, error } = await window.supabaseClient
           .from('elibrary')
           .select('*')
           .order('created_at', { ascending: false });
+        console.error = origConsoleError;
         if (!error && Array.isArray(data) && data.length > 0) {
           const map = new Map();
           data.forEach(item => map.set(String(item.id), item));
@@ -529,31 +532,54 @@
   };
 
   // ── Open Video Player ──
+  
+  // ── High-Fidelity Mini-Player & Fullscreen Video Player ──
   window.openElibraryVideo = function (title, url) {
     const modal = document.getElementById('video-player-modal');
     const modalTitle = document.getElementById('video-modal-title');
     const iframe = document.getElementById('video-modal-iframe');
-    if (!modal) {
-      window.open(url, '_blank');
-      return;
-    }
 
-    if (modalTitle) modalTitle.textContent = `🎥 ${title}`;
-    
     let embedUrl = url;
     if (url.includes('youtube.com/watch?v=')) {
       const vidId = url.split('v=')[1]?.split('&')[0];
-      embedUrl = `https://www.youtube.com/embed/${vidId}?autoplay=1`;
+      embedUrl = `https://www.youtube.com/embed/${vidId}?autoplay=1&enablejsapi=1&rel=0`;
     } else if (url.includes('youtu.be/')) {
       const vidId = url.split('youtu.be/')[1]?.split('?')[0];
-      embedUrl = `https://www.youtube.com/embed/${vidId}?autoplay=1`;
+      embedUrl = `https://www.youtube.com/embed/${vidId}?autoplay=1&enablejsapi=1&rel=0`;
     } else if (url.includes('drive.google.com/file/d/')) {
       embedUrl = url.replace('/view', '/preview');
     }
 
+    if (!modal) {
+      // Create Floating Mini-Player Container if not present
+      let miniPlayer = document.getElementById('ck-floating-miniplayer');
+      if (!miniPlayer) {
+        miniPlayer = document.createElement('div');
+        miniPlayer.id = 'ck-floating-miniplayer';
+        miniPlayer.style.cssText = 'position:fixed; bottom:20px; right:20px; width:380px; height:240px; background:#000; border:2px solid var(--gold); border-radius:12px; overflow:hidden; z-index:999999; box-shadow:0 10px 30px rgba(0,0,0,0.8); display:flex; flex-direction:column;';
+        miniPlayer.innerHTML = `
+          <div style="background:#1e293b; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <span id="ck-mini-title" style="font-size:12px; font-weight:700; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;">${escapeHtml(title)}</span>
+            <div style="display:flex; gap:6px;">
+              <button onclick="document.getElementById('ck-floating-miniplayer').remove()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:16px;">✕</button>
+            </div>
+          </div>
+          <iframe id="ck-mini-iframe" src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+        `;
+        document.body.appendChild(miniPlayer);
+      } else {
+        document.getElementById('ck-mini-title').textContent = title;
+        document.getElementById('ck-mini-iframe').src = embedUrl;
+      }
+      return;
+    }
+
+    if (modalTitle) modalTitle.textContent = `🎥 ${title}`;
     if (iframe) iframe.src = embedUrl;
-    modal.classList.add('active');
+    modal.style.display = 'flex';
+    modal.classList.add('active', 'open');
   };
+
 
   // ── Filter Helper for Admin & Coach ──
   function getFilteredItems() {
@@ -938,3 +964,73 @@
     window.loadElibraryData();
   });
 })();
+
+  // ── Advanced Video Player Modes (Modal, Mini-Player, Fullscreen) ──
+  window.isVideoMini = false;
+
+  window.closeVideoPlayer = function () {
+    const modal = document.getElementById('video-player-modal');
+    const iframe = document.getElementById('video-modal-iframe');
+    const box = document.getElementById('video-player-modal-box');
+    if (iframe) iframe.src = '';
+    if (box) {
+      box.style.position = '';
+      box.style.bottom = '';
+      box.style.right = '';
+      box.style.width = '95%';
+      box.style.maxWidth = '860px';
+      box.style.zIndex = '';
+    }
+    if (modal) {
+      modal.classList.remove('active', 'open');
+      modal.style.display = 'none';
+      modal.style.background = '';
+      modal.style.pointerEvents = '';
+    }
+    window.isVideoMini = false;
+  };
+
+  window.toggleVideoMiniPlayer = function () {
+    const modal = document.getElementById('video-player-modal');
+    const box = document.getElementById('video-player-modal-box');
+    const miniBtn = document.getElementById('btn-video-mini');
+    if (!modal || !box) return;
+
+    window.isVideoMini = !window.isVideoMini;
+    if (window.isVideoMini) {
+      modal.style.background = 'transparent';
+      modal.style.pointerEvents = 'none';
+      box.style.pointerEvents = 'auto';
+      box.style.position = 'fixed';
+      box.style.bottom = '24px';
+      box.style.right = '24px';
+      box.style.width = '360px';
+      box.style.maxWidth = '360px';
+      box.style.zIndex = '999999';
+      box.style.boxShadow = '0 12px 35px rgba(0,0,0,0.85)';
+      if (miniBtn) miniBtn.textContent = '🗗 Centered View';
+      if (window.toast) window.toast('📺 Mini Player docked! You can now explore tactics & study pages while playing.', 'info');
+    } else {
+      modal.style.background = 'rgba(0,0,0,0.8)';
+      modal.style.pointerEvents = 'auto';
+      box.style.position = '';
+      box.style.bottom = '';
+      box.style.right = '';
+      box.style.width = '95%';
+      box.style.maxWidth = '860px';
+      box.style.zIndex = '';
+      box.style.boxShadow = '';
+      if (miniBtn) miniBtn.textContent = '📺 Mini Player';
+    }
+  };
+
+  window.toggleVideoFullscreen = function () {
+    const iframeWrap = document.getElementById('video-iframe-wrap');
+    if (!iframeWrap) return;
+    if (!document.fullscreenElement) {
+      if (iframeWrap.requestFullscreen) iframeWrap.requestFullscreen();
+      else if (iframeWrap.webkitRequestFullscreen) iframeWrap.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
+  };

@@ -64,6 +64,43 @@ async function fetchLichessGames(username, max = 10) {
   return null;
 }
 
+window.retryRecentGames = function () {
+  const lichessUser = window.currentStudent?.lichess_username || '';
+  const chesscomUser = window.currentStudent?.chesscom_username || '';
+  const recentGamesContainer = document.getElementById('chessapi-recent-games') || document.getElementById('lichess-recent-games');
+
+  if (recentGamesContainer) {
+    recentGamesContainer.innerHTML = '<div style="color:var(--ivory-dim); padding:10px; text-align:center;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:6px; border:2px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></span> Retrying...</div>';
+  }
+
+  if (lichessUser) {
+    fetchLichessGames(lichessUser, 10)
+      .then((games) => {
+        if (games && recentGamesContainer) {
+          renderRecentGamesList(games, recentGamesContainer);
+          window.currentChessGames = [...games, ...(allChesscomGames || [])];
+        }
+      })
+      .catch(() => {});
+  }
+
+  if (chesscomUser) {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    fetchT(`/api/chesscom-games-proxy?username=${encodeURIComponent(chesscomUser)}&year=${y}&month=${m}`, 12000)
+      .then((gamesRes) => gamesRes.ok ? gamesRes.json() : null)
+      .then((gamesData) => {
+        if (!gamesData) return;
+        const ccGames = (gamesData.games || []).slice(0, 10);
+        allChesscomGames = ccGames;
+        renderChesscomRecentGames(ccGames, document.getElementById('chesscom-recent-games'));
+        window.currentChessGames = [...(allLichessGames || []), ...ccGames];
+      })
+      .catch(() => {});
+  }
+};
+
 function chartThemeColors() {
   const isLight = document.body && document.body.getAttribute('data-theme') === 'light';
   return {
@@ -402,8 +439,8 @@ async function loadChessDashboard(student) {
   // Fetch Chess.com via proxy
   if (chesscomUser) {
     try {
-      const res = await fetchT(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}`, 12000);
-      if (res.ok) {
+      const res = await fetchT(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}`, 12000).catch(() => null);
+      if (res && res.ok) {
         const data = await res.json();
         const profile = data;
         const stats = data;
@@ -499,8 +536,8 @@ async function loadChessDashboard(student) {
     try {
       let data = null;
       try {
-        const cacheRes = await fetchT(`/api/lichess?username=${encodeURIComponent(lichessUser)}`, 8000);
-        if (cacheRes.ok) {
+        const cacheRes = await fetchT(`/api/lichess?username=${encodeURIComponent(lichessUser)}`, 8000).catch(() => null);
+        if (cacheRes && cacheRes.ok) {
           const cacheData = await cacheRes.json();
           if (cacheData.data) data = cacheData.data;
         }
@@ -508,8 +545,8 @@ async function loadChessDashboard(student) {
         // ignore, fall back below
       }
       if (!data) {
-        const res = await fetchT(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}`, 12000);
-        if (res.ok) data = await res.json();
+        const res = await fetchT(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}`, 12000).catch(() => null);
+        if (res && res.ok) data = await res.json();
       }
       if (data) {
         const profile = data.profile || {};
@@ -605,7 +642,12 @@ async function loadChessDashboard(student) {
               renderRecentGamesList(allLichessGames, recentGamesContainer);
               window.currentChessGames = [...allLichessGames, ...allChesscomGames];
             } else if (recentGamesContainer) {
-              recentGamesContainer.innerHTML = '<div style="color:var(--ivory-dim); padding:10px;">Unable to load recent games.</div>';
+              recentGamesContainer.innerHTML = '<div style="color:var(--ivory-dim); padding:10px; text-align:center;">' +
+                '<div style="font-size:32px; margin-bottom:8px;">♟️</div>' +
+                '<div style="font-weight:600; color:#fff; margin-bottom:4px;">No recent games loaded yet</div>' +
+                '<div style="font-size:11px; opacity:0.7; margin-bottom:10px;">Games appear here once connected to Lichess. The API may be rate-limited on localhost.</div>' +
+                '<button class="btn btn-outline btn-sm" onclick="window.retryRecentGames && window.retryRecentGames()" style="border-color:var(--gold); color:var(--gold);">🔄 Retry</button>' +
+                '</div>';
             }
           });
       }
@@ -1051,10 +1093,36 @@ function renderDynamicSkillBreakdown(student, lichessData, chesscomData, allGame
     positional: 0
   };
 
-  // Track data availability
-  let hasLichess = !!lichessData;
-  let hasChesscom = !!chesscomData;
-  let hasPgnData = false;
+  // ── PHASE 0: COACH DIRECT EVALUATION OVERRIDE ──
+  const coachSkills = student ? (student.skill_breakdown || student.skills) : null;
+  if (coachSkills && (coachSkills.opening != null || coachSkills.tactics != null)) {
+    metrics.opening = Number(coachSkills.opening) || 0;
+    metrics.middlegame = Number(coachSkills.middlegame) || 0;
+    metrics.endgame = Number(coachSkills.endgame) || 0;
+    metrics.tactics = Number(coachSkills.tactics) || 0;
+    metrics.positional = Number(coachSkills.positional) || 0;
+
+    const skills = [
+      { name: 'Opening Theory', value: metrics.opening, color: '#3b82f6' },
+      { name: 'Middle Game', value: metrics.middlegame, color: '#dca33e' },
+      { name: 'Endgame Play', value: metrics.endgame, color: '#10b981' },
+      { name: 'Tactics', value: metrics.tactics, color: '#EA580C' },
+      { name: 'Positional', value: metrics.positional, color: '#8b5cf6' }
+    ];
+
+    container.innerHTML = skills.map(skill => `
+      <div style="margin-bottom:14px">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; font-weight:600;">
+          <span style="color:var(--ivory);">${skill.name}</span>
+          <span style="color:${skill.color};">${skill.value}%</span>
+        </div>
+        <div style="height:10px; background:var(--bg3); border-radius:5px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);">
+          <div style="height:100%; width:${skill.value}%; background: ${skill.color}; border-radius:5px; transition: width 0.6s ease; box-shadow: 0 0 8px ${skill.color}40;"></div>
+        </div>
+      </div>
+    `).join('');
+    return;
+  }
 
   // ── PHASE 1: PLATFORM HEURISTICS ──
   if (lichessData) {
@@ -1374,8 +1442,8 @@ async function loadChessDashboardForTab(student) {
       } else {
         // Fall back to old proxy for backward compatibility
         try {
-          const res = await fetchT(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}&t=${Date.now()}`, 12000);
-          if (res.ok) {
+          const res = await fetchT(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}&t=${Date.now()}`, 12000).catch(() => null);
+          if (res && res.ok) {
             const data = await res.json();
             if (!data.notFound) {
               result.lichessData = data;
@@ -1404,8 +1472,8 @@ async function loadChessDashboardForTab(student) {
   // Fetch Chess.com
   if (chesscomUser) {
     try {
-      const res = await fetchT(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}&t=${Date.now()}`, 12000);
-      if (res.ok) {
+      const res = await fetchT(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}&t=${Date.now()}`, 12000).catch(() => null);
+      if (res && res.ok) {
         const data = await res.json();
         if (data.notFound) {
           result.chesscomNotFound = true;
@@ -1416,8 +1484,8 @@ async function loadChessDashboardForTab(student) {
           }
         const y = new Date().getFullYear();
         const m = String(new Date().getMonth() + 1).padStart(2, '0');
-        const gamesRes = await fetchT(`/api/chesscom-games-proxy?username=${encodeURIComponent(chesscomUser)}&year=${y}&month=${m}&t=${Date.now()}`, 12000);
-        if (gamesRes.ok) {
+        const gamesRes = await fetchT(`/api/chesscom-games-proxy?username=${encodeURIComponent(chesscomUser)}&year=${y}&month=${m}&t=${Date.now()}`, 12000).catch(() => null);
+        if (gamesRes && gamesRes.ok) {
           const gamesData = await gamesRes.json();
           result.games.push(...(gamesData.games || []).map(g => ({ ...g, platform: 'chesscom' })));
         }

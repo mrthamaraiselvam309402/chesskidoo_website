@@ -34,14 +34,21 @@
   let capturedBlack = [];
   let stockfish = null;
   let engineReady = false;
-  const playerColor = 'w';
+  let playerColor = 'w';  // mutable — updated by setPlayerColor()
+  let selectedCharacter = 'player1';
+
+  const CHARACTERS = {
+    player1: { name: 'Aarav',  emoji: '🧒' },
+    player2: { name: 'Meera',  emoji: '🧑‍🎓' },
+    player3: { name: 'Rohan',  emoji: '🧔' },
+    player4: { name: 'Priya',  emoji: '👧' }
+  };
   let gameStartTime = null;
   let selectedTimeControl = 600; // in seconds, or 'untimed'
   let whiteClock = 600;
   let blackClock = 600;
   let clockInterval = null;
   let activeClock = 'w';
-  let aiStartTime = null;
   let lastTickTime = null;
   let evalChart = null;
   let achievements = [];
@@ -213,6 +220,53 @@
       return bank[Math.floor(Math.random() * bank.length)];
     }
     return fallback || '';
+  }
+
+  // Strategic planning evaluation for Master/Champion level AI
+  function _evaluateStrategicBonus(fen, moveData, cfg) {
+    if (!cfg || cfg.pawnStructureBonus <= 0) return 0;
+    const bonus = cfg.pawnStructureBonus + cfg.kingSafetyBonus + cfg.centerControlBonus + cfg.pieceActivityBonus;
+    if (bonus <= 0) return 0;
+
+    let score = 0;
+    const testGame = new Chess(fen);
+    const moveSAN = moveData.san || '';
+    const piece = moveData.piece || '';
+    const to = moveData.to || '';
+    const from = moveData.from || '';
+
+    // Pawn structure: reward central pawn pushes, discourage isolated pawn moves
+    if (piece === 'p') {
+      const centralFiles = ['d', 'e'];
+      if (centralFiles.includes(to[0])) score += cfg.pawnStructureBonus * 0.3;
+      if (['d4', 'e4', 'd5', 'e5'].includes(moveSAN)) score += cfg.pawnStructureBonus * 0.5;
+    }
+
+    // King safety: reward castling, discourage king exposure
+    if (moveSAN === 'O-O' || moveSAN === 'O-O-O') score += cfg.kingSafetyBonus * 0.8;
+    if (piece === 'k') score += cfg.kingSafetyBonus * 0.2;
+
+    // Center control: reward central piece placement
+    const centralSquares = ['d4', 'd5', 'e4', 'e5', 'c4', 'c5', 'f4', 'f5'];
+    if (centralSquares.includes(to)) score += cfg.centerControlBonus * 0.4;
+    if (['d4', 'e4', 'd5', 'e5'].includes(moveSAN) && piece !== 'p') score += cfg.centerControlBonus * 0.3;
+
+    // Piece activity: reward piece development, knight to outposts
+    if (['n', 'b'].includes(piece) && !moveData.captured) {
+      const rankTo = parseInt(to[1]);
+      const rankFrom = parseInt(from[1]);
+      if (rankTo > rankFrom && testGame.turn() === 'w') score += cfg.pieceActivityBonus * 0.2;
+      if (rankTo < rankFrom && testGame.turn() === 'b') score += cfg.pieceActivityBonus * 0.2;
+    }
+
+    // Long-term planning: reward moves that improve position for future attack
+    testGame.move(moveData);
+    const oppMoves = testGame.moves({ verbose: true });
+    const ourAttacks = oppMoves.filter(m => m.captured && m.color !== testGame.turn()).length;
+    if (ourAttacks >= 2) score += cfg.pieceActivityBonus * 0.3;
+    testGame.undo();
+
+    return Math.round(score);
   }
 
   // Build commentary for a player move (classification + optional context).
@@ -515,7 +569,7 @@
     return vulnerable;
   }
 
-  const DIFFICULTY_DEPTH = { Beginner: 3, Intermediate: 8, Advanced: 14, Elite: 20 };
+  const DIFFICULTY_DEPTH = { Beginner: 3, Intermediate: 8, Advanced: 14, Elite: 20, Master: 24 };
   const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
   const PIECE_SVG = {
     w: {
@@ -567,6 +621,8 @@
     safetyRadarEnabled = localStorage.getItem('ck_safety_radar') === 'true';
     selectedCoachId = localStorage.getItem('ck_selected_coach_id') || 'magnus';
     currentDifficulty = localStorage.getItem('ck_difficulty') || 'Intermediate';
+    currentAISpeed = localStorage.getItem('ck_ai_speed') || 'Medium';
+    selectedTimeControl = localStorage.getItem('ck_time_control') || 600;
     
     // Sync UI elements
     const cEl = document.getElementById('arena-coach-mode');
@@ -580,6 +636,14 @@
 
     document.querySelectorAll('.diff-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.level === currentDifficulty);
+    });
+
+    document.querySelectorAll('.ai-speed-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.speed === currentAISpeed);
+    });
+
+    document.querySelectorAll('.timer-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.time === String(selectedTimeControl));
     });
 
     game = new Chess();
@@ -596,23 +660,35 @@
     capturedWhite = [];
     capturedBlack = [];
     selectedSq = null;
-    isPlayerTurn = true;
+    isPlayerTurn = playerColor === 'w'; // If player chose Black, AI moves first
     isGameOver = false;
     isThinking = false;
     gameStartTime = Date.now();
     whiteClock = selectedTimeControl === 'untimed' ? 0 : selectedTimeControl;
     blackClock = selectedTimeControl === 'untimed' ? 0 : selectedTimeControl;
     activeClock = 'w';
-    aiStartTime = null;
     lastTickTime = Date.now();
     awaitingAIMove = false;
     achievements = JSON.parse(localStorage.getItem('ck_achievements') || '[]');
 
     A.selectCoach(selectedCoachId); // sync Opponent and setup grid UI
 
+    // Update player info header with character
+    const charData = CHARACTERS[selectedCharacter] || CHARACTERS.player1;
+    const pAvatar = document.getElementById('arena-player-avatar');
+    const pName   = document.getElementById('arena-player-info');
+    if (pAvatar) pAvatar.textContent = charData.emoji;
+    if (pName)   pName.textContent   = charData.name + (playerColor === 'b' ? ' (Black)' : ' (White)');
+
+    // Update clock labels
+    const whiteLabel = document.getElementById('arena-clock-white-label');
+    const blackLabel = document.getElementById('arena-clock-black-label');
+    if (whiteLabel) whiteLabel.textContent = playerColor === 'b' ? 'White (AI)' : 'White (You)';
+    if (blackLabel) blackLabel.textContent = playerColor === 'b' ? 'Black (You)' : 'Black (AI)';
+
     renderBoard();
     renderAnalysisPanel();
-    updateStatus('Your turn — play as White');
+    updateStatus(playerColor === 'b' ? 'AI thinking first move…' : 'Your turn — play as White');
     initEngine();
     if (selectedTimeControl !== 'untimed') {
       startClock();
@@ -623,6 +699,15 @@
     initEvalChart();
     A.updateMinimaxAnalysis = () => {};
     A.updateMinimaxAnalysis();
+
+    // If player chose Black, trigger AI to open
+    if (playerColor === 'b') {
+      setTimeout(() => {
+        A.coachComment('greeting');
+        requestAIMove();
+      }, 700);
+      return;
+    }
     
     // Speak coach greeting (pulled from the new phrase bank — varies)
     setTimeout(() => {
@@ -1109,8 +1194,7 @@
     }
 
     renderAnalysisPanel();
-    activeClock = 'b';
-    aiStartTime = Date.now();
+    activeClock = game.turn();
     lastTickTime = Date.now();
 
     if (game.in_checkmate() || game.in_stalemate() || game.insufficient_material()) {
@@ -1139,9 +1223,10 @@
 
     updateStatus('AI is thinking...');
 
+    const aiDelay = AISPEED_CONFIG[currentAISpeed] || 400;
     setTimeout(() => {
       requestAIMove();
-    }, 100);
+    }, aiDelay);
   }
 
   /* ─── AI Move ───────────────────────────────────────────────────────
@@ -1152,12 +1237,22 @@
      Now each level only gets the external aids it deserves, plus a
      blunder/randomness layer at the lower levels so the engine
      actually feels weaker. */
-  const DIFFICULTY_CONFIG = {
-    Beginner:     { depth: 2,  useBook: false, bookUntilMove: 0,  useTablebase: false, tbMaxPieces: 0, blunderRate: 0.35, randomFallbackRate: 0.20 },
-    Intermediate: { depth: 6,  useBook: true,  bookUntilMove: 4,  useTablebase: false, tbMaxPieces: 0, blunderRate: 0.12, randomFallbackRate: 0.05 },
-    Advanced:     { depth: 12, useBook: true,  bookUntilMove: 8,  useTablebase: true,  tbMaxPieces: 4, blunderRate: 0.00, randomFallbackRate: 0.00 },
-    Elite:       { depth: 18, useBook: true,  bookUntilMove: 12, useTablebase: true,  tbMaxPieces: 7, blunderRate: 0.00, randomFallbackRate: 0.00 },
+   const DIFFICULTY_CONFIG = {
+     Beginner:     { depth: 4,  useBook: true,  bookUntilMove: 3,  useTablebase: false, tbMaxPieces: 0, blunderRate: 0.12, randomFallbackRate: 0.05, suboptimalRate: 0.25, suboptimalMargin: 180, pawnStructureBonus: 0, kingSafetyBonus: 0, centerControlBonus: 0, pieceActivityBonus: 0 },
+     Intermediate: { depth: 10, useBook: true,  bookUntilMove: 6,  useTablebase: false, tbMaxPieces: 0, blunderRate: 0.05, randomFallbackRate: 0.00, suboptimalRate: 0.08, suboptimalMargin: 60, pawnStructureBonus: 5, kingSafetyBonus: 5, centerControlBonus: 5, pieceActivityBonus: 5 },
+     Advanced:     { depth: 16, useBook: true,  bookUntilMove: 10, useTablebase: true,  tbMaxPieces: 4, blunderRate: 0.02, randomFallbackRate: 0.00, suboptimalRate: 0.03, suboptimalMargin: 25, pawnStructureBonus: 15, kingSafetyBonus: 15, centerControlBonus: 15, pieceActivityBonus: 15 },
+     Elite:        { depth: 22, useBook: true,  bookUntilMove: 16, useTablebase: true,  tbMaxPieces: 6, blunderRate: 0.00, randomFallbackRate: 0.00, suboptimalRate: 0.01, suboptimalMargin: 10, pawnStructureBonus: 30, kingSafetyBonus: 30, centerControlBonus: 30, pieceActivityBonus: 30 },
+     Master:       { depth: 28, useBook: true,  bookUntilMove: 22, useTablebase: true,  tbMaxPieces: 7, blunderRate: 0.00, randomFallbackRate: 0.00, suboptimalRate: 0.00, suboptimalMargin: 0, pawnStructureBonus: 50, kingSafetyBonus: 50, centerControlBonus: 50, pieceActivityBonus: 50 },
+     Champion:     { depth: 32, useBook: true,  bookUntilMove: 30, useTablebase: true,  tbMaxPieces: 7, blunderRate: 0.00, randomFallbackRate: 0.00, suboptimalRate: 0.00, suboptimalMargin: 0, pawnStructureBonus: 80, kingSafetyBonus: 80, centerControlBonus: 80, pieceActivityBonus: 80 },
+   };
+
+  const AISPEED_CONFIG = {
+    Slow:    800,
+    Medium: 400,
+    Fast:   150,
+    Instant: 0
   };
+  let currentAISpeed = 'Medium';
 
   async function requestAIMove() {
     if (isGameOver) return;
@@ -1190,8 +1285,8 @@
     if (cfg.useBook && fullMoves <= cfg.bookUntilMove) {
       updateStatus('🤖 Checking Master Openings…');
       try {
-        const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&moves=4`);
-        if (res.ok) {
+        const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&moves=4`).catch(() => null);
+        if (res && res.ok) {
           const data = await res.json();
           if (data.moves && data.moves.length > 0) {
             // Intermediate widens the choice to include sub-optimal lines
@@ -1221,19 +1316,25 @@
     }
 
     CK.engine.setDepth(cfg.depth);
+    if (CK.engine.setSkillLevel) {
+      const skills = { Beginner: 3, Intermediate: 8, Advanced: 15, Elite: 20, Master: 20, Champion: 20 };
+      CK.engine.setSkillLevel(skills[currentDifficulty] || 10);
+    }
+    if (CK.engine.setMultiPV) {
+      CK.engine.setMultiPV(currentDifficulty === "Beginner" ? 2 : currentDifficulty === "Champion" ? 5 : 3);
+    }
     const result = await CK.engine.evaluateLocal(fen);
 
     if (result && result.pvs && result.pvs.length > 0) {
       let chosenMoveStr = result.pvs[0].pv.split(' ')[0]; // Balanced default
 
-      // AI Personality Logic
-      if (selectedCoachId !== 'magnus' && result.pvs.length > 1) {
+      // AI Personality Logic — tactical and style-aware
+      if (result.pvs.length > 1) {
         const topCp = result.pvs[0].cp !== null ? result.pvs[0].cp : (result.pvs[0].mate ? result.pvs[0].mate * 1000 : 0);
         let bestCandidate = result.pvs[0];
         let bestScore = -Infinity;
 
-        const difficultyMargins = { Beginner: 150, Intermediate: 70, Advanced: 30, Elite: 10 };
-        const maxCpMargin = difficultyMargins[currentDifficulty] || 70;
+        const maxCpMargin = (cfg.suboptimalMargin !== undefined) ? cfg.suboptimalMargin : 70;
 
         for (let i = 0; i < result.pvs.length; i++) {
           const pvObj = result.pvs[i];
@@ -1248,32 +1349,60 @@
             
             if (moveData) {
               let styleScore = 0;
+              const moveSAN = moveData.san || '';
+              
+              // Universal tactical bonuses — all coaches prefer tactical moves
+              if (moveData.captured) {
+                const capturedValue = moveData.captured === 'q' ? 120 : moveData.captured === 'r' ? 70 : moveData.captured === 'b' || moveData.captured === 'n' ? 35 : 15;
+                styleScore += capturedValue;
+              }
+              if (moveSAN.includes('+')) styleScore += 40;
+              if (moveSAN.includes('#')) styleScore += 200;
+              if (moveData.flags.includes('p')) styleScore += 30;
+              if (moveData.promotion) styleScore += 80;
+              
+              // Check if move creates immediate tactical threat
+              testGame.move(moveData);
+              if (testGame.in_check()) styleScore += 50;
+              const opponentMoves = testGame.moves({ verbose: true });
+              const hangingPieces = opponentMoves.filter(m => m.captured).length;
+              if (hangingPieces >= 2) styleScore += 40;
+              testGame.undo();
+              
+              // Coach-specific personality bonuses
               if (selectedCoachId === 'tal') {
-                if (moveData.captured) styleScore += 60;
-                if (moveData.flags.includes('p')) styleScore += 40;
-                testGame.move(moveData);
-                if (testGame.in_check()) styleScore += 50;
-                testGame.undo();
-                
+                styleScore += 25;
+                if (moveData.captured) styleScore += 30;
+                if (moveSAN.includes('+')) styleScore += 20;
                 const isWhite = testGame.turn() === 'w';
                 const rankFrom = parseInt(moveData.from[1]);
                 const rankTo = parseInt(moveData.to[1]);
                 if (isWhite && rankTo > rankFrom) styleScore += 15;
                 if (!isWhite && rankTo < rankFrom) styleScore += 15;
               } else if (selectedCoachId === 'petrosian') {
-                if (!moveData.captured) styleScore += 30;
-                if (moveData.flags.includes('c') || moveData.flags.includes('k') || moveData.flags.includes('q')) styleScore += 70;
-                
+                styleScore += 10;
+                if (!moveData.captured) styleScore += 20;
+                if (moveData.flags.includes('c') || moveData.flags.includes('k') || moveData.flags.includes('q')) styleScore += 50;
                 const isWhite = testGame.turn() === 'w';
                 const rankFrom = parseInt(moveData.from[1]);
                 const rankTo = parseInt(moveData.to[1]);
-                if (isWhite && rankTo <= rankFrom) styleScore += 25;
-                if (!isWhite && rankTo >= rankFrom) styleScore += 25;
+                if (isWhite && rankTo <= rankFrom) styleScore += 20;
+                if (!isWhite && rankTo >= rankFrom) styleScore += 20;
               } else if (selectedCoachId === 'beth') {
-                if (['d4', 'e4', 'd5', 'e5'].includes(moveData.to)) styleScore += 40;
-                if (moveData.piece === 'q') styleScore += 25;
-                if (moveData.captured) styleScore += 30;
+                styleScore += 15;
+                if (['d4', 'e4', 'd5', 'e5'].includes(moveData.to)) styleScore += 25;
+                if (moveData.piece === 'q') styleScore += 20;
+                if (moveData.captured) styleScore += 25;
+              } else {
+                // Magnus / default: balanced + positional + tactical
+                styleScore += (result.pvs.length - i) * 2;
+                if (['d4','e4','d5','e5','c4','c5'].includes(moveData.to)) styleScore += 8;
+                if (['n','b'].includes(moveData.piece) && !moveData.captured) styleScore += 6;
               }
+
+              // Master/Champion strategic planning layer
+              const strategicBonus = _evaluateStrategicBonus(fen, moveData, cfg);
+              styleScore += strategicBonus;
               
               if (styleScore > bestScore) {
                 bestScore = styleScore;
@@ -1283,6 +1412,19 @@
           }
         }
         chosenMoveStr = bestCandidate.pv.split(' ')[0];
+      }
+
+      // Suboptimal move layer — difficulty-tunable
+      if (cfg.suboptimalRate > 0 && result.pvs.length > 1 && Math.random() < cfg.suboptimalRate) {
+        const topCp2 = result.pvs[0].cp !== null ? result.pvs[0].cp : (result.pvs[0].mate ? result.pvs[0].mate * 1000 : 0);
+        const usablePvs = result.pvs.filter(pv => {
+          const cp2 = pv.cp !== null ? pv.cp : (pv.mate ? pv.mate * 1000 : 0);
+          return Math.abs(topCp2 - cp2) <= (cfg.suboptimalMargin || 70) * 2 && pv.pv;
+        });
+        if (usablePvs.length > 1) {
+          const picked = usablePvs.slice(1)[Math.floor(Math.random() * (usablePvs.length - 1))];
+          if (picked && picked.pv) chosenMoveStr = picked.pv.split(' ')[0];
+        }
       }
 
       // Beginner/Intermediate "blunder" layer — sometimes pick a clearly
@@ -1301,7 +1443,7 @@
     } else {
       // Fallback: Use built-in Pure JS Negamax Engine instead of random moves!
       if (window.CK && CK.enginePlay) {
-        const jsDepths = { Beginner: 1, Intermediate: 2, Advanced: 3, Elite: 4 };
+        const jsDepths = { Beginner: 1, Intermediate: 2, Advanced: 3, Elite: 4, Master: 5, Champion: 6 };
         const jsDepth = jsDepths[currentDifficulty] || 2;
         const bestMoveObj = CK.enginePlay.getBestMove(game, jsDepth);
         if (bestMoveObj) {
@@ -1363,17 +1505,7 @@
     A.playMoveSound(!!move.captured);
     renderAnalysisPanel();
     
-    // Deduct exact thinking time from AI clock if we have a valid aiStartTime
-    if (aiStartTime) {
-      const thinkingMs = Date.now() - aiStartTime;
-      const thinkingSec = Math.round(thinkingMs / 1000);
-      if (thinkingSec > 0) {
-        blackClock = Math.max(0, blackClock - thinkingSec);
-      }
-      aiStartTime = null;
-    }
-    
-    activeClock = 'w';
+    activeClock = game.turn();
     lastTickTime = Date.now();
 
     if (game.in_checkmate() || game.in_stalemate() || game.insufficient_material()) {
@@ -1581,14 +1713,16 @@
   /* ─── Match Commentary Engine ─── */
   function generateMatchCommentary(result, accuracy, totalMoves, durationMin, counts) {
     const lines = [];
-    const levelOrder = ['Beginner', 'Intermediate', 'Advanced', 'Elite'];
+    const levelOrder = ['Beginner', 'Intermediate', 'Advanced', 'Elite', 'Master', 'Champion'];
     const selectedIdx = levelOrder.indexOf(currentDifficulty);
 
     // Determine actual played level from accuracy
     let playerActualLevel, actualIdx;
-    if (accuracy >= 88) { playerActualLevel = 'Elite';       actualIdx = 3; }
-    else if (accuracy >= 72) { playerActualLevel = 'Advanced';     actualIdx = 2; }
-    else if (accuracy >= 55) { playerActualLevel = 'Intermediate'; actualIdx = 1; }
+    if (accuracy >= 95) { playerActualLevel = 'Champion';     actualIdx = 5; }
+    else if (accuracy >= 88) { playerActualLevel = 'Master';       actualIdx = 4; }
+    else if (accuracy >= 78) { playerActualLevel = 'Elite';       actualIdx = 3; }
+    else if (accuracy >= 65) { playerActualLevel = 'Advanced';     actualIdx = 2; }
+    else if (accuracy >= 50) { playerActualLevel = 'Intermediate'; actualIdx = 1; }
     else               { playerActualLevel = 'Beginner';     actualIdx = 0; }
 
     if (totalMoves < 5) {
@@ -1673,7 +1807,7 @@
     if (actualIdx > selectedIdx) {
       levelIcon = '🚀';
       levelColor = '#10b981';
-      levelMsg = `Your ${accuracy}% accuracy exceeds the ${currentDifficulty} standard — you are playing at <strong>${playerActualLevel} level</strong>. Consider challenging yourself with <strong>${levelOrder[Math.min(selectedIdx + 1, 3)]}</strong> difficulty for better calibrated opposition!`;
+      levelMsg = `Your ${accuracy}% accuracy exceeds the ${currentDifficulty} standard — you are playing at <strong>${playerActualLevel} level</strong>. Consider challenging yourself with <strong>${levelOrder[Math.min(selectedIdx + 1, levelOrder.length - 1)]}</strong> difficulty for better calibrated opposition!`;
     } else if (actualIdx < selectedIdx) {
       levelIcon = '📉';
       levelColor = '#f59e0b';
@@ -2294,7 +2428,7 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
         </text>
         <!-- Bottom arc text -->
         <text font-family="Cinzel, serif" font-size="8" font-weight="700" fill="#c5983a" letter-spacing="3">
-          <textPath href="#cert-seal-arc-bot" startOffset="50%" text-anchor="middle">CHESSKIDDO</textPath>
+          <textPath href="#cert-seal-arc-bot" startOffset="50%" text-anchor="middle">CHESSKIDOO</textPath>
         </text>
       </svg>
     `;
@@ -2338,7 +2472,7 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
           <!-- Student name + citation (always uppercased for a formal diploma look) -->
           <div class="student-name">${_certEscape((playerName || 'Champion').toUpperCase())}</div>
           <div class="student-text">
-            for successfully completing an AI Arena chess match in ChessKiddo at age
+            for successfully completing an AI Arena chess match in ChessKidoo at age
             <strong>${_certEscape(playerAge)}</strong> and demonstrating strategic
             thinking, focus, tactical excellence, and determination throughout the game.
           </div>
@@ -2373,7 +2507,7 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
               <div class="signature">TOM</div>
               <div class="signature-line"></div>
               <div class="signature-role">AI COACH</div>
-              <div class="signature-sub">ChessKiddo AI Training System</div>
+              <div class="signature-sub">ChessKidoo AI Training System</div>
             </div>
 
             <div class="seal">
@@ -2385,7 +2519,7 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
               <div class="signature">Ranjith A S</div>
               <div class="signature-line"></div>
               <div class="signature-role">DIRECTOR</div>
-              <div class="signature-sub">ChessKiddo Academy Director</div>
+              <div class="signature-sub">ChessKidoo Academy Director</div>
             </div>
           </div>
 
@@ -2407,9 +2541,15 @@ L37 10 L33 12 L31 9 L26 14 C 20 18 16 22 16 28 C 16 30 17 32 19 33
     const updateScale = () => {
       if (!overlay.classList.contains('active')) return;
       const screenW = window.innerWidth;
-      const padding = screenW < 640 ? 16 : 40;
-      const availW = Math.max(280, screenW - padding);
-      const scale = Math.min(1, availW / 1500);
+      const screenH = window.innerHeight;
+      const padX = screenW < 640 ? 16 : screenW < 900 ? 24 : 48;
+      const padY = screenW < 640 ? 110 : 130; // room for action buttons
+      const availW = Math.max(280, screenW - padX);
+      const availH = Math.max(200, screenH - padY);
+      let scale;
+      if (screenW < 768) { scale = Math.min(1, availW / 1500); }
+      else { scale = Math.min(1, availW / 1500, availH / 980); }
+      scale = Math.max(0.20, scale);
       overlay.style.setProperty('--cert-scale', scale.toFixed(4));
       const wrapper = document.getElementById('cert-scale-wrapper');
       if (wrapper) {
@@ -2774,6 +2914,14 @@ A.newGame = () => {
     });
   };
 
+  A.setAISpeed = (speed) => {
+    currentAISpeed = speed;
+    localStorage.setItem('ck_ai_speed', speed);
+    document.querySelectorAll('.ai-speed-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.speed === speed);
+    });
+  };
+
   // ─── Game Mode (vs AI / vs Friend pass-and-play) ──────────────────────
   // When mode === 'friend', the engine never moves — both colours are
   // controlled by the local player; the board flips after each move so
@@ -2804,16 +2952,6 @@ A.newGame = () => {
     document.querySelectorAll('.style-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.style === style);
     });
-  };
-
-  A.toggleCoach = (enabled) => {
-    coachMode = enabled;
-    localStorage.setItem('ck_coach_mode', enabled);
-  };
-
-  A.toggleAudioCoach = (enabled) => {
-    audioCoachEnabled = enabled;
-    localStorage.setItem('ck_audio_coach', enabled);
   };
 
   A.toggleThreatMap = (enabled) => {
@@ -2847,6 +2985,44 @@ A.newGame = () => {
     if (nameEl) nameEl.textContent = COACHES[coachId].name;
     if (styleEl) styleEl.textContent = COACHES[coachId].style;
     if (avatarEl) avatarEl.textContent = COACHES[coachId].emoji;
+  };
+
+  A.setPlayerColor = (color) => {
+    if (color === 'random') {
+      playerColor = Math.random() < 0.5 ? 'w' : 'b';
+    } else {
+      playerColor = (color === 'b') ? 'b' : 'w';
+    }
+    document.querySelectorAll('.playas-btn').forEach(btn => {
+      const isActive = btn.dataset.color === color;
+      btn.classList.toggle('active', isActive);
+      btn.style.borderColor = isActive ? 'rgba(232,184,75,0.8)' : 'rgba(255,255,255,0.12)';
+      btn.style.background  = isActive ? 'rgba(232,184,75,0.18)' : 'rgba(255,255,255,0.04)';
+    });
+    const whiteLabel = document.getElementById('arena-clock-white-label');
+    const blackLabel = document.getElementById('arena-clock-black-label');
+    if (whiteLabel) whiteLabel.textContent = playerColor === 'b' ? 'White (AI)' : 'White (You)';
+    if (blackLabel) blackLabel.textContent = playerColor === 'b' ? 'Black (You)' : 'Black (AI)';
+    const charData = CHARACTERS[selectedCharacter] || CHARACTERS.player1;
+    const pAvatar = document.getElementById('arena-player-avatar');
+    const pName   = document.getElementById('arena-player-info');
+    if (pAvatar) pAvatar.textContent = charData.emoji;
+    if (pName)   pName.textContent   = charData.name + (playerColor === 'b' ? ' (Black)' : ' (White)');
+  };
+
+  A.selectCharacter = (charId) => {
+    selectedCharacter = charId;
+    const charData = CHARACTERS[charId] || CHARACTERS.player1;
+    document.querySelectorAll('.char-select-card').forEach(card => {
+      const isActive = card.dataset.char === charId;
+      card.classList.toggle('active', isActive);
+      card.style.borderColor = isActive ? 'rgba(232,184,75,0.7)' : 'rgba(255,255,255,0.12)';
+      card.style.background  = isActive ? 'rgba(232,184,75,0.1)'  : 'rgba(255,255,255,0.04)';
+    });
+    const pAvatar = document.getElementById('arena-player-avatar');
+    const pName   = document.getElementById('arena-player-info');
+    if (pAvatar) pAvatar.textContent = charData.emoji;
+    if (pName)   pName.textContent   = charData.name + (playerColor === 'b' ? ' (Black)' : ' (White)');
   };
 
   A.switchTab = (tab) => {
@@ -3146,6 +3322,7 @@ A.newGame = () => {
 
   A.setTimeControl = (timeVal) => {
     selectedTimeControl = timeVal;
+    localStorage.setItem('ck_time_control', String(timeVal));
     document.querySelectorAll('.timer-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.time === String(timeVal));
     });

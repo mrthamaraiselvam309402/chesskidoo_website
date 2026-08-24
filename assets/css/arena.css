@@ -1601,13 +1601,15 @@
   opacity: 0.95;
 }
 
-/* Action Bar Styles */
+/* Action Bar Styles — margin scales with the certificate so the gap stays
+   proportional on every screen size. */
 .cert-action-bar {
-  margin-top: 24px;
+  margin-top: calc(24px * var(--cert-scale, 1));
   display: flex;
-  gap: 16px;
+  gap: calc(16px * var(--cert-scale, 1));
   justify-content: center;
   width: 100%;
+  max-width: calc(1500px * var(--cert-scale, 1));
 }
 .cert-action-btn {
   padding: 11px 26px;
@@ -2869,6 +2871,58 @@
   border-color: #c084fc;
   background: rgba(192, 132, 252, 0.06);
   box-shadow: 0 0 20px rgba(192, 132, 252, 0.25), inset 0 0 10px rgba(192, 132, 252, 0.05);
+}
+
+/* ─── Play As buttons ─── */
+.playas-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.playas-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.playas-btn.active {
+  border-color: var(--arena-gold);
+  background: rgba(232, 184, 75, 0.12);
+  box-shadow: 0 0 15px rgba(232, 184, 75, 0.3);
+}
+.playas-btn[data-color="b"].active {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+.playas-btn[data-color="random"].active {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.12);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+
+/* ─── Character select cards ─── */
+.char-select-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.char-select-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+.char-select-card.active {
+  border-color: var(--arena-gold);
+  background: rgba(232, 184, 75, 0.08);
+  box-shadow: 0 0 15px rgba(232, 184, 75, 0.25), inset 0 0 8px rgba(232, 184, 75, 0.05);
 }
 
 .arena-tabs {
@@ -4217,15 +4271,45 @@
 :root {
   --cert-scale: 1;
 }
+/* Scale is set ONLY on .cert-overlay so the JS updateScale() and the CSS
+   media queries write the same custom property without cascade conflicts.
+   Previously .certificate and .cert-scale-wrapper had their own media-query
+   declarations that overrode the inherited JS value, causing the card to
+   render at a different scale than the wrapper. */
 @media (max-width: 1580px) {
-  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 80px) / 1500); }
+  .cert-overlay { --cert-scale: calc((100vw - 80px) / 1500); }
 }
 @media (max-width: 900px) {
-  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 24px) / 1500); }
+  .cert-overlay { --cert-scale: calc((100vw - 24px) / 1500); }
+  .cert-action-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .cert-action-btn {
+    padding: 10px 18px;
+    font-size: 0.8rem;
+  }
 }
 @media (max-width: 640px) {
-  .cert-overlay { padding: 16px 8px !important; overflow-x: hidden !important; }
-  .certificate, .cert-scale-wrapper, .cert-overlay { --cert-scale: calc((100vw - 16px) / 1500); }
+  .cert-overlay {
+    padding: 12px 6px !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    --cert-scale: calc((100vw - 16px) / 1500);
+  }
+  .cert-action-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 4px;
+  }
+  .cert-action-btn {
+    padding: 9px 14px;
+    font-size: 0.75rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+  }
 }
 
 /* Watermark knight in the centre */

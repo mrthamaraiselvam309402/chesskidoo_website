@@ -238,20 +238,20 @@
               </div>
               <div class="hero-stats">
                 <div class="stat-item">
-                  <div class="hero-stat-num">200+</div>
+                  <div class="hero-stat-num" data-target="200" data-suffix="+">200+</div>
                   <div class="hero-stat-label" data-translate="hero_stat_students">Active Students</div>
                 </div>
                 <div class="stat-item">
-                  <div class="hero-stat-num">8+</div>
+                  <div class="hero-stat-num" data-target="8" data-suffix="+">8+</div>
                   <div class="stat-item-label hero-stat-label" data-translate="hero_stat_coaches">FIDE Coaches</div>
                 </div>
                 <div class="stat-item">
-                  <div class="hero-stat-num">12+</div>
+                  <div class="hero-stat-num" data-target="12" data-suffix="+">12+</div>
                   <div class="stat-item-label hero-stat-label" data-translate="hero_stat_championships">Championships
                   </div>
                 </div>
                 <div class="stat-item">
-                  <div class="hero-stat-num">4.9★</div>
+                  <div class="hero-stat-num" data-target="4.9" data-suffix="★" data-decimals="1">4.9★</div>
                   <div class="stat-item-label hero-stat-label" data-translate="hero_stat_rating">Parent Rating</div>
                 </div>
               </div>
@@ -503,21 +503,19 @@
           </div>
 
           <div class="learning-journey-container" data-aos="fade-up">
-            <!-- Wavy SVG Path -->
             <svg class="lj-wave-svg" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <linearGradient id="ljWaveSolidGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stop-color="#3b82f6" />
-                  <stop offset="50%" stop-color="#2563eb" />
-                  <stop offset="100%" stop-color="#60a5fa" />
+                  <stop offset="33%" stop-color="#d97706" />
+                  <stop offset="66%" stop-color="#ea580c" />
+                  <stop offset="100%" stop-color="#dc2626" />
                 </linearGradient>
               </defs>
-              <!-- Solid active trail from Pawn to Knight -->
-              <path class="lj-wave-solid" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75" />
-              <!-- Dashed future trail from midpoint to Rook and King -->
-              <path class="lj-wave-dashed" d="M 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" />
-              <!-- Glowing energy spark -->
-              <path class="lj-wave-spark" pathLength="100" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" />
+              <!-- Full background dashed track -->
+              <path class="lj-wave-dashed" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" />
+              <!-- Scroll-driven active progress line -->
+              <path class="lj-wave-solid" id="lj-progress-path" d="M 150,140 C 250,190 350,70 450,90 C 520,70 560,65 600,75 C 660,85 700,120 750,130 C 850,175 950,155 1050,110" stroke="url(#ljWaveSolidGrad)" />
             </svg>
 
             <!-- 4 Journey Stations Grid -->
@@ -526,9 +524,7 @@
               <div class="lj-station station-pawn" style="--lj-color:#9A7B1C;">
                 <div class="lj-badge-wrap">
                   <div class="lj-badge">
-                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22.5 9a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM16.5 13a6 6 0 0112 0c0 3.2-1.8 5.7-3.8 8h-4.4c-2-2.3-3.8-4.8-3.8-8zM15 23h15v3H15v-3zM13 28h19l2 7H11l2-7zM9 37h27v4H9v-4z" fill="#9A7B1C"/>
-                    </svg>
+                    <img src="https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png" alt="Pawn" style="width:70%; height:70%; object-fit:contain; pointer-events:none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                   </div>
                 </div>
                 <div class="lj-content">
@@ -548,9 +544,7 @@
               <div class="lj-station station-knight" style="--lj-color:#D97706;">
                 <div class="lj-badge-wrap">
                   <div class="lj-badge">
-                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22 4c-4.5 0-9 3.5-9 8 0 2 .5 4 1.5 5.5-2.5 1-4.5 3-4.5 6.5 0 3.5 2 6 5 7l-2 5h20l-1-7c2-1 4-3.5 4-7 0-4-3-8-7-9.5V11c0-4-3-7-7-7zm-4 8a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="#D97706"/>
-                    </svg>
+                    <img src="https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png" alt="Knight" style="width:70%; height:70%; object-fit:contain; pointer-events:none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                   </div>
                 </div>
                 <div class="lj-content">
@@ -570,9 +564,7 @@
               <div class="lj-station station-rook" style="--lj-color:#EA580C;">
                 <div class="lj-badge-wrap">
                   <div class="lj-badge">
-                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M11 5v7h4V9h4v3h6V9h4v3h4V5H11zm3 10l2 12h14l2-12H14zm-4 14h25v4H10v-4zm-2 6h29v4H8v-4z" fill="#EA580C"/>
-                    </svg>
+                    <img src="https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png" alt="Rook" style="width:70%; height:70%; object-fit:contain; pointer-events:none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                   </div>
                 </div>
                 <div class="lj-content">
@@ -592,9 +584,7 @@
               <div class="lj-station station-king" style="--lj-color:#DC2626;">
                 <div class="lj-badge-wrap">
                   <div class="lj-badge">
-                    <svg class="lj-piece-icon" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M21 2h3v3h3v3h-3v3h-3V8h-3V5h3V2zm-7 11h17l4 8-6 3 3 5H13l3-5-6-3 4-8zm-4 18h25v4H10v-4zm-2 6h29v4H8v-4z" fill="#DC2626"/>
-                    </svg>
+                    <img src="https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png" alt="King" style="width:70%; height:70%; object-fit:contain; pointer-events:none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                   </div>
                 </div>
                 <div class="lj-content">
@@ -796,7 +786,7 @@
           <div class="coach-card-premium" data-aos="fade-up">
             <div class="coach-level-badge">Advanced</div>
             <div class="coach-img-box">
-              <img loading="lazy" src="assets/img/arivuselvam.jpg" alt="Arivuselvam">
+              <img loading="lazy" src="assets/img/arivuselvam.jpg?v=20260824" alt="Arivuselvam">
             </div>
             <div class="coach-card-body">
               <h5>Arivuselvam</h5>
@@ -844,14 +834,14 @@
 
           <!-- ═══ BEGINNER COACHES ═══ -->
 
-          <!-- Gyansurya -->
+          <!-- Gyana Suriya -->
           <div class="coach-card-premium" data-aos="fade-up">
             <div class="coach-level-badge">Beginner</div>
             <div class="coach-img-box">
-              <img loading="lazy" src="assets/img/gyansurya.jpeg" alt="Gyansurya">
+              <img loading="lazy" src="assets/img/gyanasurya.png?v=20260824_v2" alt="Coach Gyana Suriya">
             </div>
             <div class="coach-card-body">
-              <h5>Gyansurya</h5>
+              <h5>Gyana Suriya</h5>
               <p>Child specialist coach &amp; AFM title player with a passion for early learning.</p>
             </div>
           </div>
@@ -998,29 +988,61 @@
 
             <div class="showcase-gallery-item">
               <div class="showcase-img-wrap">
-                <img loading="lazy" src="assets/img/acivements img.jpeg" alt="Student Achievement ANUSHYA">
+                <img loading="lazy" src="assets/img/achievement-anuksha.jpg" alt="Student Achievement Anuksha">
               </div>
               <div class="showcase-info">
-                <h4>ANUSHYA</h4>
-                <p>Under-11 Girls State Champion 🏆</p>
+                <h4>Anuksha</h4>
+                <p>7th Place — Under 9 Chess Festival (Namakkal) 🏆 Coach Guanasurya</p>
               </div>
             </div>
+
             <div class="showcase-gallery-item">
               <div class="showcase-img-wrap">
-                <img loading="lazy" src="assets/img/acivements img 1.jpeg" alt="Student Achievement Ayush M">
+                <img loading="lazy" src="assets/img/achievement-mocsha.jpg" alt="Student Achievement Mocsha">
               </div>
               <div class="showcase-info">
-                <h4>Ayush M</h4>
-                <p>5th Place - Under-14 Boys state Championship🏅</p>
+                <h4>Mocsha</h4>
+                <p>State Championship Prize Winner 🏆 Tamil Nadu State Chess Championship 2026</p>
               </div>
             </div>
+
+            <div class="showcase-gallery-item">
+              <div class="showcase-img-wrap">
+                <img loading="lazy" src="assets/img/achievement-riyazzen.jpg" alt="Student Achievement Riyazzen R">
+              </div>
+              <div class="showcase-info">
+                <h4>Riyazzen R</h4>
+                <p>FIDE International Classical Tournament 🏅 FIDE Rating 1520</p>
+              </div>
+            </div>
+
+            <div class="showcase-gallery-item">
+              <div class="showcase-img-wrap">
+                <img loading="lazy" src="assets/img/achievement-rakshitha.jpg" alt="Student Achievement Rakshitha">
+              </div>
+              <div class="showcase-info">
+                <h4>Rakshitha</h4>
+                <p>3rd Prize — District Competition 🏆 Circuit to District Winner</p>
+              </div>
+            </div>
+
+            <div class="showcase-gallery-item">
+              <div class="showcase-img-wrap">
+                <img loading="lazy" src="assets/img/acivements img 1.jpeg" alt="Student Achievement Auysh">
+              </div>
+              <div class="showcase-info">
+                <h4>Auysh</h4>
+                <p>5th Place — Under-14 Boys State Championship 🏅</p>
+              </div>
+            </div>
+
             <div class="showcase-gallery-item">
               <div class="showcase-img-wrap">
                 <img loading="lazy" src="assets/img/img fpweb.jpeg" alt="Student Achievement Poonthalir">
               </div>
               <div class="showcase-info">
                 <h4>Poonthalir</h4>
-                <p>7th Position - Under-14 Girls State Championship 👑</p>
+                <p>7th Position — Under-14 Girls State Championship 👑</p>
               </div>
             </div>
 
@@ -1031,16 +1053,6 @@
               <div class="showcase-info">
                 <h4>Varun</h4>
                 <p>Velammal Nexus Best performer of the Tournament</p>
-              </div>
-            </div>
-
-            <div class="showcase-gallery-item">
-              <div class="showcase-img-wrap">
-                <img loading="lazy" src="assets/img/awards1.jpeg" alt="Student Achievement Raskitha">
-              </div>
-              <div class="showcase-info">
-                <h4>Raskitha</h4>
-                <p>8th Position — Out of 16 Class 🏅 Erode District · Coach Gyanasurya</p>
               </div>
             </div>
 
@@ -2319,10 +2331,10 @@
         </div>
         <div class="arena-header-right">
           <button class="btn-more-games" onclick="CK.navigate('more-games')">🎮 More Games</button>
-          <div class="arena-player-info">
-            <div class="arena-player-avatar">P</div>
-            <span class="arena-player-name">Player</span>
-          </div>
+            <div class="arena-player-info">
+             <div class="arena-player-avatar" id="arena-player-avatar">P</div>
+             <span class="arena-player-name" id="arena-player-info">Player</span>
+           </div>
           <button class="btn-back-home" onclick="CK.arena.goHome()">&larr; Home</button>
         </div>
       </header>
@@ -2388,11 +2400,11 @@
             <div class="arena-clock">
               <div id="arena-clock-white-wrap">
                 <div class="clock-time" id="arena-clock-white">10:00</div>
-                <div class="clock-label">White (You)</div>
-              </div>
-              <div id="arena-clock-black-wrap">
-                <div class="clock-time" id="arena-clock-black">10:00</div>
-                <div class="clock-label">Black (AI)</div>
+                 <div class="clock-label" id="arena-clock-white-label">White (You)</div>
+               </div>
+               <div id="arena-clock-black-wrap">
+                 <div class="clock-time" id="arena-clock-black">10:00</div>
+                 <div class="clock-label" id="arena-clock-black-label">Black (AI)</div>
               </div>
             </div>
           </div>
@@ -2567,20 +2579,71 @@
             </div>
           </div>
 
-          <!-- Hide difficulty/coach when in Friend mode -->
-          <div id="arena-ai-only-options">
-          <div style="margin-bottom:24px;">
-            <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Select Difficulty</div>
-            <div class="difficulty-selector" style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="diff-btn" data-level="Beginner" onclick="CK.arena.setDifficulty('Beginner')">Beginner</button>
-              <button class="diff-btn active" data-level="Intermediate" onclick="CK.arena.setDifficulty('Intermediate')">Intermediate</button>
-              <button class="diff-btn" data-level="Advanced" onclick="CK.arena.setDifficulty('Advanced')">Advanced</button>
-              <button class="diff-btn" data-level="Elite" onclick="CK.arena.setDifficulty('Elite')">Elite</button>
+           <!-- Hide difficulty/coach when in Friend mode -->
+           <div id="arena-ai-only-options">
+           <div style="margin-bottom:24px;">
+             <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Select Difficulty</div>
+              <div class="difficulty-selector" style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="diff-btn" data-level="Beginner" onclick="CK.arena.setDifficulty('Beginner')">Beginner</button>
+                <button class="diff-btn active" data-level="Intermediate" onclick="CK.arena.setDifficulty('Intermediate')">Intermediate</button>
+                <button class="diff-btn" data-level="Advanced" onclick="CK.arena.setDifficulty('Advanced')">Advanced</button>
+                <button class="diff-btn" data-level="Elite" onclick="CK.arena.setDifficulty('Elite')">Elite</button>
+                <button class="diff-btn" data-level="Master" onclick="CK.arena.setDifficulty('Master')" style="background:linear-gradient(135deg,#dc2626,#9f1239); color:#fff; box-shadow:0 4px 15px rgba(220,38,38,0.4);">👑 Master</button>
+                <button class="diff-btn" data-level="Champion" onclick="CK.arena.setDifficulty('Champion')" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#0a0c0f; box-shadow:0 4px 15px rgba(245,158,11,0.5);">🏆 Champion</button>
+              </div>
             </div>
-          </div>
 
-          <div style="margin-bottom:24px;">
-            <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Select Opponent Coach</div>
+            <div style="margin-bottom:24px;">
+              <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">AI Speed</div>
+              <div class="difficulty-selector" style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="ai-speed-btn diff-btn" data-speed="Slow" onclick="CK.arena.setAISpeed('Slow')">🐢 Slow</button>
+                <button class="ai-speed-btn diff-btn active" data-speed="Medium" onclick="CK.arena.setAISpeed('Medium')">⚡ Medium</button>
+                <button class="ai-speed-btn diff-btn" data-speed="Fast" onclick="CK.arena.setAISpeed('Fast')">🚀 Fast</button>
+                <button class="ai-speed-btn diff-btn" data-speed="Instant" onclick="CK.arena.setAISpeed('Instant')">💥 Instant</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+              <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Play As</div>
+             <div class="playas-selector" style="display:flex; gap:8px; flex-wrap:wrap;">
+               <button class="playas-btn active" data-color="w" onclick="CK.arena.setPlayerColor('w')"
+                       style="flex:1; padding:10px; border-radius:10px; border:1.5px solid rgba(232,184,75,0.45); background:rgba(232,184,75,0.12); color:#fff; font-weight:600; cursor:pointer;">♔ White</button>
+               <button class="playas-btn" data-color="b" onclick="CK.arena.setPlayerColor('b')"
+                       style="flex:1; padding:10px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:#fff; font-weight:600; cursor:pointer;">♚ Black</button>
+               <button class="playas-btn" data-color="random" onclick="CK.arena.setPlayerColor('random')"
+                       style="flex:1; padding:10px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:#fff; font-weight:600; cursor:pointer;">🎲 Random</button>
+             </div>
+             <div style="margin-top:8px; font-size:0.65rem; color:var(--arena-text-muted); text-align:center;">If you choose Black, the AI opens first.</div>
+           </div>
+
+           <div style="margin-bottom:24px;">
+             <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Select Your Character</div>
+             <div class="character-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+               <div class="char-select-card active" data-char="player1" onclick="CK.arena.selectCharacter('player1')"
+                    style="padding:12px; border-radius:10px; border:1.5px solid rgba(232,184,75,0.45); background:rgba(232,184,75,0.08); text-align:center; cursor:pointer;">
+                 <div style="font-size:2rem; margin-bottom:4px;">🧒</div>
+                 <div style="font-weight:700; font-size:0.8rem; color:#fff;">Aarav</div>
+               </div>
+               <div class="char-select-card" data-char="player2" onclick="CK.arena.selectCharacter('player2')"
+                    style="padding:12px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); text-align:center; cursor:pointer;">
+                 <div style="font-size:2rem; margin-bottom:4px;">🧑‍🎓</div>
+                 <div style="font-weight:700; font-size:0.8rem; color:#fff;">Meera</div>
+               </div>
+               <div class="char-select-card" data-char="player3" onclick="CK.arena.selectCharacter('player3')"
+                    style="padding:12px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); text-align:center; cursor:pointer;">
+                 <div style="font-size:2rem; margin-bottom:4px;">🧔</div>
+                 <div style="font-weight:700; font-size:0.8rem; color:#fff;">Rohan</div>
+               </div>
+               <div class="char-select-card" data-char="player4" onclick="CK.arena.selectCharacter('player4')"
+                    style="padding:12px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); text-align:center; cursor:pointer;">
+                 <div style="font-size:2rem; margin-bottom:4px;">👧</div>
+                 <div style="font-weight:700; font-size:0.8rem; color:#fff;">Priya</div>
+               </div>
+             </div>
+           </div>
+
+           <div style="margin-bottom:24px;">
+             <div style="color:var(--p-text-muted); font-size:0.85rem; font-weight:700; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.05em;">Select Opponent Coach</div>
             <div class="coach-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
               <div class="coach-select-card active" data-coach="magnus" onclick="CK.arena.selectCoach('magnus')">
                 <div style="font-size:1.8rem; margin-bottom:4px;">👑</div>
@@ -3399,14 +3462,9 @@
       <!-- Modal Form Body -->
       <form class="modal-body ck-demo-modal-body" id="demoWizard" onsubmit="CK.handleDemoSubmit(event)">
         
-        <!-- Step 1: Select Child's Skill Level -->
+        <!-- Step 1: Select Child Skill Level -->
         <div class="ck-wizard-step active" data-step="1">
-          <div class="ck-step-head">
-            <span class="ck-step-pill">Step 1 of 3</span>
-            <h4 class="ck-step-title">Select Your Child's Chess Skill Level</h4>
-            <p class="ck-step-sub">We customize every demo lesson to match your child's exact starting point.</p>
-          </div>
-
+          <div class="ck-step-instruction">Select your child's starting level:</div>
           <div class="ck-level-cards">
             <!-- Beginner Card -->
             <label class="ck-level-card">
@@ -3416,8 +3474,8 @@
                   <div class="ck-level-icon">🌱</div>
                   <span class="ck-level-tag">Ages 5–12</span>
                 </div>
-                <div class="ck-level-name">Beginner Level</div>
-                <div class="ck-level-desc">New to chess or learning piece movements, board setup, and basic rules.</div>
+                <div class="ck-level-name">Beginner</div>
+                <div class="ck-level-desc">New to chess or learning piece movements and basic rules.</div>
                 <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
@@ -3430,8 +3488,8 @@
                   <div class="ck-level-icon">🌿</div>
                   <span class="ck-level-tag">Ages 6–16</span>
                 </div>
-                <div class="ck-level-name">Intermediate Level</div>
-                <div class="ck-level-desc">Knows movement and checkmates. Ready for tactical patterns &amp; opening strategy.</div>
+                <div class="ck-level-name">Intermediate</div>
+                <div class="ck-level-desc">Knows checkmates, ready for tactics &amp; opening strategy.</div>
                 <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
@@ -3444,8 +3502,8 @@
                   <div class="ck-level-icon">🌳</div>
                   <span class="ck-level-tag">FIDE / Rated</span>
                 </div>
-                <div class="ck-level-name">Advanced &amp; Rated</div>
-                <div class="ck-level-desc">Active tournament player or preparing for official FIDE rated championships.</div>
+                <div class="ck-level-name">Advanced</div>
+                <div class="ck-level-desc">Tournament player preparing for official rated championships.</div>
                 <div class="ck-level-check">✓ Selected</div>
               </div>
             </label>
@@ -3458,15 +3516,9 @@
 
         <!-- Step 2: Format & Preferred Schedule -->
         <div class="ck-wizard-step" data-step="2">
-          <div class="ck-step-head">
-            <span class="ck-step-pill">Step 2 of 3</span>
-            <h4 class="ck-step-title">Choose Learning Format &amp; Preferred Time</h4>
-            <p class="ck-step-sub">Select online interactive sessions or in-person coaching at our Tamil Nadu centres.</p>
-          </div>
-
           <!-- Format Selection -->
-          <div class="ck-form-group">
-            <label class="ck-form-label">Learning Format *</label>
+          <div class="ck-form-group" style="margin-bottom:14px;">
+            <label class="ck-form-label" style="font-weight:700; margin-bottom:8px; display:block; color:#f1f5f9;">1. Learning Format *</label>
             <div class="ck-mode-cards">
               <label class="ck-mode-card">
                 <input type="radio" name="mode" value="Online Class" checked>
@@ -3483,8 +3535,8 @@
                 <div class="ck-mode-card-content">
                   <div class="ck-mode-icon">🏫</div>
                   <div class="ck-mode-info">
-                    <div class="ck-mode-name">Offline Centre</div>
-                    <div class="ck-mode-desc">Erode &amp; Bhavani Academy Centres (Tamil Nadu)</div>
+                    <div class="ck-mode-name">Academy Centre</div>
+                    <div class="ck-mode-desc">Erode &amp; Bhavani Centres (Tamil Nadu)</div>
                   </div>
                 </div>
               </label>
@@ -3493,7 +3545,7 @@
 
           <!-- Preferred Time Slot -->
           <div class="ck-form-group">
-            <label class="ck-form-label">Preferred Time Slot *</label>
+            <label class="ck-form-label" style="font-weight:700; margin-bottom:8px; display:block; color:#f1f5f9;">2. Preferred Time Slot *</label>
             <div class="ck-slot-grid">
               <label class="ck-slot-item">
                 <input type="radio" name="slot" value="Morning (10 AM - 1 PM)" checked>
@@ -3531,7 +3583,7 @@
                   <span class="ck-slot-icon">⭐</span>
                   <div>
                     <strong>Weekend Special</strong>
-                    <small>Sat &amp; Sun Slots</small>
+                    <small>Sat &amp; Sun Flexible Slots</small>
                   </div>
                 </div>
               </label>
@@ -3546,40 +3598,41 @@
 
         <!-- Step 3: Parent & Student Contact Details -->
         <div class="ck-wizard-step" data-step="3">
-          <div class="ck-step-head">
-            <span class="ck-step-pill">Step 3 of 3</span>
-            <h4 class="ck-step-title">Parent &amp; Student Details</h4>
-            <p class="ck-step-sub">Where should we send your Google Meet link &amp; demo slot confirmation?</p>
-          </div>
-
-          <div class="ck-form-group">
+          <div class="ck-form-group" style="margin-bottom:12px;">
             <label class="ck-form-label">Parent / Guardian Full Name *</label>
             <input type="text" name="fullName" required placeholder="e.g. Ramesh Kumar" class="ck-form-input">
           </div>
 
-          <div class="ck-form-group">
+          <div class="ck-form-group" style="margin-bottom:12px;">
             <label class="ck-form-label">WhatsApp Number (for instant slot confirmation) *</label>
             <div class="ck-phone-row">
               <select name="dialCode" data-ck-dialcode aria-label="Country Code" class="ck-form-select ck-dial-select"></select>
-              <input type="tel" name="phone" required placeholder="98765 43210" pattern="[0-9+\s\-]{6,15}" class="ck-form-input ck-phone-input">
+              <input type="tel" name="phone" required placeholder="98765 43210" pattern="[0-9+\\s\\-]{6,15}" class="ck-form-input ck-phone-input">
             </div>
           </div>
 
-          <div class="ck-demo-grid">
+          <div class="ck-demo-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
             <div class="ck-form-group">
-              <label class="ck-form-label">Child's Name &amp; Age *</label>
-              <input type="text" name="childDetails" required placeholder="e.g. Mukilan (Age 8)" class="ck-form-input">
+              <label class="ck-form-label">Child's Full Name *</label>
+              <input type="text" name="childName" required placeholder="e.g. Mukilan" class="ck-form-input">
             </div>
+            <div class="ck-form-group">
+              <label class="ck-form-label">Child's Age (Years) *</label>
+              <input type="number" name="childAge" min="4" max="18" required placeholder="e.g. 8" class="ck-form-input">
+            </div>
+          </div>
+          <div class="ck-demo-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
             <div class="ck-form-group">
               <label class="ck-form-label">City</label>
-              <input type="text" name="city" placeholder="e.g. Chennai / Erode / Dubai" class="ck-form-input">
+              <input type="text" name="city" placeholder="e.g. Chennai / Dubai" class="ck-form-input">
+            </div>
+            <div class="ck-form-group">
+              <label class="ck-form-label">Country</label>
+              <select name="country" data-ck-country class="ck-form-select"></select>
             </div>
           </div>
 
-          <div class="ck-form-group">
-            <label class="ck-form-label">Country</label>
-            <select name="country" data-ck-country class="ck-form-select"></select>
-          </div>
+          
 
           <div class="ck-wizard-actions">
             <button type="button" class="btn btn-ghost ck-btn-step-back" onclick="CK.prevStep()">← Back</button>
@@ -3589,21 +3642,30 @@
 
         <!-- Step 4: Instant Confirmation / Success State -->
         <div class="ck-wizard-step" data-step="4">
-          <div class="ck-success-state">
-            <div class="ck-success-icon">🎉</div>
-            <h3 class="ck-success-title">Demo Request Sent!</h3>
-            <p class="ck-success-text">Your free demo class request has been saved. We'll confirm your slot via WhatsApp shortly.</p>
-            <div class="ck-success-info">
-              <div class="ck-success-info-item">
-                <span class="ck-success-info-label">Status</span>
-                <span class="ck-success-info-value">Pending Confirmation</span>
-              </div>
-              <div class="ck-success-info-item">
-                <span class="ck-success-info-label">Response Time</span>
-                <span class="ck-success-info-value">&lt; 30 minutes</span>
+          <div class="ck-success-state" style="text-align:center; padding:6px 0;">
+            <div class="ck-success-icon" style="font-size:2.8rem; margin-bottom:8px; animation:ckBounceIn 0.5s ease;">🎉</div>
+            <h3 class="ck-success-title" style="font-size:1.3rem; color:#fbbf24; margin-bottom:6px;">Demo Class Requested!</h3>
+            <p class="ck-success-text" style="font-size:0.85rem; color:#94a3b8; line-height:1.4; max-width:380px; margin:0 auto 12px;">We have received your demo request. Our FIDE coach will connect on WhatsApp within 30 minutes to confirm your meeting link.</p>
+            
+            <div id="demoSuccessSummary">
+              <div class="ck-success-info">
+                <div class="ck-success-info-item">
+                  <span class="ck-success-info-label">Status</span>
+                  <span class="ck-success-info-value" style="color:#4ade80;">✓ Reserved</span>
+                </div>
+                <div class="ck-success-info-item">
+                  <span class="ck-success-info-label">Response Time</span>
+                  <span class="ck-success-info-value">&lt; 30 minutes</span>
+                </div>
               </div>
             </div>
-            <button type="button" class="btn btn-primary ck-wizard-submit" onclick="CK.closeDemoModal()">Done</button>
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+              <a href="javascript:void(0)" onclick="if(CK.lastDemoWhatsAppUrl) window.open(CK.lastDemoWhatsAppUrl,'_blank'); else window.open('https://wa.me/919025846663','_blank');" class="btn" style="background:#25D366; color:#fff; font-weight:700; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; box-shadow:0 4px 15px rgba(37,211,102,0.3);">
+                💬 Open WhatsApp Chat Now
+              </a>
+              <button type="button" class="btn btn-primary ck-wizard-submit" onclick="CK.closeDemoModal()" style="border-radius:10px; padding:11px;">Done</button>
+            </div>
           </div>
         </div>
       </form>
@@ -3731,18 +3793,61 @@
 
         <div class="ck-demo-grid">
           <div class="form-group ck-form-group">
+            <label class="ck-form-label">Child's Name</label>
+            <input type="text" name="childName" placeholder="e.g. Aarav" class="ck-form-input">
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Child's Age</label>
+            <select name="childAge" class="ck-form-select">
+              <option value="">Select age</option>
+              <option value="5">5 years</option>
+              <option value="6">6 years</option>
+              <option value="7">7 years</option>
+              <option value="8">8 years</option>
+              <option value="9">9 years</option>
+              <option value="10">10 years</option>
+              <option value="11">11 years</option>
+              <option value="12">12 years</option>
+              <option value="13">13 years</option>
+              <option value="14">14 years</option>
+              <option value="15">15 years</option>
+              <option value="16+">16+ years</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Current Chess Level</label>
+            <select name="chessLevel" class="ck-form-select">
+              <option value="Complete Beginner">Complete Beginner</option>
+              <option value="Beginner">Beginner (knows basic moves)</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+              <option value="Tournament Player">Tournament Player</option>
+            </select>
+          </div>
+          <div class="form-group ck-form-group">
             <label class="ck-form-label">Country &amp; Timezone *</label>
             <select name="countryTimezone" required class="ck-form-select">
               <option value="🇺🇸 USA (EST - New York)">🇺🇸 USA (EST - New York / East)</option>
               <option value="🇺🇸 USA (PST - California)">🇺🇸 USA (PST - West Coast)</option>
+              <option value="🇺🇸 USA (CST - Chicago)">🇺🇸 USA (CST - Chicago)</option>
               <option value="🇬🇧 UK (GMT / BST - London)">🇬🇧 UK (GMT / BST - London)</option>
               <option value="🇪🇺 Germany / Europe (CET - Frankfurt)">🇪🇺 Germany / Europe (CET)</option>
+              <option value="🇫🇷 France (CET - Paris)">🇫🇷 France (CET - Paris)</option>
               <option value="🇦🇪 UAE / Gulf (GST - Dubai)">🇦🇪 UAE / Gulf (GST - Dubai)</option>
+              <option value="🇸🇦 Saudi Arabia (AST - Riyadh)">🇸🇦 Saudi Arabia (AST - Riyadh)</option>
               <option value="🇸🇬 Singapore / Asia (SGT)">🇸🇬 Singapore / Asia (SGT)</option>
+              <option value="🇮🇳 India (IST)">🇮🇳 India (IST)</option>
               <option value="🇦🇺 Australia (AEST - Sydney)">🇦🇺 Australia (AEST - Sydney)</option>
+              <option value="🇳🇿 New Zealand (NZST)">🇳🇿 New Zealand (NZST)</option>
               <option value="🌐 Other International Region">🌐 Other International Region</option>
             </select>
           </div>
+        </div>
+
+        <div class="ck-demo-grid">
           <div class="form-group ck-form-group">
             <label class="ck-form-label">Category / Format Looking For *</label>
             <select name="categoryFormat" required class="ck-form-select">
@@ -3750,11 +3855,9 @@
               <option value="Small Group (Max 4 Students)">👥 Small Group (Max 4 Students)</option>
               <option value="Weekend Special Intensive">⭐ Weekend Special Intensive</option>
               <option value="FIDE Rated Masterclass">🏆 FIDE Rated Masterclass</option>
+              <option value="Corporate / Bulk Batch">🏢 Corporate / Bulk Batch</option>
             </select>
           </div>
-        </div>
-
-        <div class="ck-demo-grid">
           <div class="form-group ck-form-group">
             <label class="ck-form-label">Classes Per Month *</label>
             <select name="classesPerMonth" required class="ck-form-select">
@@ -3764,6 +3867,35 @@
               <option value="Custom Schedule / Flexible">Custom Schedule / Flexible</option>
             </select>
           </div>
+        </div>
+
+        <div class="ck-demo-grid">
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Preferred Days</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Mon"> Mon</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Tue"> Tue</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Wed"> Wed</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Thu"> Thu</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Fri"> Fri</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Sat"> Sat</label>
+              <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; color:#cbd5e1; cursor:pointer;"><input type="checkbox" name="days" value="Sun"> Sun</label>
+            </div>
+          </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Preferred Time Slot</label>
+            <select name="timeSlot" class="ck-form-select">
+              <option value="Morning (6AM - 10AM)">Morning (6AM - 10AM)</option>
+              <option value="Late Morning (10AM - 12PM)">Late Morning (10AM - 12PM)</option>
+              <option value="Afternoon (12PM - 4PM)">Afternoon (12PM - 4PM)</option>
+              <option value="Evening (4PM - 8PM)">Evening (4PM - 8PM)</option>
+              <option value="Night (8PM - 11PM)">Night (8PM - 11PM)</option>
+              <option value="Flexible / Any Time">Flexible / Any Time</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ck-demo-grid">
           <div class="form-group ck-form-group">
             <label class="ck-form-label">WhatsApp Contact Number *</label>
             <div class="ck-phone-row">
@@ -3771,6 +3903,15 @@
               <input type="tel" name="phone" required placeholder="98765 43210" class="ck-form-input ck-phone-input">
             </div>
           </div>
+          <div class="form-group ck-form-group">
+            <label class="ck-form-label">Email Address</label>
+            <input type="email" name="email" placeholder="parent@example.com" class="ck-form-input">
+          </div>
+        </div>
+
+        <div class="form-group ck-form-group">
+          <label class="ck-form-label">Additional Notes</label>
+          <textarea name="notes" rows="2" placeholder="Any specific requirements, goals, or questions..." class="ck-form-input" style="resize:vertical;"></textarea>
         </div>
 
         <div class="ck-demo-notice">

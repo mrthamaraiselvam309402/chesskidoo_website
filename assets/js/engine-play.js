@@ -168,6 +168,14 @@ CK.enginePlay = (() => {
   let _pvStatus = '', _pvThinking = false;
   let _pvClocks = { w: 0, b: 0 }, _pvIncrement = 0, _pvTimeControl = 'unlimited';
   let _pvClockInterval = null, _pvClockActive = null, _pvGameOver = false;
+  let _pvComputerSpeed = 'Medium';
+
+  const COMPUTER_SPEED_CONFIG = {
+    Slow:     800,
+    Medium:   500,
+    Fast:     200,
+    Instant:   0
+  };
 
   /* ─── Clock helpers ─── */
   function _pvFormatTime(s) {
@@ -363,7 +371,8 @@ CK.enginePlay = (() => {
     _pvStartClock(compColor);
 
     const boardId = _pvBoard?.id || 'pvBoard';
-    setTimeout(() => _pvComputerMove(boardId, statusId), 300 + Math.random() * 400);
+    const speedDelay = COMPUTER_SPEED_CONFIG[_pvComputerSpeed] || 500;
+    setTimeout(() => _pvComputerMove(boardId, statusId), speedDelay);
   }
 
   // Keep track of previous evaluation for Bot Banter
@@ -504,9 +513,15 @@ CK.enginePlay = (() => {
     if (CK.boardFx) setTimeout(() => CK.boardFx.reapply(_pvBoardElId), 60);
   });
 
+  function setComputerSpeed(speed) {
+    if (COMPUTER_SPEED_CONFIG[speed]) {
+      _pvComputerSpeed = speed;
+    }
+  }
+
   return {
     evaluate, getBestMove, LEVELS, TIME_CONTROLS,
     initPlayVsComputer, pvNewGame, pvFlip, pvResign, pvGetMoveHistory,
-    setTimeControl, startMultiplayerSession, onMultiplayerUpdate
+    setTimeControl, setComputerSpeed, startMultiplayerSession, onMultiplayerUpdate
   };
 })();

@@ -3047,19 +3047,21 @@ button, input, textarea, select, a {
 .showcase-img-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateZ(10px);
   border: 1px solid rgba(255,255,255,0.05);
+  background: #0f172a;
 }
 
 .showcase-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
   transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -3588,7 +3590,7 @@ button, input, textarea, select, a {
 .lj-piece-icon {
   width: 46px;
   height: 46px;
-  transition: transform 0.35s ease;
+  transition: transform 0.35s ease, fill 0.5s ease;
 }
 .lj-station:hover .lj-piece-icon {
   transform: scale(1.12);
@@ -3608,6 +3610,7 @@ button, input, textarea, select, a {
   text-transform: uppercase;
   color: var(--lj-color);
   margin-bottom: 8px;
+  transition: all 0.5s ease;
 }
 
 .lj-piece-title {
@@ -3617,6 +3620,7 @@ button, input, textarea, select, a {
   color: #1e293b;
   letter-spacing: -0.01em;
   margin: 0 0 10px;
+  transition: color 0.5s ease, text-shadow 0.5s ease;
 }
 
 .lj-piece-desc {
@@ -5034,3 +5038,40 @@ body:has(.page.active:not(#landing-page)) #scrollTopBtn {
 .ck-nri-price-tag { font-size: 1.5rem; font-weight: 800; color: #fbbf24; }
 .ck-nri-price-sub { font-size: 0.78rem; color: #94a3b8; margin-bottom: 16px; }
 .ck-nri-btn { width: 100%; padding: 12px 18px; font-size: 0.9rem; border-radius: 12px; font-weight: 700; }
+
+
+/* Learning Journey Scroll Line & Milestone Node Highlights */
+.lj-wave-solid {
+  fill: none;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.5));
+}
+
+.lj-station.lj-reached .lj-badge {
+  background: var(--lj-color) !important;
+  box-shadow: 0 0 30px var(--lj-color), 0 0 12px var(--lj-color), inset 0 0 15px rgba(255,255,255,0.25) !important;
+  transform: scale(1.15) !important;
+  border-color: var(--lj-color) !important;
+}
+
+.lj-station.lj-reached .lj-piece-icon path {
+  fill: #ffffff !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+.lj-station.lj-reached .lj-level-tag {
+  background: rgba(255,255,255,0.2) !important;
+  color: inherit !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+.lj-station.lj-reached .lj-piece-title {
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+.lj-badge {
+  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.5s ease;
+}

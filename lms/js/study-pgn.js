@@ -10,12 +10,13 @@
 (function () {
   'use strict';
 
-  // ── Storage Keys ──
+  const StudyPGN = window.StudyPGN = window.StudyPGN || {};
   const STORAGE_TACTICS_RECORDS = 'ck_student_tactics_records';
   const STORAGE_ASSIGNED_TOPICS = 'ck_assigned_study_topics';
   const STORAGE_SAVED_STUDIES = 'ck_custom_saved_pgns';
   const STORAGE_VISION_SCORES = 'ck_student_vision_scores';
   const STORAGE_COMPLETED_TOPICS = 'ck_completed_study_topics';
+  const STORAGE_STUDENT_COMPLETED_TOPICS = 'ck_student_completed_topics';
   const STORAGE_COINS = 'ck_student_coins';
 
   // ── Authentic Official Chess.com Neo Pieces Set (HD Vector PNGs) ──
@@ -41,6 +42,10 @@
     const key = color + type;
     return CHESSCOM_PIECES_B64[key] || ('assets/img/pieces/' + key + '.png');
   }
+
+  StudyPGN.getPieceImage = getPieceImage;
+  window.getPieceImage = getPieceImage;
+  window.getChessPieceImage = getPieceImage;
 
   // ── Safe HTML Escape ──
   function escapeHtml(str) {
@@ -231,59 +236,229 @@
   // ── Curated Daily Tactics Vault ──
   const CURATED_TACTICS = [
     {
-      id: 'puz-101',
-      fen: 'r1bqk2r/pppp1ppp/2n5/4p3/1bB1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5',
-      moves: ['c2c3', 'b4c5', 'd2d4'],
-      title: 'Center Control & Tempo Gain',
+      id: "puz-101",
+      fen: "r1bqk2r/pppp1ppp/2n5/4p3/1bB1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 5",
+      moves: ["c2c3", "b4c5", "d2d4"],
+      title: "Center Control & Tempo Gain",
       rating: 950,
-      level: 'Beginner',
-      hint: 'White can kick the Black bishop and immediately occupy the full center with pawns.',
-      solutionText: '1. c3 Bc5 2. d4!'
+      level: "Beginner",
+      theme: "Pawn Center",
+      hint: "White can kick the Black bishop and immediately occupy the full center with pawns.",
+      solutionText: "1. c3 Bc5 2. d4!"
     },
     {
-      id: 'puz-102',
-      fen: 'r1b2rk1/ppp2ppp/2n5/3qp3/1b6/3B1N2/PPPP1PPP/R1BQK2R w KQ - 0 8',
-      moves: ['d3h7', 'g8h7', 'f3g5'],
-      title: 'The Greek Gift Bishop Sacrifice',
+      id: "puz-102",
+      fen: "r1b2rk1/ppp2ppp/2n5/3qp3/1b6/3B1N2/PPPP1PPP/R1BQK2R w KQ - 0 8",
+      moves: ["d3h7", "g8h7", "f3g5"],
+      title: "The Greek Gift Sacrifice",
       rating: 1350,
-      level: 'Intermediate',
-      hint: 'The Black king has castled and lacks an f6 knight. Is the h7 pawn ripe for a sacrifice?',
-      solutionText: '1. Bxh7+! Kxh7 2. Ng5+! leading to a decisive attack.'
+      level: "Intermediate",
+      theme: "Attacking Sacrifice",
+      hint: "The Black king has castled and lacks an f6 knight. Is the h7 pawn ripe for a sacrifice?",
+      solutionText: "1. Bxh7+! Kxh7 2. Ng5+! leading to a decisive attack."
     },
     {
-      id: 'puz-103',
-      fen: '3r2k1/p4ppp/1p6/8/2q5/P3Q3/1P3PPP/4R1K1 w - - 0 25',
-      moves: ['e3e8', 'd8e8', 'e1e8'],
-      title: 'Back-Rank Overload Mate',
+      id: "puz-103",
+      fen: "3r2k1/p4ppp/1p6/8/2q5/P3Q3/1P3PPP/4R1K1 w - - 0 25",
+      moves: ["e3e8", "d8e8", "e1e8"],
+      title: "Back-Rank Overload Checkmate",
       rating: 1100,
-      level: 'Beginner',
-      hint: 'Black\'s king is trapped behind his own pawn wall on the back rank.',
-      solutionText: '1. Qe8+! Rxe8 2. Rxe8# checkmate.'
+      level: "Beginner",
+      theme: "Back-Rank Mate",
+      hint: "Black's king is trapped behind his own pawn wall on the back rank.",
+      solutionText: "1. Qe8+! Rxe8 2. Rxe8# checkmate."
     },
     {
-      id: 'puz-104',
-      fen: 'r1b1kb1r/pp3ppp/2n5/1B1p4/3N4/8/PPP2PPP/R1B1K2R w KQkq - 0 10',
-      moves: ['d4c6', 'c8d7', 'c6d4'],
-      title: 'Absolute Pin Exploitation',
+      id: "puz-104",
+      fen: "r1b1kb1r/pp3ppp/2n5/1B1p4/3N4/8/PPP2PPP/R1B1K2R w KQkq - 0 10",
+      moves: ["d4c6", "c8d7", "c6d4"],
+      title: "Absolute Pin Exploitation",
       rating: 1450,
-      level: 'Intermediate',
-      hint: 'The Black knight on c6 is pinned against the king by White\'s bishop on b5.',
-      solutionText: '1. Nxc6 Bd7 2. Nd4 winning a clean central pawn.'
+      level: "Intermediate",
+      theme: "Pin & Skewer",
+      hint: "The Black knight on c6 is pinned against the king by White's bishop on b5.",
+      solutionText: "1. Nxc6 Bd7 2. Nd4 winning a clean central pawn."
     },
     {
-      id: 'puz-105',
-      fen: '6k1/5p1p/p3p1p1/1p6/3b4/1P1N1QP1/P4PKP/2q5 b - - 1 30',
-      moves: ['c1d2'],
-      title: 'Infiltration and Double Attack',
+      id: "puz-105",
+      fen: "6k1/5p1p/p3p1p1/1p6/3b4/1P1N1QP1/P4PKP/2q5 b - - 1 30",
+      moves: ["c1d2"],
+      title: "Infiltration and Double Attack",
       rating: 1650,
-      level: 'Advanced',
-      hint: 'Attack White\'s knight and target the vulnerable queenside pawns simultaneously.',
-      solutionText: '1... Qd2 attacking the knight and infiltrating.'
+      level: "Advanced",
+      theme: "Fork & Skewer",
+      hint: "Attack White's knight and target the vulnerable queenside pawns simultaneously.",
+      solutionText: "1... Qd2 attacking the knight and infiltrating."
+    },
+    {
+      id: "puz-106",
+      fen: "r1b2rk1/pp3ppp/2n5/4p3/2B5/5N2/PPP2PPP/2KR3R w - - 0 14",
+      moves: ["f3e5", "c6e5", "d1d5"],
+      title: "Knight Fork & Tactical Deflection",
+      rating: 1200,
+      level: "Intermediate",
+      theme: "Deflection",
+      hint: "Look for tactical tension in the center to win Black's undefended pieces.",
+      solutionText: "1. Nxe5 Nxe5 2. Rd5 regaining material."
+    },
+    {
+      id: "puz-107",
+      fen: "r2qk2r/ppp2ppp/2n5/3pP3/1b1Pn1b1/2ND1N2/PPP2PPP/R1BQKB1R w KQkq - 1 8",
+      moves: ["c1d2", "e4d2", "d1d2"],
+      title: "Neutralizing the Pin",
+      rating: 1050,
+      level: "Beginner",
+      theme: "Defensive Pins",
+      hint: "Interpose White's bishop on d2 to neutralize Black's pin on c3.",
+      solutionText: "1. Bd2 Nxd2 2. Qxd2 breaking the pin."
+    },
+    {
+      id: "puz-108",
+      fen: "r1bqk2r/pp1n1ppp/2p5/3pP3/1b1Pn3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 1 8",
+      moves: ["c1d2"],
+      title: "Unpinning and Central Stability",
+      rating: 980,
+      level: "Beginner",
+      theme: "Fundamentals",
+      hint: "Block the bishop pin on the knight before advancing on the kingside.",
+      solutionText: "1. Bd2 unpinning the c3 knight."
+    },
+    {
+      id: "puz-109",
+      fen: "rnbqk1nr/ppp2ppp/4p3/3p4/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+      moves: ["a2a3", "b4c3", "b2c3"],
+      title: "Nimzo-Indian Bishop Challenge",
+      rating: 1150,
+      level: "Beginner",
+      theme: "Opening Tactics",
+      hint: "Force Black to declare their intention with the bishop on b4.",
+      solutionText: "1. a3 Bxc3+ 2. bxc3 gaining the bishop pair."
+    },
+    {
+      id: "puz-110",
+      fen: "r1bq1rk1/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQ1RK1 b - - 5 6",
+      moves: ["f6e4", "c3e4", "d7d5"],
+      title: "The Center Fork Strike",
+      rating: 1250,
+      level: "Intermediate",
+      theme: "Fork & Skewer",
+      hint: "Sacrifice your knight on e4 to set up a d5 pawn fork winning back the piece.",
+      solutionText: "1... Nxe4! 2. Nxe4 d5! regaining the piece with central dominance."
+    },
+    {
+      id: "puz-111",
+      fen: "r1b1k2r/pppp1ppp/8/4P3/1b6/2N5/PPP1BPPP/R3K2R b KQkq - 0 10",
+      moves: ["b4c3", "b2c3"],
+      title: "Doubled Pawn Creation",
+      rating: 1000,
+      level: "Beginner",
+      theme: "Positional Tactics",
+      hint: "Chop down the c3 knight to permanently ruin White's pawn structure.",
+      solutionText: "1... Bxc3+ 2. bxc3 inflicting doubled isolated c-pawns."
+    },
+    {
+      id: "puz-112",
+      fen: "r1bqk2r/pppp1Npp/2n5/4p3/2B1n3/8/PPPP1PPP/RNBQK2R b KQkq - 0 6",
+      moves: ["d8h4", "g2g3", "e4g3"],
+      title: "Counter Sacrifice vs Trapped King",
+      rating: 1500,
+      level: "Intermediate",
+      theme: "Attacking Sacrifice",
+      hint: "Counter White's fork on f7 with a fierce counter-attack targeting f2 with your Queen!",
+      solutionText: "1... Qh4! 2. g3 Nxg3! launching a decisive attack."
+    },
+    {
+      id: "puz-113",
+      fen: "r1bqk2r/pp3ppp/2n1pn2/2pp4/3P4/2PBPN2/PP3PPP/RN1QK2R w KQkq - 0 8",
+      moves: ["d4c5"],
+      title: "Queen's Gambit Pawn Capture",
+      rating: 1080,
+      level: "Beginner",
+      theme: "Opening Tactics",
+      hint: "Open up central lines by capturing on c5.",
+      solutionText: "1. dxc5 opening diagonals for development."
+    },
+    {
+      id: "puz-114",
+      fen: "r1b1qr1k/ppp3pp/2n5/4pp2/2B5/4P3/PPPN1PPP/R2Q1RK1 b - - 0 12",
+      moves: ["f5f4"],
+      title: "Kingside Pawn Storm Break",
+      rating: 1380,
+      level: "Intermediate",
+      theme: "Pawn Storm",
+      hint: "Pry open lines towards White's castled king by pushing f4.",
+      solutionText: "1... f4! opening lines against White's king."
+    },
+    {
+      id: "puz-115",
+      fen: "r2qk2r/ppp2ppp/2n5/3pP3/3P2b1/5N2/PP1N1PPP/R2Q1RK1 b kq - 0 10",
+      moves: ["c6d4"],
+      title: "Exploiting the Pinned Defender",
+      rating: 1420,
+      level: "Intermediate",
+      theme: "Pin & Skewer",
+      hint: "White's f3 knight is pinned to the queen by your g4 bishop. Can you capture on d4?",
+      solutionText: "1... Nxd4! taking advantage of the pin on f3."
+    },
+    {
+      id: "puz-116",
+      fen: "r1b2rk1/pp3ppp/2n5/q7/2B5/5N2/PP3PPP/R2Q1RK1 w - - 0 13",
+      moves: ["d1d5"],
+      title: "Central Dominance & Queen Trade Offer",
+      rating: 1220,
+      level: "Intermediate",
+      theme: "Positional Tactics",
+      hint: "Centralize your queen to d5, putting pressure on Black's f7 pawn and inviting a trade.",
+      solutionText: "1. Qd5 centralizing White's queen."
+    },
+    {
+      id: "puz-117",
+      fen: "r1bqk2r/ppp2ppp/2n5/4P3/1b2p3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 7",
+      moves: ["d1d8", "c6d8", "f3g5"],
+      title: "Queen Trade into Outpost Knight",
+      rating: 1280,
+      level: "Intermediate",
+      theme: "Endgame Transition",
+      hint: "Liquidate queens on d8 to strip Black of castling rights, then jump knight to g5.",
+      solutionText: "1. Qxd8+ Nxd8 2. Ng5 attacking e4."
+    },
+    {
+      id: "puz-118",
+      fen: "r1bqkb1r/pppp1ppp/2n5/4P3/4n3/2N2N2/PPP2PPP/R1BQKB1R b KQkq - 1 5",
+      moves: ["e4c3", "b2c3"],
+      title: "Doubling Queenside Pawns",
+      rating: 920,
+      level: "Beginner",
+      theme: "Pawn Structure",
+      hint: "Trade knights on c3 to damage White's pawn skeleton early.",
+      solutionText: "1... Nxc3 2. bxc3."
+    },
+    {
+      id: "puz-119",
+      fen: "r1b1k2r/ppp2ppp/2n5/3qp3/8/2PP1N2/PP3PPP/R2QKB1R b KQkq - 0 9",
+      moves: ["c8g4"],
+      title: "Active Bishop Pin Placement",
+      rating: 1040,
+      level: "Beginner",
+      theme: "Pin & Skewer",
+      hint: "Pin White's f3 knight to the queen with your light-squared bishop.",
+      solutionText: "1... Bg4 pinning the knight."
+    },
+    {
+      id: "puz-120",
+      fen: "r1b1kb1r/pppp1ppp/2n5/4P3/1b5q/2N2N2/PPP2PPP/R1BQKB1R b KQkq - 2 6",
+      moves: ["h4e4"],
+      title: "Central Check & Triple Threat",
+      rating: 1310,
+      level: "Intermediate",
+      theme: "Fork & Skewer",
+      hint: "Deliver a central check with Qe4+ attacking e4 and creating severe tactical threats.",
+      solutionText: "1... Qe4+ forcing White to block."
     }
   ];
 
   // ── Global State Object ──
-  window.StudyPGN = {
+  Object.assign(StudyPGN, {
     currentGame: null,
     chess: null,
     moveHistory: [],
@@ -319,8 +494,104 @@
       this.loadDailyPuzzle();
       this.loadCuratedGame(0);
       this.setupKeyboardListeners();
+
+      // Ensure all Import PGN buttons open the modal directly
+      const self = this;
+      const openModal = function () {
+        console.log('[StudyPGN] openModal() called');
+        let modal = document.getElementById('import-pgn-modal');
+        console.log('[StudyPGN] modal element:', modal ? 'FOUND' : 'NOT FOUND');
+
+        if (!modal) {
+          console.warn('[StudyPGN] Modal not found, creating dynamically...');
+          modal = document.createElement('div');
+          modal.id = 'import-pgn-modal';
+          modal.className = 'modal';
+          modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99999;';
+          modal.innerHTML = `
+            <div class="modal-box" style="max-width:660px;width:95%;max-height:90vh;overflow-y:auto;background:var(--bg2);border:4px solid #f00;box-shadow:0 0 60px rgba(255,0,0,0.6);">
+              <div class="modal-title" style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #f00;padding-bottom:12px;">
+                <span style="font-size:22px;color:#f00;font-weight:900;">🔴 DEBUG MODAL - IMPORT PGN</span>
+                <button onclick="window.closeImportPgnModal()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
+              </div>
+              <div style="padding:30px;text-align:center;">
+                <p style="color:#fff;font-size:18px;font-weight:700;">If you see this RED modal, the button works!</p>
+                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN here..." style="width:100%;margin-top:16px;font-size:16px;"></textarea>
+                <button type="button" class="btn btn-gold" style="margin-top:16px;padding:12px 24px;font-size:16px;" onclick="window.submitImportPgn()">♟️ Load into Study Board</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+          console.log('[StudyPGN] Modal created dynamically');
+        } else {
+          // Make existing modal VERY visible for debugging
+          modal.style.background = 'rgba(0,0,0,0.85)';
+          modal.style.zIndex = '99999';
+          const modalBox = modal.querySelector('.modal-box');
+          if (modalBox) {
+            modalBox.style.border = '4px solid #f00';
+            modalBox.style.boxShadow = '0 0 60px rgba(255,0,0,0.6)';
+          }
+          const title = modal.querySelector('.modal-title span');
+          if (title) {
+            title.style.color = '#f00';
+            title.style.fontWeight = '900';
+            title.textContent = '🔴 IMPORT PGN MODAL (DEBUG)';
+          }
+        }
+
+        console.log('[StudyPGN] Setting modal display to flex');
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.classList.add('active', 'open');
+        console.log('[StudyPGN] Modal display:', modal.style.display, 'visibility:', modal.style.visibility);
+
+        const searchTabBtn = document.getElementById('import-tab-search');
+        if (window.switchImportPgnSubTab && searchTabBtn) {
+          try { window.switchImportPgnSubTab('search', searchTabBtn); } catch (e) { console.warn('[StudyPGN] switchImportPgnSubTab error:', e); }
+        }
+      };
+
+      // Bind by ID for known buttons
+      const importBtns = [
+        document.getElementById('btn-master-import-pgn'),
+        document.getElementById('btn-import-pgn-header'),
+        document.getElementById('btn-import-pgn-topics')
+      ];
+
+      importBtns.forEach(function (importBtn) {
+        if (importBtn && !importBtn._studyPgnBound) {
+          importBtn._studyPgnBound = true;
+          importBtn.addEventListener('click', function (e) {
+            console.log('[StudyPGN] Import PGN button clicked:', importBtn.id);
+            e.preventDefault();
+            e.stopPropagation();
+            openModal();
+          });
+        }
+      });
+
+      // Fallback: catch any click on elements containing "Import PGN" text
+      document.addEventListener('click', function (e) {
+        const target = e.target.closest('button');
+        if (!target) return;
+        if (target.textContent && target.textContent.includes('Import PGN')) {
+          console.log('[StudyPGN] Fallback Import PGN click caught on button:', target.id || target.className);
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            console.log('[StudyPGN] Calling openModal from fallback...');
+            openModal();
+            console.log('[StudyPGN] openModal completed from fallback');
+          } catch (err) {
+            console.error('[StudyPGN] Fallback openModal error:', err);
+            alert('Import PGN Error: ' + err.message);
+          }
+        }
+      }, true);
     }
-  };
+  });
 
   // ── Ensure Chess Engine Ready ──
   StudyPGN.ensureChessEngine = function () {
@@ -417,6 +688,9 @@
 
   // ── Keyboard Navigation ──
   StudyPGN.setupKeyboardListeners = function () {
+    if (StudyPGN._keyboardBound) return;
+    StudyPGN._keyboardBound = true;
+
     window.addEventListener('keydown', (e) => {
       const labTab = document.getElementById('child-tab-studypgn');
       const adminLab = document.getElementById('page-studypgn');
@@ -449,7 +723,68 @@
     });
   };
 
-  // ── PGN Loader Engine ──
+  // ── Lichess-Grade PGN Parser & Import Engine ──
+  StudyPGN.parsePgnString = function (pgnText) {
+    if (!pgnText || !pgnText.trim()) return [];
+
+    const rawText = pgnText.trim();
+    const rawBlocks = rawText.split(/(?=\[Event\s+)/i);
+    const gameBlocks = [];
+
+    rawBlocks.forEach((block, idx) => {
+      const trimmed = block.trim();
+      if (!trimmed) return;
+
+      const headers = {};
+      const headerRegex = /\[(\w+)\s+"([^"]*)"\]/g;
+      let match;
+      while ((match = headerRegex.exec(trimmed)) !== null) {
+        headers[match[1]] = match[2];
+      }
+
+      const lastHeaderIdx = trimmed.lastIndexOf(']');
+      let movesText = lastHeaderIdx !== -1 ? trimmed.substring(lastHeaderIdx + 1).trim() : trimmed;
+
+      // Clean variation comments & annotations
+      let cleanMoves = movesText.replace(/\{[^}]*\}/g, '');
+      while (cleanMoves.includes('(')) {
+        cleanMoves = cleanMoves.replace(/\([^()]*\)/g, '');
+      }
+      cleanMoves = cleanMoves.replace(/\$\d+/g, '').replace(/1-0|0-1|1\/2-1\/2|\*/g, '').trim();
+      cleanMoves = cleanMoves.replace(/\s+/g, ' ');
+
+      const white = headers.White || 'White';
+      const black = headers.Black || 'Black';
+      const eventName = headers.Event || `Study Chapter #${idx + 1}`;
+      const title = (white !== '?' && black !== '?') ? `${white} vs ${black}` : eventName;
+
+      gameBlocks.push({
+        id: `pgn_${Date.now()}_${idx}`,
+        title: title,
+        white: white,
+        black: black,
+        event: eventName,
+        site: headers.Site || '',
+        date: headers.Date || '',
+        result: headers.Result || '*',
+        eco: headers.ECO || '',
+        fen: headers.FEN || null,
+        setUp: headers.SetUp === '1',
+        headers: headers,
+        rawPgn: trimmed,
+        cleanMoves: cleanMoves
+      });
+    });
+
+    return gameBlocks.length ? gameBlocks : [{
+      id: `pgn_${Date.now()}_0`,
+      title: 'Imported Study PGN',
+      headers: {},
+      rawPgn: rawText,
+      cleanMoves: rawText
+    }];
+  };
+
   StudyPGN.loadCuratedGame = function (index) {
     const game = CURATED_STUDY_GAMES[index] || CURATED_STUDY_GAMES[0];
     StudyPGN.loadPgnString(game.pgn, game);
@@ -459,9 +794,37 @@
     StudyPGN.ensureChessEngine();
     if (!window.Chess) return;
 
-    const c = new window.Chess();
     const cleanPgn = (pgnText || '').trim();
-    const success = c.load_pgn(cleanPgn);
+    const games = StudyPGN.parsePgnString(cleanPgn);
+    const primaryGame = games[0] || {};
+    StudyPGN.loadedMultiGames = games;
+
+    let c;
+    if (primaryGame && primaryGame.fen) {
+      try {
+        c = new window.Chess(primaryGame.fen);
+      } catch (e) {
+        c = new window.Chess();
+      }
+    } else {
+      c = new window.Chess();
+    }
+
+    let success = c.load_pgn(cleanPgn);
+    if (!success && primaryGame && primaryGame.cleanMoves) {
+      const fallbackPgn = (primaryGame.fen ? `[FEN "${primaryGame.fen}"]\n\n` : '') + primaryGame.cleanMoves;
+      success = c.load_pgn(fallbackPgn);
+    }
+
+    if (!success && primaryGame && primaryGame.cleanMoves) {
+      const tokens = primaryGame.cleanMoves.split(/\d+\./).join(' ').split(/\s+/).filter(Boolean);
+      tokens.forEach(tok => {
+        if (tok && tok !== '*' && tok !== '1-0' && tok !== '0-1') {
+          try { c.move(tok); } catch (err) {}
+        }
+      });
+      success = true;
+    }
 
     if (!success) {
       if (window.toast) window.toast('Unable to parse PGN notation format.', 'warning');
@@ -470,17 +833,24 @@
 
     StudyPGN.currentGame = {
       ...metadata,
+      title: metadata.title || primaryGame?.title || 'Imported Study',
+      white: metadata.white || primaryGame?.white || 'White',
+      black: metadata.black || primaryGame?.black || 'Black',
+      result: metadata.result || primaryGame?.result || '*',
       pgn: cleanPgn,
-      headers: c.header ? c.header() : {}
+      headers: c.header ? c.header() : (primaryGame?.headers || {})
     };
 
     StudyPGN.moveHistory = c.history({ verbose: true });
-    StudyPGN.chess = new window.Chess();
+    StudyPGN.chess = primaryGame && primaryGame.fen ? new window.Chess(primaryGame.fen) : new window.Chess();
     StudyPGN.currentMoveIndex = -1;
     StudyPGN.selectedSquare = null;
     StudyPGN.legalMovesForSelected = [];
     StudyPGN.isAutoplaying = false;
     if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
+
+    // Save to LocalStorage studies list
+    StudyPGN.savePgnToLocalStorage(StudyPGN.currentGame);
 
     StudyPGN.renderBoard();
     StudyPGN.renderMoveList();
@@ -490,6 +860,26 @@
     StudyPGN.fetchStockfishCloudEval();
   };
 
+  StudyPGN.savePgnToLocalStorage = function (game) {
+    if (!game || !game.pgn) return;
+    try {
+      let saved = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]');
+      saved = saved.filter(s => s.pgn !== game.pgn);
+      const studentId = window.currentStudent ? String(window.currentStudent.id) : '';
+      saved.unshift({
+        id: game.id || `saved-${Date.now()}`,
+        title: game.title || 'Imported Study',
+        white: game.white || 'White',
+        black: game.black || 'Black',
+        result: game.result || '*',
+        pgn: game.pgn,
+        student_id: studentId,
+        timestamp: new Date().toISOString()
+      });
+      if (saved.length > 20) saved = saved.slice(0, 20);
+      localStorage.setItem(STORAGE_SAVED_STUDIES, JSON.stringify(saved));
+    } catch (e) {}
+  };
   StudyPGN.goToMove = function (index) {
     if (!StudyPGN.moveHistory) return;
     const targetIdx = Math.max(-1, Math.min(index, StudyPGN.moveHistory.length - 1));
@@ -539,15 +929,17 @@
 
   StudyPGN.toggleAutoplay = function () {
     StudyPGN.isAutoplaying = !StudyPGN.isAutoplaying;
-    const btn = document.getElementById('pgn-btn-autoplay');
-    if (btn) btn.innerHTML = StudyPGN.isAutoplaying ? '⏸ Pause' : '▶ Play';
+    const btn1 = document.getElementById('pgn-btn-autoplay');
+    const btn2 = document.getElementById('coach-pgn-btn-autoplay');
+    const label = StudyPGN.isAutoplaying ? '⏸ Pause' : '▶ Play';
+    if (btn1) btn1.innerHTML = label;
+    if (btn2) btn2.innerHTML = label;
 
+    if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
     if (StudyPGN.isAutoplaying) {
       StudyPGN.autoplayTimer = setInterval(() => {
         StudyPGN.nextMove();
       }, 1400);
-    } else {
-      if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
     }
   };
 
@@ -870,8 +1262,8 @@
     try {
       explorerEls.forEach(el => el.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`);
 
-      const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3`);
-      if (!res.ok) throw new Error('API limit or offline');
+      const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3`).catch(() => null);
+      if (!res || !res.ok) throw new Error('API limit or offline');
       const data = await res.json();
 
       if (!data.moves || !data.moves.length) {
@@ -933,7 +1325,34 @@
   };
 
   // ── Daily Tactics Workout Engine ──
-  StudyPGN.loadDailyPuzzle = async function () {
+  StudyPGN.loadDailyPuzzle = async function (filterLevel) {
+    const levelSelect = document.getElementById('tactics-level-select');
+    const topicSelect = document.getElementById('tactics-topic-select');
+    const puzzleSelect = document.getElementById('tactics-puzzle-select');
+
+    if (levelSelect && levelSelect.options.length <= 1) {
+      StudyPGN.populateTacticsLevelSelect();
+    }
+
+    const activeLevel = filterLevel || (levelSelect ? levelSelect.value : '') || 'all';
+    const activeTopic = topicSelect ? topicSelect.value : '';
+
+    if (activeLevel && activeLevel !== 'all') {
+      const filtered = CURATED_TACTICS.filter(p => p.level.toLowerCase() === activeLevel.toLowerCase());
+      if (filtered.length) {
+        const puz = filtered[Math.floor(Math.random() * filtered.length)];
+        StudyPGN.currentPuzzle = puz;
+        StudyPGN.setupPuzzle(puz);
+        if (topicSelect) {
+          StudyPGN.onTacticsLevelChanged(activeLevel);
+          topicSelect.value = puz.theme;
+          StudyPGN.onTacticsTopicChanged(puz.theme);
+        }
+        if (puzzleSelect) puzzleSelect.value = puz.id;
+        return;
+      }
+    }
+
     try {
       const res = await fetch('https://lichess.org/api/puzzle/daily');
       if (res.ok) {
@@ -946,7 +1365,8 @@
             rating: data.puzzle.rating,
             title: `Lichess Daily Master Puzzle (#${data.puzzle.id})`,
             hint: 'Look for tactical themes: Pins, Forks, Discovered Attacks, or Checkmating nets.',
-            level: 'Intermediate'
+            level: 'Intermediate',
+            solutionText: (data.puzzle.solution || []).join(' ')
           };
           StudyPGN.setupPuzzle(StudyPGN.currentPuzzle);
           return;
@@ -957,12 +1377,44 @@
     const puz = CURATED_TACTICS[Math.floor(Math.random() * CURATED_TACTICS.length)];
     StudyPGN.currentPuzzle = puz;
     StudyPGN.setupPuzzle(puz);
+    if (levelSelect && levelSelect.options.length <= 1) StudyPGN.populateTacticsLevelSelect();
+    if (levelSelect) levelSelect.value = puz.level;
+    if (topicSelect) StudyPGN.onTacticsLevelChanged(puz.level);
+    if (topicSelect) topicSelect.value = puz.theme;
+    if (puzzleSelect) StudyPGN.onTacticsTopicChanged(puz.theme);
+    if (puzzleSelect) puzzleSelect.value = puz.id;
+  };
+
+  StudyPGN.loadPuzzleById = function (puzzleId) {
+    const puz = CURATED_TACTICS.find(p => p.id === puzzleId) || CURATED_TACTICS[0];
+    StudyPGN.currentPuzzle = puz;
+    StudyPGN.setupPuzzle(puz);
+  };
+
+  StudyPGN.resetCurrentPuzzle = function () {
+    if (!StudyPGN.currentPuzzle) return;
+    selectedTacticsSquare = null;
+    tacticsLegalDestinations = [];
+    StudyPGN.setupPuzzle(StudyPGN.currentPuzzle);
+    if (window.toast) window.toast('🔄 Puzzle position reset.', 'info');
+  };
+
+  StudyPGN.revealTacticsSolution = function () {
+    const puz = StudyPGN.currentPuzzle;
+    if (!puz) return;
+    const hintEl = document.getElementById('tactics-hint-text');
+    if (hintEl) {
+      hintEl.innerHTML = `👁️ <strong>Solution Steps:</strong> ${escapeHtml(puz.solutionText || (puz.moves ? puz.moves.join(' ') : 'Check tactical move sequence'))}`;
+    }
+    if (window.toast) window.toast('👁️ Solution sequence displayed below!', 'info');
   };
 
   StudyPGN.setupPuzzle = function (puzzle) {
     if (!window.Chess) return;
     StudyPGN.puzzleGame = new window.Chess(puzzle.fen);
     StudyPGN.puzzleMoveIndex = 0;
+    selectedTacticsSquare = null;
+    tacticsLegalDestinations = [];
 
     StudyPGN.renderTacticsBoard();
     StudyPGN.updateStreakUI();
@@ -971,7 +1423,82 @@
     const hintEl = document.getElementById('tactics-hint-text');
     if (titleEl) titleEl.textContent = `${puzzle.title} (${puzzle.rating || 'Rated'} ELO)`;
     if (hintEl) hintEl.textContent = 'Click "💡 Ask TOM AI Hint" if you need a clue!';
+
+    // Populate puzzle selector dropdown if present
+    const selector = document.getElementById('tactics-puzzle-select');
+    if (selector && selector.children.length <= 1) {
+      let optHtml = '<option value="">🎯 Select Solvable Tactics Puzzle...</option>';
+      CURATED_TACTICS.forEach(p => {
+        optHtml += `<option value="${p.id}">${p.level}: ${escapeHtml(p.title)} (${p.rating} ELO)</option>`;
+      });
+      selector.innerHTML = optHtml;
+    }
+    if (selector && puzzle.id) selector.value = puzzle.id;
   };
+
+  StudyPGN.populateTacticsLevelSelect = function () {
+    const levelSelect = document.getElementById('tactics-level-select');
+    if (!levelSelect) return;
+    const levels = ['Beginner', 'Intermediate', 'Advanced'];
+    let html = '<option value="">🎯 Select Level...</option>';
+    levels.forEach(lvl => {
+      html += `<option value="${lvl}">${lvl}</option>`;
+    });
+    levelSelect.innerHTML = html;
+  };
+
+  StudyPGN.populateTacticsDropdown = function () {
+    const selector = document.getElementById('tactics-puzzle-select');
+    if (!selector) return;
+    let optHtml = '<option value="">🎯 Select Solvable Tactics Puzzle...</option>';
+    CURATED_TACTICS.forEach(p => {
+      optHtml += `<option value="${p.id}">${p.level}: ${escapeHtml(p.title)} (${p.rating} ELO)</option>`;
+    });
+    selector.innerHTML = optHtml;
+  };
+
+  StudyPGN.onTacticsLevelChanged = function (level) {
+    const topicSelect = document.getElementById('tactics-topic-select');
+    const puzzleSelect = document.getElementById('tactics-puzzle-select');
+    if (!topicSelect || !puzzleSelect) return;
+
+    topicSelect.innerHTML = '<option value="">📋 Select Topic...</option>';
+    puzzleSelect.innerHTML = '<option value="">🧩 Select Puzzle...</option>';
+
+    if (!level) return;
+
+    const themes = [...new Set(CURATED_TACTICS.filter(p => p.level === level).map(p => p.theme))].sort();
+    themes.forEach(theme => {
+      topicSelect.innerHTML += `<option value="${escapeHtml(theme)}">${escapeHtml(theme)}</option>`;
+    });
+  };
+
+  StudyPGN.onTacticsTopicChanged = function (topic) {
+    const puzzleSelect = document.getElementById('tactics-puzzle-select');
+    if (!puzzleSelect) return;
+
+    puzzleSelect.innerHTML = '<option value="">🧩 Select Puzzle...</option>';
+    if (!topic) return;
+
+    const levelSelect = document.getElementById('tactics-level-select');
+    const level = levelSelect ? levelSelect.value : '';
+    const filtered = CURATED_TACTICS.filter(p => p.level === level && p.theme === topic);
+    filtered.forEach(p => {
+      puzzleSelect.innerHTML += `<option value="${p.id}">${escapeHtml(p.title)} (${p.rating} ELO)</option>`;
+    });
+  };
+
+  StudyPGN.loadPuzzleByLevelAndTopic = function (level, topic) {
+    const filtered = CURATED_TACTICS.filter(p => p.level === level && p.theme === topic);
+    if (filtered.length) {
+      const puz = filtered[Math.floor(Math.random() * filtered.length)];
+      StudyPGN.currentPuzzle = puz;
+      StudyPGN.setupPuzzle(puz);
+    }
+  };
+
+  let selectedTacticsSquare = null;
+  let tacticsLegalDestinations = [];
 
   StudyPGN.renderTacticsBoard = function () {
     const container = document.getElementById('tactics-board-container');
@@ -981,22 +1508,31 @@
     const isWhiteTurn = StudyPGN.puzzleGame.turn() === 'w';
 
     let html = `
-      <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <span style="font-size:13px; font-weight:700; color:${isWhiteTurn ? '#fff' : '#fbbf24'};">
           ${isWhiteTurn ? '⚪ White to Move & Win' : '⚫ Black to Move & Win'}
         </span>
-        <span style="font-size:12px; color:var(--ivory-dim);">Puzzle #${StudyPGN.currentPuzzle?.id || 'Daily'}</span>
+        <span style="font-size:12px; color:var(--ivory-dim);">Puzzle #${StudyPGN.currentPuzzle?.id || 'Daily'} (${StudyPGN.currentPuzzle?.level || 'Rated'})</span>
       </div>
       <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:4px; overflow:hidden; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative; box-sizing:border-box; user-select:none;">
     `;
 
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
+    for (let rIdx = 0; rIdx < 8; rIdx++) {
+      for (let cIdx = 0; cIdx < 8; cIdx++) {
+        // If Black turn, invert row and column to flip board!
+        const r = isWhiteTurn ? rIdx : 7 - rIdx;
+        const c = isWhiteTurn ? cIdx : 7 - cIdx;
+
         const isLight = (r + c) % 2 === 0;
         const squareName = String.fromCharCode(97 + c) + (8 - r);
         const piece = board[r][c];
 
-        const bgColor = isLight ? '#ebecd0' : '#779556';
+        let bgColor = isLight ? '#ebecd0' : '#779556';
+        if (selectedTacticsSquare === squareName) {
+          bgColor = '#b5d66e';
+        }
+
+        const isLegalDot = tacticsLegalDestinations.includes(squareName);
         const pieceImgUrl = piece ? getPieceImage(piece) : '';
 
         html += `
@@ -1006,8 +1542,9 @@
               <img src="${pieceImgUrl}" alt="${piece.color}${piece.type}" draggable="false"
                    style="width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; display:block;" />
             ` : ''}
-            ${c === 0 ? `<span style="position:absolute; top:2px; left:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; pointer-events:none; user-select:none;">${8 - r}</span>` : ''}
-            ${r === 7 ? `<span style="position:absolute; bottom:2px; right:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; pointer-events:none; user-select:none;">${String.fromCharCode(97 + c)}</span>` : ''}
+            ${isLegalDot ? `<div style="position:absolute; width:14px; height:14px; background:${piece ? 'rgba(239,68,68,0.6)' : 'rgba(0,0,0,0.22)'}; border-radius:50%; pointer-events:none;"></div>` : ''}
+            ${cIdx === 0 ? `<span style="position:absolute; top:2px; left:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; pointer-events:none; user-select:none;">${8 - r}</span>` : ''}
+            ${rIdx === 7 ? `<span style="position:absolute; bottom:2px; right:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; pointer-events:none; user-select:none;">${String.fromCharCode(97 + c)}</span>` : ''}
           </div>
         `;
       }
@@ -1016,7 +1553,6 @@
     container.innerHTML = html;
   };
 
-  let selectedTacticsSquare = null;
   StudyPGN.onTacticsSquareClicked = function (square) {
     if (!StudyPGN.puzzleGame) return;
 
@@ -1024,18 +1560,26 @@
       const piece = StudyPGN.puzzleGame.get(square);
       if (piece && piece.color === StudyPGN.puzzleGame.turn()) {
         selectedTacticsSquare = square;
-        document.querySelectorAll('.tactics-square').forEach(el => {
-          if (el.getAttribute('data-square') === square) el.style.outline = '3px solid #f5f682';
-        });
+        const moves = StudyPGN.puzzleGame.moves({ square: square, verbose: true });
+        tacticsLegalDestinations = moves.map(m => m.to);
+        StudyPGN.renderTacticsBoard();
       }
     } else {
       const move = StudyPGN.puzzleGame.move({ from: selectedTacticsSquare, to: square, promotion: 'q' });
       selectedTacticsSquare = null;
-      document.querySelectorAll('.tactics-square').forEach(el => el.style.outline = 'none');
+      tacticsLegalDestinations = [];
 
       if (move) {
         StudyPGN.renderTacticsBoard();
         StudyPGN.checkTacticsMove(move);
+      } else {
+        const piece = StudyPGN.puzzleGame.get(square);
+        if (piece && piece.color === StudyPGN.puzzleGame.turn()) {
+          selectedTacticsSquare = square;
+          const moves = StudyPGN.puzzleGame.moves({ square: square, verbose: true });
+          tacticsLegalDestinations = moves.map(m => m.to);
+        }
+        StudyPGN.renderTacticsBoard();
       }
     }
   };
@@ -1080,7 +1624,6 @@
     if (!hintEl || !puz) return;
     hintEl.innerHTML = `💡 <strong>TOM AI Hint:</strong> ${escapeHtml(puz.hint || 'Look for tactical pins or royal forks!')}`;
   };
-
   StudyPGN.updateStreakUI = function () {
     const streakEl = document.getElementById('tactics-streak-count');
     const badgeEl = document.getElementById('tactics-flame-badge');
@@ -1157,6 +1700,22 @@
       modal.classList.remove('active', 'open');
     }
     if (window.toast) window.toast(`🏁 Time's up! Calculation Score: ${StudyPGN.visionScore} points!`, 'success');
+
+    StudyPGN.saveVisionScore();
+  };
+
+  StudyPGN.saveVisionScore = function () {
+    const studentId = window.currentStudent ? String(window.currentStudent.id) : 'default';
+    try {
+      const rec = JSON.parse(localStorage.getItem(STORAGE_VISION_SCORES) || '{}');
+      const cur = rec[studentId] || { totalScore: 0, gamesPlayed: 0, bestScore: 0 };
+      cur.totalScore = (cur.totalScore || 0) + StudyPGN.visionScore;
+      cur.gamesPlayed = (cur.gamesPlayed || 0) + 1;
+      cur.bestScore = Math.max(cur.bestScore || 0, StudyPGN.visionScore);
+      cur.lastPlayed = new Date().toISOString().split('T')[0];
+      rec[studentId] = cur;
+      localStorage.setItem(STORAGE_VISION_SCORES, JSON.stringify(rec));
+    } catch (e) {}
   };
 
   // ── Preset Templates Auto-filler ──
@@ -1758,6 +2317,19 @@
       if (window.toast) window.toast('🎉 Great work! Topic marked as practiced.', 'success');
     }
     localStorage.setItem(STORAGE_COMPLETED_TOPICS, JSON.stringify(completedIds));
+
+    const studentId = window.currentStudent ? String(window.currentStudent.id) : 'default';
+    try {
+      const rec = JSON.parse(localStorage.getItem(STORAGE_STUDENT_COMPLETED_TOPICS) || '{}');
+      const studentRec = rec[studentId] || [];
+      if (studentRec.includes(topicId)) {
+        rec[studentId] = studentRec.filter(id => id !== topicId);
+      } else {
+        rec[studentId] = [...studentRec, topicId];
+      }
+      localStorage.setItem(STORAGE_STUDENT_COMPLETED_TOPICS, JSON.stringify(rec));
+    } catch (e) {}
+
     StudyPGN.renderAssignedTopicsList();
   };
 
@@ -1782,6 +2354,8 @@
       StudyPGN.fetchLichessOpeningStats();
     } else if (subTab === 'topics') {
       StudyPGN.renderAssignedTopicsList();
+    } else if (subTab === 'custom') {
+      StudyPGN.initCustomBoard();
     } else if (subTab === 'monitor') {
       if (window.renderStudyPgnMonitor) window.renderStudyPgnMonitor('coach');
     } else if (subTab === 'vault') {
@@ -1850,7 +2424,7 @@
       }
     }
 
-    if (subTab === 'lab') {
+        if (subTab === 'lab') {
       StudyPGN.renderBoard();
       StudyPGN.renderMoveList();
       StudyPGN.renderGameInfo();
@@ -1860,8 +2434,13 @@
     } else if (subTab === 'tactics') {
       StudyPGN.renderTacticsBoard();
       StudyPGN.updateStreakUI();
+      StudyPGN.populateTacticsDropdown();
     } else if (subTab === 'topics') {
       StudyPGN.renderAssignedTopicsList();
+    } else if (subTab === 'custom') {
+      StudyPGN.initCustomBoard();
+    } else if (subTab === 'vision') {
+      // Vision trainer ready
     }
   };
 
@@ -2021,15 +2600,159 @@
     window.renderImportPgnLocalStorageStudies();
   };
 
+
+  // ── Search PGN Topics & Curated Games ──
+  window.searchPgnTopics = function (query, pgnTargetId, titleTargetId, resultsContainerId) {
+    const container = document.getElementById(resultsContainerId || 'import-pgn-search-results');
+    if (!container) return;
+
+    const q = (query || '').toLowerCase().trim();
+    const games = CURATED_STUDY_GAMES.filter(g => {
+      if (!q) return true;
+      const text = (g.title + ' ' + g.category + ' ' + g.white + ' ' + g.black + ' ' + g.description).toLowerCase();
+      return text.includes(q);
+    });
+
+    if (!games.length) {
+      container.innerHTML = '<div style="text-align:center; padding:16px; color:#94a3b8; font-size:12px;">No openings or games found matching "' + escapeHtml(q) + '".</div>';
+      return;
+    }
+
+    container.innerHTML = games.map(g => `
+      <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 12px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+            <span style="background:rgba(218,163,62,0.18); color:var(--gold); font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">${escapeHtml(g.category)}</span>
+            <span style="font-size:11px; color:#60a5fa; font-weight:700;">${escapeHtml(g.level || 'Master')}</span>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(g.title)}</div>
+          <div style="font-size:11px; color:var(--ivory-dim);">⚪ ${escapeHtml(g.white)} vs ⚫ ${escapeHtml(g.black)} (${g.result})</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button type="button" class="btn btn-gold btn-sm" style="font-size:11px; padding:4px 10px;" onclick="window.selectAndLoadPgnGame('${escapeHtml(g.id)}')">
+            ♟️ Load
+          </button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window.selectAndLoadPgnGame = function (gameId) {
+    const game = CURATED_STUDY_GAMES.find(x => x.id === gameId);
+    if (!game) return;
+    StudyPGN.loadPgnString(game.pgn, {
+      title: game.title,
+      category: game.category,
+      description: game.description
+    });
+    window.closeImportPgnModal();
+    if (window.toast) window.toast('♟️ Loaded "' + game.title + '" into Study Board!', 'success');
+  };
+
+  window.selectPgnSearchResult = function (gameId, pgnTargetId, titleTargetId, resultsContainerId) {
+    const game = CURATED_STUDY_GAMES.find(x => x.id === gameId);
+    if (!game) return;
+    if (pgnTargetId && document.getElementById(pgnTargetId)) {
+      document.getElementById(pgnTargetId).value = game.pgn;
+    }
+    if (titleTargetId && document.getElementById(titleTargetId)) {
+      document.getElementById(titleTargetId).value = game.title;
+    }
+  };
+
+  // ── Handle .PGN / .TXT File Upload ──
+  window.handlePgnFileUpload = function (inputEl, pgnTargetId, titleTargetId) {
+    if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+    const file = inputEl.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const pgnContent = e.target.result;
+      if (pgnTargetId && document.getElementById(pgnTargetId)) {
+        document.getElementById(pgnTargetId).value = pgnContent;
+      }
+      if (titleTargetId && document.getElementById(titleTargetId)) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '');
+        document.getElementById(titleTargetId).value = cleanName;
+      }
+      if (window.toast) window.toast('📂 Loaded "' + file.name + '" into PGN text area!', 'success');
+    };
+
+    reader.onerror = function () {
+      if (window.toast) window.toast('Failed to read file.', 'error');
+    };
+
+    reader.readAsText(file);
+  };
+
+  // ── Fetch Online Game from Lichess / URL ──
+  window.fetchOnlinePgnFromUrl = async function (urlInputId, pgnTargetId, titleTargetId, autoLoad = false) {
+    const urlInput = document.getElementById(urlInputId || 'import-online-url');
+    const rawUrl = urlInput ? urlInput.value.trim() : '';
+    if (!rawUrl) {
+      if (window.toast) window.toast('Please enter a Lichess or PGN URL.', 'warning');
+      return;
+    }
+
+    let fetchUrl = rawUrl;
+    // Handle lichess.org/xxxx game links
+    const lichessMatch = rawUrl.match(/lichess\.org\/([a-zA-Z0-9]{8,12})/);
+    if (lichessMatch && !rawUrl.includes('/export/')) {
+      const gameId = lichessMatch[1].slice(0, 8);
+      fetchUrl = 'https://lichess.org/game/export/' + gameId + '.pgn';
+    }
+
+    try {
+      if (window.toast) window.toast('Fetching game from web...', 'info');
+      const res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const pgnText = await res.text();
+
+      if (!pgnText || !pgnText.trim()) {
+        throw new Error('Empty PGN response');
+      }
+
+      if (pgnTargetId && document.getElementById(pgnTargetId)) {
+        document.getElementById(pgnTargetId).value = pgnText.trim();
+      }
+      if (titleTargetId && document.getElementById(titleTargetId)) {
+        document.getElementById(titleTargetId).value = 'Lichess Game (' + new Date().toLocaleDateString() + ')';
+      }
+
+      if (autoLoad) {
+        StudyPGN.loadPgnString(pgnText.trim(), {
+          title: 'Lichess Game (' + new Date().toLocaleDateString() + ')',
+          description: 'Imported from ' + rawUrl
+        });
+        window.closeImportPgnModal();
+        if (window.toast) window.toast('♟️ Online PGN game loaded into Study Board!', 'success');
+      } else {
+        if (window.toast) window.toast('Game PGN fetched successfully!', 'success');
+      }
+    } catch (err) {
+      console.warn('[StudyPGN] Online PGN fetch error:', err);
+      if (window.toast) window.toast('Could not fetch PGN automatically (CORS/URL issue). Please copy and paste the PGN text directly.', 'warning');
+    }
+  };
+
   // ── Import PGN Modal Open / Close ──
   window.openImportPgnModal = function () {
+    console.log('[StudyPGN] openImportPgnModal called');
     const modal = document.getElementById('import-pgn-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.classList.add('active', 'open');
-      const searchTabBtn = document.getElementById('import-tab-search');
-      window.switchImportPgnSubTab('search', searchTabBtn);
+    console.log('[StudyPGN] modal element:', modal);
+    if (!modal) {
+      if (window.toast) window.toast('Import modal not found. Please refresh the page.', 'warning');
+      return;
     }
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active', 'open');
+    const searchTabBtn = document.getElementById('import-tab-search');
+    if (window.switchImportPgnSubTab && searchTabBtn) {
+      try { window.switchImportPgnSubTab('search', searchTabBtn); } catch (e) { console.warn('[StudyPGN] switchImportPgnSubTab error:', e); }
+    }
+    console.log('[StudyPGN] modal opened, display:', modal.style.display);
   };
 
   window.closeImportPgnModal = function () {
@@ -2186,3 +2909,434 @@
     StudyPGN.init();
   }
 })();
+
+  // ── Custom Board Setup & FEN Builder Engine ──
+  StudyPGN.customBoardState = {
+    grid: [
+      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      ['P', 'N', 'B', 'Q', 'K', 'B', 'N', 'P'],
+      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ],
+    selectedPalettePiece: 'P',
+    turn: 'w',
+    orientation: 'white'
+  };
+
+  StudyPGN.initCustomBoard = function () {
+    StudyPGN.renderCustomPalette();
+    StudyPGN.renderCustomBoard();
+    StudyPGN.updateCustomFenUI();
+  };
+
+  StudyPGN.renderCustomPalette = function () {
+    const palW = document.getElementById('custom-piece-palette-w');
+    const palB = document.getElementById('custom-piece-palette-b');
+    if (!palW || !palB) return;
+
+    const wPieces = [
+      { key: 'P', title: 'White Pawn' },
+      { key: 'N', title: 'White Knight' },
+      { key: 'B', title: 'White Bishop' },
+      { key: 'R', title: 'White Rook' },
+      { key: 'Q', title: 'White Queen' },
+      { key: 'K', title: 'White King' },
+      { key: 'EMPTY', title: 'Clear Square' }
+    ];
+
+    const bPieces = [
+      { key: 'p', title: 'Black Pawn' },
+      { key: 'n', title: 'Black Knight' },
+      { key: 'b', title: 'Black Bishop' },
+      { key: 'r', title: 'Black Rook' },
+      { key: 'q', title: 'Black Queen' },
+      { key: 'k', title: 'Black King' },
+      { key: 'EMPTY', title: 'Clear Square' }
+    ];
+
+    const renderPieceBtn = (item) => {
+      const isSel = StudyPGN.customBoardState.selectedPalettePiece === item.key;
+      const pieceObj = item.key !== 'EMPTY' ? { color: item.key === item.key.toUpperCase() ? 'w' : 'b', type: item.key.toLowerCase() } : null;
+      const imgUrl = pieceObj ? getPieceImage(pieceObj) : '';
+
+      return `
+        <button type="button" onclick="window.StudyPGN.selectCustomPalettePiece('${item.key}')"
+                style="width:38px; height:38px; border-radius:8px; border:2px solid ${isSel ? 'var(--gold)' : 'rgba(255,255,255,0.12)'}; background:${isSel ? 'rgba(218,163,62,0.25)' : 'rgba(255,255,255,0.04)'}; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:4px;" title="${item.title}">
+          ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:contain;" />` : `<span style="font-size:16px;">🗑️</span>`}
+        </button>
+      `;
+    };
+
+    palW.innerHTML = wPieces.map(renderPieceBtn).join('');
+    palB.innerHTML = bPieces.map(renderPieceBtn).join('');
+  };
+
+  StudyPGN.selectCustomPalettePiece = function (key) {
+    StudyPGN.customBoardState.selectedPalettePiece = key;
+    StudyPGN.renderCustomPalette();
+  };
+
+  StudyPGN.onCustomSquareClicked = function (r, c) {
+    const key = StudyPGN.customBoardState.selectedPalettePiece;
+    StudyPGN.customBoardState.grid[r][c] = (key === 'EMPTY') ? null : key;
+    StudyPGN.renderCustomBoard();
+    StudyPGN.updateCustomFenUI();
+  };
+
+  StudyPGN.renderCustomBoard = function () {
+    const container = document.getElementById('custom-board-container');
+    if (!container) return;
+
+    const grid = StudyPGN.customBoardState.grid;
+    const isFlipped = StudyPGN.customBoardState.orientation === 'black';
+
+    let html = `
+      <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:440px; margin:0 auto; border-radius:4px; overflow:hidden; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative; box-sizing:border-box; user-select:none;">
+    `;
+
+    for (let rIdx = 0; rIdx < 8; rIdx++) {
+      for (let cIdx = 0; cIdx < 8; cIdx++) {
+        const r = isFlipped ? 7 - rIdx : rIdx;
+        const c = isFlipped ? 7 - cIdx : cIdx;
+
+        const isLight = (r + c) % 2 === 0;
+        const char = grid[r][c];
+        const pieceObj = char ? { color: char === char.toUpperCase() ? 'w' : 'b', type: char.toLowerCase() } : null;
+        const bgColor = isLight ? '#ebecd0' : '#779556';
+        const pieceImgUrl = pieceObj ? getPieceImage(pieceObj) : '';
+
+        html += `
+          <div class="custom-square" onclick="StudyPGN.onCustomSquareClicked(${r}, ${c})"
+               style="background:${bgColor}; aspect-ratio:1/1; width:100%; height:100%; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative; box-sizing:border-box; overflow:hidden;">
+            ${pieceImgUrl ? `
+              <img src="${pieceImgUrl}" draggable="false"
+                   style="width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; display:block;" />
+            ` : ''}
+            ${cIdx === 0 ? `<span style="position:absolute; top:2px; left:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; pointer-events:none;">${8 - r}</span>` : ''}
+            ${rIdx === 7 ? `<span style="position:absolute; bottom:2px; right:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
+          </div>
+        `;
+      }
+    }
+    html += `</div>`;
+    container.innerHTML = html;
+  };
+
+  StudyPGN.generateFenFromCustomGrid = function () {
+    const grid = StudyPGN.customBoardState.grid;
+    let fenRows = [];
+
+    for (let r = 0; r < 8; r++) {
+      let emptyCount = 0;
+      let rowStr = '';
+      for (let c = 0; c < 8; c++) {
+        const char = grid[r][c];
+        if (!char) {
+          emptyCount++;
+        } else {
+          if (emptyCount > 0) {
+            rowStr += emptyCount;
+            emptyCount = 0;
+          }
+          rowStr += char;
+        }
+      }
+      if (emptyCount > 0) rowStr += emptyCount;
+      fenRows.push(rowStr);
+    }
+
+    const turn = StudyPGN.customBoardState.turn || 'w';
+    return `${fenRows.join('/')} ${turn} KQkq - 0 1`;
+  };
+
+  StudyPGN.updateCustomFenUI = function () {
+    const input = document.getElementById('custom-fen-input');
+    if (input) input.value = StudyPGN.generateFenFromCustomGrid();
+
+    const btnW = document.getElementById('btn-turn-w');
+    const btnB = document.getElementById('btn-turn-b');
+    const turn = StudyPGN.customBoardState.turn;
+    if (btnW && btnB) {
+      btnW.className = turn === 'w' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline';
+      btnB.className = turn === 'b' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline';
+    }
+  };
+
+  StudyPGN.setCustomTurn = function (turn) {
+    StudyPGN.customBoardState.turn = turn;
+    StudyPGN.updateCustomFenUI();
+  };
+
+  StudyPGN.clearCustomBoard = function () {
+    StudyPGN.customBoardState.grid = Array(8).fill(null).map(() => Array(8).fill(null));
+    StudyPGN.renderCustomBoard();
+    StudyPGN.updateCustomFenUI();
+    if (window.toast) window.toast('🧹 Cleared all pieces from custom board.', 'info');
+  };
+
+  StudyPGN.resetCustomBoardStandard = function () {
+    StudyPGN.customBoardState.grid = [
+      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      ['P', 'N', 'B', 'Q', 'K', 'B', 'N', 'P'],
+      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ];
+    StudyPGN.customBoardState.turn = 'w';
+    StudyPGN.renderCustomBoard();
+    StudyPGN.updateCustomFenUI();
+    if (window.toast) window.toast('♟️ Custom board reset to standard position.', 'info');
+  };
+
+  StudyPGN.flipCustomBoard = function () {
+    StudyPGN.customBoardState.orientation = StudyPGN.customBoardState.orientation === 'white' ? 'black' : 'white';
+    StudyPGN.renderCustomBoard();
+  };
+
+  StudyPGN.loadFenToCustomBoard = function (fenStr) {
+    if (!fenStr || !fenStr.trim()) return;
+    const parts = fenStr.trim().split(/\s+/);
+    const rows = parts[0].split('/');
+    if (rows.length !== 8) {
+      if (window.toast) window.toast('Invalid FEN format!', 'warning');
+      return;
+    }
+
+    const grid = Array(8).fill(null).map(() => Array(8).fill(null));
+    for (let r = 0; r < 8; r++) {
+      let colIdx = 0;
+      for (let i = 0; i < rows[r].length; i++) {
+        const char = rows[r][i];
+        if (/\d/.test(char)) {
+          colIdx += parseInt(char, 10);
+        } else {
+          grid[r][colIdx] = char;
+          colIdx++;
+        }
+      }
+    }
+
+    StudyPGN.customBoardState.grid = grid;
+    if (parts[1]) StudyPGN.customBoardState.turn = parts[1] === 'b' ? 'b' : 'w';
+
+    StudyPGN.renderCustomBoard();
+    StudyPGN.updateCustomFenUI();
+    if (window.toast) window.toast('✅ Loaded FEN into custom board editor!', 'success');
+  };
+
+  StudyPGN.copyCustomFen = function () {
+    const fen = StudyPGN.generateFenFromCustomGrid();
+    navigator.clipboard.writeText(fen).then(() => {
+      if (window.toast) window.toast('📋 FEN copied to clipboard!', 'success');
+    }).catch(() => {
+      if (window.toast) window.toast(`FEN: ${fen}`, 'info');
+    });
+  };
+
+  StudyPGN.playFromCustomBoard = function () {
+    const fen = StudyPGN.generateFenFromCustomGrid();
+    if (!window.Chess) {
+      if (window.toast) window.toast('Chess engine not loaded yet.', 'warning');
+      return;
+    }
+
+    StudyPGN.chess = new window.Chess(fen);
+    StudyPGN.moveHistory = [];
+    StudyPGN.currentMoveIndex = -1;
+    StudyPGN.selectedSquare = null;
+    StudyPGN.legalMovesForSelected = [];
+    StudyPGN.isAutoplaying = false;
+    if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
+
+    StudyPGN.currentGame = {
+      title: 'Custom Position Play',
+      white: 'White',
+      black: 'Black',
+      result: '*',
+      pgn: `[SetUp "1"]\n[FEN "${fen}"]\n\n*`,
+      headers: { SetUp: '1', FEN: fen }
+    };
+
+    window.setStudyPgnSubTab('lab');
+    StudyPGN.renderBoard();
+    StudyPGN.renderMoveList();
+    StudyPGN.renderGameInfo();
+    StudyPGN.updateAiMoveGuide();
+    StudyPGN.updateEvalGauge();
+    StudyPGN.fetchLichessOpeningStats();
+    StudyPGN.fetchStockfishCloudEval();
+
+    if (window.toast) window.toast('♟️ Custom position loaded for play! Make your moves on the board.', 'success');
+  };
+
+  StudyPGN.loadCustomBoardToLab = function () {
+    const fen = StudyPGN.generateFenFromCustomGrid();
+    const pgnText = `[SetUp "1"]\n[FEN "${fen}"]\n\n*`;
+
+    StudyPGN.loadPgnString(pgnText, {
+      title: 'Custom Position Analysis',
+      description: `Custom Board Setup FEN: ${fen}`
+    });
+
+    window.setStudyPgnSubTab('lab');
+    if (window.toast) window.toast('🚀 Loaded custom position into Master Study Lab!', 'success');
+  };
+
+  // ── Web Audio API Piece Move Sound Synthesizer ──
+  StudyPGN.audioCtx = null;
+  StudyPGN.playMoveSound = function (isCapture) {
+    try {
+      if (!StudyPGN.audioCtx) {
+        StudyPGN.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (StudyPGN.audioCtx.state === 'suspended') {
+        StudyPGN.audioCtx.resume();
+      }
+
+      const osc = StudyPGN.audioCtx.createOscillator();
+      const gain = StudyPGN.audioCtx.createGain();
+      const now = StudyPGN.audioCtx.currentTime;
+
+      osc.type = isCapture ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(isCapture ? 420 : 280, now);
+      osc.frequency.exponentialRampToValueAtTime(isCapture ? 120 : 160, now + 0.08);
+
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.connect(gain);
+      gain.connect(StudyPGN.audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } catch (e) {}
+  };
+
+  // ── PGN Export & File Downloader ──
+  StudyPGN.downloadCurrentPgn = function () {
+    const game = StudyPGN.currentGame;
+    let pgnText = '';
+    if (game && game.pgn) {
+      pgnText = game.pgn;
+    } else if (StudyPGN.chess) {
+      pgnText = StudyPGN.chess.pgn();
+    }
+
+    if (!pgnText || !pgnText.trim()) {
+      if (window.toast) window.toast('No PGN moves available to download.', 'warning');
+      return;
+    }
+
+    const titleSlug = (game && game.title ? game.title : 'chesskidoo_study').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const blob = new Blob([pgnText], { type: 'application/x-chess-pgn' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${titleSlug}.pgn`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (window.toast) window.toast('📥 Downloaded PGN study file successfully!', 'success');
+  };
+
+  // ── Global Keyboard Shortcuts for Study Lab ──
+  StudyPGN.initKeyboardShortcuts = function () {
+    if (StudyPGN._keyboardBound) return;
+    StudyPGN._keyboardBound = true;
+
+    window.addEventListener('keydown', (e) => {
+      // Don't trigger if user is typing in an input / textarea / modal
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) {
+        return;
+      }
+
+      // Check if Study PGN page or tab is currently visible
+      const studyPage = document.getElementById('page-studypgn');
+      const childStudyTab = document.getElementById('child-tab-studypgn');
+      const isVisible = (studyPage && studyPage.classList.contains('active')) ||
+                        (childStudyTab && childStudyTab.classList.contains('active')) ||
+                        (document.getElementById('studypgn-subview-lab') && document.getElementById('studypgn-subview-lab').style.display !== 'none');
+
+      if (!isVisible) return;
+
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          StudyPGN.prevMove();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          StudyPGN.nextMove();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          StudyPGN.firstMove();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          StudyPGN.lastMove();
+          break;
+        case ' ':
+          e.preventDefault();
+          StudyPGN.toggleAutoplay();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          StudyPGN.flipBoard();
+          break;
+        case 'c':
+        case 'C':
+          if (!e.ctrlKey && !e.metaKey && StudyPGN.chess) {
+            e.preventDefault();
+            navigator.clipboard.writeText(StudyPGN.chess.fen()).then(() => {
+              if (window.toast) window.toast('📋 Copied position FEN to clipboard!', 'success');
+            });
+          }
+          break;
+        case '?':
+        case 'h':
+        case 'H':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            StudyPGN.showHotkeysModal();
+          }
+          break;
+      }
+    });
+  };
+
+  StudyPGN.showHotkeysModal = function () {
+    const modalHtml = `
+      <div id="pgn-hotkeys-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); padding:16px;" onclick="document.getElementById('pgn-hotkeys-overlay').remove()">
+        <div class="card" style="background:#0f172a; border:1px solid var(--gold); border-radius:14px; max-width:440px; width:100%; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; color:var(--gold); font-size:18px;">⌨️ Keyboard Hotkeys</h3>
+            <button onclick="document.getElementById('pgn-hotkeys-overlay').remove()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">→</kbd> Next Move</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">←</kbd> Previous Move</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">↓</kbd> Jump to End</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">↑</kbd> Jump to Start</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">Space</kbd> Play / Pause</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">F</kbd> Flip Board</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">C</kbd> Copy FEN</div>
+            <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px;"><kbd style="background:#334155; padding:2px 6px; border-radius:4px; font-family:monospace; color:#fff;">?</kbd> Show Hotkeys</div>
+          </div>
+          <button class="btn btn-gold" style="width:100%; margin-top:18px;" onclick="document.getElementById('pgn-hotkeys-overlay').remove()">Got it!</button>
+        </div>
+      </div>
+    `;
+    const old = document.getElementById('pgn-hotkeys-overlay');
+    if (old) old.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  };

@@ -253,12 +253,59 @@
     io.observe(wrap);
   }
 
+  
+  // ── Scroll-based Learning Journey Line Progress Engine ──
+  function initLearningJourneyScrollPath() {
+    const container = document.querySelector('.learning-journey-container');
+    const path = document.getElementById('lj-progress-path');
+    const stations = document.querySelectorAll('.lj-station');
+    if (!container || !path) return;
+
+    let pathLength = 0;
+    try {
+      pathLength = path.getTotalLength();
+    } catch (e) {
+      pathLength = 1000;
+    }
+
+    path.style.strokeDasharray = pathLength;
+    path.style.strokeDashoffset = pathLength;
+    path.style.transition = 'stroke-dashoffset 0.12s cubic-bezier(0.1, 0.9, 0.2, 1)';
+
+    function updateScrollProgress() {
+      const rect = container.getBoundingClientRect();
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+      const startY = rect.top - (windowHeight * 0.7);
+      const totalDistance = rect.height + (windowHeight * 0.3);
+      let progress = -startY / totalDistance;
+      progress = Math.max(0, Math.min(1, progress));
+
+      const offset = pathLength * (1 - progress);
+      path.style.strokeDashoffset = offset;
+
+      const thresholds = [0.08, 0.33, 0.65, 0.88];
+      stations.forEach((st, idx) => {
+        if (progress >= thresholds[idx]) {
+          st.classList.add('lj-reached');
+        } else {
+          st.classList.remove('lj-reached');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    window.addEventListener('resize', updateScrollProgress, { passive: true });
+    setTimeout(updateScrollProgress, 100);
+  }
+
   function init() {
     // Only on the public landing page.
     if (!document.querySelector('.hero') && !document.getElementById('landing-page')) return;
     injectCSS();
     scrollProgress();        // useful regardless of motion preference
-    journeyRail();           // ditto — CSS handles the reduced-motion case
+    journeyRail();
+    initLearningJourneyScrollPath();           // ditto — CSS handles the reduced-motion case
     if (reduce) return;      // skip the motion-heavy extras for reduced-motion users
     countUp();
     if (isTouch()) {

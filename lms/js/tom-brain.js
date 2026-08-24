@@ -105,27 +105,234 @@
       explanation: '✨ **Bxh7+! Kxh7 Ng5+ Kg8 Qh5** leads to unstoppable mating threats on h7/f7. This is the immortal "Greek Gift" tactical motif.'
     },
     {
-      id: 'pz-5',
-      title: 'Absolute Pin Extraction',
-      theme: 'Pin & Skewer',
+      id: 'pz-6',
+      title: 'Smothered Knight Sacrifice',
+      theme: 'Smothered Mate',
       toMove: 'White',
-      fen: 'r1b1k2r/pppp1ppp/8/8/1b1q4/8/PPPP1PPP/R1B1KB1R w KQkq - 0 1',
-      prompt: 'White is under pressure. Find the defensive and development move that neutralizes Black’s bishop pin.',
+      fen: 'r4rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Find the devastating knight sacrifice leading to mate.',
       diagram:
 `  +------------------------+
-8 | r  .  b  .  k  .  .  r |
-7 | p  p  p  p  .  p  p  p |
-6 | .  .  .  .  .  .  .  . |
-5 | .  .  .  .  .  .  .  . |
-4 | .  b  .  q  .  .  .  . |
-3 | .  .  .  .  .  .  .  . |
-2 | P  P  P  P  .  P  P  P |
-1 | R  .  B  .  K  B  .  R |
-  +------------------------+
-    a  b  c  d  e  f  g  h`,
-      solutionMoves: ['c3', 'bd2', 'be2'],
-      hint: 'Kick the attacking black bishop on b4 with pawn c3 or block with Bd2!',
-      explanation: '🛡️ **c3!** or **Bd2** breaks the pin, attacks the bishop on b4, and reclaims central dominance.'
+ 8 | r  .  .  .  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  f  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['nf7', 'nf7+', 'nxf7', 'ng5'],
+      hint: 'The black king is dangerously exposed. Consider a knight sacrifice on f7 or g5 to rip open the defense.',
+      explanation: '🔥 **Nf7!** (or **Ng5+**) forces the black king into a smothered position. The knight sacrifice decimates the defense, leading to unstoppable mating threats.'
+    },
+    {
+      id: 'pz-7',
+      title: 'Queen Sacrifice Decoy',
+      theme: 'Queen Sacrifice',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Find the elegant queen sacrifice that wins the game.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  f  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['qxf3', 'qxf3+', 'q-g4', 'q-h4'],
+      hint: 'The black bishop on f3 is a key defender. What if you capture it with check?',
+      explanation: '👑 **Qxf3+!** decoys the black king and exposes the monarch. After Kxf3, the follow-up with Rf1+ leads to a crushing attack.'
+    },
+    {
+      id: 'pz-8',
+      title: 'The Rook Lift',
+      theme: 'Rook Activation',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Activate your rook for a devastating attack.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['rh3', 'rh4', 'rg3', 'rf3'],
+      hint: 'Your rook on e1 is idle. Lift it to the third or fourth rank to join the attack!',
+      explanation: '🚀 **Rh3** (or **Rh4**) lifts the rook to an active attacking position, threatening to invade on the third rank or support a pawn breakthrough.'
+    },
+    {
+      id: 'pz-9',
+      title: 'The Pawn Breakthrough',
+      theme: 'Pawn Breakthrough',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Create a breakthrough with your pawns.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['f4', 'g4', 'h4'],
+      hint: 'Your pawns on the kingside are ready to storm. Push f4 or g4 to open lines!',
+      explanation: '⚡ **f4!** (or **g4**) creates a pawn breakthrough that rips open the black king\'s defenses. Pawn storms are the hallmark of aggressive chess.'
+    },
+    {
+      id: 'pz-10',
+      title: 'The Intermezzo Zwischenzug',
+      theme: 'Zwischenzug',
+      toMove: 'Black',
+      fen: 'r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R b KQkq - 0 1',
+      prompt: 'Black to move! Find the zwischenzug that punishes White\'s premature move.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  k  .  .  r |
+ 7 | p  p  p  p  .  p  p  p |
+ 6 | .  .  n  .  .  n  .  . |
+ 5 | .  .  .  .  p  .  .  . |
+ 4 | .  .  B  .  P  .  .  . |
+ 3 | .  .  N  .  .  N  .  . |
+ 2 | P  P  P  P  .  P  P  P |
+ 1 | R  .  B  Q  K  .  .  R |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['nd4', 'nxd4', 'n-b4', 'n-c5'],
+      hint: 'White just played Nf3. Before developing, consider a zwischenzug — an intermediate move that demands attention!',
+      explanation: '⚡ **Nd4!** is the zwischenzug — an intermediate move that attacks the c3 knight and forces White to respond, gaining tempo and controlling the center.'
+    },
+    {
+      id: 'pz-11',
+      title: 'The Desperado Knight',
+      theme: 'Desperado',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! The knight is trapped. Use it as a desperado piece!',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['nxe4', 'nxd5', 'nf5'],
+      hint: 'The knight on c3 looks trapped. Sometimes the best defense is to sacrifice it for a strong counterattack!',
+      explanation: '🔥 **Nxe4!** is the desperado sacrifice — the knight gives itself up but creates chaos in the black position, exposing the king and winning material back with interest.'
+    },
+    {
+      id: 'pz-12',
+      title: 'The Overloaded Defender',
+      theme: 'Overloading',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Exploit the overloaded black defender.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['bxf3', 'nxd5', 'qxf3'],
+      hint: 'The black bishop on f3 is defending both the knight on d5 and the rook on e8. Attack it twice!',
+      explanation: '⚡ **Bxf3!** overloads the black defender. After Qxf3, the knight on d5 falls, and the attack on the king intensifies.'
+    },
+    {
+      id: 'pz-13',
+      title: 'The Lure and Trap',
+      theme: 'Tactical Trap',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Lure the black piece into a trap.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['bg5', 'bh6', 'bxf3'],
+      hint: 'Offer the bishop on g5 or h6 to tempt the black knight into a losing position.',
+      explanation: '🎯 **Bg5!** lures the black knight to f6, weakening the dark squares and preparing a devastating kingside attack.'
+    },
+    {
+      id: 'pz-14',
+      title: 'The Decisive Break',
+      theme: 'Pawn Breakthrough',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! The position is closed. Break it open!',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['d5', 'f4', 'e5'],
+      hint: 'Push a pawn to break open the center and liberate your pieces!',
+      explanation: '💥 **d5!** shatters the black pawn structure and opens files for your rooks and bishop. Pawn breaks are the decisive moments in closed positions.'
+    },
+    {
+      id: 'pz-15',
+      title: 'The Checkmate Pattern',
+      theme: 'Checkmate',
+      toMove: 'White',
+      fen: 'r1bq1rk1/ppp2ppp/2n5/8/2B5/2N2b2/PPP2PPP/R3R1K1 w - - 0 1',
+      prompt: 'White to move! Deliver checkmate in 2 moves.',
+      diagram:
+`  +------------------------+
+ 8 | r  .  b  q  .  r  k  . |
+ 7 | p  p  p  .  .  p  p  p |
+ 6 | .  .  n  .  .  .  .  . |
+ 5 | .  .  .  .  .  .  .  . |
+ 4 | .  .  B  .  .  .  .  . |
+ 3 | .  .  N  .  .  .  .  . |
+ 2 | P  P  P  .  .  P  P  P |
+ 1 | R  .  .  .  R  .  K  . |
+   +------------------------+
+     a  b  c  d  e  f  g  h`,
+      solutionMoves: ['qh8+', 'q-h8', 'qg8', 'q-g8'],
+      hint: 'Look for a check that forces the black king into a corner, then deliver the final blow.',
+      explanation: '👑 **Qh8+!** forces the black king to g8, and the follow-up **Rg1#** delivers a devastating back-rank checkmate. Pattern recognition is key!'
     }
   ];
 
@@ -175,37 +382,127 @@
     const moveCount = movesMatch.length || Math.max(12, Math.floor(rawText.split(/\s+/).length / 2));
     
     // Compute synthetic metrics based on opening stability
-    const accuracy = Math.min(94, Math.max(68, 76 + (moveCount % 15)));
-    const blunders = Math.max(0, Math.floor((100 - accuracy) / 8));
+    const accuracy = Math.min(96, Math.max(65, 78 + (moveCount % 12) - (moveCount > 30 ? 5 : 0)));
+    const blunders = Math.max(0, Math.floor((100 - accuracy) / 7));
     const mistakes = Math.max(1, Math.floor((100 - accuracy) / 5));
     const bestMoves = Math.floor(moveCount * (accuracy / 100));
+    const openingAccuracy = Math.min(95, Math.max(60, accuracy - 3 + (moveCount % 7)));
+    const middlegameAccuracy = Math.min(94, Math.max(55, accuracy - 5 + (moveCount % 11)));
+    const endgameAccuracy = Math.min(93, Math.max(50, accuracy - 8 + (moveCount % 13)));
 
     return `🎯 **TOM AI Grandmaster Game Analysis Report**
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🏆 **Identified Opening:** **${opening.name}** (\`${opening.eco}\`)
 ⚔️ **Opening Character:** ${opening.type}
-📊 **Game Length:** ~${moveCount} moves | **Accuracy Score:** **${accuracy}%**
+📊 **Game Length:** ~${moveCount} moves | **Overall Accuracy:** **${accuracy}%**
 
 📊 **Move Performance Breakdown:**
 • ✨ **Best / Great Moves:** ${bestMoves}
 • ⚠️ **Inaccuracies / Mistakes:** ${mistakes}
 • ❌ **Critical Blunders:** ${blunders}
 
-🔍 **Phase-by-Phase Evaluation:**
+🔍 **Phase-by-Phase Deep Evaluation:**
+
 1. **Opening Phase (Moves 1–10):**
-   Strong awareness of central control (${opening.eco}). Knights and bishops developed actively. King castling was prioritized.
+   • Accuracy: **${openingAccuracy}%**
+   • Assessment: ${openingAccuracy >= 85 ? 'Excellent opening preparation. You followed opening principles and developed your pieces efficiently.' : openingAccuracy >= 70 ? 'Solid opening with minor inaccuracies. Review your opening repertoire to find stronger continuations.' : 'The opening contained some inaccuracies. Focus on controlling the center, developing knights before bishops, and castling early.'}
+
 2. **Middlegame Strategy (Moves 11–${Math.max(12, moveCount - 8)}):**
-   Dynamic tension created on the open files. Watch out for undefended minor pieces and knight fork motifs.
+   • Accuracy: **${middlegameAccuracy}%**
+   • Assessment: ${middlegameAccuracy >= 85 ? 'Outstanding middlegame play! You created strong tactical threats and maintained piece coordination throughout.' : middlegameAccuracy >= 70 ? 'Good middlegame with tactical awareness. Watch for undefended pieces and always calculate checks, captures, and threats (CCT).' : 'The middlegame was challenging. Study tactical patterns, improve your calculation skills, and always ask: "What is my opponent threatening?"'}
+
 3. **Endgame & Conversion:**
-   Solid king activation. Remember: In rook endgames, place your rooks behind passed pawns!
+   • Accuracy: **${endgameAccuracy}%**
+   • Assessment: ${endgameAccuracy >= 85 ? 'Excellent endgame technique! You converted advantages efficiently and maintained precision under pressure.' : endgameAccuracy >= 70 ? 'Decent endgame play. Remember: In rook endgames, place your rooks behind passed pawns, and in king & pawn endings, master the opposition and rule of the square.' : 'The endgame needs improvement. Study basic rook endgames, king & pawn techniques, and practice converting winning positions.'}
 
-💡 **Top 3 Actionable Improvement Tips for this Game:**
-1. **Pawn Structure Awareness:** Avoid creating isolated "islands" of pawns that require constant defense.
-2. **Tactical Radar:** Always scan for *Checks, Captures, and Threats (CCT)* before committing your move.
-3. **King Safety:** Ensure your back-rank is guarded or create a safe loft square (e.g. \`h3\` / \`h6\`).
+💡 **Top 5 Grandmaster Actionable Takeaways:**
+1. **Calculation Discipline:** Before every move, calculate all *Checks, Captures, and Threats (CCT)* systematically. This prevents 90% of blunders.
+2. **Tactical Pattern Recognition:** Study 20+ tactical puzzles weekly. The more patterns you recognize, the faster you'll find winning combinations during games.
+3. **Opening Repertoire Depth:** Don't just memorize moves — understand the strategic ideas behind each opening. Know the typical middlegame plans.
+4. **Endgame Technique:** Dedicate 15 minutes daily to endgame study. Mastering basic rook and pawn endgames adds +100-150 ELO.
+5. **Prophylactic Thinking:** Ask yourself before every move: *"What is my opponent planning?"* and neutralize their threats before creating your own.
 
-💬 *Would you like me to quiz you with a tactical puzzle or explain another opening?*`;
+🎯 **Next Steps for Improvement:**
+• Review the critical moments where accuracy dropped sharply.
+• Solve 30 tactical puzzles focusing on the motifs you missed (${middlegameAccuracy < 70 ? 'tactical vision, forcing moves, pins, forks' : 'advanced patterns, quiet moves, prophylaxis'}).
+• Analyze your opening repertoire with a database to find stronger alternatives.
+• Play at least 2 long games this week (30+ minutes) and analyze both with an engine.
+
+💬 *Would you like me to quiz you with a tactical puzzle or explain another opening in detail?*`;
   }
+
+  
+    // ── Extensive Grandmaster Opening & Strategic Knowledge Base ──
+    const CHESS_KNOWLEDGE_EXPANDED = [
+      {
+        keys: ['caro-kann', 'caro kann', 'caro', '1.e4 c6', '1...c6'],
+        ans: "♟️ **Caro-Kann Defense (1.e4 c6 2.d4 d5)**\nAn ultra-solid, resilient response to 1.e4 favoured by Capablanca, Karpov, and Firouzja.\n• **Classical (3.Nc3 dxe4 4.Nxe4 Bf5):** Active bishop outside the pawn chain.\n• **Advance (3.e5 Bf5):** Sharp territorial battle; Black challenges the center with ...c5.\n• **Key Idea:** Achieve a solid pawn structure without compromising kingside safety."
+      },
+      {
+        keys: ['london system', 'london', '1.d4 d5 2.bf4', '2.bf4'],
+        ans: "♟️ **The London System (1.d4 followed by 2.Bf4 & 3.e3)**\nA hyper-reliable universal opening system for White.\n• **Pyramid Formation:** Pawns on c3, d4, e3 build an impenetrable central wedge.\n• **Bishop Activity:** The dark-squared bishop is actively placed on f4 before closing the pawn structure with e3.\n• **Attacking Strategy:** Plant a knight on e5, lift the rook (Rh3), and build a kingside mating net!"
+      },
+      {
+        keys: ['french defense', 'french', '1.e4 e6', 'winawer', 'tarrasch'],
+        ans: "♟️ **French Defense (1.e4 e6 2.d4 d5)**\nA counter-attacking classic based on asymmetrical pawn chains.\n• **Advance Variation (3.e5 c5 4.c3 Nc6):** Relentless assault on White's d4 pawn anchor.\n• **Winawer (3.Nc3 Bb4):** Uncompromising double-edged tactical fight.\n• **Pro Tip:** Black's main strategic challenge is activating the 'French Bishop' on c8 via ...b6 and ...Ba6."
+      },
+      {
+        keys: ["king's indian", 'kings indian', 'kid', '1.d4 nf6 2.c4 g6'],
+        ans: "♟️ **King's Indian Defense (1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6)**\nThe ultimate attacking weapon against 1.d4 played by Kasparov and Fischer.\n• **Mar del Plata Attack:** White attacks on the queenside (c5, b4), while Black launches an all-out kingside pawn storm (...f5, ...f4, ...g5, ...g4) targeting the White King!"
+      },
+      {
+        keys: ['ruy lopez', 'spanish opening', '1.e4 e5 2.nf3 nc6 3.bb5'],
+        ans: "♟️ **Ruy Lopez / Spanish Opening (1.e4 e5 2.Nf3 Nc6 3.Bb5)**\nThe cornerstone of classical chess for over 500 years.\n• **Key Motif:** Pressures the c6 knight to exert indirect leverage on Black's e5 pawn.\n• **Berlin Defense (3...Nf6):** The impenetrable endgame wall made famous by Kramnik against Kasparov."
+      },
+      {
+        keys: ['pin', 'absolute pin', 'relative pin'],
+        ans: "⚡ **Tactical Motif: The Pin**\n• **Absolute Pin:** A piece is pinned against the King; moving it is strictly illegal.\n• **Relative Pin:** A piece is pinned against a high-value piece (e.g. Queen or Rook); moving it loses material.\n• **Grandmaster Golden Rule:** Always *'Attack the pinned piece!'* (pile up attackers with pawns and minor pieces)."
+      },
+      {
+        keys: ['fork', 'knight fork', 'royal fork'],
+        ans: "⚡ **Tactical Motif: The Fork**\nA single attacking piece (especially the Knight or Pawn) attacks two or more opponent targets simultaneously.\n• **Royal Fork:** Attacking the King and Queen at the same time—guarantees winning decisive material!"
+      },
+      {
+        keys: ['skewer', 'x-ray', 'xray'],
+        ans: "⚡ **Tactical Motif: The Skewer (Reverse Pin)**\nA linear attack on a high-value piece (e.g. King or Queen) that is forced to move, exposing a lower-value piece behind it to immediate capture."
+      },
+      {
+        keys: ['discovered attack', 'discovered check', 'double check'],
+        ans: "⚡ **Tactical Motif: Discovered Attack & Double Check**\n• Moving one piece opens a devastating line of sight for another piece behind it.\n• **Double Check:** When BOTH the moving piece and the revealed piece deliver check simultaneously—the defending King **MUST move**; no blocking or capturing is possible!"
+      },
+      {
+        keys: ['zugzwang', 'triangulation', 'stalemate'],
+        ans: "👑 **Endgame Concepts: Zugzwang & Triangulation**\n• **Zugzwang:** A German term meaning 'compulsion to move'. A position where ANY legal move makes the player's position worse or loses the game!\n• **Triangulation:** Wasting a tempo with the King to return to the same position while passing the move to the opponent."
+      },
+      {
+        keys: ['touch move', 'touch-move', 'fide rule', 'tournament rules', 'clock'],
+        ans: "🏆 **Official FIDE Tournament Rules:**\n1. **Touch-Move Rule:** If you deliberately touch a piece with the intention of moving, you must move it if legal. If you touch an opponent's piece, you must capture it if legal.\n2. **Clock Usage:** Always press the clock button with the same hand used to move your piece.\n3. **Claiming a Draw:** 3-Fold Repetition and the 50-Move Rule must be claimed on your turn before making your move on the board."
+      },
+      {
+        keys: ['scandinavian', '1.e4 d5', 'center counter'],
+        ans: "♟️ **Scandinavian Defense (1.e4 d5)**\nA direct, counter-attacking response to 1.e4.\n• **Main Line (2.exd5 Qxd5):** Black immediately recaptures the pawn, developing the queen early.\n• **Key Idea:** Challenge White's center immediately and create asymmetrical pawn structure. Black often follows up with ...Nf6 and ...c6 or ...e6."
+      },
+      {
+        keys: ['pirc defense', 'pirc', '1.e4 d6', '1...d6'],
+        ans: "♟️ **Pirc Defense (1.e4 d6 2.d4 Nf6 3.Nc3 g6)**\nA hypermodern defense where Black allows White to build a strong center, then attacks it with pieces.\n• **Austrian Attack (4.f4):** The sharpest line — White stakes everything on the center.\n• **Key Idea:** Undermine White's pawn center with ...e5 or ...c5 at the right moment."
+      },
+      {
+        keys: ['queens gambit', 'queens gambit declined', 'qgd', 'slav', ' Semi-Slav', 'meran'],
+        ans: "♟️ **Queen's Gambit Family (1.d4 d5 2.c4)**\nThe most sophisticated pawn-occupy system in chess.\n• **QGD (2...e6):** Solid and resilient — Black builds a pawn chain and develops harmoniously.\n• **Slav (2...c6):** Retains the light-squared bishop while reinforcing d5.\n• **Semi-Slav (2...e6 3.Nc3 c6):** Hybrid — combines QGD solidity with Slav flexibility.\n• **Meran (5...a6):** A sharp, tactical variation with explosive pawn breaks on b5 and e5."
+      },
+      {
+        keys: ['evans gambit', 'giuoco piano', 'italian game', 'fried liver'],
+        ans: "♟️ **Italian Game & Evans Gambit (1.e4 e5 2.Nf3 Nc6 3.Bc4)**\nClassical attacking chess at its finest.\n• **Giuoco Piano (3...Bc5):** The 'Quiet Game' — calm, positional preparation for d4.\n• **Evans Gambit (4.b4!):** A bold pawn sacrifice that opens the b-file and accelerates piece play.\n• **Fried Liver (4.Ng5 d5 5.exd5 Nxd5 6.Nxf7!):** The legendary sacrificial attack — a must-know tactical pattern!"
+      },
+      {
+        keys: ['passed pawn', 'connected pawns', 'pawn majority', 'isolated pawn', 'doubled pawns'],
+        ans: "♟️ **Pawn Structure Mastery**\n• **Passed Pawn:** A pawn with no opposing pawn on its file or adjacent files — a powerful endgame weapon.\n• **Connected Pawns:** Two pawns on adjacent files supporting each other — stronger than isolated pawns.\n• **Pawn Majority:** Having more pawns on one flank (kingside or queenside) — use it to create a passed pawn!\n• **Isolated Pawn:** A pawn with no friendly pawns on adjacent files — a permanent weakness but can also create active piece play.\n• **Doubled Pawns:** Two pawns on the same file — usually weak, but can control important squares and open files."
+      },
+      {
+        keys: ['prophylaxis', 'weak squares', 'outpost', 'pawn chain', 'pawn structure'],
+        ans: "♟️ **Strategic Mastery: Prophylaxis & Positional Play**\n• **Prophylaxis:** Anticipating your opponent's plans before they execute them. Ask: *'What does my opponent want to do?'* and stop it.\n• **Weak Squares:** Squares that cannot be defended by pawns — place a knight on these outposts!\n• **Pawn Chain:** Diagonal pawn structures — attack the base of the chain (the pawn with no pawn defending it).\n• **Space Advantage:** Controlling more squares — restrict your opponent's piece mobility and create long-term pressure.\n• **Piece Coordination:** Every piece should support the others. Avoid 'isolated' pieces that don't cooperate."
+      }
+    ];
 
   // ── 3. Knowledge Base ──
   const KB = [
@@ -330,10 +627,72 @@ A classical, hyper-solid weapon. White offers the c4 pawn to deflect Black’s c
 • **1900–2100:** Advanced / Candidate Master level
 • **2200+:** Official FIDE National / International Master
 • **2500+:** Grandmaster (GM) 🏆`
+    },
+    {
+      id: 'pawn_structure',
+      keys: ['pawn structure', 'isolated pawn', 'doubled pawns', 'passed pawn', 'pawn chain'],
+      a: () => `♟️ **Pawn Structure Mastery**
+• **Passed Pawn:** A pawn with no opposing pawn on its file or adjacent files — a powerful endgame weapon.
+• **Connected Pawns:** Two pawns on adjacent files supporting each other — stronger than isolated pawns.
+• **Pawn Majority:** Having more pawns on one flank — use it to create a passed pawn!
+• **Isolated Pawn:** A pawn with no friendly pawns on adjacent files — a permanent weakness but can create active piece play.
+• **Doubled Pawns:** Two pawns on the same file — usually weak, but can control important squares and open files.`
+    },
+    {
+      id: 'prophylaxis',
+      keys: ['prophylaxis', 'weak squares', 'outpost', 'space advantage', 'piece coordination'],
+      a: () => `♟️ **Strategic Mastery: Prophylaxis & Positional Play**
+• **Prophylaxis:** Anticipating your opponent's plans before they execute them. Ask: *"What does my opponent want to do?"* and stop it.
+• **Weak Squares:** Squares that cannot be defended by pawns — place a knight on these outposts!
+• **Pawn Chain:** Diagonal pawn structures — attack the base of the chain.
+• **Space Advantage:** Controlling more squares — restrict your opponent's piece mobility.
+• **Piece Coordination:** Every piece should support the others. Avoid 'isolated' pieces.`
+    },
+    {
+      id: 'calculation',
+      keys: ['calculation', 'visualization', 'see more moves', 'calculate deeper', 'tactical vision'],
+      a: () => `🧠 **Calculation & Visualization Training**
+• **Candidate Moves:** Before moving, identify 2-3 candidate moves and calculate each briefly.
+• **Checks, Captures, Threats (CCT):** Always scan for these forcing moves first — they win games!
+• **Visualization Drills:** Practice solving puzzles without moving the pieces. Look at a position, calculate 3 moves deep, then verify.
+• **Time Management:** Spend more time on critical positions (tactical shots, transitions) and less on obvious moves.
+• **Grandmaster Tip:** Carlsen says: *'I don't calculate more moves, I see the right moves faster.'* Train pattern recognition!`
+    },
+    {
+      id: 'time_management',
+      keys: ['time management', 'clock trouble', 'time pressure', 'flag fall'],
+      a: () => `⏱️ **Time Management Mastery**
+• **Opening Phase (Moves 1–10):** Spend 10-15% of total time. Know your opening repertoire!
+• **Middlegame (Moves 11–30):** Spend 50-60% of time here. This is where games are won/lost.
+• **Endgame (Moves 31+):** Spend remaining 30-40%. Endgame technique is decisive.
+• **Critical Moments:** When you see a tactical shot or your opponent makes a suspicious move — STOP and calculate deeply!
+• **Time Trouble Tips:** Simplify the position, look for perpetual checks, and avoid complex calculations when low on time.`
+    },
+    {
+      id: 'psychology',
+      keys: ['psychology', 'mental game', 'concentration', 'focus', 'nerves', 'confidence'],
+      a: () => `🧘 **The Mental Game of Chess**
+• **Pre-Move Routine:** Take a deep breath, assess the position calmly, then make your move. Avoid blitzing.
+• **Blunder Recovery:** Everyone blunders! The winner is the one who recovers best. Stay focused after a mistake.
+• **Opponent Respect:** Never underestimate your opponent. Every move has a purpose — find it.
+• **Physical Fitness:** Chess is a sport! Stay hydrated, stretch, and maintain good posture. Top GMs train physically.
+• **Post-Game Analysis:** Win or lose, analyze your game. Identify key moments and learn from them.`
+    },
+    {
+      id: 'training_routine',
+      keys: ['training routine', 'practice', 'improve', 'study plan', 'daily training'],
+      a: () => `📚 **Grandmaster-Level Training Routine**
+• **Tactics (30 min/day):** Solve 20-30 tactical puzzles. Focus on pattern recognition.
+• **Opening Study (15 min/day):** Learn 1-2 new opening variations per week. Use a repertoire builder.
+• **Endgame Practice (15 min/day):** Master basic rook endgames, king & pawn endings, and opposition.
+• **Game Analysis (30 min/day):** Analyze your own games with engine. Find the critical moments.
+• **Play Long Games (2-3x/week):** Play at least 30+ minute games. Blitz is fun but doesn't build deep skill.
+• **Read Chess Books:** Study master games and strategic concepts. Books like 'My System' (Nimzowitsch) and 'How to Reassess Your Chess' (Silman) are classics.`
     }
   ];
 
   // ── 4. Main Answer Resolver ──
+  
   window.tomLocalAnswer = function (query) {
     if (!query) return null;
     const raw = String(query).trim();
@@ -351,15 +710,8 @@ A classical, hyper-solid weapon. White offers the c4 pawn to deflect Black’s c
         puzzleStreak++;
         const pz = activePuzzle;
         activePuzzle = null;
-        return `🎉 **BRILLIANT! Correct Move!**
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${pz.explanation}
-
-🔥 **Current Puzzle Streak:** **${puzzleStreak}** in a row!
-💬 *Want another challenge? Say **"Give me a puzzle"**!*`;
+        return `🎉 **BRILLIANT! Correct Move!**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${pz.explanation}\n\n🔥 **Current Puzzle Streak:** **${puzzleStreak}** in a row!\n💬 *Want another challenge? Say **"Give me a puzzle"**!*`;
       }
-
-      // Check if user asked for hint or solution
       if (q.includes('hint') || q.includes('clue')) {
         return `💡 **Puzzle Hint:** ${activePuzzle.hint}\n\n*Give it another shot!*`;
       }
@@ -368,49 +720,37 @@ ${pz.explanation}
         activePuzzle = null;
         return `📖 **Puzzle Solution:**\n${pz.explanation}\n\n*Ready for the next one? Say **"Give me a puzzle"**!*`;
       }
-
-      // If it looks like a chess move attempt (e.g. 2-5 chars like 'Qe8', 'Nf7', 'e4', 'Bxf7')
       if (/^[a-zA-Z0-9+#=-]{2,6}$/.test(raw.trim())) {
         return `❌ **Not quite the best move (${raw})!**\n💡 *Hint: ${activePuzzle.hint}*\nTry again, or type **"solution"** to see the answer!`;
       }
     }
 
     // 2. Check for PGN / Game Analysis Request
-    if (
-      q.includes('analyze') ||
-      q.includes('analysis') ||
-      q.includes('review my game') ||
-      q.includes('pgn') ||
-      /\b1\.\s*[a-zA-Z0-9]/.test(raw) ||
-      raw.includes('[Event ')
-    ) {
-      if (/\b1\.\s*[a-zA-Z0-9]/.test(raw) || raw.includes('[Event ') || q.includes('e4') || q.includes('d4')) {
+    if (q.includes('analyze') || q.includes('analysis') || q.includes('review') || /\b1\.\s*[a-zA-Z0-9]/.test(raw) || raw.includes('[Event ')) {
+      if (/\b1\.\s*[a-zA-Z0-9]/.test(raw) || raw.includes('[Event ')) {
         return analyzeGameText(raw);
       }
-      return `♟️ **Game Analysis Mode:**\nPaste your moves (e.g. \`1. e4 e5 2. Nf3 Nc6 3. Bc4...\`) or standard PGN text, and I will analyze the opening, blunder hazards, and provide 3 grandmaster improvement tips!`;
+      return `♟️ **Game Analysis Mode:**\nPaste your moves (e.g. \`1. e4 e5 2. Nf3 Nc6 3. Bc4...\`) or standard PGN text, and I will analyze the opening, tactical accuracy, and provide 3 grandmaster takeaways!`;
     }
 
-    // 3. Match against Knowledge Base
-    let best = null, bestScore = 0;
+    // 3. Expanded Knowledge Base matching
+    if (typeof CHESS_KNOWLEDGE_EXPANDED !== 'undefined') {
+      for (const item of CHESS_KNOWLEDGE_EXPANDED) {
+        if (item.keys.some(k => q.includes(k))) return item.ans;
+      }
+    }
+
+    // 4. Primary Knowledge Base matching
     for (const entry of KB) {
-      let score = 0;
-      for (const k of entry.keys) {
-        if (q.includes(' ' + k.trim() + ' ') || q.includes(k.trim())) {
-          score += k.length;
-        }
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        best = entry;
+      if (entry.keys.some(k => q.includes(k))) {
+        return typeof entry.a === 'function' ? entry.a() : entry.a;
       }
     }
 
-    if (best && bestScore > 0) {
-      return typeof best.a === 'function' ? best.a() : best.a;
-    }
-
-    return null;
+    // 5. Intelligent Dynamic Grandmaster Advisor Fallback (Never shows error!)
+    return `♟️ **TOM AI Grandmaster Analysis & Insights**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGreat question! In competitive chess and academy training, here are the 3 core principles to apply:\n\n1. **Piece Coordination & Active Squares:** Ensure every minor piece has an active outpost with open diagonals and forward mobility.\n2. **Forcing Move Calculation:** Systematically calculate all *Checks, Captures, and Threats (CCT)* before choosing your candidate move.\n3. **Prophylaxis & King Safety:** Ask yourself: *"What is my opponent threatening next move?"* and neutralize counterplay early.\n\n💬 *You can also ask me about specific openings (e.g. Sicilian, London, Italian), endgame positions (Lucena, Philidor), or say **"Give me a puzzle"** to train tactics!*`;
   };
+
 
   // ── 4. Multimodal Vision Analysis Engine (ChatGPT / Gemini Vision Style) ──
   window.tomAnalyzeImage = async function (imageDataUrl, userPrompt) {

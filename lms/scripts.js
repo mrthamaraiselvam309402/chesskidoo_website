@@ -498,7 +498,12 @@
     const target = document.getElementById("child-tab-" + tabId);
     if (target) target.classList.add("active");
 
-    if (tabId === "overview") renderChildBilling();
+    if (tabId === "overview") {
+      renderChildBilling();
+      if (window.updateChildMilestoneStats && window.currentStudent) {
+        window.updateChildMilestoneStats(window.currentStudent);
+      }
+    }
     if (tabId === "billing") renderChildBilling();
     if (tabId === "attendance") renderChildAttendance();
     if (tabId === "homework") {
@@ -1289,15 +1294,15 @@
     // Fetch Chess.com data
     if (s.chesscom_username) {
       try {
-        const res = await fetch(`/api/chesscom-proxy?username=${encodeURIComponent(s.chesscom_username)}&t=${Date.now()}`);
-        if (res.ok) {
+        const res = await fetch(`/api/chesscom-proxy?username=${encodeURIComponent(s.chesscom_username)}&t=${Date.now()}`).catch(() => null);
+        if (res && res.ok) {
           const data = await res.json();
           if (!data.notFound) {
             chesscomData = data;
             const y = new Date().getFullYear();
             const m = String(new Date().getMonth() + 1).padStart(2, '0');
-            const gamesRes = await fetch(`/api/chesscom-games-proxy?username=${encodeURIComponent(s.chesscom_username)}&year=${y}&month=${m}&t=${Date.now()}`);
-            if (gamesRes.ok) {
+            const gamesRes = await fetch(`/api/chesscom-games-proxy?username=${encodeURIComponent(s.chesscom_username)}&year=${y}&month=${m}&t=${Date.now()}`).catch(() => null);
+            if (gamesRes && gamesRes.ok) {
               const gamesData = await gamesRes.json();
               allGames.push(...(gamesData.games || []).map(g => ({ ...g, platform: 'chesscom' })));
             }
@@ -1665,7 +1670,8 @@
     if (s.chessable_username && chessableCard && chessableCtx && typeof Chart !== "undefined") {
       chessableCard.style.display = "block";
       try {
-          const res = await fetch(`/api/chessable-proxy?username=${s.chessable_username}`);
+          const res = await fetch(`/api/chessable-proxy?username=${s.chessable_username}`).catch(() => null);
+          if (!res || !res.ok) return;
           const data = await res.json();
           
           if (chartInstances.chessableProgress) chartInstances.chessableProgress.destroy();
@@ -13440,6 +13446,7 @@ Best regards,
 
     // Skill breakdown (based on level)
     renderChildSkills(s);
+    if (window.updateChildMilestoneStats) window.updateChildMilestoneStats(s);
 
     // Achievements
     renderChildAchievements();
@@ -13596,6 +13603,96 @@ Best regards,
     }
   }
 
+  
+  window.updateChildMilestoneStats = function(s) {
+    if (!s) return;
+    const streakEl = document.getElementById('c-stat-streak');
+    const puzzlesEl = document.getElementById('c-stat-puzzles');
+    const xpEl = document.getElementById('c-stat-xp');
+    const attendanceEl = document.getElementById('c-stat-attendance');
+    const targetLevelEl = document.getElementById('c-stat-target-level');
+
+    const studentId = String(s.id || 'default');
+
+    // 1. Puzzles Count & Day Streak — from StudyPGN localStorage records
+    let puzzlesSolved = 0;
+    let streak = 0;
+    try {
+      const rec = JSON.parse(localStorage.getItem('ck_student_tactics_records') || '{}');
+      const studRec = rec[studentId] || {};
+      puzzlesSolved = Number(studRec.solvedCount || 0);
+      streak = Number(studRec.streak || 0);
+    } catch (e) {}
+
+    if (puzzlesSolved === 0 && s.puzzles_solved != null) puzzlesSolved = Number(s.puzzles_solved);
+    if (puzzlesSolved === 0 && s.puzzles_count != null) puzzlesSolved = Number(s.puzzles_count);
+    if (streak === 0 && s.streak != null) streak = Number(s.streak);
+
+    // 2. Attendance Rate
+    let attendanceRate = 0;
+    if (s.attendance_rate != null) attendanceRate = Number(s.attendance_rate);
+    else if (window.allAttendance && Array.isArray(window.allAttendance)) {
+      const studentLogs = window.allAttendance.filter(a => String(a.student_id) === String(s.id));
+      if (studentLogs.length > 0) {
+        const presentCount = studentLogs.filter(a => a.status === 'present' || a.status === 'Present').length;
+        attendanceRate = Math.round((presentCount / studentLogs.length) * 100);
+      }
+    }
+
+    // 3. Vision Sprint Score
+    let visionScore = 0;
+    try {
+      const visionRec = JSON.parse(localStorage.getItem('ck_student_vision_scores') || '{}');
+      const studVision = visionRec[studentId] || {};
+      visionScore = Number(studVision.totalScore || studVision.score || 0);
+    } catch (e) {}
+
+    // 4. Custom Board Creations
+    let customBoards = 0;
+    try {
+      const savedStudies = JSON.parse(localStorage.getItem('ck_custom_saved_pgns') || '[]');
+      customBoards = savedStudies.filter(x => String(x.student_id || x.userId || '') === studentId).length;
+      if (customBoards === 0 && savedStudies.length > 0 && window.currentStudent) {
+        customBoards = savedStudies.filter(x => !x.student_id && !x.userId).length;
+      }
+    } catch (e) {}
+
+    // 5. Completed Study Topics
+    let completedTopics = 0;
+    try {
+      const rec = JSON.parse(localStorage.getItem('ck_student_completed_topics') || '{}');
+      const studentRec = rec[studentId] || [];
+      completedTopics = studentRec.length;
+    } catch (e) {}
+
+    // 6. Academy XP — fully dynamic, no hardcoded values
+    let xp = 0;
+    if (s.xp != null) xp = Number(s.xp);
+    else {
+      xp = (puzzlesSolved * 20)
+         + (streak * 30)
+         + (attendanceRate * 5)
+         + (visionScore * 2)
+         + (customBoards * 50)
+         + (completedTopics * 40);
+    }
+
+    // 7. Target Level Progression
+    const levelStr = (s.level || 'Beginner').toLowerCase();
+    let targetLevel = 'Knight';
+    if (levelStr.includes('begin') || levelStr.includes('pawn')) targetLevel = 'Knight';
+    else if (levelStr.includes('inter') || levelStr.includes('knight')) targetLevel = 'Rook';
+    else if (levelStr.includes('advan') || levelStr.includes('rook')) targetLevel = 'King';
+    else if (levelStr.includes('king') || levelStr.includes('master')) targetLevel = 'Grandmaster';
+    else targetLevel = 'Knight';
+
+    if (streakEl) streakEl.textContent = `${streak} Days`;
+    if (puzzlesEl) puzzlesEl.textContent = `${puzzlesSolved} Puzzles`;
+    if (xpEl) xpEl.textContent = `${xp} XP`;
+    if (attendanceEl) attendanceEl.textContent = `${attendanceRate}% Rate`;
+    if (targetLevelEl) targetLevelEl.textContent = targetLevel;
+  };
+
   function renderChildSkills(s) {
     const skillBars = $("skill-bars");
     if (!skillBars) return;
@@ -13624,13 +13721,13 @@ Best regards,
 
       if (s.lichess_username) {
         const lichessUser = (s.lichess_username || '').trim();
-        fetch(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}&t=${Date.now()}`)
-          .then(r => r.ok ? r.json() : null)
+        fetch(`/api/lichess-proxy?username=${encodeURIComponent(lichessUser)}&t=${Date.now()}`).catch(() => null)
+          .then(r => r ? r.ok ? r.json() : null : null)
           .then(data => {
             if (data && !data.notFound) {
               lichessData = data;
-              return fetch(`/api/lichess-games-proxy?username=${encodeURIComponent(lichessUser)}&max=10&pgnInJson=true&t=${Date.now()}`)
-                .then(r => r.ok ? r.json() : [])
+              return fetch(`/api/lichess-games-proxy?username=${encodeURIComponent(lichessUser)}&max=10&pgnInJson=true&t=${Date.now()}`).catch(() => null)
+                .then(r => r && r.ok ? r.json() : [])
                 .then(games => {
                   allGames = Array.isArray(games) ? games.map(g => ({ ...g, platform: 'lichess' })) : [];
                   window.renderDynamicSkillBreakdown(s, lichessData, chesscomData, allGames);
@@ -13642,15 +13739,15 @@ Best regards,
 
       if (s.chesscom_username) {
         const chesscomUser = (s.chesscom_username || '').trim();
-        fetch(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}&t=${Date.now()}`)
-          .then(r => r.ok ? r.json() : null)
+        fetch(`/api/chesscom-proxy?username=${encodeURIComponent(chesscomUser)}&t=${Date.now()}`).catch(() => null)
+          .then(r => r ? r.ok ? r.json() : null : null)
           .then(data => {
             if (data && !data.notFound) {
               chesscomData = data;
               const y = new Date().getFullYear();
               const m = String(new Date().getMonth() + 1).padStart(2, '0');
-              return fetch(`/api/chesscom-games-proxy?username=${encodeURIComponent(chesscomUser)}&year=${y}&month=${m}&t=${Date.now()}`)
-                .then(r => r.ok ? r.json() : { games: [] })
+              return fetch(`/api/chesscom-games-proxy?username=${encodeURIComponent(chesscomUser)}&year=${y}&month=${m}&t=${Date.now()}`).catch(() => null)
+                .then(r => r && r.ok ? r.json() : { games: [] })
                 .then(gamesData => {
                   allGames = allGames.concat((gamesData.games || []).map(g => ({ ...g, platform: 'chesscom' })));
                   window.renderDynamicSkillBreakdown(s, lichessData, chesscomData, allGames);
@@ -16206,91 +16303,115 @@ window.deleteStudent = deleteStudent;
     setPage("chessable");
   };
 
-  function showNotifications() {
+    function showNotifications() {
     const content = $("notification-content");
     if (!content) return;
 
-    const unread = allMessages.filter((m) => m.status === "unread");
-    const due = allStudents
-      .filter((s) => {
-        const st = getStudentPaymentStatus(s);
-        return (
-          (st === "Due" || st === "Overdue") &&
-          !dismissedNotifications.payments.includes(s.id)
-        );
-      })
-      .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b)));
-    const auditLogs = JSON.parse(localStorage.getItem("audit_logs") || "[]");
-    const failedLogins = auditLogs
-      .filter((l) => l.action === "login_failed")
-      .slice(-10)
-      .reverse();
-
+    const userRole = window.role || 'student';
     let html = "";
 
-    if (unread.length > 0) {
+    // 1. Parent / Student Notifications (Role-Isolated: Only their own notifications!)
+    if (userRole === 'parent' || userRole === 'student') {
+      const student = window.currentStudent;
+      const sid = student ? String(student.id) : '';
+
+      // Unread messages for this student/parent
+      const myMessages = (allMessages || []).filter(m => {
+        const isForMe = !sid || String(m.recipient_id) === sid || String(m.student_id) === sid || m.target === 'all' || m.target === 'parents';
+        return isForMe && m.status === 'unread';
+      });
+
+      if (myMessages.length > 0) {
+        html += `<div style="padding:12px;background:var(--gold-glow);border-radius:8px;margin-bottom:12px">
+          <div style="font-weight:600;color:var(--gold);margin-bottom:6px;">📬 New Academy Messages (${myMessages.length})</div>
+          ${myMessages.slice(0, 5).map(m => `
+            <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#fff;">${escapeHtml(m.subject || "Academy Notice")}</div>
+                <div style="font-size:11px;color:var(--ivory-dim)">${escapeHtml(m.sender_name || "Coach Panel")} • ${new Date(m.created_at || Date.now()).toLocaleDateString()}</div>
+              </div>
+              <button class="btn btn-outline-grey btn-sm" onclick="markMsgRead('${m.id}')" style="padding:2px 8px;font-size:10px">Mark Read</button>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      // Check student fee due status (ONLY for this specific student!)
+      if (student && typeof getStudentPaymentStatus === 'function') {
+        const st = getStudentPaymentStatus(student);
+        if (st === 'Due' || st === 'Overdue') {
+          html += `<div style="padding:12px;background:rgba(234,179,8,0.12);border:1px solid var(--gold);border-radius:8px;margin-bottom:12px">
+            <div style="font-weight:700;color:var(--gold)">💳 Tuition Fee Reminder</div>
+            <div style="font-size:12px;color:var(--ivory-dim);margin-top:2px;">Your monthly coaching fee is currently ${st.toUpperCase()}. Please check the Billing tab for invoices.</div>
+          </div>`;
+        }
+      }
+
+      // Homework assignments reminder
+      if (window.homeworkList && Array.isArray(window.homeworkList)) {
+        const myPendingHw = window.homeworkList.filter(h => {
+          const isAssigned = !sid || String(h.student_id) === sid || (Array.isArray(h.student_ids) && h.student_ids.map(String).includes(sid)) || h.access_type === 'all';
+          return isAssigned && !h.submitted;
+        });
+        if (myPendingHw.length > 0) {
+          html += `<div style="padding:12px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;margin-bottom:12px">
+            <div style="font-weight:700;color:#60a5fa">📚 Pending Homework (${myPendingHw.length})</div>
+            <div style="font-size:12px;color:var(--ivory-dim);margin-top:2px;">You have active chess assignments waiting for review in the Homework tab.</div>
+          </div>`;
+        }
+      }
+    } 
+    // 2. Coach Notifications
+    else if (userRole === 'coach') {
+      const cid = window.currentCoachId || window.userId;
+      const coachBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, cid));
+      const batchIds = coachBatches.map(b => String(b.id));
+
       html += `<div style="padding:12px;background:var(--gold-glow);border-radius:8px;margin-bottom:12px">
-         <div style="font-weight:600;color:var(--gold)">📬 Unread Messages (${unread.length})</div>
-         ${unread
-           .slice(0, 5)
-           .map(
-             (
-               m,
-             ) => `<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-           <div>
-             <div style="font-size:13px;font-weight:500">${escapeHtml(m.subject || "No Subject")}</div>
-             <div style="font-size:11px;color:var(--ivory-dim)">${escapeHtml(m.sender_name || "User")} • ${new Date(m.created_at).toLocaleDateString()}</div>
-           </div>
-           <button class="btn btn-outline-grey btn-sm" onclick="markMsgRead('${m.id}')" style="padding:2px 8px;font-size:10px">Mark Read</button>
-         </div>`,
-           )
-           .join("")}
-       </div>`;
+        <div style="font-weight:700;color:var(--gold)">🏆 Coach Operations Active</div>
+        <div style="font-size:12px;color:var(--ivory-dim);margin-top:2px;">You have ${coachBatches.length} active batches assigned. Check the Schedule & Attendance matrix for class timings.</div>
+      </div>`;
     }
+    // 3. Admin / Master Notifications
+    else {
+      const unread = (allMessages || []).filter((m) => m.status === "unread");
+      const due = (allStudents || []).filter((s) => {
+        const st = getStudentPaymentStatus(s);
+        return (st === "Due" || st === "Overdue") && !dismissedNotifications.payments.includes(s.id);
+      }).sort((a, b) => getStudentName(a).localeCompare(getStudentName(b)));
+      
+      const auditLogs = JSON.parse(localStorage.getItem("audit_logs") || "[]");
+      const failedLogins = auditLogs.filter((l) => l.action === "login_failed").slice(-5).reverse();
 
-    if (due.length > 0) {
-      html += `<div style="padding:12px;background:rgba(255,77,79,0.1);border-radius:8px;margin-bottom:12px">
-         <div style="font-weight:600;color:var(--danger)">💰 Outstanding / Overdue Payments (${due.length})</div>
-         <div style="font-size:12px;color:var(--ivory-dim)">Students with pending or overdue fees</div>
-         ${due
-           .slice(0, 5)
-           .map((s) => {
-             const st = getStudentPaymentStatus(s);
-             const badgeHtml =
-               st === "Overdue"
-                 ? `<span class="badge badge-danger" style="margin-left:6px;font-size:9px;padding:2px 5px">OVERDUE</span>`
-                 : "";
-             return `<div style="padding:6px 0;font-size:12px;color:var(--ivory);display:flex;align-items:center">${escapeHtml(getStudentName(s))}${badgeHtml}</div>`;
-           })
-           .join("")}
-       </div>`;
-    }
+      if (unread.length > 0) {
+        html += `<div style="padding:12px;background:var(--gold-glow);border-radius:8px;margin-bottom:12px">
+          <div style="font-weight:600;color:var(--gold)">📬 Unread Messages (${unread.length})</div>
+          ${unread.slice(0, 5).map(m => `<div style="padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)">${escapeHtml(m.subject || "No Subject")} • ${escapeHtml(m.sender_name || "User")}</div>`).join('')}
+        </div>`;
+      }
 
-    if (failedLogins.length > 0) {
-      html += `<div style="padding:12px;background:rgba(255,77,79,0.1);border-radius:8px;margin-bottom:12px">
-         <div style="font-weight:600;color:var(--danger)">🚫 Failed Logins (${failedLogins.length})</div>
-         ${failedLogins
-           .slice(0, 5)
-           .map(
-             (
-               l,
-             ) => `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
-           <span>${escapeHtml(l.user || "Unknown")}</span>
-           <span style="color:var(--ivory-dim);float:right">${new Date(l.timestamp).toLocaleString("en-IN")}</span>
-         </div>`,
-           )
-           .join("")}
-       </div>`;
+      if (due.length > 0) {
+        html += `<div style="padding:12px;background:rgba(255,77,79,0.1);border-radius:8px;margin-bottom:12px">
+          <div style="font-weight:600;color:var(--danger)">💰 Outstanding / Overdue Payments (${due.length})</div>
+          ${due.slice(0, 5).map(s => `<div style="padding:4px 0;font-size:12px;">${escapeHtml(getStudentName(s))} - ${getStudentPaymentStatus(s)}</div>`).join('')}
+        </div>`;
+      }
+
+      if (failedLogins.length > 0) {
+        html += `<div style="padding:12px;background:rgba(255,77,79,0.08);border-radius:8px;margin-bottom:12px">
+          <div style="font-weight:600;color:var(--danger)">🚫 Failed Logins (${failedLogins.length})</div>
+          ${failedLogins.map(l => `<div style="padding:4px 0;font-size:11px;">${escapeHtml(l.user || "Unknown")} - ${new Date(l.timestamp).toLocaleTimeString()}</div>`).join('')}
+        </div>`;
+      }
     }
 
     if (!html) {
-      html =
-        '<div style="text-align:center;padding:30px;color:var(--ivory-dim)">No new notifications</div>';
+      html = '<div style="text-align:center;padding:30px;color:var(--ivory-dim)">✨ All caught up! No new notifications.</div>';
     }
 
     content.innerHTML = `
       <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">System Notifications</h3>
+        <h3 style="margin:0;color:var(--gold);">📬 Notifications</h3>
         <button class="btn btn-outline btn-sm" onclick="clearNotifications()">🗑️ Clear All</button>
       </div>
       ${html}

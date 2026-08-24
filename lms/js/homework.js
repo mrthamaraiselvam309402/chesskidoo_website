@@ -207,6 +207,16 @@
     const status = $('homework-status-filter') ? $('homework-status-filter').value : '';
     const [year, monthNumber] = (month || monthKey(homeworkCalendarMonth)).split('-').map(Number);
     const query = ($('homework-search') ? $('homework-search').value : '').toLowerCase().trim();
+    const coachSelect = $('homework-coach-filter');
+    if (coachSelect) {
+      const curCoach = coachSelect.value;
+      const coaches = window.allCoaches || [];
+      coachSelect.innerHTML = '<option value="">All Coaches</option>' + coaches
+        .map(c => `<option value="${escapeValue(c.id)}">Coach: ${escapeValue(c.name || c.full_name || 'Coach #' + c.id)}</option>`)
+        .join('');
+      if (curCoach) coachSelect.value = curCoach;
+    }
+
     const coachFilter = getCoachFilterPredicate();
     const myStudents = coachFilter ? (window.allStudents || []).filter(s => coachFilter(s)) : null;
     const coachStudentIds = myStudents ? new Set(myStudents.map(s => String(s.id))) : null;
@@ -498,6 +508,78 @@ let homeworkSubmissionCache = [];
     }).join('');
   }
 
+
+  // ── Homework Attachment File Capacity & Validation Limits ──
+  const MAX_HW_FILE_SIZE = 15 * 1024 * 1024; // 15 MB per file limit
+  const MAX_HW_FILE_COUNT = 5;               // Max 5 files per upload batch
+  const MAX_HW_BATCH_SIZE = 30 * 1024 * 1024;// Max 30 MB total per upload batch
+
+  function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  function validateHomeworkFiles(fileList) {
+    if (!fileList || !fileList.length) return { valid: true, files: [] };
+
+    const files = Array.from(fileList);
+    if (files.length > MAX_HW_FILE_COUNT) {
+      if (window.toast) window.toast(`⚠️ Maximum ${MAX_HW_FILE_COUNT} files allowed per upload. You selected ${files.length} files.`, 'error');
+      return { valid: false, error: `Maximum ${MAX_HW_FILE_COUNT} files allowed.` };
+    }
+
+    let totalSize = 0;
+    for (const f of files) {
+      if (f.size > MAX_HW_FILE_SIZE) {
+        if (window.toast) window.toast(`⚠️ File "${f.name}" (${formatBytes(f.size)}) exceeds maximum 15 MB limit. Please compress or select a smaller file.`, 'error');
+        return { valid: false, error: `File "${f.name}" exceeds 15 MB limit.` };
+      }
+      totalSize += f.size;
+    }
+
+    if (totalSize > MAX_HW_BATCH_SIZE) {
+      if (window.toast) window.toast(`⚠️ Total upload size (${formatBytes(totalSize)}) exceeds maximum 30 MB batch limit.`, 'error');
+      return { valid: false, error: `Total upload size exceeds 30 MB.` };
+    }
+
+    return { valid: true, files, totalSize };
+  }
+
+  window.handleHomeworkFileSelectPreview = function (inputEl, previewElId) {
+    const previewEl = document.getElementById(previewElId);
+    if (!previewEl) return;
+    if (!inputEl || !inputEl.files || !inputEl.files.length) {
+      previewEl.innerHTML = '';
+      return;
+    }
+
+    const files = Array.from(inputEl.files);
+    const val = validateHomeworkFiles(files);
+
+    let html = `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">`;
+    files.forEach(f => {
+      const isOversized = f.size > MAX_HW_FILE_SIZE;
+      const isImg = isImageFile(f);
+      const icon = isImg ? '🖼️' : (f.name.endsWith('.pgn') ? '♟️' : (f.name.endsWith('.pdf') ? '📄' : '📎'));
+      html += `
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:3px 8px; border-radius:4px; background:${isOversized ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'}; border:1px solid ${isOversized ? 'var(--danger)' : 'var(--border)'}; color:${isOversized ? '#f87171' : 'var(--ivory)'};">
+          <span>${icon} ${escapeValue(f.name)} (${formatBytes(f.size)})</span>
+          ${isOversized ? '<strong>⚠️ TOO LARGE</strong>' : ''}
+        </span>
+      `;
+    });
+    html += `</div>`;
+
+    if (!val.valid) {
+      html += `<div style="font-size:11px; color:#f87171; font-weight:700; margin-top:4px;">❌ ${escapeValue(val.error)}</div>`;
+    }
+
+    previewEl.innerHTML = html;
+  };
+
   function isImageFile(file) {
     if (!file) return false;
     const mime = (file.type || '').toLowerCase();
@@ -707,7 +789,12 @@ let homeworkSubmissionCache = [];
     if (idx !== -1) window.allHomework[idx] = payload;
     else window.allHomework.unshift(payload);
 
-    if (window.toast) window.toast('Homework assigned successfully!', 'success');
+    const targetLabel = targetType === 'student'
+      ? `Student: ${(window.allStudents || []).find(s => String(s.id) === String(studentId))?.name || 'Student #' + studentId}`
+      : targetType === 'batch'
+        ? `Batch: ${(window.allBatches || []).find(b => String(b.id) === String(batchId))?.name || 'Batch #' + batchId}`
+        : 'All Active Students';
+    if (window.toast) window.toast(`✅ Homework "${title}" assigned successfully to ${targetLabel}!`, 'success');
     window.closeModals && window.closeModals();
 
     if (window.loadHomeworkData) await window.loadHomeworkData(true).catch(() => {});
@@ -1153,7 +1240,8 @@ let homeworkSubmissionCache = [];
       ${canSubmit ? `<div style="display:grid;gap:8px;margin-top:12px;">
         <textarea id="homework-submission-text-${assignment.id}" class="input-field" placeholder="Type your completed homework response or practice notes..." style="min-height:90px;">${escapeValue(currentText)}</textarea>
         <input id="homework-submission-url-${assignment.id}" class="input-field" placeholder="Optional submission link (Google Drive, Dropbox, etc.)" value="${escapeValue(currentUrl)}">
-        <input type="file" id="homework-submission-files-${assignment.id}" class="input-field" accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.gif,.pgn,.txt,.md" multiple style="font-size:12px; color:var(--ivory-dim);">
+        <div style="font-size:11px; font-weight:700; color:var(--gold); margin-top:4px;">Attach Solution Files <span style="font-size:10px; font-weight:normal; color:var(--ivory-dim);">(Max 5 files, up to 15 MB each: .pgn, .pdf, .png, .jpg)</span></div>
+        <input type="file" id="homework-submission-files-${assignment.id}" class="input-field" accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.gif,.pgn,.txt,.md,.zip" multiple style="font-size:12px; color:var(--ivory-dim);" onchange="window.handleHomeworkFileSelectPreview(this, 'homework-submission-preview-${assignment.id}')">
         <div id="homework-submission-preview-${assignment.id}" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:8px;"></div>
         <button class="btn btn-gold btn-sm" onclick="submitHomeworkForChild('${assignment.id}')">${submissionActionLabel(status)}</button>
       </div>` : ''}
