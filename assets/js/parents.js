@@ -477,7 +477,7 @@ CK.parents = (() => {
     const cfg     = window.APP_CONFIG || {};
     const c       = _childProfile;
     const _e      = CK.esc || (s => s);
-    const tuition = parseInt(c.fee) || 4000;
+    const tuition = parseInt(c.monthly_fee || c.fee || c.fees || c.tuition_fee) || 4000;
     const gst     = Math.round(tuition * 0.18);
     const total   = tuition + gst;
     const upiId   = cfg.ACADEMY_UPI_ID   || 'saminathanranjith73@okaxis';
@@ -727,7 +727,7 @@ CK.parents = (() => {
     const level = _eR(p.level || 'Beginner');
     const rating = Number(p.rating || 800);
     const coach = _eR((p.coach || 'COACH').toUpperCase());
-    const feeAmount = p.fee || 4000;
+    const feeAmount = p.monthly_fee || p.fee || p.fees || p.tuition_fee || 4000;
     const gstAmount = Math.round(feeAmount * 0.18);
     const total = feeAmount + gstAmount;
     const dateStr = p.paid_date || new Date().toLocaleDateString('en-GB');

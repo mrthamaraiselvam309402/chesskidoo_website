@@ -2697,6 +2697,220 @@
     }
   }
 
+  /* ════════════════ COMBINED CLASS SESSION (Homework + Attendance) ════════════════ */
+  window.openQuickClassSessionModal = function () {
+    const coachSel = $("qcs-coach");
+    const batchSel = $("qcs-batch");
+    if (coachSel) {
+      const coaches = window.allCoaches || [];
+      const cur = window.currentCoachId || window.userId;
+      coachSel.innerHTML =
+        '<option value="">-- Select Coach --</option>' +
+        coaches
+          .map((c) => {
+            const name = c.name || c.full_name || c.id;
+            const sel = String(c.id) === String(cur) ? " selected" : "";
+            return `<option value="${escapeHtml(c.id)}"${sel}>${escapeHtml(name)}</option>`;
+          })
+          .join("");
+    }
+    if (batchSel) {
+      const batches = window.allBatches || [];
+      batchSel.innerHTML =
+        '<option value="">-- Select Batch --</option>' +
+        batches.map((b) => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || b.batchName || b.id)}</option>`).join("");
+    }
+    ["qcs-classlink", "qcs-reflink", "qcs-title", "qcs-notes", "qcs-due", "qcs-file"].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      if (el.type === "file") el.value = "";
+      else el.value = "";
+    });
+    const sl = $("qcs-student-list");
+    if (sl) sl.innerHTML = '<div class="empty-state" style="padding:14px">Select a batch to load students</div>';
+    if (typeof openModal === "function") openModal("quick-class-session-modal");
+  };
+
+  window.CK_QCS_loadStudents = async function () {
+    const batchId = $("qcs-batch") ? $("qcs-batch").value : "";
+    const sl = $("qcs-student-list");
+    if (!sl) return;
+    if (!batchId) {
+      sl.innerHTML = '<div class="empty-state" style="padding:14px">Select a batch to load students</div>';
+      return;
+    }
+    const batch = (window.allBatches || []).find((b) => String(b.id) === String(batchId));
+    const studentIds = batch && batch.student_ids ? (typeof window.parseStudentIds === "function" ? window.parseStudentIds(batch.student_ids) : []) : [];
+    let students = (window.allStudents || []).filter((s) =>
+      studentIds.length
+        ? studentIds.includes(String(s.id))
+        : String(s.batch_id) === String(batchId) || (s.batch && String(s.batch) === String(batch.name || batchId)),
+    );
+    if (!students.length) students = (window.allStudents || []).filter((s) => String(s.batch_id) === String(batchId));
+    if (!students.length) {
+      sl.innerHTML = '<div class="empty-state" style="padding:14px">No students in this batch</div>';
+      return;
+    }
+    sl.innerHTML =
+      '<div style="display:flex;gap:10px;margin-bottom:8px;">' +
+      '<button class="btn btn-sm btn-outline" onclick="CK_QCS_toggleAll(true)">✓ All Present</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="CK_QCS_toggleAll(false)">✗ All Absent</button></div>' +
+      students
+        .map((s) => {
+          const nm = s.name || s.full_name || s.id;
+          return `<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:var(--ivory);">` +
+            `<input type="checkbox" class="qcs-att" value="${escapeHtml(s.id)}" data-name="${escapeHtml(nm)}" checked> ` +
+            `${escapeHtml(nm)} <span style="color:var(--ivory-dim);font-size:11px;">${escapeHtml(s.level || "")}</span></label>`;
+        })
+        .join("");
+  };
+
+  window.CK_QCS_toggleAll = function (present) {
+    document.querySelectorAll("#qcs-student-list .qcs-att").forEach((b) => (b.checked = present));
+  };
+
+  window.saveQuickClassSession = async function () {
+    const title = $("qcs-title");
+    const batchId = $("qcs-batch") ? $("qcs-batch").value : "";
+    const coachId = $("qcs-coach") ? $("qcs-coach").value : "";
+    const notes = $("qcs-notes");
+    const classLink = $("qcs-classlink");
+    const refLink = $("qcs-reflink");
+    const level = $("qcs-level");
+    const due = $("qcs-due");
+    const fileInput = $("qcs-file");
+
+    if (!title || !title.value.trim()) return toast("Please enter a homework/topic title", "error");
+    if (!batchId) return toast("Please select a batch", "error");
+
+    // 1) Delegate homework creation to the existing assignment flow
+    const ht = $("hw-target-type");
+    if (ht) ht.value = "batch";
+    if (typeof updateHomeworkTargetFields === "function") updateHomeworkTargetFields();
+    const hb = $("hw-batch-select");
+    if (hb) hb.value = batchId;
+    const hTitle = $("hw-title");
+    if (hTitle) hTitle.value = title.value.trim();
+    const hDesc = $("hw-description");
+    if (hDesc)
+      hDesc.value =
+        (notes && notes.value ? notes.value : "") +
+        (classLink && classLink.value ? "\nClass Link: " + classLink.value : "") +
+        (refLink && refLink.value ? "\nReference: " + refLink.value : "");
+    const hDue = $("hw-due-date");
+    if (hDue) hDue.value = due ? due.value : "";
+    const hwFile = $("hw-file-input");
+    if (hwFile && fileInput && fileInput.files && fileInput.files.length) {
+      try {
+        const dt = new DataTransfer();
+        Array.from(fileInput.files).forEach((f) => dt.items.add(f));
+        hwFile.files = dt.files;
+      } catch (e) {}
+    }
+    if (typeof window.saveHomeworkAssignment === "function") {
+      await window.saveHomeworkAssignment();
+    }
+
+    // 2) Mark attendance for the batch (checked = present, unchecked = absent)
+    const boxes = Array.from(document.querySelectorAll("#qcs-student-list .qcs-att"));
+    if (!boxes.length) {
+      if (typeof closeModals === "function") closeModals();
+      return;
+    }
+    const date = $("att-date") && $("att-date").value ? $("att-date").value : new Date().toISOString().split("T")[0];
+    const cw = notes ? notes.value.trim() : "";
+    const hw = title ? title.value.trim() : "";
+    const link = classLink && classLink.value.trim() ? classLink.value.trim() : "";
+    const noteStr =
+      typeof window.formatAttendanceNotesForSave === "function"
+        ? window.formatAttendanceNotesForSave(cw, hw, link ? "Link: " + link : "")
+        : (cw ? "CW: " + cw + "\n" : "") + (hw ? "HW: " + hw + "\n" : "") + (link ? "LINK: " + link : "");
+    const records = boxes.map((b) => ({
+      student_id: b.value,
+      student_name: b.dataset.name || "",
+      status: b.checked ? "present" : "absent",
+      date: date,
+      coach_id: coachId || null,
+      notes: noteStr,
+    }));
+    try {
+      const res = await apiCall("/api/attendance", { method: "POST", body: JSON.stringify(records) });
+      if (!res || !res.ok) {
+        if (window.supabaseClient) await window.supabaseClient.from("attendance").upsert(records);
+      }
+      if (!window.allAttendance) window.allAttendance = [];
+      records.forEach((r) => {
+        const i = window.allAttendance.findIndex((a) => String(a.student_id) === String(r.student_id) && a.date === r.date);
+        if (i !== -1) window.allAttendance[i] = { ...window.allAttendance[i], ...r };
+        else window.allAttendance.unshift(r);
+      });
+      const present = boxes.filter((b) => b.checked).length;
+      toast(`✅ Homework sent & attendance marked for ${present} present / ${boxes.length - present} absent.`, "success");
+    } catch (e) {
+      toast("Homework saved; attendance save failed: " + (e.message || e), "error");
+    }
+    if (typeof closeModals === "function") closeModals();
+    if (typeof renderAttendanceList === "function") renderAttendanceList();
+    if (typeof loadAllData === "function") loadAllData(true);
+  };
+
+  // Unified Attendance + Homework tracker sheet (groups attendance by date+batch
+  // and joins the homework/topic assigned that day).
+  window.openAttendanceHomeworkTracker = function () {
+    const att = window.allAttendance || allAttendance || [];
+    const docs = window.allHomework || [];
+    const body = $("att-hw-tracker-body");
+    if (!body) return;
+    if (!att.length) {
+      body.innerHTML = '<div class="empty-state" style="padding:30px">No attendance records yet.</div>';
+      if (typeof openModal === "function") openModal("att-hw-tracker-modal");
+      return;
+    }
+    const groups = {};
+    att.forEach((a) => {
+      const key = `${a.date}|${a.batch || a.batchName || "—"}|${a.coachName || a.coach_id || "—"}`;
+      if (!groups[key]) groups[key] = { date: a.date, batch: a.batch || a.batchName || "—", coach: a.coachName || a.coach_id || "—", present: 0, absent: 0, link: a.class_link || "" };
+      if ((a.status || "").toLowerCase() === "present" || (a.status || "").toLowerCase() === "late") groups[key].present++;
+      else if ((a.status || "").toLowerCase() === "absent") groups[key].absent++;
+      if (a.class_link) groups[key].link = a.class_link;
+    });
+    const rows = Object.values(groups).sort((x, y) => (y.date || "").localeCompare(x.date || ""));
+    const _e = window.escapeHtml || ((s) => s);
+    body.innerHTML = `
+      <table class="data-table" style="width:100%;font-size:13px;border-collapse:collapse;">
+        <thead><tr style="color:var(--gold);text-align:left;">
+          <th style="padding:8px;">Date</th><th style="padding:8px;">Batch</th><th style="padding:8px;">Coach</th>
+          <th style="padding:8px;">Homework / Topic</th><th style="padding:8px;">Class Link</th>
+          <th style="padding:8px;">Present</th><th style="padding:8px;">Absent</th><th style="padding:8px;">%</th>
+        </tr></thead>
+        <tbody>
+          ${rows
+            .map((r) => {
+              const total = r.present + r.absent;
+              const pct = total ? Math.round((r.present / total) * 100) : 0;
+              const topic = (docs || [])
+                .filter((d) => d.batch && String(d.batch).toLowerCase() === String(r.batch).toLowerCase() && d.created_at && d.created_at.slice(0, 10) === r.date)
+                .map((d) => d.title || d.name)
+                .join(", ");
+              const topicCell = topic ? _e(topic) : '<span style="color:var(--ivory-dim)">—</span>';
+              const linkCell = r.link ? `<a href="${_e(r.link)}" target="_blank" style="color:var(--sapphire,#3b82f6)">🔗 Open</a>` : '<span style="color:var(--ivory-dim)">—</span>';
+              return `<tr style="border-top:1px solid var(--border)">
+                <td style="padding:8px;">${_e(r.date)}</td>
+                <td style="padding:8px;">${_e(r.batch)}</td>
+                <td style="padding:8px;">${_e(r.coach)}</td>
+                <td style="padding:8px;">${topicCell}</td>
+                <td style="padding:8px;">${linkCell}</td>
+                <td style="padding:8px;color:var(--emerald,#10b981);font-weight:700;">${r.present}</td>
+                <td style="padding:8px;color:var(--danger,#ef4444);font-weight:700;">${r.absent}</td>
+                <td style="padding:8px;">${pct}%</td>
+              </tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table>`;
+    if (typeof openModal === "function") openModal("att-hw-tracker-modal");
+  };
+
   function openPromote(id) {
     const s = allStudents.find((x) => String(x.id) === String(id));
     if (!s) return;
@@ -2754,7 +2968,6 @@
       "\u{20B9}" +
       Number(amount || 0).toLocaleString() +
       getStudentLocalCurrencyAmount(s, amount);
-    const cn = cleanText(name);
     const payTo = window.getPaymentPayeeText
       ? window.getPaymentPayeeText()
       : "9025846663 (Ranjith)";
@@ -2792,58 +3005,17 @@
     const monthlyFee = getStudentMonthlyFee(s);
     const phone = getStudentPhone(s);
 
-    // Calculate pending amount based on reporting period
     const targetMonth = window.reportMonth;
     const targetYear = window.reportYear;
-    const enrollDateStr = getStudentDate(s);
-    const enrollDate = enrollDateStr
-      ? new Date(enrollDateStr)
-      : new Date(Date.UTC(2026, 2, 1)); // Fallback to March 1, 2026
-    const baselineDate = new Date(Date.UTC(2026, 0, 1)); // Global System Baseline (July 1st, 2026)
-    const effectiveEnroll = (function () {
-      var _a =
-        window.getBillingAnchor && window.getBillingAnchor(s, baselineDate);
-      return _a
-        ? new Date(Date.UTC(_a.year, _a.month, 1))
-        : enrollDate < baselineDate
-          ? baselineDate
-          : enrollDate;
-    })();
-
-    // FIX #5: Always rebuild — never trust a cached map for financial calculations
-    const freshPaymentsMap = {};
-    const seenStudentMonths = new Set();
-    (allPayments || []).forEach((p) => {
-      if (p.status === "paid") {
-        const sid = String(p.student_id || "")
-          .trim()
-          .toLowerCase();
-        if (!sid) return;
-        const pDate = new Date(p.payment_date || p.created_at);
-        const mKey = `${sid}_${pDate.getUTCFullYear()}-${pDate.getUTCMonth()}`;
-        if (seenStudentMonths.has(mKey)) return;
-        seenStudentMonths.add(mKey);
-        freshPaymentsMap[sid] = (freshPaymentsMap[sid] || 0) + 1;
-      }
-    });
-
-    const s_id_key = String(s.id || "")
-      .trim()
-      .toLowerCase();
-    const totalCredits = freshPaymentsMap[s_id_key] || 0;
-    const monthsRequired =
-      (targetYear - effectiveEnroll.getUTCFullYear()) * 12 +
-      (targetMonth - effectiveEnroll.getUTCMonth()) +
-      1;
-
-    const pendingMonths = Math.max(1, monthsRequired - totalCredits);
-    let totalPending = pendingMonths * monthlyFee;
 
     const coach = allCoaches.find((c) => String(c.id) === String(s.coach_id));
     const coachName = coach ? coach.name || "" : "";
     const dueCfg = getStudentDueConfig(s, coachName, targetMonth, targetYear);
-    if (dueCfg.feeOverride !== null) {
-      totalPending = dueCfg.feeOverride;
+    
+    // Accurate fee calculation: use explicit override if configured, otherwise the student's monthly tuition fee
+    let totalPending = dueCfg.feeOverride !== null ? dueCfg.feeOverride : (monthlyFee || DEFAULT_MONTHLY_FEE || 1500);
+    if (totalPending <= 0) {
+      totalPending = monthlyFee || DEFAULT_MONTHLY_FEE || 1500;
     }
 
     const getOrdinal = (n) => {
@@ -2859,9 +3031,6 @@
 
     const status = getStudentPaymentStatus(s);
     const isDueOrOverdue = status === "Due" || status === "Overdue";
-    if (totalPending <= 0) {
-      totalPending = monthlyFee || 1500;
-    }
 
     const msg = buildFeeMessage(
       s,
@@ -3538,7 +3707,7 @@
   function getStudentMonthlyFee(s) {
     if (!s) return DEFAULT_MONTHLY_FEE;
     return (
-      parseInt(s.monthly_fee || s.fee || s.fees || 0) || DEFAULT_MONTHLY_FEE
+      parseInt(s.monthly_fee || s.fee || s.fees || s.tuition_fee || s.fee_amount || 0) || DEFAULT_MONTHLY_FEE
     );
   }
 
@@ -3807,13 +3976,13 @@
   const CURRENCY_MAP = {
     IN: { currency: "INR", symbol: "₹", rate: 1.0 },
     US: { currency: "USD", symbol: "$", rate: 0.012 },
-    GB: { currency: "GBP", symbol: "Â£", rate: 0.0094 },
+    GB: { currency: "GBP", symbol: "£", rate: 0.0094 },
     CA: { currency: "CAD", symbol: "C$", rate: 0.016 },
     AU: { currency: "AUD", symbol: "A$", rate: 0.018 },
     DE: { currency: "EUR", symbol: "€", rate: 0.011 },
     FR: { currency: "EUR", symbol: "€", rate: 0.011 },
-    JP: { currency: "JPY", symbol: "Â¥", rate: 1.88 },
-    CN: { currency: "CNY", symbol: "Â¥", rate: 0.087 },
+    JP: { currency: "JPY", symbol: "¥", rate: 1.88 },
+    CN: { currency: "CNY", symbol: "¥", rate: 0.087 },
     BR: { currency: "BRL", symbol: "R$", rate: 0.062 },
     MX: { currency: "MXN", symbol: "$", rate: 0.2 },
     IT: { currency: "EUR", symbol: "€", rate: 0.011 },
@@ -3822,25 +3991,25 @@
     KR: { currency: "KRW", symbol: "₩", rate: 16.4 },
     SG: { currency: "SGD", symbol: "S$", rate: 0.016 },
     MY: { currency: "MYR", symbol: "RM", rate: 0.056 },
-    TH: { currency: "THB", symbol: "à¸¿", rate: 0.44 },
+    TH: { currency: "THB", symbol: "฿", rate: 0.44 },
     ID: { currency: "IDR", symbol: "Rp", rate: 193.0 },
     PH: { currency: "PHP", symbol: "₱", rate: 0.7 },
     VN: { currency: "VND", symbol: "₫", rate: 305.0 },
     AE: { currency: "AED", symbol: "AED", rate: 0.044 },
     SA: { currency: "SAR", symbol: "SR", rate: 0.045 },
     PK: { currency: "PKR", symbol: "Rs", rate: 3.32 },
-    BD: { currency: "BDT", symbol: "à§³", rate: 1.41 },
+    BD: { currency: "BDT", symbol: "৳", rate: 1.41 },
     LK: { currency: "LKR", symbol: "Rs", rate: 3.59 },
     ZA: { currency: "ZAR", symbol: "R", rate: 0.22 },
     NG: { currency: "NGN", symbol: "₦", rate: 18.0 },
-    EG: { currency: "EGP", symbol: "EÂ£", rate: 0.57 },
+    EG: { currency: "EGP", symbol: "E£", rate: 0.57 },
     NL: { currency: "EUR", symbol: "€", rate: 0.011 },
     BE: { currency: "EUR", symbol: "€", rate: 0.011 },
     SE: { currency: "SEK", symbol: "kr", rate: 0.13 },
     NO: { currency: "NOK", symbol: "kr", rate: 0.13 },
     DK: { currency: "DKK", symbol: "kr", rate: 0.083 },
     FI: { currency: "EUR", symbol: "€", rate: 0.011 },
-    PL: { currency: "PLN", symbol: "zÅ‚", rate: 0.048 },
+    PL: { currency: "PLN", symbol: "zł", rate: 0.048 },
     TR: { currency: "TRY", symbol: "₺", rate: 0.39 },
     IL: { currency: "ILS", symbol: "₪", rate: 0.044 },
     AR: { currency: "ARS", symbol: "$", rate: 10.7 },
@@ -6507,7 +6676,6 @@
     "coach-homework": "My Homework",
     "coach-elibrary": "Coach E-Library Hub",
     "coach-studypgn": "Study Lab & Topics",
-    "coach-chess": "Chess Stats",
     "studypgn": "Study PGN & Analytics",
   };
 
@@ -6532,11 +6700,15 @@
       "elibrary",
       "studypgn",
     ];
-    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-elibrary", "coach-studypgn", "coach-chess", "elibrary", "studypgn"];
+    const coachAccessiblePages = ["coach-dash", "coach-students", "coach-batches", "coach-schedule", "coach-events", "coach-attendance", "coach-homework", "coach-elibrary", "coach-studypgn", "elibrary", "studypgn"];
     if (adminPages.includes(p) && role !== "admin" && role !== "master" && !coachAccessiblePages.includes(p)) {
       toast("Access denied", "error");
       setPage(role === "parent" ? "child" : "coach-dash");
       return;
+    }
+
+    if (p !== "child") {
+      window.__coachViewingStudent = false;
     }
 
     if (p !== "bills" && window.stopGatewayLogsSimulation) {
@@ -6658,10 +6830,17 @@ setTimeout(function () {
        if (p === "coach-schedule" && window.renderCoachSchedule) window.renderCoachSchedule();
        if (p === "coach-events" && window.renderCoachEvents) window.renderCoachEvents();
         if (p === "coach-attendance" && window.renderCoachAttendanceMarking) window.renderCoachAttendanceMarking();
-        if (p === "coach-homework" && window.renderCoachHomework) window.renderCoachHomework();
-        if (p === "coach-chess" && window.renderCoachChess) window.renderCoachChess();
-        if (p === "stud") renderStudents();
-       if (p === "coach-mgmt") renderCoachMgmt();
+          if (p === "coach-homework") {
+            if (window.loadHomeworkData) {
+              window.loadHomeworkData().then(() => {
+                if (window.renderCoachHomework) window.renderCoachHomework();
+              });
+            } else if (window.renderCoachHomework) {
+              window.renderCoachHomework();
+            }
+          }
+          if (p === "stud") renderStudents();
+          if (p === "coach-mgmt") renderCoachMgmt();
        if (p === "batches") {
         if (window.renderBatchesGrid) window.renderBatchesGrid();
       }
@@ -8756,10 +8935,8 @@ setTimeout(function () {
     const s = allStudents.find((x) => String(x.id) === String(id));
     if (!s) return;
 
-    // Set the current student for impersonation / preview
     setCurrentStudent(s);
-
-    // Switch page directly to the student portal page (which renders live analytics & details)
+    window.__coachViewingStudent = true;
     setPage("child");
   }
 
@@ -11422,50 +11599,11 @@ Best regards,
 
     const targetMonth = window.reportMonth;
     const targetYear = window.reportYear;
-    const enrollDateStr = getStudentDate(s);
-    const baseline = new Date(Date.UTC(2026, 0, 1));
-    const enrollDate = enrollDateStr ? new Date(enrollDateStr) : baseline;
-    const effectiveEnroll = (function () {
-      var _a = window.getBillingAnchor && window.getBillingAnchor(s, baseline);
-      return _a
-        ? new Date(Date.UTC(_a.year, _a.month, 1))
-        : enrollDate < baseline
-          ? baseline
-          : enrollDate;
-    })();
-    const monthsRequired =
-      (targetYear - effectiveEnroll.getUTCFullYear()) * 12 +
-      (targetMonth - effectiveEnroll.getUTCMonth()) +
-      1;
-
-    // Count only paid months within the billing window (>= billing start,
-    // <= the month being viewed). Pre-July payments must not offset dues,
-    // and a payment applied to a future month shouldn't either.
-    const sid = String(s.id).toLowerCase();
-    const startKeyNum = effectiveEnroll.getUTCFullYear() * 12 + effectiveEnroll.getUTCMonth();
-    const targetKeyNum = targetYear * 12 + targetMonth;
-    const paidMonthsSet = new Set();
-    (window.allPayments || []).forEach((p) => {
-      if (p.status !== "paid" || String(p.student_id).toLowerCase() !== sid) return;
-      // Prefer the explicit applied_month; fall back to the payment date.
-      let py, pm;
-      if (/^\d{4}-\d{2}$/.test(p.applied_month || "")) {
-        py = parseInt(p.applied_month.slice(0, 4), 10);
-        pm = parseInt(p.applied_month.slice(5, 7), 10) - 1;
-      } else {
-        const pDate = new Date(p.payment_date || p.created_at);
-        py = pDate.getUTCFullYear();
-        pm = pDate.getUTCMonth();
-      }
-      const keyNum = py * 12 + pm;
-      if (keyNum >= startKeyNum && keyNum <= targetKeyNum) {
-        paidMonthsSet.add(`${py}-${pm}`);
-      }
-    });
-    const totalDue = Math.max(
-      0,
-      monthsRequired * fee - fee * paidMonthsSet.size,
-    );
+    const coach = allCoaches.find((c) => String(c.id) === String(s.coach_id));
+    const coachName = coach ? coach.name || "" : "";
+    const dueCfg = getStudentDueConfig(s, coachName, targetMonth, targetYear);
+    const monthlyFee = getStudentMonthlyFee(s);
+    const totalDue = dueCfg.feeOverride !== null ? dueCfg.feeOverride : (monthlyFee || DEFAULT_MONTHLY_FEE || 1500);
 
     // Populate modal
     $("inform-student-name").textContent = name;
@@ -11528,12 +11666,12 @@ Best regards,
         paidMonthsSet.add(mKey);
       }
     });
-    let totalDue = Math.max(0, monthsRequired * fee - fee * paidMonthsSet.size);
+    let totalDue = fee || getStudentMonthlyFee(s) || 1500;
 
     const coach = allCoaches.find((c) => String(c.id) === String(s.coach_id));
     const coachName = coach ? coach.name || "" : "";
     const dueCfg = getStudentDueConfig(s, coachName, targetMonth, targetYear);
-    if (dueCfg.feeOverride !== null) {
+    if (dueCfg.feeOverride !== null && dueCfg.feeOverride > 0) {
       totalDue = dueCfg.feeOverride;
     }
 
@@ -13386,6 +13524,24 @@ Best regards,
       }
     }
 
+    // Coach preview mode: show only overview tab, hide other tabs
+    const coachPreviewMode = window.__coachViewingStudent && (role === "coach" || window.__adminImpersonatingCoach);
+    if (coachPreviewMode) {
+      const tabsNav = document.querySelector("#page-child .tabs-nav");
+      if (tabsNav) tabsNav.style.display = "none";
+      document.querySelectorAll(".child-tab-content").forEach((tab) => {
+        if (tab.id !== "child-tab-overview") tab.style.display = "none";
+      });
+      const overviewTab = document.getElementById("child-tab-overview");
+      if (overviewTab) overviewTab.classList.add("active");
+    } else {
+      const tabsNav = document.querySelector("#page-child .tabs-nav");
+      if (tabsNav) tabsNav.style.removeProperty("display");
+      document.querySelectorAll(".child-tab-content").forEach((tab) => {
+        tab.style.removeProperty("display");
+      });
+    }
+
     // Set page title for Admins viewing the portal
     if ($("p-title") && (role === "admin" || role === "master")) {
       $("p-title").textContent = "Student Portal Preview: " + getStudentName(s);
@@ -13547,6 +13703,12 @@ Best regards,
     if ($("spe-lichess")) $("spe-lichess").value = s.lichess_username || "";
     if ($("spe-chesscom")) $("spe-chesscom").value = s.chesscom_username || "";
     if ($("spe-chessable")) $("spe-chessable").value = s.chessable_username || "";
+    const skills = s.skill_breakdown || s.skills || {};
+    if ($("spe-skill-opening")) $("spe-skill-opening").value = skills.opening != null ? skills.opening : "";
+    if ($("spe-skill-middlegame")) $("spe-skill-middlegame").value = skills.middlegame != null ? skills.middlegame : "";
+    if ($("spe-skill-endgame")) $("spe-skill-endgame").value = skills.endgame != null ? skills.endgame : "";
+    if ($("spe-skill-tactics")) $("spe-skill-tactics").value = skills.tactics != null ? skills.tactics : "";
+    if ($("spe-skill-positional")) $("spe-skill-positional").value = skills.positional != null ? skills.positional : "";
     openModal("student-portal-edit-modal");
   }
 
@@ -13561,11 +13723,23 @@ Best regards,
     const lichess_username = $("spe-lichess")?.value.trim() || null;
     const chesscom_username = $("spe-chesscom")?.value.trim() || null;
     const chessable_username = $("spe-chessable")?.value.trim() || null;
+    const skill_opening = $("spe-skill-opening")?.value.trim();
+    const skill_middlegame = $("spe-skill-middlegame")?.value.trim();
+    const skill_endgame = $("spe-skill-endgame")?.value.trim();
+    const skill_tactics = $("spe-skill-tactics")?.value.trim();
+    const skill_positional = $("spe-skill-positional")?.value.trim();
+    const skill_breakdown = {
+      opening: skill_opening !== "" ? parseInt(skill_opening) : null,
+      middlegame: skill_middlegame !== "" ? parseInt(skill_middlegame) : null,
+      endgame: skill_endgame !== "" ? parseInt(skill_endgame) : null,
+      tactics: skill_tactics !== "" ? parseInt(skill_tactics) : null,
+      positional: skill_positional !== "" ? parseInt(skill_positional) : null,
+    };
     if (!name) {
       toast("Student Name is required", "error");
       return;
     }
-    const payload = { name, parent_name, phone, parent_phone: phone, email, lichess_username, chesscom_username, chessable_username };
+    const payload = { name, parent_name, phone, parent_phone: phone, email, lichess_username, chesscom_username, chessable_username, skill_breakdown };
     try {
       toast("Saving details...", "info");
       const res = await apiCall(`/api/students?id=${id}`, {
@@ -13580,6 +13754,7 @@ Best regards,
         s.phone = phone;
         s.parent_phone = phone;
         s.email = email;
+        s.skill_breakdown = skill_breakdown;
         if (window.allStudents) {
           const idx = window.allStudents.findIndex(
             (x) => String(x.id) === String(id),

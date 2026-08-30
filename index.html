@@ -4071,8 +4071,8 @@
   <div id="uploadModal" class="modal-overlay">
     <div class="modal-card ck-upload-card">
       <div class="modal-header">
-        <h3 class="ck-upload-title">📚 Upload Resource</h3>
-        <p class="ck-upload-subtitle">Share homework, notes, links, videos or PDFs with your students.</p>
+        <h3 class="ck-upload-title">📄 Upload PDF Files / Class Session</h3>
+        <p class="ck-upload-subtitle">Upload class material &amp; homework, then mark batch attendance — all in one step.</p>
       </div>
       <form class="modal-body ck-upload-form" onsubmit="CK.admin.handleResourceUpload(event)">
 
@@ -4089,35 +4089,83 @@
         </div>
 
         <div class="form-group">
-          <label class="ck-label">Resource Title</label>
+          <label class="ck-label">Resource Title / Topic</label>
           <input type="text" name="fileName" required class="ck-input"
                  placeholder="e.g. Rook Endgames Workbook">
         </div>
 
         <div class="ck-form-grid-2">
           <div class="form-group">
-            <label class="ck-label">Level</label>
-            <select name="level" class="ck-input"
-                    onchange="CK.admin.refreshUploadStudentList(this.closest('form'))">
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
+            <label class="ck-label">Coach</label>
+            <select name="coach" class="ck-input" onchange="CK.admin.refreshUploadStudentList(this.closest('form'))">
+              <option value="">-- Select Coach --</option>
             </select>
           </div>
           <div class="form-group">
             <label class="ck-label">Batch</label>
-            <input type="text" name="batch" placeholder="e.g. Evening" class="ck-input"
+            <input type="text" name="batch" list="uploadBatchList" placeholder="e.g. Evening" class="ck-input"
                    oninput="CK.admin.refreshUploadStudentList(this.closest('form'))">
+            <datalist id="uploadBatchList"></datalist>
           </div>
+        </div>
+
+        <!-- File-source pane -->
+        <div class="form-group ck-source-pane" data-pane="file">
+          <label class="ck-label">Select Files (PDF / Material)</label>
+          <input type="file" name="file" class="ck-input ck-file-input"
+                 accept=".pdf,.png,.jpg,.jpeg,.pgn,.mp4,.webm,.txt,.docx">
+          <div class="ck-hint">PDF, PNG/JPG, PGN, MP4/WebM, TXT or DOCX. Max ~15 MB.</div>
+        </div>
+
+        <!-- Link-source pane -->
+        <div class="form-group ck-source-pane" data-pane="link" style="display:none;">
+          <label class="ck-label">Paste URL</label>
+          <input type="url" name="url" class="ck-input"
+                 placeholder="https://lichess.org/study/... or YouTube / Drive link">
+          <div class="ck-hint">YouTube, Lichess study, Google Drive share link, etc.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="ck-label">Notes (Classwork / topic notes)</label>
+          <input type="text" name="notes" placeholder="e.g. Review before Friday, focus on king safety…" class="ck-input">
         </div>
 
         <div class="form-group">
           <label class="ck-label ck-label-with-hint">
-            Assign to Students
-            <span class="ck-hint">(homework/resource is shared with selected students)</span>
+            🎥 Class Link (Google Meet / Zoom)
+            <span class="ck-hint">shared with students &amp; saved on the attendance record</span>
+          </label>
+          <input type="url" name="classLink" class="ck-input"
+                 placeholder="https://meet.google.com/xxx  or  https://zoom.us/j/xxx">
+        </div>
+
+        <div class="form-group">
+          <label class="ck-label ck-label-with-hint">
+            🔗 Reference Link (optional)
+            <span class="ck-hint">Lichess study, YouTube, article…</span>
+          </label>
+          <input type="url" name="refLink" class="ck-input"
+                 placeholder="https://lichess.org/study/...  or  https://youtube.com/...">
+        </div>
+
+        <div class="form-group">
+          <label class="ck-label">Level</label>
+          <select name="level" class="ck-input"
+                  onchange="CK.admin.refreshUploadStudentList(this.closest('form'))">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <!-- Combined attendance + homework assignment checklist -->
+        <div class="form-group">
+          <label class="ck-label ck-label-with-hint">
+            ✓ Mark Attendance — Students in this batch
+            <span class="ck-hint">checked = Present (gets homework) · unchecked = Absent</span>
           </label>
           <div id="uploadStudentList" class="ck-student-list">
-            <span class="ck-student-list-empty">Select level/batch above to load students</span>
+            <span class="ck-student-list-empty">Select coach / batch above to load students</span>
           </div>
         </div>
 
@@ -4158,45 +4206,29 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="ck-label">Notes (optional)</label>
-          <input type="text" name="notes" placeholder="e.g. Review before Friday, focus on king safety…" class="ck-input">
-        </div>
-
-        <!-- Reference Link (always available — works alongside file or link) -->
-        <div class="form-group">
-          <label class="ck-label ck-label-with-hint">
-            🔗 Reference Link (optional)
-            <span class="ck-hint">website, Lichess study, YouTube, article…</span>
-          </label>
-          <input type="url" name="refLink" class="ck-input"
-                 placeholder="https://lichess.org/study/...  or  https://youtube.com/...">
-        </div>
-
-        <!-- File-source pane -->
-        <div class="form-group ck-source-pane" data-pane="file">
-          <label class="ck-label">Choose File</label>
-          <input type="file" name="file" class="ck-input ck-file-input"
-                 accept=".pdf,.png,.jpg,.jpeg,.pgn,.mp4,.webm,.txt,.docx">
-          <div class="ck-hint">PDF, PNG/JPG, PGN, MP4/WebM, TXT or DOCX. Max ~15 MB.</div>
-        </div>
-
-        <!-- Link-source pane -->
-        <div class="form-group ck-source-pane" data-pane="link" style="display:none;">
-          <label class="ck-label">Paste URL</label>
-          <input type="url" name="url" class="ck-input"
-                 placeholder="https://lichess.org/study/... or YouTube / Drive link">
-          <div class="ck-hint">YouTube, Lichess study, Google Drive share link, etc.</div>
-        </div>
-
         <div class="ck-form-actions">
-          <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary ck-btn-upload">📤 Upload Resource</button>
+          <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal('uploadModal')">Close</button>
+          <button type="button" class="btn btn-outline-info" onclick="CK.admin.renderAttendanceHomeworkSheet()">📊 Track Sheet</button>
+          <button type="submit" class="btn btn-primary ck-btn-upload">➕ Add Resource &amp; Attendance</button>
         </div>
       </form>
     </div>
   </div>
   <!-- Old bot-window removed — TOM AI chatbot replaces it globally -->
+
+  <!-- Attendance + Homework Tracker Sheet Modal (Main Portal) -->
+  <div id="adminAttHwSheetModal" class="modal-overlay">
+    <div class="modal-card" style="max-width:960px;">
+      <div class="modal-header">
+        <h3 class="ck-upload-title">📊 Attendance + Homework Tracker</h3>
+        <p class="ck-upload-subtitle">Every class session with attendance counts and the homework topic assigned.</p>
+      </div>
+      <div class="modal-body" id="adminAttHwSheetBody" style="max-height:62vh; overflow:auto;"></div>
+      <div class="ck-form-actions">
+        <button type="button" class="btn btn-ghost ck-btn-cancel" onclick="CK.closeModal('adminAttHwSheetModal')">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Guess Grandmaster Game Modal -->
   <div id="gameModal" class="modal-overlay">

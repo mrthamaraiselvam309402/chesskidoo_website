@@ -131,7 +131,7 @@ CK.student = {
             <div style="font-size:3.8rem;margin-bottom:12px;animation:pulse 2s infinite;">⏸️</div>
             <h2 style="font-size:1.8rem;color:#f87171;margin-bottom:10px;font-weight:800;">Student Access Temporarily Paused</h2>
             <p style="color:#cbd5e1;font-size:0.95rem;line-height:1.6;margin-bottom:24px;">
-              Hello <strong style="color:#fff;">${_e(p.full_name || 'Student')}</strong>! Your learning portal access has been temporarily paused by the academy admin due to pending monthly fees (₹${_e(String(p.fee || 1800))}). Access will <strong>automatically resume</strong> once fees are cleared.
+              Hello <strong style="color:#fff;">${_e(p.full_name || 'Student')}</strong>! Your learning portal access has been temporarily paused by the academy admin due to pending monthly fees (₹${_e(String(p.monthly_fee || p.fee || p.fees || p.tuition_fee || 1800))}). Access will <strong>automatically resume</strong> once fees are cleared.
             </p>
             <div style="display:flex;flex-direction:column;gap:12px;">
               <a href="https://wa.me/919025846663?text=${encodeURIComponent('Hello Admin, I have paid the fee for student ' + (p.full_name || '') + '. Please resume my access.')}" target="_blank" style="background:#22c55e;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.95rem;box-shadow:0 4px 14px rgba(34,197,94,0.3);">
@@ -2300,7 +2300,7 @@ CK.student = {
   renderFeesGateway() {
     const p = this.userProfile || {};
     const status = p.status || 'Pending';
-    const tuition = parseInt(p.fee) || 4000;
+    const tuition = parseInt(p.monthly_fee || p.fee || p.fees || p.tuition_fee) || 4000;
     const gst = Math.round(tuition * 0.18);
     const total = tuition + gst;
     const isPaid = status === 'Paid';
@@ -2527,7 +2527,7 @@ CK.student = {
     const level = _eR(p.level || 'Beginner');
     const rating = Number(p.rating || 800);
     const coach = _eR((p.coach || 'COACH').toUpperCase());
-    const feeAmount = p.fee || 1600;
+    const feeAmount = p.monthly_fee || p.fee || p.fees || p.tuition_fee || 1600;
     const dateStr = new Date().toLocaleDateString('en-GB');
 
     const words = feeAmount === 1600 ? 'One Thousand Six Hundred Rupees Only' :

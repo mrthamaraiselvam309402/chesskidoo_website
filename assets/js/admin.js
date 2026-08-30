@@ -140,7 +140,7 @@ CK.admin = {
 
     const totalRevenue = students
       .filter(s => s.status === 'Paid')
-      .reduce((sum, s) => sum + (parseInt((s.fee || '0').toString().replace(/[^0-9]/g, '')) || 0), 0);
+        .reduce((sum, s) => sum + this._feeOf(s), 0);
     const s = {
       students: students.length,
       coaches: coaches.length,
@@ -551,7 +551,7 @@ CK.admin = {
       const joinDate = s.join_date || '2026-04-20';
       const session = s.session || 'Group';
       const schedule = s.schedule || '17:00';
-      const fee = s.fee || '2200';
+      const fee = this._feeOf(s);
       const status = s.status || 'Paid';
       const dueDate = s.due_date || '04-May-2026';
 
@@ -653,7 +653,7 @@ CK.admin = {
       statusBadgeEl.innerHTML = `<span class="p-badge ${badgeClass}">${_e(st)}</span>`;
     }
 
-    document.getElementById('mapTuitionFee').value = s.fee || 1800;
+    document.getElementById('mapTuitionFee').value = this._feeOf(s);
     document.getElementById('mapExtraAmount').value = 0;
     document.getElementById('mapDiscountAmount').value = 0;
     document.getElementById('mapExtraType').value = 'none';
@@ -775,7 +775,7 @@ CK.admin = {
           </div>
           <div style="background:var(--p-surface3);padding:14px;border-radius:10px;">
             <div style="font-size:.72rem;color:var(--p-text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Fee Status</div>
-            <div style="font-weight:700;font-size:1rem;color:${statusBadgeColor};">₹${_e(String(s.fee || '—'))} · ${_e(s.status || 'Pending')}</div>
+            <div style="font-weight:700;font-size:1rem;color:${statusBadgeColor};">₹${_e(String(this._feeOf(s)))} · ${_e(s.status || 'Pending')}</div>
             <div style="font-size:.82rem;color:var(--p-text-muted);margin-top:2px;">Due: ${_e(s.due_date || '—')}</div>
           </div>
           <div style="background:var(--p-surface3);padding:14px;border-radius:10px;">
@@ -827,7 +827,7 @@ CK.admin = {
         CK.student.downloadReceipt();
         CK.student.userProfile = orig;
       } else {
-        CK.showToast(`Receipt for ${s.full_name} · ₹${s.fee || 0} · ${s.status}`, 'success');
+        CK.showToast(`Receipt for ${s.full_name} · ₹${this._feeOf(s)} · ${s.status}`, 'success');
       }
     } else if (action === 'rating') {
       const newElo = parseInt(document.getElementById('adminNewEloInput')?.value || s.rating);
@@ -886,7 +886,7 @@ CK.admin = {
       );
       const paidRevenue = myStudents.reduce((sum, s) => {
         if (s.status !== 'Paid') return sum;
-        return sum + (parseInt((s.fee || '0').toString().replace(/[^0-9]/g, '')) || 0);
+        return sum + this._feeOf(s);
       }, 0);
       const revenue = paidRevenue > 0 ? '₹' + paidRevenue.toLocaleString('en-IN') : '—';
 
@@ -1502,7 +1502,7 @@ CK.admin = {
       setF('admin_s_batch',    s.batch || '');
       setF('admin_s_schedule', s.schedule || '17:00');
       setF('admin_s_join',     s.join_date || '2026-04-20');
-      setF('admin_s_fee',      s.fee || 5000);
+      setF('admin_s_fee',      this._feeOf(s));
       setF('admin_s_due',      s.due_date || '14-May-2026');
     } else {
       if (title) title.innerText = 'Enroll New Student';
@@ -1642,49 +1642,93 @@ CK.admin = {
     if (!container) return;
     const level = form?.level?.value || '';
     const batch = form?.batch?.value?.trim() || '';
+    const coach = form?.coach?.value?.trim() || '';
     const students = (await CK.db.getProfiles('student')) || [];
     const filtered = students.filter(s => {
       const lvlMatch = !level || s.level === level;
       const batchMatch = !batch || (s.batch || '').toLowerCase() === batch.toLowerCase();
-      return lvlMatch && batchMatch;
+      const coachMatch = !coach ||
+        (s.coach && s.coach.toLowerCase() === coach.toLowerCase()) ||
+        (s.coach_id && String(s.coach_id).toLowerCase() === coach.toLowerCase());
+      return lvlMatch && batchMatch && coachMatch;
     });
     if (!filtered.length) {
-      container.innerHTML = '<span class="ck-student-list-empty">No students match this level/batch</span>';
+      container.innerHTML = '<span class="ck-student-list-empty">No students match this coach / level / batch</span>';
       return;
     }
     const _e = CK.esc || (s => s);
-    container.innerHTML = filtered.map(s => `
+    const rows = filtered.map(s => `
       <label class="ck-student-row">
-        <input type="checkbox" name="assignedStudents" value="${_e(s.id)}" checked class="ck-student-check" />
+        <input type="checkbox" name="attStudent" value="${_e(s.id)}" checked class="ck-student-check" data-name="${_e(s.full_name)}" />
         <span class="ck-student-name">${_e(s.full_name)}</span>
         <span class="ck-student-level">${_e(s.level || '')}</span>
       </label>
     `).join('');
+    container.innerHTML = `
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="CK.admin.markAllUploadStudents(true)">✓ All Present</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="CK.admin.markAllUploadStudents(false)">✗ All Absent</button>
+        <span class="ck-hint" style="margin-left:auto;align-self:center" id="uploadAttCount"></span>
+      </div>
+      ${rows}
+    `;
+    this.updateUploadAttCount();
+  },
+
+  markAllUploadStudents(present) {
+    const boxes = document.querySelectorAll('#uploadStudentList input[name="attStudent"]');
+    boxes.forEach(b => { b.checked = present; });
+    this.updateUploadAttCount();
+  },
+
+  updateUploadAttCount() {
+    const el = document.getElementById('uploadAttCount');
+    if (!el) return;
+    const boxes = document.querySelectorAll('#uploadStudentList input[name="attStudent"]');
+    const present = Array.from(boxes).filter(b => b.checked).length;
+    el.textContent = `${present} present / ${boxes.length} total`;
   },
 
   // Switch between File-upload and URL/Link source in the Upload Resource modal
   // Open the shared Upload Resource modal with a context tag ('admin' | 'coach')
-  openUploadModal(context = 'admin') {
+  async openUploadModal(context = 'admin') {
     this._uploadContext = context;
     const form = document.querySelector('#uploadModal form');
     if (form) {
       form.reset();
-      
+       
+      // Populate the Coach dropdown (admins see everyone; coaches pre-select themselves)
+      const coachSel = form.coach;
+      if (coachSel) {
+        const coaches = (await CK.db.getProfiles('coach')) || [];
+        coachSel.innerHTML = '<option value="">-- Select Coach --</option>' +
+          coaches.map(c => `<option value="${CK.esc(c.full_name)}">${CK.esc(c.full_name)}</option>`).join('');
+      }
+      // Populate the batch <datalist> with all known batches
+      const batchList = document.getElementById('uploadBatchList');
+      if (batchList) {
+        let batches = [];
+        if (CK.db.getBatches) batches = await CK.db.getBatches();
+        else batches = JSON.parse(localStorage.getItem('ck_db_batches') || '[]');
+        const names = (batches || []).map(b => b.name || b.batchName).filter(Boolean);
+        batchList.innerHTML = names.map(n => `<option value="${CK.esc(n)}">`).join('');
+      }
+
       // Update the batch dropdown based on context
       if (context === 'coach' && CK.coach?.coachProfile) {
         const cp = CK.coach.coachProfile;
         if (form.level && cp.level) form.level.value = cp.level;
+        if (form.coach) form.coach.value = cp.full_name || '';
         
-        // Show only this coach's batches in the format: CoachName Batch# Time
+        // Show only this coach's batches
         if (form.batch && cp.batches) {
           const myBatches = cp.batches.split(',').map(b => b.trim()).filter(b=>b);
-          form.batch.innerHTML = '<option value="">-- Select Batch --</option>' + myBatches.map(b => `<option value="${CK.esc(b)}">${CK.esc(b)}</option>`).join('');
-          if (myBatches.length > 0) form.batch.value = myBatches[0];
+          form.batch.value = myBatches[0] || '';
         }
         this.refreshUploadStudentList(form);
       } else {
         // Admin: Show all batches
-        if (form.batch && typeof CK.admin.populateCoachSelects === 'function') {
+        if (typeof CK.admin.populateCoachSelects === 'function') {
           CK.admin.populateCoachSelects();
         }
       }
@@ -1723,11 +1767,15 @@ CK.admin = {
       const customName = form.fileName.value.trim();
       const targetLevel = form.level.value;
       const batchName  = form.batch.value.trim() || 'All Batches';
+      const coachName  = (form.coach?.value || (this._uploadContext === 'coach' && CK.coach?.coachProfile?.full_name) || '').trim();
+      const classLink  = (form.classLink?.value || '').trim();
 
       if (!customName) throw new Error('Please provide a resource title.');
 
-      const checkedBoxes = form.querySelectorAll('input[name="assignedStudents"]:checked');
-      const selectedUserIds = Array.from(checkedBoxes).map(cb => cb.value);
+      // Roster checkboxes double as attendance (checked = Present) AND homework
+      // assignment (present students receive the material).
+      const rosterBoxes = form.querySelectorAll('input[name="attStudent"]');
+      const selectedUserIds = Array.from(rosterBoxes).filter(b => b.checked).map(b => b.value);
       const today = new Date().toISOString().slice(0, 10);
 
       let filePath = '';
@@ -1770,6 +1818,7 @@ CK.admin = {
         file_name: filePath,
         url: resourceUrl,
         link: refLink,
+        class_link: classLink,
         kind: storageKind,
         level: targetLevel,
         batch: batchName,
@@ -1779,17 +1828,47 @@ CK.admin = {
         due_date: form.dueDate ? form.dueDate.value : '',
         xp_reward: form.xpReward ? parseInt(form.xpReward.value) || 50 : 50,
         notes: form.notes ? form.notes.value : '',
-        coach: (this._uploadContext === 'coach' && CK.coach?.coachProfile?.full_name) || '',
+        coach: coachName || (this._uploadContext === 'coach' && CK.coach?.coachProfile?.full_name) || '',
         created_at: new Date().toISOString()
       });
 
-      // NOTE: uploading a resource/homework does NOT mark attendance.
-      // Homework and attendance are separate — attendance is recorded only in
-      // the Attendance section (or when a student actually joins a live class).
+      // ── Combined Attendance Recording ──
+      // Every roster student is recorded for today: checked = Present, unchecked = Absent.
+      // The classwork notes, homework title and class link are attached so the
+      // Attendance + Homework tracker sheet shows the topic alongside each record.
+      let presentCount = 0, absentCount = 0;
+      if (rosterBoxes.length) {
+        const noteParts = [];
+        if (form.notes?.value?.trim()) noteParts.push('CW: ' + form.notes.value.trim());
+        if (customName) noteParts.push('HW: ' + customName);
+        if (classLink) noteParts.push('LINK: ' + classLink);
+        const attNote = noteParts.join('\n');
+
+        for (const box of Array.from(rosterBoxes)) {
+          const isPresent = box.checked;
+          if (isPresent) presentCount++; else absentCount++;
+          await CK.db.saveAttendance({
+            userid: box.value,
+            studentId: box.value,
+            studentName: box.dataset.name || '',
+            coachId: this._uploadContext === 'coach' ? (CK.coach?.coachProfile?.id || '') : '',
+            coachName: coachName,
+            batch: batchName,
+            class_link: classLink,
+            level: targetLevel,
+            status: isPresent ? 'present' : 'absent',
+            notes: attNote,
+            date: today,
+            markedVia: 'class-session',
+            created_at: new Date().toISOString()
+          });
+        }
+      }
 
       CK.showToast(
         `✅ ${storageKind === 'link' ? 'Link' : 'File'} published` +
-        (selectedUserIds.length ? ` · assigned to ${selectedUserIds.length} student(s).` : '.'),
+        (selectedUserIds.length ? ` · homework sent to ${selectedUserIds.length} student(s).` : '') +
+        (rosterBoxes.length ? ` · attendance marked for ${presentCount} present / ${absentCount} absent.` : ''),
         'success'
       );
       CK.closeModal('uploadModal');
@@ -1798,6 +1877,11 @@ CK.admin = {
       const usl = document.getElementById('uploadStudentList');
       if (usl) usl.innerHTML = '<span class="ck-student-list-empty">Select level/batch above to load students</span>';
       await this.loadFiles();
+      await this.loadAttendance();
+      if (typeof this.renderAttendanceHomeworkSheet === 'function' &&
+          document.getElementById('adminAttHwSheetModal')?.classList.contains('active')) {
+        this.renderAttendanceHomeworkSheet();
+      }
 
       if (CK.student && CK.student.userProfile) CK.student.init();
       if (CK.coach && CK.coach.renderResources) CK.coach.renderResources();
@@ -1834,6 +1918,57 @@ CK.admin = {
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Error loading files.</td></tr>';
     }
+  },
+
+  async renderAttendanceHomeworkSheet() {
+    const body = document.getElementById('adminAttHwSheetBody');
+    if (!body) return;
+    const att = (await CK.db.getAttendance()) || [];
+    const docs = (await CK.db.getDocuments()) || [];
+    if (!att.length) {
+      body.innerHTML = '<div class="cls-empty">No attendance records yet.</div>';
+      CK.openModal('adminAttHwSheetModal');
+      return;
+    }
+    const groups = {};
+    att.forEach(a => {
+      const key = `${a.date}|${a.batch || '—'}|${a.coachName || a.coachId || '—'}`;
+      if (!groups[key]) groups[key] = { date: a.date, batch: a.batch || '—', coach: a.coachName || a.coachId || '—', present: 0, absent: 0, link: a.class_link || '' };
+      const st = (a.status || '').toLowerCase();
+      if (st === 'present' || st === 'late') groups[key].present++;
+      else if (st === 'absent') groups[key].absent++;
+      if (a.class_link) groups[key].link = a.class_link;
+    });
+    const rows = Object.values(groups).sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+    const _e = CK.esc || (s => s);
+    body.innerHTML = `
+      <table class="p-table" style="width:100%;font-size:13px;">
+        <thead><tr>
+          <th>Date</th><th>Batch</th><th>Coach</th><th>Homework / Topic</th>
+          <th>Class Link</th><th>Present</th><th>Absent</th><th>%</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => {
+            const total = r.present + r.absent;
+            const pct = total ? Math.round((r.present / total) * 100) : 0;
+            const topic = docs.filter(d => d.batch && String(d.batch).toLowerCase() === String(r.batch).toLowerCase() && d.created_at && d.created_at.slice(0, 10) === r.date)
+              .map(d => d.name).join(', ');
+            const topicCell = topic ? _e(topic) : '<span style="color:var(--p-text-muted)">—</span>';
+            const linkCell = r.link ? `<a href="${_e(r.link)}" target="_blank" style="color:var(--p-blue)">🔗 Open</a>` : '<span style="color:var(--p-text-muted)">—</span>';
+            return `<tr style="border-top:1px solid var(--p-border, rgba(255,255,255,0.06));">
+              <td style="padding:8px;">${_e(r.date)}</td>
+              <td style="padding:8px;">${_e(r.batch)}</td>
+              <td style="padding:8px;">${_e(r.coach)}</td>
+              <td style="padding:8px;">${topicCell}</td>
+              <td style="padding:8px;">${linkCell}</td>
+              <td style="padding:8px;color:var(--p-teal);font-weight:700;">${r.present}</td>
+              <td style="padding:8px;color:var(--p-danger);font-weight:700;">${r.absent}</td>
+              <td style="padding:8px;">${pct}%</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+    CK.openModal('adminAttHwSheetModal');
   },
 
   async downloadFile(fileName) {
@@ -2073,7 +2208,14 @@ CK.admin = {
      students' fees; salary = coach.salary; net = revenue − salary. Admin can
      edit a salary, record a salary payment, and download a salary receipt. */
   _money(n) { return '₹' + (parseInt(n) || 0).toLocaleString('en-IN'); },
-  _feeOf(s) { return parseInt((s.fee || '0').toString().replace(/[^0-9]/g, '')) || 0; },
+  // Unified fee resolver — consistently reads monthly_fee, fee, fees, then
+  // tuition_fee, defaulting to the academy baseline of ₹1500 so the same
+  // tuition value is shown in the registry, coach finance, fee reminders
+  // and WhatsApp messages.
+  _feeOf(s) {
+    const raw = (s && (s.monthly_fee || s.fee || s.fees || s.tuition_fee)) || '1500';
+    return parseInt(String(raw).replace(/[^0-9]/g, '')) || 1500;
+  },
 
   async renderCoachFinance() {
     const body = document.getElementById('adminCoachFinanceBody');
@@ -2290,7 +2432,7 @@ CK.admin = {
     const myStudents = students.filter(s => s.coach === c.full_name);
     const paidRevenue = myStudents.reduce((sum, s) => {
       if (s.status !== 'Paid') return sum;
-      return sum + (parseInt((s.fee || '0').toString().replace(/[^0-9]/g, '')) || 0);
+      return sum + this._feeOf(s);
     }, 0);
     const titleEl = document.getElementById('detailCoachTitle');
     if (titleEl) titleEl.textContent = _e(c.full_name) + ' — Coach Profile';
@@ -2600,7 +2742,9 @@ CK.admin = {
     pending.forEach(s => {
       const phone = s.phone_number.replace(/\D/g, '');
       const waNum = phone.startsWith('91') ? phone : '91' + phone;
-      const msg = `Hello! This is ChessKidoo Academy. Your chess fee of ₹${s.fee || 2200} is due. Please complete the payment to continue classes. Thank you!`;
+      const feeVal = parseInt(s.monthly_fee || s.fee || s.fees || s.tuition_fee || 0) || 1500;
+      const studentName = s.full_name || 'Student';
+      const msg = `Hello! This is ChessKidoo Academy. This is a friendly reminder that the monthly chess tuition fee of ₹${feeVal} for ${studentName} is due. Please complete the payment to continue classes. Thank you!`;
       window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`, '_blank');
       sent++;
     });
