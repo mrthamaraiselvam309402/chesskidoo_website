@@ -328,13 +328,14 @@ Deno.serve(async (req) => {
             if (m > 11) { m = 0; y++; }
             return new Date(Date.UTC(y, m, 5)).toISOString().split('T')[0];
          })(),
-         notes: `[LM:${sanitizeString(rawBody.learning_mode, 50) || 'online'}] ${sanitizeString(rawBody.notes, 2000)}`.trim(),
-         account_status: 'active',
-         lichess_username: sanitizeString(rawBody.lichess_username, 100),
-         chesscom_username: sanitizeString(rawBody.chesscom_username, 100),
-         chessable_username: sanitizeString(rawBody.chessable_username, 100),
-         created_at: new Date().toISOString()
-        }
+          notes: `[LM:${sanitizeString(rawBody.learning_mode, 50) || 'online'}] ${sanitizeString(rawBody.notes, 2000)}`.trim(),
+          account_status: 'active',
+          lichess_username: sanitizeString(rawBody.lichess_username, 100),
+          chesscom_username: sanitizeString(rawBody.chesscom_username, 100),
+          chessable_username: sanitizeString(rawBody.chessable_username, 100),
+          password: rawBody.password ? sanitizeString(rawBody.password, 100) : '123456',
+          created_at: new Date().toISOString()
+         }
       
       let { data: insertedStudent, error: insertError } = await supabase
         .from('students')
