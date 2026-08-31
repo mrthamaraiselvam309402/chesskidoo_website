@@ -1108,6 +1108,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td style="font-size:12px; color:var(--ivory-dim);">${due}</td>
           <td><span class="${statusClass}">${status}</span></td>
           <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-outline-primary btn-sm" onclick="window.editHomeworkAssignment('${h.id}')" title="Edit">✏️ Edit</button>
             ${canDone ? `<button class="btn btn-outline-grey btn-sm" onclick="window.updateHomeworkStatus('${h.id}', 'completed')">✔ Done</button>` : ''}
             ${canArchive ? `<button class="btn btn-outline-grey btn-sm" onclick="window.updateHomeworkStatus('${h.id}', 'archived')">🗑 Archive</button>` : ''}
             ${canDelete ? `<button class="btn btn-outline-danger btn-sm" onclick="deleteCoachHomeworkAssignment('${h.id}')">Delete</button>` : ''}

@@ -236,7 +236,10 @@ Deno.serve(async (req) => {
         target_type: body.target_type || 'all',
         student_id: body.student_id || null,
         batch_id: body.batch_id || null,
+        coach_id: body.coach_id || null,
+        created_by: body.created_by || body.coach_id || null,
         questions_files: fileList,
+        attachment_urls: body.attachment_urls || fileList,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }).select().single();
@@ -277,6 +280,12 @@ Deno.serve(async (req) => {
         if (body.description !== undefined) payload.description = String(body.description || '').trim();
         if (body.due_date !== undefined) payload.due_date = body.due_date || null;
         if (body.status !== undefined) payload.status = body.status;
+        if (body.target_type !== undefined) payload.target_type = body.target_type;
+        if (body.student_id !== undefined) payload.student_id = body.student_id || null;
+        if (body.batch_id !== undefined) payload.batch_id = body.batch_id || null;
+        if (body.questions_files !== undefined) payload.questions_files = body.questions_files;
+        if (body.attachment_urls !== undefined) payload.attachment_urls = body.attachment_urls;
+        if (body.coach_id !== undefined) payload.coach_id = body.coach_id || null;
 
         const { data, error } = await supabase.from('homework_assignments').update(payload).eq('id', id).select().single();
         if (error) throw error;
