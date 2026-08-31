@@ -2637,7 +2637,7 @@
     }
   };
 
-  StudyPGN.renderAssignedTopicsList = function () {
+  StudyPGN.renderAssignedTopicsList = async function () {
     const studentContainer = document.getElementById('assigned-topics-grid');
     const coachContainer = document.getElementById('coach-assigned-topics-grid');
     if (!studentContainer && !coachContainer) return;

@@ -1070,7 +1070,12 @@
     if (!currentStudent) return;
     const s = currentStudent;
 
-    // Shared stat-chip renderer for the Growth tab summary rows.
+     // Student's rating history from the global cache
+     const history = (allRatingHistory || []).filter(
+       (h) => String(h.student_id) === String(s.id) && (h.rating || h.elo)
+     );
+
+     // Shared stat-chip renderer for the Growth tab summary rows.
     const growthChip = (label, value, sub, color) => `
       <div style="background:var(--bg3); padding:10px 12px; border-radius:8px; border-left:4px solid ${color};">
         <div style="font-size:10px; color:var(--ivory-dim); text-transform:uppercase; letter-spacing:0.8px;">${label}</div>
@@ -1083,7 +1088,7 @@
       if (chartInstances.childElo) chartInstances.childElo.destroy();
       let basePoints;
       if (history.length >= 2) {
-        basePoints = history.map((h) => ({ x: new Date(h.recorded_at).getTime(), y: h.rating }));
+        basePoints = history.map((h) => ({ x: new Date(h.recorded_at || h.created_at).getTime(), y: h.rating || h.elo }));
       } else {
         const curRating = getStudentRating(s) || 1200;
         const now = Date.now();
