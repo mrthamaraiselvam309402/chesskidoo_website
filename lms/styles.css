@@ -3854,6 +3854,46 @@ body[data-theme="light"] .trace-chip.failed {
   border-color: rgba(218, 163, 62, 0.3) !important;
 }
 
+/* ── VISUAL ATTENDANCE & LESSON CALENDAR ── */
+.cal-wrapper {
+  transition: all 0.3s ease;
+}
+
+.cal-day-cell {
+  user-select: none;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.cal-day-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  border-color: var(--gold) !important;
+}
+
+.cal-day-present:hover {
+  border-color: #2ecc71 !important;
+}
+
+.cal-day-absent:hover {
+  border-color: #ff7675 !important;
+}
+
+.cal-day-late:hover {
+  border-color: #f1c40f !important;
+}
+
+@media (max-width: 768px) {
+  .cal-wrapper {
+    overflow-x: auto;
+    padding: 12px !important;
+  }
+  .cal-day-cell {
+    min-height: 70px !important;
+    padding: 4px 2px !important;
+  }
+}
+
 /* ── Study PGN, Tactics & Speed Trainer Styles ── */
 .chesscom-board-wrap,
 .pgn-chess-grid {

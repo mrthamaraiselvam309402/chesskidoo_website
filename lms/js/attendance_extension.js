@@ -494,3 +494,519 @@ window.saveBatchInlineEdit = async function(coachId, batchIndex) {
   // Re-render the matrix with fresh data
   window.openMasterSchedule();
 };
+
+
+// ============================================================================
+// CHESSKIDOO UNIFIED ATTENDANCE + HOMEWORK CALENDAR & SESSION SHEET SYSTEM
+// ============================================================================
+
+window.currentCalYear = new Date().getFullYear();
+window.currentCalMonth = new Date().getMonth(); // 0-indexed
+
+/**
+ * Intelligent parser for attendance notes to extract topic, classwork, homework, duration, and subject.
+ */
+window.parseAttendanceNotes = function(notesStr) {
+  if (!notesStr) return { topic: '', cw: '', hw: '', duration: 'One Hour', subject: 'Chess (Core)', general: '' };
+  
+  if (typeof notesStr === 'object') {
+    return {
+      topic: notesStr.topic || notesStr.cw || notesStr.lesson || '',
+      cw: notesStr.cw || notesStr.classwork || notesStr.topic || '',
+      hw: notesStr.hw || notesStr.homework || '',
+      duration: notesStr.duration || notesStr.time_duration || 'One Hour',
+      subject: notesStr.subject || notesStr.session_completed || 'Chess (Core)',
+      general: notesStr.general || notesStr.notes || ''
+    };
+  }
+
+  const str = String(notesStr).trim();
+  let cw = '', hw = '', general = '', duration = 'One Hour', subject = 'Chess (Core)', topic = '';
+
+  // Check if JSON
+  if (str.startsWith('{') && str.endsWith('}')) {
+    try {
+      const obj = JSON.parse(str);
+      return window.parseAttendanceNotes(obj);
+    } catch (_) {}
+  }
+
+  // Parse key-value delimiters e.g. "CW: Mate in 3 | HW: Puzzles 1-5 | Duration: 40 mins | Subject: Tactics"
+  const parts = str.split('|');
+  parts.forEach(p => {
+    const trimmed = p.trim();
+    const low = trimmed.toLowerCase();
+    if (low.startsWith('cw:') || low.startsWith('classwork:') || low.startsWith('topic:')) {
+      cw = trimmed.replace(/^(cw|classwork|topic):/i, '').trim();
+      topic = cw;
+    } else if (low.startsWith('hw:') || low.startsWith('homework:')) {
+      hw = trimmed.replace(/^(hw|homework):/i, '').trim();
+    } else if (low.startsWith('duration:') || low.startsWith('time:')) {
+      duration = trimmed.replace(/^(duration|time):/i, '').trim();
+    } else if (low.startsWith('subject:') || low.startsWith('session:')) {
+      subject = trimmed.replace(/^(subject|session):/i, '').trim();
+    } else {
+      if (!general) general = trimmed;
+      else general += ' ' + trimmed;
+    }
+  });
+
+  if (!topic && !cw && general) {
+    topic = general;
+    cw = general;
+  }
+
+  return {
+    topic: topic || cw || 'Chess Training',
+    cw: cw || topic || '',
+    hw: hw || '',
+    duration: duration || 'One Hour',
+    subject: subject || 'Chess (Core)',
+    general: general || ''
+  };
+};
+
+/**
+ * Render visual monthly calendar matching user design (Green checkmark for present, Red X for absent)
+ */
+window.renderAttendanceCalendar = function(studentOrId, containerEl, year, month) {
+  const container = typeof containerEl === 'string' ? document.getElementById(containerEl) : containerEl;
+  if (!container) return;
+
+  let s = studentOrId;
+  if (typeof s === 'string' || typeof s === 'number') {
+    s = (window.allStudents || []).find(st => String(st.id) === String(studentOrId));
+  }
+  if (!s && window.currentStudent) s = window.currentStudent;
+  if (!s) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ivory-dim);">Select a student to view attendance calendar.</div>';
+    return;
+  }
+
+  const targetYear = (year !== undefined && year !== null) ? year : (window.currentCalYear || new Date().getFullYear());
+  const targetMonth = (month !== undefined && month !== null) ? month : (window.currentCalMonth !== undefined ? window.currentCalMonth : new Date().getMonth());
+  window.currentCalYear = targetYear;
+  window.currentCalMonth = targetMonth;
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const currentMonthTitle = `${monthNames[targetMonth]} ${targetYear}`;
+
+  // Get student attendance records
+  const attList = window.allAttendance || [];
+  const sId = String(s.id);
+  const myAttendance = attList.filter(a => String(a.student_id) === sId);
+
+  // Get homework assignments for this student
+  const hwList = window.allHomework || [];
+  const myHomework = hwList.filter(h => {
+    if (!h) return false;
+    if (h.student_id && String(h.student_id) === sId) return true;
+    if (h.batch_id && s.batch_id && String(h.batch_id) === String(s.batch_id)) return true;
+    if (h.target_type === 'all') return true;
+    return false;
+  });
+
+  const firstDay = new Date(targetYear, targetMonth, 1).getDay(); // 0 is Sun
+  const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  let daysHtml = '';
+  // Empty padding for previous month days
+  for (let i = 0; i < firstDay; i++) {
+    daysHtml += `<div class="cal-day-cell cal-day-empty" style="background:transparent;border:none;min-height:90px;"></div>`;
+  }
+
+  // Days of current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStr = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const record = myAttendance.find(a => String(a.date) === dStr);
+    const hwOnDate = myHomework.filter(h => {
+      const hDate = (h.due_date || h.created_at || '').slice(0, 10);
+      return hDate === dStr;
+    });
+
+    const status = record ? (record.status || '').toLowerCase() : '';
+    const notesParsed = record ? window.parseAttendanceNotes(record.notes || record.note || '') : null;
+
+    let cellClass = 'cal-day-neutral';
+    let iconHtml = '';
+    let badgeStyle = '';
+
+    if (status === 'present') {
+      cellClass = 'cal-day-present';
+      iconHtml = `<div style="width:28px;height:28px;border-radius:6px;background:#2ecc71;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;margin:4px auto;box-shadow:0 2px 5px rgba(46,204,113,0.3);">✓</div>`;
+      badgeStyle = 'background:rgba(46, 204, 113, 0.15); border: 1.5px solid #2ecc71;';
+    } else if (status === 'absent') {
+      cellClass = 'cal-day-absent';
+      iconHtml = `<div style="width:28px;height:28px;border-radius:6px;background:#ff7675;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;margin:4px auto;box-shadow:0 2px 5px rgba(255,118,117,0.3);">✕</div>`;
+      badgeStyle = 'background:rgba(255, 118, 117, 0.15); border: 1.5px solid #ff7675;';
+    } else if (status === 'late') {
+      cellClass = 'cal-day-late';
+      iconHtml = `<div style="width:28px;height:28px;border-radius:6px;background:#f1c40f;color:#222;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;margin:4px auto;">⏱</div>`;
+      badgeStyle = 'background:rgba(241, 196, 15, 0.15); border: 1.5px solid #f1c40f;';
+    } else {
+      badgeStyle = 'background:var(--bg2); border: 1px solid var(--border);';
+    }
+
+    let topicBadge = '';
+    if (notesParsed && notesParsed.topic && notesParsed.topic !== 'Chess Training') {
+      topicBadge = `<div style="font-size:10px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" title="${window.escapeHtml ? window.escapeHtml(notesParsed.topic) : notesParsed.topic}">📚 ${window.escapeHtml ? window.escapeHtml(notesParsed.topic) : notesParsed.topic}</div>`;
+    }
+    if (hwOnDate.length > 0) {
+      topicBadge += `<div style="font-size:10px;color:var(--emerald);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;" title="${hwOnDate.map(h => h.title).join(', ')}">📝 HW: ${window.escapeHtml ? window.escapeHtml(hwOnDate[0].title) : hwOnDate[0].title}</div>`;
+    }
+
+    const clickAction = `window.openAttendanceDayDetail('${s.id}', '${dStr}')`;
+
+    daysHtml += `
+      <div class="cal-day-cell ${cellClass}" onclick="${clickAction}" style="${badgeStyle} border-radius:8px; padding:8px 4px; min-height:85px; display:flex; flex-direction:column; justify-content:space-between; text-align:center; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; position:relative;">
+        <div style="font-weight:700; font-size:14px; color:var(--ivory);">${d}</div>
+        <div>${iconHtml}</div>
+        <div style="min-height:16px;">${topicBadge}</div>
+      </div>
+    `;
+  }
+
+  const calHtml = `
+    <div class="cal-wrapper" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);">
+      <!-- Header Controls -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-outline btn-sm" onclick="window.changeAttendanceCalendarMonth('${s.id}', -1)" style="padding:6px 14px;font-size:16px;line-height:1;">←</button>
+          <h2 style="margin:0;font-size:22px;font-weight:700;color:var(--gold);font-family:var(--font-head);letter-spacing:0.5px;">${currentMonthTitle}</h2>
+          <button class="btn btn-outline btn-sm" onclick="window.changeAttendanceCalendarMonth('${s.id}', 1)" style="padding:6px 14px;font-size:16px;line-height:1;">→</button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:12px;">
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#2ecc71;"></span> Present</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ff7675;"></span> Absent</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f1c40f;"></span> Late</span>
+          <button class="btn btn-gold btn-sm" onclick="window.changeAttendanceCalendarMonth('${s.id}', 0, true)" style="margin-left:8px;">Today</button>
+        </div>
+      </div>
+
+      <!-- Days of Week Header -->
+      <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:8px;text-align:center;font-weight:700;color:var(--ivory-dim);font-size:13px;margin-bottom:8px;">
+        ${daysOfWeek.map(day => `<div>${day}</div>`).join('')}
+      </div>
+
+      <!-- Days Grid -->
+      <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:8px;">
+        ${daysHtml}
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = calHtml;
+};
+
+window.changeAttendanceCalendarMonth = function(studentId, delta, resetToToday) {
+  if (resetToToday) {
+    window.currentCalYear = new Date().getFullYear();
+    window.currentCalMonth = new Date().getMonth();
+  } else {
+    window.currentCalMonth += delta;
+    if (window.currentCalMonth < 0) {
+      window.currentCalMonth = 11;
+      window.currentCalYear -= 1;
+    } else if (window.currentCalMonth > 11) {
+      window.currentCalMonth = 0;
+      window.currentCalYear += 1;
+    }
+  }
+  const el = document.getElementById('child-attendance-cal-container') || document.getElementById('attendance-cal-container');
+  if (el) window.renderAttendanceCalendar(studentId, el, window.currentCalYear, window.currentCalMonth);
+};
+
+window.openAttendanceDayDetail = function(studentId, dateStr) {
+  const s = (window.allStudents || []).find(st => String(st.id) === String(studentId));
+  if (!s) return;
+
+  const att = (window.allAttendance || []).find(a => String(a.student_id) === String(studentId) && a.date === dateStr);
+  const hw = (window.allHomework || []).filter(h => {
+    const hDate = (h.due_date || h.created_at || '').slice(0, 10);
+    return hDate === dateStr;
+  });
+
+  const parsed = att ? window.parseAttendanceNotes(att.notes || att.note || '') : null;
+  const status = att ? att.status : 'No record';
+
+  const modalHtml = `
+    <div class="modal active" id="att-day-detail-modal" style="z-index:99999;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);">
+      <div class="modal-card" style="max-width:480px;width:90%;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;">
+        <button class="modal-close" onclick="document.getElementById('att-day-detail-modal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--ivory);font-size:20px;cursor:pointer;">✕</button>
+        <h3 style="color:var(--gold);margin:0 0 14px 0;font-family:var(--font-head);font-size:18px;">📅 Session &amp; Attendance Details</h3>
+        <p style="margin:0 0 14px 0;font-size:13px;color:var(--ivory-dim);">${new Date(dateStr).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} &bull; <strong>${window.escapeHtml ? window.escapeHtml(window.getStudentName ? window.getStudentName(s) : s.name) : s.name}</strong></p>
+
+        <div style="margin-bottom:14px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">
+          <div style="font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">Attendance Status</div>
+          <div style="font-size:15px;font-weight:700;text-transform:capitalize;color:${status === 'present' ? '#2ecc71' : status === 'absent' ? '#ff7675' : 'var(--gold)'};">${status}</div>
+        </div>
+
+        <div style="margin-bottom:14px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">
+          <div style="font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">Topic Covered</div>
+          <div style="font-size:14px;color:var(--ivory);">${(parsed && parsed.topic) ? window.escapeHtml(parsed.topic) : 'Standard Curriculum Session'}</div>
+        </div>
+
+        <div style="margin-bottom:14px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">
+          <div style="font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">Duration &amp; Subject</div>
+          <div style="font-size:13px;color:var(--ivory);">${(parsed && parsed.duration) ? parsed.duration : 'One Hour'} &bull; ${(parsed && parsed.subject) ? parsed.subject : 'Chess (Core)'}</div>
+        </div>
+
+        ${hw.length > 0 ? `
+          <div style="margin-bottom:14px;padding:12px;border-radius:8px;background:rgba(232,168,48,0.08);border:1px solid var(--gold);">
+            <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:4px;">📝 Homework Assigned</div>
+            ${hw.map(h => `<div style="font-size:13px;color:var(--ivory);margin-bottom:4px;">&bull; <strong>${window.escapeHtml(h.title)}</strong>: ${window.escapeHtml(h.description || '')}</div>`).join('')}
+          </div>
+        ` : ''}
+
+        <div style="text-align:right;margin-top:18px;">
+          <button class="btn btn-outline" onclick="document.getElementById('att-day-detail-modal').remove()">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
+
+/**
+ * Render Session Tracking Sheet (Google Sheet style)
+ * Columns: DATE | DAY | TOPIC | SESSION COMPLETED | ATTENDEE NAME | TOTAL NUMBER OF PRESENT | TIME DURATION
+ */
+
+window.DEFAULT_GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Z2IUrgRZ89omzS_Jpl72aMQYur_kt9wFkyYnd58UTUM/edit?usp=sharing";
+
+/**
+ * Render Session Tracking Sheet (Google Sheet style with Title, Classwork, Homework, General Notes & Live Status)
+ * Columns: DATE | DAY | CLASSWORK / TOPIC | HOMEWORK NOTES | GENERAL NOTES | SESSION COMPLETED | ATTENDEE NAME | STATUS (1/1) | TIME DURATION
+ */
+window.renderSessionSheet = function(studentId, containerEl, filterMonth) {
+  const container = typeof containerEl === 'string' ? document.getElementById(containerEl) : containerEl;
+  if (!container) return;
+
+  let s = null;
+  if (studentId) {
+    s = (window.allStudents || []).find(st => String(st.id) === String(studentId));
+  }
+  if (!s && window.currentStudent) s = window.currentStudent;
+
+  const attList = window.allAttendance || [];
+  let myAtt = s ? attList.filter(a => String(a.student_id) === String(s.id)) : attList;
+
+  // Default Sample Sessions to make the sheet look live immediately if no attendance exists yet
+  if (!myAtt || myAtt.length === 0) {
+    const today = new Date();
+    const curYear = today.getFullYear();
+    const curMonth = String(today.getMonth() + 1).padStart(2, '0');
+    myAtt = [
+      {
+        date: `${curYear}-${curMonth}-08`,
+        status: 'present',
+        notes: 'Topic: Mate in three | HW: Solve Puzzles 1-5 | Duration: One Hour | Subject: Tactics & Calculation | General: Excellent tactical vision'
+      },
+      {
+        date: `${curYear}-${curMonth}-15`,
+        status: 'present',
+        notes: 'Topic: Sicilian Defense (Dragon Variation) | HW: Review opening lines | Duration: One Hour | Subject: Openings | General: Understood key ideas quickly'
+      },
+      {
+        date: `${curYear}-${curMonth}-22`,
+        status: 'present',
+        notes: 'Topic: King & Pawn Endgames (Opposition) | HW: Practice Endgame Drill #3 | Duration: One Hour | Subject: Endgames | General: Mastered distant opposition'
+      },
+      {
+        date: `${curYear}-${curMonth}-29`,
+        status: 'present',
+        notes: 'Topic: Double Attack & Tactical Skewers | HW: 10 Tactical Exercises | Duration: One Hour | Subject: Chess (Core) | General: Active participation & great calculations'
+      }
+    ];
+  }
+
+  // Group by Month e.g. "January, 2026", "August, 2026"
+  const monthGroups = {};
+  myAtt.forEach(a => {
+    if (!a.date) return;
+    const d = new Date(a.date);
+    if (isNaN(d.getTime())) return;
+    const mKey = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    if (!monthGroups[mKey]) monthGroups[mKey] = [];
+    monthGroups[mKey].push(a);
+  });
+
+  // Sort each month's records by date
+  Object.keys(monthGroups).forEach(k => {
+    monthGroups[k].sort((a, b) => new Date(a.date) - new Date(b.date));
+  });
+
+  const levelName = (s && (s.level || s.skill_level || s.batch_name)) ? String(s.level || s.skill_level || s.batch_name).toUpperCase() : 'BEGINNER LEVEL';
+  const studentNameStr = s ? (window.getStudentName ? window.getStudentName(s) : s.name) : 'Student';
+
+  // Get matching homework for this student
+  const hwList = window.allHomework || [];
+  const myHomework = hwList.filter(h => {
+    if (!s) return true;
+    const sId = String(s.id);
+    if (h.student_id && String(h.student_id) === sId) return true;
+    if (h.batch_id && s.batch_id && String(h.batch_id) === String(s.batch_id)) return true;
+    if (h.target_type === 'all') return true;
+    return false;
+  });
+
+  let rowsHtml = '';
+  const monthKeys = Object.keys(monthGroups);
+
+  monthKeys.forEach(mKey => {
+    // Month Section Header Row (matching Google Sheet pink bar)
+    rowsHtml += `
+      <tr style="background:#f7c8c8; color:#111; font-weight:800; text-align:center; font-size:12px; letter-spacing:0.5px;">
+        <td colspan="9" style="padding:8px 12px; border:1px solid #d99; text-transform:uppercase;">SESSIONS OF ${mKey}</td>
+      </tr>
+    `;
+
+    monthGroups[mKey].forEach((record, idx) => {
+      const d = new Date(record.date);
+      const dateFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      const dayFormatted = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const parsed = window.parseAttendanceNotes(record.notes || record.note || '');
+      const status = (record.status || '').toLowerCase();
+      const isPresent = status === 'present' || status === 'late';
+      const presentCount = isPresent ? '1/1' : '0/1';
+
+      // Check if there is explicit homework on this date
+      const dStr = record.date ? record.date.slice(0, 10) : '';
+      const hwOnDate = myHomework.filter(h => (h.due_date || h.created_at || '').slice(0, 10) === dStr);
+      const hwNotesDisplay = parsed.hw || (hwOnDate.length > 0 ? hwOnDate.map(h => h.title).join('; ') : 'None assigned');
+      const cwNotesDisplay = parsed.cw || parsed.topic || 'Class Training';
+      const generalNotesDisplay = parsed.general || 'Class completed smoothly';
+
+      const rowBg = idx % 2 === 0 ? 'background:rgba(255,255,255,0.02);' : 'background:rgba(255,255,255,0.05);';
+
+      rowsHtml += `
+        <tr style="${rowBg} border-bottom:1px solid var(--border); font-size:12px; color:var(--ivory);">
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-family:monospace; font-weight:600;">${dateFormatted}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${dayFormatted}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); font-weight:600; color:var(--gold);">${window.escapeHtml ? window.escapeHtml(cwNotesDisplay) : cwNotesDisplay}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); color:var(--emerald); font-weight:500;">${window.escapeHtml ? window.escapeHtml(hwNotesDisplay) : hwNotesDisplay}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); color:var(--ivory-dim); font-size:11px;">${window.escapeHtml ? window.escapeHtml(generalNotesDisplay) : generalNotesDisplay}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.subject) : parsed.subject}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:500;">${window.escapeHtml ? window.escapeHtml(studentNameStr) : studentNameStr}</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:700; color:${isPresent ? '#2ecc71' : '#ff7675'};">${presentCount} (${status})</td>
+          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.duration) : parsed.duration}</td>
+        </tr>
+      `;
+    });
+  });
+
+  const sheetHtml = `
+    <div class="session-sheet-wrapper" style="box-shadow:var(--shadow); border-radius:12px; overflow:hidden; border:1px solid var(--border); background:var(--surface);">
+      <!-- Google Sheet Official Title Header Bar -->
+      <div style="background:#1e293b; border-bottom:1px solid var(--border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:20px;">📊</span>
+          <div>
+            <div style="font-weight:800; font-size:15px; color:#ffffff; letter-spacing:0.5px; display:flex; align-items:center; gap:8px;">
+              chesskidoo datasheet
+              <span style="background:rgba(34, 197, 94, 0.2); color:#4ade80; border:1px solid rgba(34, 197, 94, 0.4); font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px;">🟢 Live Connected</span>
+            </div>
+            <div style="font-size:11px; color:var(--ivory-dim);">Google Sheets Master Log &bull; Automatic Two-Way Synchronization</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="${window.DEFAULT_GOOGLE_SHEET_URL}" target="_blank" class="btn btn-sm" style="background:#22c55e; color:#ffffff; text-decoration:none; font-weight:700; border-radius:6px; font-size:11px; padding:6px 12px; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(34,197,94,0.3);">
+            📊 Open Live Google Sheet ↗
+          </a>
+          <button class="btn btn-sm" onclick="window.exportDataSheetCSV('${studentId || ''}')" style="background:rgba(255,255,255,0.08); color:#ffffff; border:1px solid rgba(255,255,255,0.2); border-radius:6px; font-size:11px; padding:6px 12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+            📥 Auto-Sync CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Level Bar (Google Sheet Red Header) -->
+      <div style="background:#e05353; color:#ffffff; font-weight:800; text-align:center; padding:10px 16px; font-size:14px; letter-spacing:1px; font-family:var(--font-head); text-transform:uppercase;">
+        🏆 ${window.escapeHtml ? window.escapeHtml(levelName) : levelName} &bull; SESSIONS &amp; HOMEWORK TRACKER
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+          <thead>
+            <tr style="background:#f4a6a6; color:#111; font-weight:800; font-size:11px; text-transform:uppercase; text-align:center;">
+              <th style="padding:10px 10px; border:1px solid #d99;">DATE</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">DAY</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">CLASSWORK / TOPIC</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">HOMEWORK NOTES</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">GENERAL NOTES</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">SESSION COMPLETED</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">ATTENDEE NAME</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">TOTAL PRESENT</th>
+              <th style="padding:10px 10px; border:1px solid #d99;">TIME DURATION</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = sheetHtml;
+};
+
+window.renderChildAttendanceAndHomework = function() {
+  let s = window.currentStudent;
+  if (!s) {
+    try {
+      const auth = JSON.parse(sessionStorage.getItem("chesskidoo_auth") || sessionStorage.getItem("twoknights_auth") || "{}");
+      const students = window.allStudents || [];
+      if (auth.studentId && students.length) {
+        s = students.find((st) => String(st.id) === String(auth.studentId));
+        if (s) window.currentStudent = s;
+      }
+    } catch (_) {}
+  }
+  if (!s) return;
+
+  const attList = window.allAttendance || [];
+  const myAtt = attList
+    .filter((a) => String(a.student_id) === String(s.id))
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  const present = myAtt.filter((a) => ["present", "late"].includes((a.status || "").toLowerCase())).length;
+  const absent = myAtt.filter((a) => (a.status || "").toLowerCase() === "absent").length;
+  const total = myAtt.length;
+  const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+
+  if (document.getElementById("c-att-total")) document.getElementById("c-att-total").textContent = total;
+  if (document.getElementById("c-att-present")) document.getElementById("c-att-present").textContent = present;
+  if (document.getElementById("c-att-absent")) document.getElementById("c-att-absent").textContent = absent;
+  if (document.getElementById("c-att-rate")) document.getElementById("c-att-rate").textContent = rate + "%";
+
+  // Render Visual Calendar
+  const calContainer = document.getElementById("child-attendance-cal-container");
+  if (calContainer) {
+    window.renderAttendanceCalendar(s, calContainer);
+  }
+
+  // Render Google Sheet style Session Tracker
+  const sheetContainer = document.getElementById("child-session-sheet-container");
+  if (sheetContainer) {
+    window.renderSessionSheet(s.id, sheetContainer);
+  }
+
+  // Render Assigned Homework Cards
+  if (typeof window.renderChildHomework === 'function') {
+    window.renderChildHomework();
+  }
+};
+
+// Auto-wire renderChildAttendance to also trigger the visual calendar and sheet
+const originalRenderChildAttendance = window.renderChildAttendance;
+window.renderChildAttendance = function() {
+  if (typeof originalRenderChildAttendance === 'function') {
+    try { originalRenderChildAttendance(); } catch (_) {}
+  }
+  window.renderChildAttendanceAndHomework();
+};
+

@@ -4,7 +4,8 @@
 // Handles fetching data from Chess.com and Lichess proxies and rendering the dashboard
 
 let chessChartInstance = null;
-let historyChartInstance = null;
+let historyChartInstanceLichess = null;
+let historyChartInstanceChesscom = null;
 let wdlChartInstance = null;
 
 function formatDate(iso) {
@@ -417,7 +418,10 @@ async function loadChessDashboard(student) {
     if (performanceContainer) performanceContainer.innerHTML = 'No data available.';
     // Clear charts left over from the previous student.
     if (chessChartInstance) { chessChartInstance.destroy(); chessChartInstance = null; }
-    renderRatingHistoryChart([]);
+    if (historyChartInstanceLichess) { historyChartInstanceLichess.destroy(); historyChartInstanceLichess = null; }
+    if (historyChartInstanceChesscom) { historyChartInstanceChesscom.destroy(); historyChartInstanceChesscom = null; }
+    renderRatingHistoryChart([], 'none', { instanceKey: 'historyChartInstanceLichess' });
+    renderRatingHistoryChart([], 'none', { instanceKey: 'historyChartInstanceChesscom' });
     renderWdlChart(null, null);
     return;
   }
@@ -452,8 +456,10 @@ async function loadChessDashboard(student) {
         } else {
         student.chesscom_last_online = profile.last_online || chesscomLastOnline;
 
+        const bulletRating = stats.chess_bullet?.last?.rating || 'N/A';
         const blitzRating = stats.chess_blitz?.last?.rating || 'N/A';
         const rapidRating = stats.chess_rapid?.last?.rating || 'N/A';
+        const classicalRating = stats.chess_classical?.last?.rating || 'N/A';
         const puzzleRating = stats.tactics?.highest?.rating || 'N/A';
 
         chesscomCard.innerHTML = `
@@ -466,15 +472,23 @@ async function loadChessDashboard(student) {
             </div>
           </div>
           <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-            <div>
-              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;">
-                <span>Rapid Rating</span>
-                <strong>${rapidRating}</strong>
+            ${[
+              { label: 'Bullet', rating: bulletRating, color: '#ef4444', max: 2500 },
+              { label: 'Blitz', rating: blitzRating, color: '#f59e0b', max: 2500 },
+              { label: 'Rapid', rating: rapidRating, color: '#7FA650', max: 2500 },
+              { label: 'Classical', rating: classicalRating, color: '#3b82f6', max: 2500 },
+              { label: 'Puzzles', rating: puzzleRating, color: '#ec4899', max: 3000 }
+            ].map(item => `
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;">
+                  <span>${item.label}</span>
+                  <strong>${item.rating}</strong>
+                </div>
+                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                  <div style="width:${Math.min(100, (parseInt(item.rating) || 0) / item.max * 100)}%; height:100%; background:linear-gradient(90deg, ${item.color}, ${item.color}cc); border-radius:3px;"></div>
+                </div>
               </div>
-              <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                <div style="width:${Math.min(100, (parseInt(rapidRating) || 0) / 2500 * 100)}%; height:100%; background:linear-gradient(90deg, #7FA650, #95bb66); border-radius:3px;"></div>
-              </div>
-            </div>
+            `).join('')}
           </div>
         `;
 
@@ -675,9 +689,46 @@ async function loadChessDashboard(student) {
     window.currentChessGames = allChesscomGames;
   }
 
+  // If Lichess failed but Chess.com is available, show Chess.com games instead of leaving empty
+  if (lichessUser && !allLichessGames.length && chesscomUser && allChesscomGames.length) {
+    renderChesscomRecentGames(allChesscomGames, recentGamesContainer);
+    window.currentChessGames = [...allLichessGames, ...allChesscomGames];
+  }
+
   // Render Charts
   renderChessChart(ratingsData);
-  renderRatingHistoryChart(lichessHistoryData);
+  if (Array.isArray(lichessHistoryData) && lichessHistoryData.length > 0) {
+    renderRatingHistoryChart(lichessHistoryData, 'lichess', {
+      canvasId: 'chessapi-history-chart-lichess',
+      emptyId: 'chessapi-history-empty-lichess',
+      titleId: 'chessapi-history-title-lichess',
+      instanceKey: 'historyChartInstanceLichess'
+    });
+  } else {
+    renderRatingHistoryChart([], 'none', {
+      canvasId: 'chessapi-history-chart-lichess',
+      emptyId: 'chessapi-history-empty-lichess',
+      titleId: 'chessapi-history-title-lichess',
+      instanceKey: 'historyChartInstanceLichess'
+    });
+  }
+
+  if (chesscomStatsData) {
+    renderRatingHistoryChart(chesscomStatsData, 'chesscom', {
+      canvasId: 'chessapi-history-chart-chesscom',
+      emptyId: 'chessapi-history-empty-chesscom',
+      titleId: 'chessapi-history-title-chesscom',
+      instanceKey: 'historyChartInstanceChesscom'
+    });
+  } else {
+    renderRatingHistoryChart([], 'none', {
+      canvasId: 'chessapi-history-chart-chesscom',
+      emptyId: 'chessapi-history-empty-chesscom',
+      titleId: 'chessapi-history-title-chesscom',
+      instanceKey: 'historyChartInstanceChesscom'
+    });
+  }
+
   renderWdlChart(lichessProfileData, chesscomStatsData);
 
   // If neither loaded recent games container
@@ -770,49 +821,103 @@ const HISTORY_SERIES = [
   { name: 'Puzzles', color: '#ec4899' }
 ];
 
-function renderRatingHistoryChart(ratingHistory) {
-  const ctx = document.getElementById('chessapi-history-chart');
-  const emptyEl = document.getElementById('chessapi-history-empty');
+function renderRatingHistoryChart(ratingHistory, source = 'lichess', opts = {}) {
+  const canvasId = opts.canvasId || 'chessapi-history-chart';
+  const emptyId = opts.emptyId || 'chessapi-history-empty';
+  const titleId = opts.titleId || 'chessapi-history-title';
+  const instanceKey = opts.instanceKey || 'historyChartInstance';
+
+  const ctx = document.getElementById(canvasId);
+  const emptyEl = document.getElementById(emptyId);
+  const titleEl = document.getElementById(titleId);
   if (!ctx) return;
 
-  if (historyChartInstance) {
-    historyChartInstance.destroy();
-    historyChartInstance = null;
+  if (window[instanceKey]) {
+    window[instanceKey].destroy();
+    window[instanceKey] = null;
   }
 
-  const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000;
+  if (titleEl) {
+    if (source === 'lichess') {
+      titleEl.textContent = 'Rating Progression — Lichess (last 12 months)';
+    } else if (source === 'chesscom') {
+      titleEl.textContent = 'Chess.com Current Ratings';
+    } else {
+      titleEl.textContent = 'Rating Progression';
+    }
+  }
+
   const datasets = [];
 
-  HISTORY_SERIES.forEach(({ name, color }) => {
-    const series = (ratingHistory || []).find(h => h.name === name);
-    if (!series || !Array.isArray(series.points) || series.points.length === 0) return;
+  if (source === 'lichess') {
+    const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000;
 
-    let points = series.points.map(([y, m, d, rating]) => ({ x: Date.UTC(y, m, d), y: rating }));
-    const recent = points.filter(p => p.x >= cutoff);
-    // Inactive players may have no points in the window; show their trail anyway.
-    points = recent.length >= 2 ? recent : points.slice(-10);
-    if (points.length === 0) return;
+    HISTORY_SERIES.forEach(({ name, color }) => {
+      const series = (ratingHistory || []).find(h => h.name === name);
+      if (!series || !Array.isArray(series.points) || series.points.length === 0) return;
 
-    datasets.push({
-      label: name,
-      data: points,
-      borderColor: color,
-      backgroundColor: color,
-      borderWidth: 2,
-      pointRadius: points.length > 30 ? 0 : 2,
-      pointHitRadius: 6,
-      tension: 0.25,
-      spanGaps: true
+      let points = series.points.map(([y, m, d, rating]) => ({ x: Date.UTC(y, m, d), y: rating }));
+      const recent = points.filter(p => p.x >= cutoff);
+      points = recent.length >= 2 ? recent : points.slice(-10);
+      if (points.length === 0) return;
+
+      datasets.push({
+        label: name,
+        data: points,
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2,
+        pointRadius: points.length === 1 ? 5 : (points.length > 30 ? 0 : 3),
+        pointHoverRadius: 7,
+        pointHitRadius: 8,
+        tension: 0.25,
+        spanGaps: true
+      });
     });
-  });
+  } else if (source === 'chesscom' && ratingHistory) {
+    const rh = ratingHistory;
+    const labels = [
+      { key: 'chess_bullet', label: 'Bullet', color: '#ef4444' },
+      { key: 'chess_blitz', label: 'Blitz', color: '#f59e0b' },
+      { key: 'chess_rapid', label: 'Rapid', color: '#10b981' },
+      { key: 'chess_classical', label: 'Classical', color: '#8b5cf6' },
+      { key: 'tactics', label: 'Puzzles', color: '#ec4899' }
+    ];
+    labels.forEach(({ key, label, color }) => {
+      const rating = rh[key]?.last?.rating;
+      if (!rating) return;
+      const date = rh[key]?.last?.date ? new Date(rh[key].last.date * 1000) : new Date();
+      datasets.push({
+        label: label,
+        data: [{ x: Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()), y: rating }],
+        borderColor: color,
+        backgroundColor: color,
+        borderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 9,
+        pointHitRadius: 10,
+        tension: 0.25,
+        spanGaps: true
+      });
+    });
+  }
 
   const hasData = datasets.some(ds => ds.data.length > 0);
-  ctx.parentElement.style.display = hasData ? '' : 'none';
-  if (emptyEl) emptyEl.style.display = hasData ? 'none' : '';
+  if (ctx) ctx.style.display = hasData ? 'block' : 'none';
+  if (emptyEl) {
+    if (source === 'lichess') {
+      emptyEl.textContent = 'No Lichess rating history available yet. Play rated games on Lichess to view rating progression.';
+    } else if (source === 'chesscom') {
+      emptyEl.textContent = 'Chess.com does not provide historical rating progression. Current ratings are shown above.';
+    } else {
+      emptyEl.textContent = 'No rating history available yet.';
+    }
+    emptyEl.style.display = hasData ? 'none' : 'block';
+  }
   if (!hasData) return;
 
   const theme = chartThemeColors();
-  historyChartInstance = new Chart(ctx, {
+  window[instanceKey] = new Chart(ctx, {
     type: 'line',
     data: { datasets },
     options: {
@@ -1526,13 +1631,24 @@ function renderChessPerformanceTab(student, lichessData, chesscomData, games) {
         <button class="btn btn-gold btn-sm cta-btn" onclick="openStudentEditPortalModal()">Link Chess.com or Lichess</button>
       </div>
     `;
-    // The static Rating Dashboard / Performance Overview cards on the student
-    // detail page are never auto-cleared, so they'd be stuck on "Loading…".
     const rt = document.getElementById('chessapi-ratings-table');
     if (rt) rt.innerHTML = '<div style="color:var(--ivory-dim)">No chess platforms linked.</div>';
     const pe = document.getElementById('chessapi-performance');
     if (pe) pe.innerHTML = '<div style="color:var(--ivory-dim)">No chess platforms linked.</div>';
     return;
+  }
+
+  // Show/hide rating history chart cards based on linked platforms
+  const lichessCard = document.getElementById('chessapi-history-card-lichess');
+  const chesscomCard = document.getElementById('chessapi-history-card-chesscom');
+  if (lichessCard) lichessCard.style.display = lichessUser ? '' : 'none';
+  if (chesscomCard) chesscomCard.style.display = chesscomUser ? '' : 'none';
+
+  // If only one platform is linked, make the recent games section full width
+  const recentGamesWrapper = document.getElementById('chessapi-recent-games-wrapper');
+  if (recentGamesWrapper) {
+    const onlyOnePlatform = (lichessUser && !chesscomUser) || (!lichessUser && chesscomUser);
+    recentGamesWrapper.style.gridTemplateColumns = onlyOnePlatform ? '1fr' : '';
   }
 
   // Section 3.1: Header

@@ -401,18 +401,8 @@
       </div>
 
         <div id="page-coach-events" class="page coach-only">
-          <div class="coach-shell">
-            <div class="coach-section-block">
-              <div class="coach-section-row">
-                <h2 class="coach-section-title">Events</h2>
-                <button class="btn btn-gold btn-sm" onclick="openCoachEventModal()">
-                  <span class="ico">➕</span> Create Event
-                </button>
-              </div>
-              <div id="coach-events-content">
-                <div class="coach-loading-cell">Loading events...</div>
-              </div>
-            </div>
+          <div id="coach-events-content">
+            <div class="coach-loading-cell">Loading Tournament &amp; Event Hub...</div>
           </div>
         </div>
 
@@ -980,6 +970,13 @@
       </div>
     </div>
 
+    <!-- Event & Tournament Manager Page (Admin) -->
+    <div id="page-events" class="page admin-only">
+      <div id="admin-events-content">
+        <div class="loading-state"><span class="spinner"></span> Loading Tournament &amp; Event Hub...</div>
+      </div>
+    </div>
+
     <!-- E-Library & Study Materials Manager (Admin) -->
     <div id="page-elibrary" class="page admin-only">
       <div class="coach-shell">
@@ -1171,7 +1168,10 @@
               <p style="color:var(--ivory-dim); font-size:14px; margin:0; max-width:720px;">Analyze master games on the interactive board, assign opening repertoires &amp; PGN topics to batches, and monitor real-time daily tactics practice.</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn btn-gold" onclick="window.openAssignStudyTopicModal()" style="display:inline-flex; align-items:center; gap:8px;">
+              <button class="btn btn-gold" onclick="window.openAcademyTournamentArena()" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="ico">🏆</span> In-House Swiss Arena
+              </button>
+              <button class="btn btn-outline" onclick="window.openAssignStudyTopicModal()" style="display:inline-flex; align-items:center; gap:8px; border-color:rgba(218,163,62,0.4); color:var(--gold);">
                 <span class="ico">➕</span> Assign Study Topic
               </button>
               <label class="btn btn-outline" style="display:inline-flex; align-items:center; gap:8px; border-color:rgba(218,163,62,0.4); color:var(--gold); cursor:pointer; position:relative; overflow:hidden;">
@@ -1248,13 +1248,16 @@
                 </div>
 
                 <!-- Board Controls Toolbar -->
-                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.25); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.25); padding:10px; border-radius:10px; border:1px solid var(--border); align-items:center;">
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.firstMove()" title="First Move">⏮</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.prevMove()" title="Previous Move">◀</button>
                   <button class="btn btn-outline btn-sm" id="coach-pgn-btn-autoplay" onclick="window.StudyPGN.toggleAutoplay()" title="Autoplay">▶ Play</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move">▶</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move">⏭</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board">🔄 Flip</button>
+                  <button class="btn btn-outline btn-sm" id="coach-pgn-btn-ai-play" onclick="window.StudyPGN.togglePlayVsAi()" title="Play vs Stockfish AI" style="font-weight:700; border-color:rgba(218,163,62,0.4);">🤖 Play vs AI: OFF</button>
+                  <button class="btn btn-gold btn-sm" onclick="window.openGameReviewModal(window.StudyPGN ? window.StudyPGN.getRawPgn() : '')" title="AI Game Review & Accuracy" style="font-weight:800;">🤖 Game Review</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.showHotkeysModal()" title="Keyboard Shortcuts (?)">⌨️</button>
                   <span id="coach-pgn-eval-text" style="align-self:center; font-size:12px; font-weight:700; color:var(--gold); margin-left:8px;">+0.0</span>
                 </div>
               </div>
@@ -1447,8 +1450,10 @@
       </div>
     </div>
     <div class="profile-actions">
+            <button class="btn btn-gold" onclick="window.openParentReportCardGenerator()" style="display: flex; align-items: center; gap: 6px; font-weight:700;"><span style="font-size: 14px;">📊</span> Parent Report Card</button>
             <button class="btn btn-outline" onclick="openStudentEditPortalModal()" style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 13px;">⚙️</span> Edit Details</button>
-            <button class="btn btn-gold" onclick="openContactModal()">✉️ Message Coach</button>
+            <button class="btn btn-outline" onclick="window.openStudentChangePasswordModal && window.openStudentChangePasswordModal()" style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 13px;">🔑</span> Change Password</button>
+            <button class="btn btn-outline" onclick="openContactModal()">✉️ Message Coach</button>
             <button class="btn btn-outline" onclick="openModal('fb-modal')">📝 Feedback</button>
           </div>
         </div>
@@ -1457,8 +1462,7 @@
         <div class="tabs-nav">
           <button class="tab-link active" onclick="setChildTab('overview', this)">Overview</button>
           <button class="tab-link" onclick="setChildTab('schedule', this)">Schedule</button>
-          <button class="tab-link" onclick="setChildTab('attendance', this)">Attendance</button>
-          <button class="tab-link" onclick="setChildTab('homework', this)">Homework</button>
+          <button class="tab-link" onclick="setChildTab('attendance', this)">📅 Attendance &amp; Homework</button>
           <button class="tab-link" onclick="setChildTab('elibrary', this)">📖 E-Library</button>
           <button class="tab-link" onclick="setChildTab('studypgn', this)">♟️ Study PGN &amp; Tactics</button>
           <button class="tab-link" onclick="setChildTab('growth', this)">Growth</button>
@@ -1514,18 +1518,28 @@
             </div>
           </div>
 
-          <div class="grid-2-col" style="gap:22px">
-            <div class="card">
-              <h3 style="margin-bottom:18px;color:var(--gold)">Coach Review</h3>
-              <div style="padding:18px;background:var(--glass);border-radius:10px;line-height:1.8;margin-bottom:24px;font-size:14px">
-                <span style="color:var(--success);font-weight:700">★ LATEST:</span><br>
-                <span id="c-notes">—</span>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:22px; margin-top:4px;">
+            <div class="card" style="border-left:4px solid var(--gold); background:linear-gradient(145deg, var(--bg2), rgba(218,163,62,0.04));">
+              <h3 style="margin-bottom:14px; color:var(--gold); font-size:16px; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">📝</span> Coach Review & Feedback
+              </h3>
+              <div style="padding:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:10px; line-height:1.7; margin-bottom:18px; font-size:13.5px; color:var(--ivory);">
+                <span style="color:var(--success); font-weight:700;">★ LATEST:</span><br>
+                <span id="c-notes" style="color:var(--ivory-dim);">—</span>
               </div>
-              <div class="stat-label">Current ELO</div>
-              <div class="stat-value" id="c-elo" style="font-size:42px">—</div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <div class="stat-label" style="font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--ivory-dim); margin-bottom:4px;">Current ELO Rating</div>
+                  <div class="stat-value" id="c-elo" style="font-size:38px; font-weight:900; color:var(--gold); line-height:1;">—</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="openContactModal()" style="font-size:11px; padding:6px 14px;">✉️ Message Coach</button>
+              </div>
             </div>
-            <div class="card">
-              <h3 style="margin-bottom:20px;color:var(--gold)">Skill Breakdown</h3>
+            <div class="card" style="border-left:4px solid #3b82f6; background:linear-gradient(145deg, var(--bg2), rgba(59,130,246,0.04));">
+              <h3 style="margin-bottom:16px; color:var(--gold); font-size:16px; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">📊</span> Skill Breakdown
+              </h3>
               <div id="skill-bars"></div>
             </div>
           </div>
@@ -1767,7 +1781,9 @@
           </div>
         </div>
 
+        <!-- UNIFIED ATTENDANCE & HOMEWORK SECTION -->
         <div id="child-tab-attendance" class="child-tab-content">
+          <!-- Summary Metric Cards -->
           <div class="dash-grid" style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="card" style="border-left: 4px solid var(--gold); background: linear-gradient(145deg, var(--bg2), rgba(232, 168, 48, 0.04));">
               <div class="stat-label">Total Classes</div>
@@ -1786,42 +1802,54 @@
               <div class="stat-value" id="c-att-rate" style="color:var(--gold)">0%</div>
             </div>
           </div>
-          
-          <h2 style="font-family:var(--font-head);margin-bottom:18px;font-size:22px;color:var(--gold);display:flex;align-items:center;gap:10px;">
-            <span style="font-size:24px">📅</span> Attendance History
-          </h2>
-          <div class="table-wrap" style="box-shadow: var(--shadow); border-radius: 10px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; border: 1px solid var(--border);">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>General Notes</th>
-                  <th>Classwork Notes</th>
-                  <th>Homework Notes</th>
-                </tr>
-              </thead>
-              <tbody id="child-att-body">
-                <!-- Populated by JS -->
-              </tbody>
-            </table>
+
+          <!-- 1. VISUAL MONTHLY ATTENDANCE & TOPICS CALENDAR (User Design) -->
+          <div style="margin-bottom: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h2 style="font-family:var(--font-head); margin:0; font-size:22px; color:var(--gold); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:24px">🗓️</span> Monthly Attendance &amp; Lesson Calendar
+              </h2>
+            </div>
+            <div id="child-attendance-cal-container">
+              <!-- Rendered dynamically by window.renderAttendanceCalendar -->
+            </div>
+          </div>
+
+          <!-- 2. SESSION TRACKING DATA SHEET (Google Sheet Design) -->
+          <div style="margin-bottom: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <h2 style="font-family:var(--font-head); margin:0; font-size:22px; color:var(--gold); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:24px">📊</span> Coach Session &amp; Attendance Data Sheet
+              </h2>
+              <button class="btn btn-outline btn-sm" onclick="window.print()" style="display:flex; align-items:center; gap:6px;">
+                🖨️ Print Sheet
+              </button>
+            </div>
+            <div id="child-session-sheet-container">
+              <!-- Rendered dynamically by window.renderSessionSheet -->
+            </div>
+          </div>
+
+          <!-- 3. ASSIGNED HOMEWORK & PRACTICE MATERIALS -->
+          <div style="margin-bottom: 20px;">
+            <div class="card" style="padding:22px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+                <div>
+                  <h3 style="color:var(--gold); margin:0 0 6px 0; font-family:var(--font-head); font-size:18px; display:flex; align-items:center; gap:8px;">
+                    <span>📝</span> Assigned Homework &amp; Practice Materials
+                  </h3>
+                  <p style="margin:0; color:var(--ivory-dim); font-size:12px;">Homework assigned directly to your child, their batch, or all students.</p>
+                </div>
+                <button class="btn btn-outline" onclick="if(window.renderChildHomework)window.renderChildHomework()">🔄 Refresh Homework</button>
+              </div>
+              <div id="child-homework-list" style="display:grid; gap:14px;">
+                <div class="loading-state"><span class="spinner"></span> Loading homework...</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div id="child-tab-homework" class="child-tab-content">
-          <div class="card" style="padding:22px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-              <div>
-                <h3 style="color:var(--gold); margin:0 0 6px 0; font-family:var(--font-head); font-size:18px;">Assigned Homework</h3>
-                <p style="margin:0; color:var(--ivory-dim); font-size:12px;">Homework assigned directly to your child, their batch, or all students.</p>
-              </div>
-              <button class="btn btn-outline" onclick="renderChildHomework()">Refresh</button>
-            </div>
-            <div id="child-homework-list" style="display:grid; gap:14px;">
-              <div class="loading-state"><span class="spinner"></span> Loading homework</div>
-            </div>
-          </div>
-        </div>
+        <div id="child-tab-homework" class="child-tab-content" style="display:none;"></div>
 
         <div id="child-tab-growth" class="child-tab-content">
           <div class="dash-grid" style="margin-bottom:22px">
@@ -1995,13 +2023,14 @@
                 </div>
 
                 <!-- Board Controls Toolbar -->
-                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px; border:1px solid var(--border); align-items:center;">
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.firstMove()" title="First Move (↑)">⏮</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.prevMove()" title="Previous Move (←)">◀</button>
                   <button class="btn btn-outline btn-sm" id="pgn-btn-autoplay" onclick="window.StudyPGN.toggleAutoplay()" title="Autoplay (Space)">▶ Play</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move (→)">▶</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move (↓)">⏭</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board (F)">🔄 Flip</button>
+                  <button class="btn btn-outline btn-sm" id="pgn-btn-ai-play" onclick="window.StudyPGN.togglePlayVsAi()" title="Play vs Stockfish AI" style="font-weight:700; border-color:rgba(218,163,62,0.4);">🤖 Play vs AI: OFF</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.showHotkeysModal()" title="Keyboard Shortcuts (?)">⌨️</button>
                   <span id="pgn-eval-text" style="align-self:center; font-size:12px; font-weight:700; color:var(--gold); margin-left:8px;">+0.0</span>
                 </div>
@@ -3634,51 +3663,47 @@
     <div class="modal-title">Enroll New Student</div>
     <div class="modal-sub">Student Enrollment Details</div>
     
-<div class="modal-grid">
+      <div class="modal-grid">
         <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="m-name" placeholder="Enter student name">
+          <label>Full Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="m-name" placeholder="Enter student name" required>
         </div>
         <div class="form-group">
-          <label>Student Email</label>
-          <input type="email" id="m-email" placeholder="student@example.com (used for student login)">
+          <label>Student Email <span style="color:var(--danger)">*</span></label>
+          <input type="email" id="m-email" placeholder="student@example.com (used for student login)" required>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="form-group">
+          <label>Father's / Guardian's Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="m-parent-name" placeholder="Father's or guardian full name" required>
         </div>
         <div class="form-group">
-          <label>Parent Phone</label>
-         <div style="display:flex;gap:8px">
-           <div class="country-selector">
-             <div id="country-selected" onclick="event.stopPropagation();openCountryDropdown()" class="country-selected-display">
-               <span style="display: flex; align-items: center; gap: 6px;"><img src="https://flagcdn.com/w20/in.png" style="width: 20px; height: 14px; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" alt="India" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span class="country-flag-emoji" style="display: none; font-size: 17px; line-height: 1;">🇮🇳</span><span style="font-family: monospace; font-size: 11px; font-weight: 700; opacity: 0.75;">IN</span></span><span class="country-dial">+91</span>
-             </div>
-             <div id="country-dropdown" class="country-dropdown" >
-             </div>
-           </div>
-           <input type="tel" id="m-phone" placeholder="10 digits" maxlength="13" inputmode="numeric" style="flex:1">
-         </div>
-       </div>
-     </div>
+          <label>Father's / Parent Phone <span style="color:var(--danger)">*</span></label>
+          <div style="display:flex;gap:8px">
+            <div class="country-selector">
+              <div id="country-selected" onclick="event.stopPropagation();openCountryDropdown()" class="country-selected-display">
+                <span style="display: flex; align-items: center; gap: 6px;"><img src="https://flagcdn.com/w20/in.png" style="width: 20px; height: 14px; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" alt="India" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span class="country-flag-emoji" style="display: none; font-size: 17px; line-height: 1;">🇮🇳</span><span style="font-family: monospace; font-size: 11px; font-weight: 700; opacity: 0.75;">IN</span></span><span class="country-dial">+91</span>
+              </div>
+              <div id="country-dropdown" class="country-dropdown" >
+              </div>
+            </div>
+            <input type="tel" id="m-phone" placeholder="10 digits" maxlength="13" inputmode="numeric" style="flex:1" required>
+          </div>
+        </div>
+      </div>
 
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Parent / Guardian Name</label>
-         <input type="text" id="m-parent-name" placeholder="Parent or guardian full name">
-       </div>
-       <div class="form-group">
-         <label>Parent Email</label>
-         <input type="email" id="m-parent-email" placeholder="parent@example.com">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Date of Birth</label>
-         <input type="date" id="m-dob">
-       </div>
-       <div class="form-group">
-         <label>Address</label>
-         <input type="text" id="m-address" placeholder="Full address">
-       </div>
-     </div>
+      <div class="modal-grid">
+        <div class="form-group">
+          <label>Parent Email</label>
+          <input type="email" id="m-parent-email" placeholder="parent@example.com">
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" id="m-dob">
+        </div>
+      </div>
     <div class="modal-grid">
       <div class="form-group">
         <label>Student Level</label>
@@ -3742,8 +3767,26 @@
 
 <div class="modal-grid">
        <div class="form-group">
-         <label>Monthly Fees (₹)</label>
-         <input type="number" id="m-fee" placeholder="e.g. 5000">
+         <label>Monthly Tuition Fees</label>
+         <div style="display:flex; gap:6px;">
+           <select id="m-fee-currency" style="width:115px; font-weight:700; background:var(--bg2); color:var(--gold); border:1px solid var(--border); border-radius:6px;" onchange="window.updateFeeCurrencyConversion && window.updateFeeCurrencyConversion()">
+             <option value="INR" selected>₹ INR</option>
+             <option value="USD">$ USD</option>
+             <option value="GBP">£ GBP</option>
+             <option value="EUR">€ EUR</option>
+             <option value="CAD">C$ CAD</option>
+             <option value="AUD">A$ AUD</option>
+             <option value="SGD">S$ SGD</option>
+             <option value="AED">AED</option>
+             <option value="MYR">RM MYR</option>
+             <option value="SAR">SR SAR</option>
+             <option value="QAR">QR QAR</option>
+             <option value="JPY">¥ JPY</option>
+             <option value="NZD">NZ$ NZD</option>
+           </select>
+           <input type="number" id="m-fee" placeholder="e.g. 5000" oninput="window.updateFeeCurrencyConversion && window.updateFeeCurrencyConversion()" style="flex:1;">
+         </div>
+         <div id="m-fee-converted-preview" style="font-size:11px; color:var(--gold); margin-top:4px; display:none;"></div>
        </div>
        <div class="form-group">
          <label>Admission Fee (₹)</label>
@@ -3814,15 +3857,15 @@
       
       <div class="modal-grid">
         <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="e-name">
+          <label>Full Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="e-name" required>
         </div>
         <div class="form-group">
-          <label>Student Login Email</label>
-          <input type="email" id="e-email" placeholder="student@email.com (used for student login)">
+          <label>Student Login Email <span style="color:var(--danger)">*</span></label>
+          <input type="email" id="e-email" placeholder="student@email.com (used for student login)" required>
         </div>
         <div class="form-group">
-          <label>Parent Phone</label>
+          <label>Father's / Parent Phone <span style="color:var(--danger)">*</span></label>
           <div style="display:flex;gap:8px">
             <div class="country-selector">
               <div id="country-selected-edit" onclick="event.stopPropagation();openCountryDropdownEdit()" class="country-selected-display">
@@ -3831,15 +3874,15 @@
               <div id="country-dropdown-edit" class="country-dropdown" >
               </div>
             </div>
-            <input type="tel" id="e-phone" placeholder="10 digits" maxlength="13" inputmode="numeric" style="flex:1">
+            <input type="tel" id="e-phone" placeholder="10 digits" maxlength="13" inputmode="numeric" style="flex:1" required>
           </div>
         </div>
       </div>
 
       <div class="modal-grid">
         <div class="form-group">
-          <label>Parent / Guardian Name</label>
-          <input type="text" id="e-parent-name" placeholder="Parent or guardian full name">
+          <label>Father's / Guardian's Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="e-parent-name" placeholder="Father's or guardian full name" required>
         </div>
         <div class="form-group">
           <label>Session Type</label>
@@ -3902,8 +3945,26 @@
 
     <div class="modal-grid" style="margin-top: 12px;">
       <div class="form-group">
-        <label>Monthly Fee (₹)</label>
-        <input type="number" id="e-fee">
+        <label>Monthly Tuition Fee</label>
+        <div style="display:flex; gap:6px;">
+          <select id="e-fee-currency" style="width:115px; font-weight:700; background:var(--bg2); color:var(--gold); border:1px solid var(--border); border-radius:6px;" onchange="window.updateEditFeeCurrencyConversion && window.updateEditFeeCurrencyConversion()">
+            <option value="INR" selected>₹ INR</option>
+            <option value="USD">$ USD</option>
+            <option value="GBP">£ GBP</option>
+            <option value="EUR">€ EUR</option>
+            <option value="CAD">C$ CAD</option>
+            <option value="AUD">A$ AUD</option>
+            <option value="SGD">S$ SGD</option>
+            <option value="AED">AED</option>
+            <option value="MYR">RM MYR</option>
+            <option value="SAR">SR SAR</option>
+            <option value="QAR">QR QAR</option>
+            <option value="JPY">¥ JPY</option>
+            <option value="NZD">NZ$ NZD</option>
+          </select>
+          <input type="number" id="e-fee" oninput="window.updateEditFeeCurrencyConversion && window.updateEditFeeCurrencyConversion()" style="flex:1;">
+        </div>
+        <div id="e-fee-converted-preview" style="font-size:11px; color:var(--gold); margin-top:4px; display:none;"></div>
       </div>
       <div class="form-group">
         <label>Admission Fee (₹)</label>
@@ -3964,92 +4025,10 @@
       </div>
     </div>
 
-<div class="modal-grid" style="margin-top: 12px;">
-        <div class="form-group">
-          <!-- Empty placeholder to balance the grid layout -->
-        </div>
-        <div class="form-group">
-          <!-- Empty placeholder to balance the grid layout -->
-        </div>
+      <div class="form-group" style="margin-top: 12px;">
+        <label>Staff Notes</label>
+        <textarea id="e-notes" class="input-field" style="height:80px;resize:vertical;" placeholder="Notes about student progress, behavior, or special requests..."></textarea>
       </div>
-
-     <!-- Parent/Guardian Details Section -->
-     <div class="modal-grid" style="margin-top: 12px;">
-       <div class="form-group">
-         <label>Father's Name</label>
-         <input type="text" id="e-father-name" placeholder="Father's full name">
-       </div>
-       <div class="form-group">
-         <label>Father's Phone</label>
-         <input type="tel" id="e-father-phone" placeholder="Father's contact number">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Father's Qualification</label>
-         <input type="text" id="e-father-qualification" placeholder="e.g. B.Tech, MBA, etc.">
-       </div>
-       <div class="form-group">
-         <label>Father's Profession</label>
-         <input type="text" id="e-father-profession" placeholder="e.g. Engineer, Doctor, etc.">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Father's Email</label>
-         <input type="email" id="e-father-email" placeholder="Father's email address">
-       </div>
-       <div class="form-group">
-         <label>Father's WhatsApp</label>
-         <input type="tel" id="e-father-whatsapp" placeholder="WhatsApp number with country code">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Mother's Name</label>
-         <input type="text" id="e-mother-name" placeholder="Mother's full name">
-       </div>
-       <div class="form-group">
-         <label>Mother's Phone</label>
-         <input type="tel" id="e-mother-phone" placeholder="Mother's contact number">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Mother's Qualification</label>
-         <input type="text" id="e-mother-qualification" placeholder="e.g. B.Tech, MBA, etc.">
-       </div>
-       <div class="form-group">
-         <label>Mother's Profession</label>
-         <input type="text" id="e-mother-profession" placeholder="e.g. Engineer, Teacher, etc.">
-       </div>
-     </div>
-
-     <div class="modal-grid">
-       <div class="form-group">
-         <label>Mother's Email</label>
-         <input type="email" id="e-mother-email" placeholder="Mother's email address">
-       </div>
-       <div class="form-group">
-         <label>Mother's WhatsApp</label>
-         <input type="tel" id="e-mother-whatsapp" placeholder="WhatsApp number with country code">
-       </div>
-     </div>
-
-     <!-- Things about Child Section -->
-     <div class="form-group" style="margin-top: 12px;">
-       <label>Things about the Child</label>
-       <textarea id="e-special-notes" placeholder="Child's interests, strengths, weaknesses, special requirements, etc..." style="width:100%; min-height:80px; padding:10px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:6px; font-size:13px; resize:vertical;"></textarea>
-     </div>
-
-     <div class="form-group">
-       <label>Staff Notes</label>
-       <textarea id="e-notes" class="input-field" style="height:80px;resize:vertical;" placeholder="Notes about student progress, behavior, or special requests..."></textarea>
-     </div>
 
      <div style="display:flex;gap:10px;margin-top:20px; border-top: 1px solid var(--border); padding-top: 20px;">
        <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Discard</button>
@@ -4542,27 +4521,82 @@
   </div>
 </div>
 
-<!-- Contact Modal -->
+<!-- Contact Coach Modal -->
 <div class="modal" id="contact-modal">
-  <div class="modal-box">
-    <div class="modal-title">Message Coach</div>
-    <div class="modal-sub">To: <strong id="contact-coach">—</strong></div>
-    <textarea id="contact-msg" rows="5" placeholder="Your message…"></textarea>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-gold" style="flex:1" onclick="sendMsg()">Send</button>
+  <div class="modal-box" style="max-width:540px; background:#0f172a; border:1.5px solid var(--gold); border-radius:18px; padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
+      <div>
+        <span style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase;">✉️ Parent Message Hub</span>
+        <h3 style="margin:2px 0 0; color:#fff; font-size:18px; font-weight:700;">Message Head Coach</h3>
+      </div>
+      <button class="btn btn-outline-grey btn-sm" onclick="closeModals()" style="padding:4px 8px;">✕</button>
+    </div>
+    <div style="font-size:13px; color:var(--ivory-dim); margin-bottom:12px;">Recipient: <strong id="contact-coach" style="color:var(--gold);">Coach Saran</strong></div>
+    
+    <!-- Quick Message Chips -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+      <button class="btn btn-outline btn-sm" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('contact-msg').value='Need to request an extra doubt-clearing session for my child.'">⏱️ Extra Doubt Class</button>
+      <button class="btn btn-outline btn-sm" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('contact-msg').value='My child cannot attend the upcoming class due to school exams.'">📅 Leave / Reschedule</button>
+      <button class="btn btn-outline btn-sm" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('contact-msg').value='Question regarding recent homework puzzles.'">📚 Homework Question</button>
+    </div>
+
+    <textarea id="contact-msg" rows="4" placeholder="Type your message to the coach here..." style="width:100%; padding:12px; border-radius:10px; background:var(--bg3); border:1px solid var(--border); color:#fff; font-family:inherit; margin-bottom:16px; resize:vertical;"></textarea>
+    
+    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-outline" style="border-color:#25d366; color:#25d366; font-weight:700;" onclick="sendMsgWhatsApp()">
+        💬 Send via WhatsApp
+      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline-grey" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-gold" style="font-weight:700;" onclick="sendMsg()">✉️ Send to Portal</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Feedback Modal -->
 <div class="modal" id="fb-modal">
-  <div class="modal-box">
-    <div class="modal-title">Academy Feedback</div>
-    <textarea id="fb-msg" rows="5" placeholder="Your feedback…"></textarea>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-gold" style="flex:1" onclick="sendFeedback()">Submit</button>
+  <div class="modal-box" style="max-width:540px; background:#0f172a; border:1.5px solid var(--gold); border-radius:18px; padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
+      <div>
+        <span style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase;">🌟 Academy Feedback</span>
+        <h3 style="margin:2px 0 0; color:#fff; font-size:18px; font-weight:700;">Rate Your Academy Experience</h3>
+      </div>
+      <button class="btn btn-outline-grey btn-sm" onclick="closeModals()" style="padding:4px 8px;">✕</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div>
+        <label style="font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:4px;">Rating Score</label>
+        <select id="fb-rating" class="input-field" style="margin:0; width:100%;">
+          <option value="5 Stars">⭐⭐⭐⭐⭐ 5 Stars (Exceptional)</option>
+          <option value="4 Stars">⭐⭐⭐⭐ 4 Stars (Very Good)</option>
+          <option value="3 Stars">⭐⭐⭐ 3 Stars (Satisfactory)</option>
+          <option value="2 Stars">⭐⭐ 2 Stars (Needs Improvement)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:4px;">Feedback Category</label>
+        <select id="fb-category" class="input-field" style="margin:0; width:100%;">
+          <option value="Curriculum & Teaching">🎓 Curriculum &amp; Teaching</option>
+          <option value="Coach Dedication">👨‍🏫 Coach Dedication</option>
+          <option value="Tournaments & Arena">🏆 Tournaments &amp; Practice</option>
+          <option value="Website & Portal">💻 Website &amp; Portal Tech</option>
+          <option value="General Appreciation">🌟 General Appreciation</option>
+        </select>
+      </div>
+    </div>
+
+    <textarea id="fb-msg" rows="4" placeholder="Share your suggestions, review, or appreciation for our chess coaching..." style="width:100%; padding:12px; border-radius:10px; background:var(--bg3); border:1px solid var(--border); color:#fff; font-family:inherit; margin-bottom:16px; resize:vertical;"></textarea>
+
+    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-outline" style="border-color:#25d366; color:#25d366; font-weight:700;" onclick="sendFeedbackWhatsApp()">
+        💬 Share on WhatsApp
+      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline-grey" onclick="closeModals()">Cancel</button>
+        <button class="btn btn-gold" style="font-weight:700;" onclick="sendFeedback()">🚀 Submit Feedback</button>
+      </div>
     </div>
   </div>
 </div>
@@ -5014,6 +5048,8 @@
       <script src="/lms/js/calculator.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/elibrary.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/study-pgn.js?v=1.0" charset="utf-8"></script>
+      <script src="/lms/js/game-review.js?v=1.0" charset="utf-8"></script>
+      <script src="/lms/js/report-card.js?v=1.0" charset="utf-8"></script>
       <script src="/lms/js/reporting.js?v=v13&t=20260602c" charset="utf-8"></script>
       <script src="/lms/js/ai-assistant.js?v=v4&t=20260601" charset="utf-8"></script>
       <script src="/lms/js/auth.js?v=v5&t=20260730a" charset="utf-8"></script>
@@ -5547,6 +5583,30 @@
 
             <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
               <button class="btn btn-outline-grey" onclick="window.closeImportPgnModal()">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Player Theater Master Modal -->
+        <div class="modal" id="video-player-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:16px;" onclick="if(event.target===this)window.closeVideoModal()">
+          <div class="modal-box" style="max-width:860px; width:100%; background:#0b1329; border:1px solid rgba(218, 163, 62, 0.4); border-radius:16px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,0.9); display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+            <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, #1e293b, #0f172a); border-bottom:1px solid rgba(218,163,62,0.2);">
+              <h3 id="video-modal-title" style="margin:0; color:var(--gold); font-size:16px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:700px;">🎥 Chess Masterclass Lecture</h3>
+              <button onclick="window.closeVideoModal()" style="background:none; border:none; color:var(--ivory-dim); font-size:22px; cursor:pointer; padding:0 4px; line-height:1;">✕</button>
+            </div>
+            <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; background:#000;">
+              <iframe id="video-modal-iframe" src="" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.06); flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn btn-gold btn-sm" onclick="window.closeVideoModal(); setChildTab('studypgn', this);" style="display:flex; align-items:center; gap:6px;">
+                  <span>♟️ Practice on Study Board</span>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="window.openYouTubeExternal()" id="btn-yt-external" style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                  <span>📺 Open in YouTube ↗</span>
+                </button>
+              </div>
+              <button class="btn btn-outline-grey btn-sm" onclick="window.closeVideoModal()">Close Player</button>
             </div>
           </div>
         </div>

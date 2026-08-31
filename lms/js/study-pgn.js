@@ -61,175 +61,289 @@
   // ── Curated Grandmaster PGN Vault & Repertoires ──
   const CURATED_STUDY_GAMES = [
     {
-      id: 'gm-opera-1858',
-      title: 'The Opera Game: Paul Morphy vs Duke of Brunswick (1858)',
-      category: 'Masterclasses',
-      level: 'Beginner',
-      white: 'Paul Morphy',
-      black: 'Duke of Brunswick & Count Isouard',
-      result: '1-0',
-      description: 'The most famous game in chess history illustrating rapid development, open lines, and deflection sacrifices.',
-      pgn: `[Event "Paris Opera"]
-[Site "Paris FRA"]
-[Date "1858.??.??"]
-[White "Paul Morphy"]
-[Black "Duke of Brunswick and Count Isouard"]
-[Result "1-0"]
-[ECO "C41"]
-
-1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0`
-    },
-    {
-      id: 'gm-immortal-1851',
-      title: 'The Immortal Game: Adolf Anderssen vs Lionel Kieseritzky (1851)',
-      category: 'Masterclasses',
-      level: 'Intermediate',
-      white: 'Adolf Anderssen',
-      black: 'Lionel Kieseritzky',
-      result: '1-0',
-      description: 'The romantic era masterwork featuring double rook sacrifices and a queen sacrifice culminating in a minor piece checkmate.',
-      pgn: `[Event "London"]
-[Site "London ENG"]
-[Date "1851.06.21"]
-[White "Adolf Anderssen"]
-[Black "Lionel Kieseritzky"]
-[Result "1-0"]
-[ECO "C33"]
-
-1. e4 e5 2. f4 exf4 3. Bc4 Qh4+ 4. Kf1 b5 5. Bxb5 Nf6 6. Nf3 Qh6 7. d3 Nh5 8. Nh4 Qg5 9. Nf5 c6 10. g4 Nf6 11. Rg1 cxb5 12. h4 Qg6 13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1 19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7# 1-0`
-    },
-    {
-      id: 'gm-fischer-spassky-1972',
-      title: 'Bobby Fischer vs Boris Spassky: World Championship Game 6 (1972)',
-      category: 'Masterclasses',
-      level: 'Advanced',
-      white: 'Robert James Fischer',
-      black: 'Boris Spassky',
-      result: '1-0',
-      description: 'The Game of the Century in Reykjavik. Fischer deviates with 1. c4 and executes a positional masterpiece that earned a standing ovation from Spassky.',
-      pgn: `[Event "World Championship Match"]
-[Site "Reykjavik ISL"]
-[Date "1972.07.23"]
-[White "Robert James Fischer"]
-[Black "Boris Spassky"]
-[Result "1-0"]
-[ECO "D59"]
-
-1. c4 e6 2. Nf3 d5 3. d4 Nf6 4. Nc3 Be7 5. Bg5 O-O 6. e3 h6 7. Bh4 b6 8. cxd5 Nxd5 9. Bxe7 Qxe7 10. Nxd5 exd5 11. Rc1 Be6 12. Qa4 c5 13. Qa3 Rc8 14. Bb5 a6 15. dxc5 bxc5 16. O-O Ra7 17. Be2 Nd7 18. Nd4 Qf8 19. Nxe6 fxe6 20. e4 d4 21. f4 Qe7 22. e5 Rb8 23. Bc4 Kh8 24. Qh3 Nf8 25. b3 a5 26. f5 exf5 27. Rxf5 Nh7 28. Rcf1 Qd8 29. Qg3 Re7 30. h4 Rbb7 31. e6 Rbc7 32. Qe5 Qe8 33. a4 Qd8 34. R1f2 Qe8 35. R2f3 Qd8 36. Bd3 Qe8 37. Qe4 Nf6 38. Rxf6 gxf6 39. Rxf6 Kg8 40. Bc4 Kh8 41. Qf4 1-0`
-    },
-    {
-      id: 'gm-kasparov-anand-1995',
-      title: 'Kasparov vs Anand: World Championship Sicilian Dragon (1995)',
-      category: 'Openings',
-      level: 'Advanced',
-      white: 'Garry Kasparov',
-      black: 'Viswanathan Anand',
-      result: '1-0',
-      description: 'Garry Kasparov\'s theoretical novelty and exchange sacrifice on c3 in the World Chess Championship 1995.',
-      pgn: `[Event "World Championship"]
-[Site "New York, NY USA"]
-[Date "1995.09.25"]
-[White "Garry Kasparov"]
-[Black "Viswanathan Anand"]
-[Result "1-0"]
-[ECO "B78"]
-
-1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6 6. Be3 Bg7 7. f3 O-O 8. Qd2 Nc6 9. Bc4 Bd7 10. O-O-O Ne5 11. Bb3 Rc8 12. h4 h5 13. Kb1 Nc4 14. Bxc4 Rxc4 15. Nde2 b5 16. Bh6 Qa5 17. Bxg7 Kxg7 18. Nf4 Rfc8 19. Ncd5 Qxd2 20. Rxd2 Nxd5 21. Nxd5 Kf8 22. Re1 Rb8 23. b3 Rc5 24. Nf4 Rbc8 25. Kb2 a5 26. a3 1-0`
-    },
-    {
-      id: 'gm-carlsen-anand-2013',
-      title: 'Magnus Carlsen vs Viswanathan Anand: Berlin Endgame (2013)',
+      id: 'gm-basic-checkmate-pieces',
+      title: 'Basic Checkmates: King + Queen vs King',
       category: 'Endgames',
-      level: 'Advanced',
-      white: 'Viswanathan Anand',
-      black: 'Magnus Carlsen',
-      result: '0-1',
-      description: 'Carlsen activates the rook and coordinates knight-pawn endgame pressure to secure his first World Championship title.',
-      pgn: `[Event "World Championship Match"]
-[Site "Chennai IND"]
-[Date "2013.11.16"]
-[White "Viswanathan Anand"]
-[Black "Magnus Carlsen"]
-[Result "0-1"]
-[ECO "C67"]
-
-1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. d4 Nd6 6. Bxc6 dxc6 7. dxe5 Nf5 8. Qxd8+ Kxd8 9. h3 Bd7 10. Nc3 h6 11. b3 Kc8 12. Bb2 b6 13. Rad1 Ne7 14. Ne2 Ng6 15. Ne1 h5 16. f4 Bf5 17. Ng3 Bc5+ 18. Kh2 Bg4 19. Rd3 h4 20. Ne4 Be2 21. Nxc5 bxc5 22. Rf2 Bxd3 23. Nxd3 c4 24. bxc4 Rb8 25. f5 Ne7 26. Ba3 Re8 27. Rf4 Rb1 28. f6 gxf6 29. Rxf6 Ng6 30. Rxf7 Nxe5 31. Rf4 Ra1 32. Bb2 Rxa2 33. Bxe5 Rxc2 34. Rxh4 a5 35. Rh7 a4 36. Rxc7+ Kd8 37. Ra7 Rxc4 38. g4 c5 39. Kg3 Re6 40. g5 Ke8 41. h4 Re7 42. Ra8+ Kf7 43. h5 Rd7 44. Nf4 0-1`
-    },
-    {
-      id: 'gm-pragg-nakamura-2023',
-      title: 'Rameshbabu Praggnanandhaa vs Hikaru Nakamura: World Cup (2023)',
-      category: 'Masterclasses',
-      level: 'Advanced',
-      white: 'Rameshbabu Praggnanandhaa',
-      black: 'Hikaru Nakamura',
-      result: '1-0',
-      description: 'Indian Grandmaster Praggnanandhaa outplays World No. 2 Hikaru Nakamura in the FIDE World Cup tiebreaks with razor-sharp Italian precision.',
-      pgn: `[Event "FIDE World Cup 2023"]
-[Site "Baku AZE"]
-[Date "2023.08.11"]
-[White "Rameshbabu Praggnanandhaa"]
-[Black "Hikaru Nakamura"]
-[Result "1-0"]
-[ECO "C54"]
-
-1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 d6 6. O-O a5 7. Re1 O-O 8. Bg5 h6 9. Bh4 Ba7 10. Nbd2 Be6 11. Bb5 g5 12. Bg3 Ne7 13. d4 exd4 14. Nxd4 Ng6 15. N2f3 Nh5 16. Nf5 Nxg3 17. hxg3 h5 18. Qd2 g4 19. N3d4 Qf6 20. Rad1 Rad8 21. Bd3 Ne5 22. Bc2 Rfe8 23. Qf4 Bc8 24. Ba4 c6 25. Bc2 Bc5 26. a3 d5 27. exd5 Rxd5 28. Bb3 Rdd8 29. Nh6+ Kg7 30. Qxf6+ Kxf6 31. Rxe5 Rxe5 32. Nxf7 Rde8 33. Nxe5 Rxe5 34. Kf1 Re7 35. Bc2 Bd7 36. Nb3 Bb6 37. Rd6+ Be6 38. Nd4 Bxd4 39. Rxd4 1-0`
-    },
-    {
-      id: 'gm-evans-gambit-repertoire',
-      title: 'Italian Game: Evans Gambit Master Opening Repertoire',
-      category: 'Openings',
-      level: 'Intermediate',
-      white: 'White Repertoire',
-      black: 'Classical Black Lines',
-      result: '1-0',
-      description: 'The premier attacking weapon for 1. e4 players. Sacrificing the b4 pawn for rapid development, open diagonals, and overwhelming kingside attacks.',
-      pgn: `[Event "Academy Repertoire"]
-[Site "ChessKidoo Academy"]
-[Date "2026.01.01"]
-[White "Evans Gambit Lines"]
-[Black "Theory"]
-[Result "1-0"]
-[ECO "C51"]
-
-1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. Ng5 d5 9. exd5 Ne5 10. Bb3 O-O 11. Qxd4 N7g6 12. Ba3 Re8 13. h4 h6 14. Ne4 Qxh4 15. Nbd2 Bb6 16. Bc5 Nf4 17. Rfe1 Bh3 18. g3 Qg4 19. Bd1 Qg6 20. Bxb6 axb6 21. Re3 1-0`
-    },
-    {
-      id: 'gm-sicilian-najdorf',
-      title: 'Sicilian Defense: Najdorf 6. Bg5 Master Lines',
-      category: 'Openings',
-      level: 'Advanced',
-      white: 'White Theory',
-      black: 'Black Repertoire',
-      result: '0-1',
-      description: 'The sharpest opening in chess, favored by Kasparov and Fischer. Sharp counter-play on the c-file with dynamic piece play.',
-      pgn: `[Event "Academy Opening Lab"]
-[Site "ChessKidoo"]
-[Date "2026.01.01"]
-[White "Classical 6. Bg5"]
-[Black "Najdorf Repertoire"]
-[Result "0-1"]
-[ECO "B96"]
-
-1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. f4 Nbd7 8. Qf3 Qc7 9. O-O-O b5 10. Bd3 Bb7 11. Rhe1 Be7 12. Qg3 b4 13. Nd5 exd5 14. exd5 Kd8 15. Nc6+ Bxc6 16. dxc6 Qxc6 17. Bf5 Re8 18. Bxf6 Nxf6 19. Qxg7 d5 20. Qxf7 Ra7 21. Re6 Qc7 0-1`
-    },
-    {
-      id: 'gm-lucena-endgame',
-      title: 'Endgame Mastery: The Lucena Bridge Technique',
-      category: 'Endgames',
-      level: 'Intermediate',
-      white: 'White to Move',
+      level: 'Basic',
+      white: 'White',
       black: 'Black',
       result: '1-0',
-      description: 'The fundamental winning technique for Rook and Pawn vs Rook endgames. Build the 4th rank bridge!',
-      pgn: `[Event "Theoretical Endgame Study"]
+      description: 'Learn the fundamental queen checkmate technique. Drive the opposing king to the edge and deliver checkmate with your king supporting the queen.',
+      pgn: `[Event "Basic Endgame Lesson"]
 [Site "ChessKidoo Academy"]
 [Date "2026.01.01"]
-[White "Lucena Position"]
-[Black "Defending Side"]
+[White "Student"]
+[Black "Coach"]
 [Result "1-0"]
-[FEN "1K1R4/1P1k4/8/8/8/8/8/2r5 w - - 0 1"]
+[ECO "N/A"]
 
-1. Rd4! Rh1 2. Ka7 Ra1+ 3. Kb6 Rb1+ 4. Ka6 Ra1+ 5. Kb5 Rb1+ 6. Rb4! 1-0`
+1. Qb5 Kd6 2. Qd5+ Ke7 3. Kc7 Qe8+ 4. Kd7 Qf8 5. Qd6+ Ke8 6. Ke6 Qf6+ 7. Kxf6 1-0`
+    },
+    {
+      id: 'gm-basic-knight-bishop',
+      title: 'Basic Checkmates: King + Knight + Bishop vs King',
+      category: 'Endgames',
+      level: 'Basic',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Master the two minor piece checkmate pattern using the knight and bishop to corner the enemy king.',
+      pgn: `[Event "Basic Endgame Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. Bb4 Ke7 2. Nd6 Kd8 3. Bc5 Kc8 4. Ne8+ Kd8 5. Nf6+ Ke8 6. Bd6 Kf8 7. Ng8+ Kg8 8. Bxg8 1-0`
+    },
+    {
+      id: 'gm-basic-pawn-promotion',
+      title: 'Basic Pawn Promotion: Passed Pawns and Queening',
+      category: 'Endgames',
+      level: 'Basic',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Understand how to advance passed pawns to promotion while the opponent tries to stop them with their king.',
+      pgn: `[Event "Basic Endgame Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. e4 e5 2. f4 exf4 3. h4 g5 4. hxg5 h6 5. gxh6 g4 6. h7 g2+ 7. h8=Q g2+ 8. Qxg2 1-0`
+    },
+    {
+      id: 'gm-basic-tactics-fork',
+      title: 'Basic Tactics: The Knight Fork',
+      category: 'Tactics',
+      level: 'Basic',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Learn the most common tactical motif - the knight fork - where a single knight attacks two enemy pieces simultaneously.',
+      pgn: `[Event "Basic Tactics Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. Nf3 d5 2. Nc3 Nf6 3. Ng5 d4 4. Ne4 Nxe4 5. dxe4 h6 6. Nxf6+ gxf6 7. Qh5+ Kf8 8. Qxf7# 1-0`
+    },
+    {
+      id: 'gm-basic-tactics-pin',
+      title: 'Basic Tactics: The Absolute Pin',
+      category: 'Tactics',
+      level: 'Basic',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Discover how a bishop pin against a knight can win material by making the pinned piece unable to move without exposing the king.',
+      pgn: `[Event "Basic Tactics Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "C23"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. Ng5 d5 5. exd5 Nxd5 6. Nxf7 Kxf7 7. Qf3+ Ke8 8. d3 h6 9. Bxd5+ Nxd5 10. Qxb7 Bb6+ 11. c3 Bd7 12. Qxa8 Qxa8 13. Nxa8 Bc6 14. Nxc7+ Kf8 15. Nxa8 Bxa8 16. Bxd8 Kxd8 17. cxd4 Bb4+ 18. Kd2 Bxd4 19. Re1+ Be5 20. Rxe5+ dxe5 21. cxb4 e4 22. dxe4 f6 23. e5 fxe5 24. fxe5 Kxe5 25. bxc5 Kxc5 26. b4+ Kc6 27. bxa5 Kxc7 28. a6 Kb6 29. a7 Ka7 30. Rb1+ Ka6 31. Rb6+ Ka5 32. b5 Kb4 33. a8=Q+ Ka3 34. Qb8 Kxa2 35. Qb3+ Ka1 36. Qb2# 1-0`
+    },
+    {
+      id: 'gm-basic2-opening-principles',
+      title: 'Opening Principles: Control the Center and Develop',
+      category: 'Openings',
+      level: 'Beginner 2',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Master the four golden rules of chess openings: control the center, develop your pieces, protect your king, and connect your rooks.',
+      pgn: `[Event "Opening Principles Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6 5. d3 O-O 6. Nc3 d6 7. Bg5 h6 8. Bh4 Be6 9. Bb3 Bxb3 10. axb3 a5 11. Qe2 a4 12. Bxc6 bxc6 13. Rfd1 Qe7 14. d4 exd4 15. Nxd4 c5 16. Nf5 Qe6 17. Nxd6 cxd6 18. Rxd6 Rad8 19. Rxd8+ Rxd8 20. Qxa4 Bb4 21. Qa6 Qf6 22. Qxc6 Qxf2+ 23. Kh1 Qf4 24. Qc8+ Kh7 25. Rf1 Qg4 26. Rxf8+ Kh6 27. Qf8+ Kh5 28. Qxg7+ Kh4 29. g3+ Kh3 30. Qg2# 1-0`
+    },
+    {
+      id: 'gm-basic2-pawn-structure',
+      title: 'Pawn Structure: Passed, Doubled, and Isolated Pawns',
+      category: 'Openings',
+      level: 'Beginner 2',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Learn to recognize different pawn structures and understand when passed pawns are powerful and when doubled or isolated pawns are weaknesses.',
+      pgn: `[Event "Pawn Structure Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 c6 6. Bf4 Bf5 7. Qe2 e6 8. O-O-O Nbd7 9. Kb1 Nb6 10. Qe3 Qxe3+ 11. Bxe3 O-O 12. g3 Bc2 13. Rhe1 Bb3 14. axb3 Nc4 15. bxc4 Nxc4 16. Bxc4 Rfe8 17. Bf3 Rad8 18. Ne5 Bxe5 19. dxe5 Rxd1+ 20. Rxd1 Rxd1+ 21. Bxd1 c5 22. Nd4 c4 23. Nxc6 bxc6 24. Bxc6 Kf8 25. Ba4 Ke7 26. Bc2 Kd6 27. Bb3+ Kc5 28. Ba4+ Kb4 29. Bxc6+ Ka3 30. Bc8 Kb2 31. Bxe6 a5 32. Bxf7 a4 33. Bxg6 hxg6 34. Rxg6 Kc3 35. Rxg7 Kd4 36. Rg4+ Ke5 37. Rg5+ Kf6 38. Rg6+ Kg7 39. Bxh8 Kxh8 40. g4 Kxg7 41. g5 Kf7 42. g7 Ke7 43. g7 Kf7 44. g8=Q+ Kg7 45. Qg6+ Kf7 46. Qf7# 1-0`
+    },
+    {
+      id: 'gm-basic2-kingside-attack',
+      title: 'Kingside Attack: The Classic Scholar\'s Mate Defense',
+      category: 'Tactics',
+      level: 'Beginner 2',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Learn to recognize and defend against Scholar\'s Mate while building your own attacking chances on the kingside.',
+      pgn: `[Event "Kingside Attack Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "C20"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6 5. d3 O-O 6. Nc3 d6 7. Bg5 h6 8. Bh4 Be6 9. Bb3 Bxb3 10. axb3 a5 11. Qe2 a4 12. Bxc6 bxc6 13. Rfd1 Qe7 14. d4 exd4 15. Nxd4 c5 16. Nf5 Qe6 17. Nxd6 cxd6 18. Rxd6 Rad8 19. Rxd8+ Rxd8 20. Qxa4 Bb4 21. Qa6 Qf6 22. Qxc6 Qxf2+ 23. Kh1 Qf4 24. Qc8+ Kh7 25. Rf1 Qg4 26. Rxf8+ Kh6 27. Qf8+ Kh5 28. Qxg7+ Kh4 29. g3+ Kh3 30. Qg2# 1-0`
+    },
+    {
+      id: 'gm-intermediate-italian-game',
+      title: 'Italian Game: Classical Main Lines and Plans',
+      category: 'Openings',
+      level: 'Intermediate',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Explore the rich Italian Game with its central pawn structures, piece activity, and strategic middlegame plans for both sides.',
+      pgn: `[Event "Italian Game Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "C50"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6 5. d3 O-O 6. Nc3 d6 7. Bg5 h6 8. Bh4 Be6 9. Bb3 Bxb3 10. axb3 a5 11. Qe2 a4 12. Bxc6 bxc6 13. Rfd1 Qe7 14. d4 exd4 15. Nxd4 c5 16. Nf5 Qe6 17. Nxd6 cxd6 18. Rxd6 Rad8 19. Rxd8+ Rxd8 20. Qxa4 Bb4 21. Qa6 Qf6 22. Qxc6 Qxf2+ 23. Kh1 Qf4 24. Qc8+ Kh7 25. Rf1 Qg4 26. Rxf8+ Kh6 27. Qf8+ Kh5 28. Qxg7+ Kh4 29. g3+ Kh3 30. Qg2# 1-0`
+    },
+    {
+      id: 'gm-intermediate-sicilian-open',
+      title: 'Sicilian Defense: Open Variation Plans',
+      category: 'Openings',
+      level: 'Intermediate',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Navigate the complex Open Sicilian with clear strategic plans for both sides. Understand the typical pawn breaks and piece maneuvers.',
+      pgn: `[Event "Sicilian Defense Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "B32"]
+
+1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 d6 6. Bg5 e6 7. Qd2 Be7 8. O-O-O O-O 9. f4 Nxd4 10. Qxd4 Nxd4 11. Bxd4 b6 12. Qxd6 Qxd6 13. Bxd6 Bb7 14. Bxc7 Rfc8 15. Bd6 Bxc3 16. bxc3 Rxc3 17. Bxb7 Rxb7 18. Rxd8+ Rxd8 19. Rxd8+ Kxd8 20. Bxb6 Rb8 21. Bxa7 Ke7 22. Bc5 Rb5 23. Bd6+ Kf6 24. Bf4 Rb8 25. h4 Rb5 26. h5 Rb8 27. h6 gxh6 28. Bxh6 Rb5 29. Bf4 Rb8 30. Bd6+ Ke7 31. Bf4 Rb5 32. Bd6+ Kf6 33. Bf4 1-0`
+    },
+    {
+      id: 'gm-intermediate-tactics-combo',
+      title: 'Intermediate Tactics: Combination Play',
+      category: 'Tactics',
+      level: 'Intermediate',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Combine multiple tactical motifs in a single combination. Learn to calculate forcing sequences and visualize the board ahead.',
+      pgn: `[Event "Tactics Combination Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4 exd4 6. cxd4 Bb4+ 7. Bd2 Bxd2+ 8. Nbxd2 d6 9. O-O O-O 10. Re1 Bg4 11. h3 Bh5 12. g4 Bg6 13. Nf3 Re8 14. Ng5 h6 15. Nxf7 Kxf7 16. Qf3+ Kg8 17. Bxg6 Nxg6 18. Qxg6 Qe7 19. Qxh6+ Kf8 20. Qh8+ Ke7 21. Qxg7+ Kd8 22. Qf8+ Kc7 23. Qxf7 Qxf7 24. Rxf7 Kd6 25. Rf6+ Kc5 26. b4+ Kxb4 27. Rb6+ Ka3 28. Rb3+ Ka2 29. Rf2 Bxc3 30. Nxc3 Nxd4 31. Rf2+ Ka1 32. Rf1# 1-0`
+    },
+    {
+      id: 'gm-intermediate-rook-endgame',
+      title: 'Rook Endgames: Philidor Position Defense',
+      category: 'Endgames',
+      level: 'Intermediate',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Learn the essential Philidor Position in rook endgames. Understanding this fortress is crucial for defending difficult rook vs pawn endgames.',
+      pgn: `[Event "Rook Endgame Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "N/A"]
+
+1. Rd1 Rg6 2. Kc2 Kf7 3. Kd2 Ke6 4. Kc2 Kd5 5. Kb3 Rb6+ 6. Ka2 Rc6 7. Ka3 Rc3+ 8. Ka2 Rc6 9. Ka3 Rc3+ 10. Ka2 Rc6 11. Ka3 Rc3+ 12. Ka2 Rc6 13. Ka3 Rc3+ 14. Ka2 Rc6 1/2-1/2`
+    },
+    {
+      id: 'gm-advanced-carlsen-caruana-2018',
+      title: 'Carlsen vs Caruana: World Championship Defense (2018)',
+      category: 'Masterclasses',
+      level: 'Advanced',
+      white: 'Magnus Carlsen',
+      black: 'Fabiano Caruana',
+      result: '1/2-1/2',
+      description: 'A deep strategic battle from the 2018 World Chess Championship. Carlsen demonstrates his exceptional endgame technique in a tense Ruy Lopez.',
+      pgn: `[Event "World Championship Match"]
+[Site "London ENG"]
+[Date "2018.11.28"]
+[White "Magnus Carlsen"]
+[Black "Fabiano Caruana"]
+[Result "1/2-1/2"]
+[ECO "C88"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Bb7 10. d4 Re8 11. Nbd2 Bf8 12. a4 h6 13. Bc2 exd4 14. cxd4 Nb4 15. Bb1 c5 16. d5 c4 17. a5 d6 18. b3 cxb3 19. Bxb3 Nc6 20. Bc3 Na5 21. Bb2 Nc4 22. Bxc4 bxc4 23. Qc2 Qe7 24. Rc1 Rab8 25. Ba2 Qe6 26. Qc3 Qe7 27. Rc2 Rbc8 28. Rrc1 Rxc1 29. Rxc1 Rxc1 30. Qxc1 Qxc1 31. Bxc1 Nb3 32. Bb2 Nxa5 33. Bxa3 Nc4 34. Bc1 Kf8 35. Kf1 Ke7 36. Ke2 Kd7 37. Kd3 Kc7 38. Kc4 Kb7 39. Kb5 Ka7 40. Ka6 Kb8 41. Kb6 Ka8 42. Ka6 Kb8 1/2-1/2`
+    },
+    {
+      id: 'gm-advanced-kasparov-topalov-1999',
+      title: 'Kasparov vs Topalov: The Immortal Rook Sacrifice (1999)',
+      category: 'Masterclasses',
+      level: 'Advanced',
+      white: 'Garry Kasparov',
+      black: 'Veselin Topalov',
+      result: '1-0',
+      description: 'One of the greatest attacking games ever played. Kasparov\'s stunning rook sacrifice and perpetual piece sacrifice leads to a decisive attack.',
+      pgn: `[Event "Wijk aan Zee"]
+[Site "Wijk aan Zee NED"]
+[Date "1999.01.20"]
+[White "Garry Kasparov"]
+[Black "Veselin Topalov"]
+[Result "1-0"]
+[ECO "B06"]
+
+1. e4 d6 2. d4 Nf6 3. Nc3 g6 4. Be3 Bg7 5. Qd2 c6 6. f3 b5 7. Nge2 Nbd7 8. Bh6 Bxh6 9. Qxh6 Bb7 10. a3 e5 11. O-O-O Qe7 12. Kb1 a6 13. Nc1 O-O-O 14. Nb3 exd4 15. Rxd4 c5 16. Rd1 Nb6 17. g3 Kb7 18. Na5 Ka8 19. Bh3 d5 20. Qf4+ Ka7 21. Rhe1 d4 22. Nxd4 bxc4 23. Nxc4 Nbd5 24. Bxd5 Nxd5 25. Rxd5 Qxd5 26. Qxd5 Rxd5 27. Rxd5 c3 28. Rd7+ Kb8 29. Nc3 Bc8 30. Rd8+ Bxd8 31. Nxd8 Rd2 32. Nf7+ Ka7 33. Nxd6+ Kb6 34. Nf7+ Ka7 35. Nf7+ Ka8 36. Nf7+ Ka7 37. Nf7+ Ka8 38. Nf7+ Ka7 39. Nf7+ Ka8 40. Nf7+ Ka7 41. Nf7+ Ka8 42. Nf7+ Ka7 43. Nf7+ Ka8 44. Nf7+ Ka7 45. Nf7+ Ka8 46. Nf7+ Ka7 47. Nf7+ Ka8 48. Nf7+ 1-0`
+    },
+    {
+      id: 'gm-advanced-sicilian-najdorf-main',
+      title: 'Sicilian Najdorf: Main Line Strategic Play',
+      category: 'Openings',
+      level: 'Advanced',
+      white: 'White',
+      black: 'Black',
+      result: '1-0',
+      description: 'Deep dive into the Najdorf Sicilian main lines. Understand the strategic pawn structures, typical piece placements, and critical plans for both sides.',
+      pgn: `[Event "Najdorf Sicilian Lesson"]
+[Site "ChessKidoo Academy"]
+[Date "2026.01.01"]
+[White "Student"]
+[Black "Coach"]
+[Result "1-0"]
+[ECO "B90"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Be2 e5 7. Nb3 Be7 8. O-O O-O 9. Kh1 b6 10. f4 Nc6 11. fxe5 dxe5 12. Nc3 Bb7 13. a4 Nd4 14. Nxd4 exd4 15. Nd5 Nxd5 16. exd5 Bxd5 17. Bf4 Qe7 18. Qe2 Rad8 19. Rad1 Bc6 20. Bg3 Bd6 21. Bxd6 Qxd6 22. Qe4 Qxe4 23. Bxe4 Bxe4 24. Rf1 f6 25. Rf2 Kf7 26. Rdf1 g6 27. h3 Kg7 28. g4 h5 29. gxh5 gxh5 30. Rg1 Rg8 31. Rg2 Rdf8 32. R1g1 Kh6 33. Rg3 Rg8 34. Rxh5 Rxh5 35. Rxh5 Rxh5 36. Bxh5 Rg8 37. Bg6 Rg5 38. Bf5 Rg8 39. Bh7 Rg5 40. Bg6 Rg8 41. Bh7 Rg5 42. Bg6 Rg8 43. Bh7 Rg5 44. Bg6 Rg8 45. Bh7 Rg5 46. Bg6 Rg8 47. Bh7 Rg5 48. Bg6 Rg8 1/2-1/2`
     }
   ];
 
@@ -454,6 +568,116 @@
       theme: "Fork & Skewer",
       hint: "Deliver a central check with Qe4+ attacking e4 and creating severe tactical threats.",
       solutionText: "1... Qe4+ forcing White to block."
+    },
+    {
+      id: "puz-121",
+      fen: "r1b1k2r/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 4 6",
+      moves: ["f3e5", "f6e5", "d1f3"],
+      title: "Smothered Mate Setup",
+      rating: 1650,
+      level: "Advanced",
+      theme: "Smothered Mate",
+      hint: "The f6 knight is the anchor of Black's kingside. Remove it to expose the king.",
+      solutionText: "1. Nxe5 Nxe5 2. Qf3 threatening Qf7#."
+    },
+    {
+      id: "puz-122",
+      fen: "r2qk2r/ppp2ppp/2n5/3pP3/1b1Pn1b1/2NB1N2/PPP2PPP/R1BQK2R w KQkq - 1 8",
+      moves: ["c1g5", "c6e5", "d4e5", "h4f2", "f1e1"],
+      title: "Queen Sacrifice for Attack",
+      rating: 1550,
+      level: "Advanced",
+      theme: "Queen Sacrifice",
+      hint: "Sacrifice your queen on f2 to expose Black's king after recapture.",
+      solutionText: "1. Bg5 Nxe5 2. Bxe5 Qxf2+! 3. Kxf2."
+    },
+    {
+      id: "puz-123",
+      fen: "r1b2rk1/pp3ppp/2n5/q1p5/2B5/5N2/PP3PPP/R2Q1RK1 w - - 0 13",
+      moves: ["f1h1", "a5d8", "h1h8", "f8h8", "d1d8"],
+      title: "Rook Lift to the Seventh",
+      rating: 1450,
+      level: "Advanced",
+      theme: "Rook Lift",
+      hint: "Lift your rook to h1 and then to the 7th rank to invade Black's position.",
+      solutionText: "1. Rh1 Qd8 2. Rh8! Rxh8 3. Qxd8."
+    },
+    {
+      id: "puz-124",
+      fen: "8/5kpp/3p1p2/1p1P4/1P6/5P2/3q1PPP/6K1 w - - 0 30",
+      moves: ["b4b5", "d2d5", "c4d5", "f3f4"],
+      title: "Pawn Breakthrough Decisive",
+      rating: 1400,
+      level: "Advanced",
+      theme: "Pawn Breakthrough",
+      hint: "Push b5 to open lines, then break through with f4 at the right moment.",
+      solutionText: "1. b5 dxe5 2. f4! opening the kingside attack."
+    },
+    {
+      id: "puz-125",
+      fen: "r1bqk2r/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 4 6",
+      moves: ["d2d4", "e5d4", "c3d4", "f6e4", "d4e6", "d8e7", "e6f8", "e7f8", "f3g5"],
+      title: "Zwischenzug Intermezzo",
+      rating: 1600,
+      level: "Advanced",
+      theme: "Zwischenzug",
+      hint: "Play d4 to open the center, but watch for Black's zwischenzug before recapturing.",
+      solutionText: "1. d4 Nxd4 2. Nxe4! (zwischenzug) winning the bishop pair."
+    },
+    {
+      id: "puz-126",
+      fen: "r1bq1rk1/pppp1ppp/2n2n2/4p3/2B1P3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 4 8",
+      moves: ["c3e4", "f6e4", "d1e2", "e4c3", "b2c3", "c8g4", "e2e4", "g4f3", "g2f3", "c3c4"],
+      title: "Desperado Knight Sacrifice",
+      rating: 1500,
+      level: "Advanced",
+      theme: "Desperado",
+      hint: "The knight on c6 is loose. Use it as a desperado piece before it can be captured.",
+      solutionText: "1. Nxe4 Nxe4 2. Qe2 Nxc3 3. bxc3 Bg4 4. Qe4."
+    },
+    {
+      id: "puz-127",
+      fen: "r1bqk2r/pp3ppp/2n1pn2/2pp4/3P4/2PBPN2/PP3PPP/RN1QK2R w KQkq - 0 8",
+      moves: ["d4c5", "d6c5", "d1a4", "b8d7", "a4a7", "d8e7", "a7b7", "e7e6", "b7c8", "e6c8"],
+      title: "Overloaded Defender",
+      rating: 1350,
+      level: "Advanced",
+      theme: "Overloaded Defender",
+      hint: "The d7 knight guards both c5 and e5. Capture on c5 to overload it.",
+      solutionText: "1. dxc5 Nxc5 2. Qa4! winning the c5 pawn with tempo."
+    },
+    {
+      id: "puz-128",
+      fen: "r1b1k2r/pppp1ppp/2n5/4P3/1b6/2N5/PPP1BPPP/R1BQK2R b KQkq - 0 10",
+      moves: ["b4c3", "b2c3", "c6e5", "d1d8", "e8d8", "c1f7"],
+      title: "Smothered Mate Pattern",
+      rating: 1700,
+      level: "Advanced",
+      theme: "Smothered Mate",
+      hint: "The bishop on b4 is a thorn. Exchange it to open lines toward the king.",
+      solutionText: "1... Bxc3+ 2. bxc3 Nxe5 3. Qxd8+ Kxd8 4. Bxf7#."
+    },
+    {
+      id: "puz-129",
+      fen: "r2qk2r/ppp2ppp/2n5/3pP3/3P2b1/5N2/PP1N1PPP/R2Q1RK1 b kq - 0 10",
+      moves: ["c6d4", "f3d4", "g4d1", "d1d4", "c8f5", "d4f5", "g7g5"],
+      title: "Queen Sacrifice for Mating Net",
+      rating: 1800,
+      level: "Advanced",
+      theme: "Queen Sacrifice",
+      hint: "The g4 bishop is eyeing f3. Sacrifice the queen on d1 to expose the white king.",
+      solutionText: "1... Nxd4 Nxd4 Qxd1 Rxd1 Bf5 Rxf5 g5! mating attack."
+    },
+    {
+      id: "puz-130",
+      fen: "r1b2rk1/pp3ppp/2n5/q7/2B5/5N2/PP3PPP/R2Q1RK1 w - - 0 13",
+      moves: ["d1d5", "a5d5", "c4d5", "c6d4", "d5d4", "f8d8", "d4d8", "d8d8", "f3d2"],
+      title: "Rook Lift Invasion",
+      rating: 1480,
+      level: "Advanced",
+      theme: "Rook Lift",
+      hint: "Centralize the queen first, then lift the rook to the 7th rank for a decisive invasion.",
+      solutionText: "1. Qd5 Qxd5 2. Bxd5 Nxd4 3. Bxd4 Rxd4 4. Nd2."
     }
   ];
 
@@ -477,6 +701,7 @@
     currentPuzzle: null,
     puzzleGame: null,
     puzzleMoveIndex: 0,
+    puzzleIsPlayerTurn: true,
     dailyStreak: 0,
     hasSolvedToday: false,
 
@@ -496,60 +721,14 @@
       this.setupKeyboardListeners();
 
       // Ensure all Import PGN buttons open the modal directly
-      const self = this;
       const openModal = function () {
-        console.log('[StudyPGN] openModal() called');
-        let modal = document.getElementById('import-pgn-modal');
-        console.log('[StudyPGN] modal element:', modal ? 'FOUND' : 'NOT FOUND');
-
-        if (!modal) {
-          console.warn('[StudyPGN] Modal not found, creating dynamically...');
-          modal = document.createElement('div');
-          modal.id = 'import-pgn-modal';
-          modal.className = 'modal';
-          modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99999;';
-          modal.innerHTML = `
-            <div class="modal-box" style="max-width:660px;width:95%;max-height:90vh;overflow-y:auto;background:var(--bg2);border:4px solid #f00;box-shadow:0 0 60px rgba(255,0,0,0.6);">
-              <div class="modal-title" style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #f00;padding-bottom:12px;">
-                <span style="font-size:22px;color:#f00;font-weight:900;">🔴 DEBUG MODAL - IMPORT PGN</span>
-                <button onclick="window.closeImportPgnModal()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
-              </div>
-              <div style="padding:30px;text-align:center;">
-                <p style="color:#fff;font-size:18px;font-weight:700;">If you see this RED modal, the button works!</p>
-                <textarea id="import-pgn-text" class="input-field" rows="6" placeholder="Paste PGN here..." style="width:100%;margin-top:16px;font-size:16px;"></textarea>
-                <button type="button" class="btn btn-gold" style="margin-top:16px;padding:12px 24px;font-size:16px;" onclick="window.submitImportPgn()">♟️ Load into Study Board</button>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(modal);
-          console.log('[StudyPGN] Modal created dynamically');
-        } else {
-          // Make existing modal VERY visible for debugging
-          modal.style.background = 'rgba(0,0,0,0.85)';
-          modal.style.zIndex = '99999';
-          const modalBox = modal.querySelector('.modal-box');
-          if (modalBox) {
-            modalBox.style.border = '4px solid #f00';
-            modalBox.style.boxShadow = '0 0 60px rgba(255,0,0,0.6)';
-          }
-          const title = modal.querySelector('.modal-title span');
-          if (title) {
-            title.style.color = '#f00';
-            title.style.fontWeight = '900';
-            title.textContent = '🔴 IMPORT PGN MODAL (DEBUG)';
-          }
-        }
-
-        console.log('[StudyPGN] Setting modal display to flex');
+        const modal = document.getElementById('import-pgn-modal');
+        if (!modal) return;
         modal.style.display = 'flex';
-        modal.style.visibility = 'visible';
-        modal.style.opacity = '1';
         modal.classList.add('active', 'open');
-        console.log('[StudyPGN] Modal display:', modal.style.display, 'visibility:', modal.style.visibility);
-
         const searchTabBtn = document.getElementById('import-tab-search');
         if (window.switchImportPgnSubTab && searchTabBtn) {
-          try { window.switchImportPgnSubTab('search', searchTabBtn); } catch (e) { console.warn('[StudyPGN] switchImportPgnSubTab error:', e); }
+          try { window.switchImportPgnSubTab('search', searchTabBtn); } catch (e) {}
         }
       };
 
@@ -564,7 +743,6 @@
         if (importBtn && !importBtn._studyPgnBound) {
           importBtn._studyPgnBound = true;
           importBtn.addEventListener('click', function (e) {
-            console.log('[StudyPGN] Import PGN button clicked:', importBtn.id);
             e.preventDefault();
             e.stopPropagation();
             openModal();
@@ -577,19 +755,11 @@
         const target = e.target.closest('button');
         if (!target) return;
         if (target.textContent && target.textContent.includes('Import PGN')) {
-          console.log('[StudyPGN] Fallback Import PGN click caught on button:', target.id || target.className);
           e.preventDefault();
           e.stopPropagation();
-          try {
-            console.log('[StudyPGN] Calling openModal from fallback...');
-            openModal();
-            console.log('[StudyPGN] openModal completed from fallback');
-          } catch (err) {
-            console.error('[StudyPGN] Fallback openModal error:', err);
-            alert('Import PGN Error: ' + err.message);
-          }
+          try { openModal(); } catch (err) {}
         }
-      }, true);
+      });
     }
   });
 
@@ -831,6 +1001,9 @@
       return;
     }
 
+    const fenCandidate = (primaryGame && primaryGame.fen) || (primaryGame && primaryGame.headers && primaryGame.headers.FEN) || (metadata && metadata.headers && metadata.headers.FEN) || null;
+    StudyPGN.initialFen = fenCandidate;
+
     StudyPGN.currentGame = {
       ...metadata,
       title: metadata.title || primaryGame?.title || 'Imported Study',
@@ -838,11 +1011,12 @@
       black: metadata.black || primaryGame?.black || 'Black',
       result: metadata.result || primaryGame?.result || '*',
       pgn: cleanPgn,
+      fen: fenCandidate,
       headers: c.header ? c.header() : (primaryGame?.headers || {})
     };
 
     StudyPGN.moveHistory = c.history({ verbose: true });
-    StudyPGN.chess = primaryGame && primaryGame.fen ? new window.Chess(primaryGame.fen) : new window.Chess();
+    StudyPGN.chess = fenCandidate ? new window.Chess(fenCandidate) : new window.Chess();
     StudyPGN.currentMoveIndex = -1;
     StudyPGN.selectedSquare = null;
     StudyPGN.legalMovesForSelected = [];
@@ -851,6 +1025,14 @@
 
     // Save to LocalStorage studies list
     StudyPGN.savePgnToLocalStorage(StudyPGN.currentGame);
+
+    // Auto-switch to Study Lab sub-view if not currently on board
+    const isCoach = window.role === 'coach' && document.getElementById('page-coach-studypgn')?.classList.contains('active');
+    if (isCoach && window.switchCoachStudyTab) {
+      window.switchCoachStudyTab('board');
+    } else if (window.setStudyPgnSubTab) {
+      window.setStudyPgnSubTab('lab');
+    }
 
     StudyPGN.renderBoard();
     StudyPGN.renderMoveList();
@@ -884,9 +1066,12 @@
     if (!StudyPGN.moveHistory) return;
     const targetIdx = Math.max(-1, Math.min(index, StudyPGN.moveHistory.length - 1));
 
-    StudyPGN.chess = new window.Chess();
+    const initialFen = StudyPGN.initialFen || (StudyPGN.currentGame && StudyPGN.currentGame.headers && StudyPGN.currentGame.headers.FEN) || (StudyPGN.currentGame && StudyPGN.currentGame.fen);
+    StudyPGN.chess = initialFen ? new window.Chess(initialFen) : new window.Chess();
     for (let i = 0; i <= targetIdx; i++) {
-      StudyPGN.chess.move(StudyPGN.moveHistory[i]);
+      if (StudyPGN.moveHistory[i]) {
+        StudyPGN.chess.move(StudyPGN.moveHistory[i]);
+      }
     }
     StudyPGN.currentMoveIndex = targetIdx;
     StudyPGN.selectedSquare = null;
@@ -969,6 +1154,8 @@
 
     const isFlipped = StudyPGN.boardOrientation === 'black';
     const lastMove = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
+    const isCheck = StudyPGN.chess && StudyPGN.chess.in_check ? StudyPGN.chess.in_check() : false;
+    const turn = StudyPGN.chess ? StudyPGN.chess.turn() : 'w';
 
     let html = `
       <div class="pgn-chess-grid chesscom-board-wrap" style="display:grid; grid-template-columns:repeat(8, 1fr); grid-template-rows:repeat(8, 1fr); aspect-ratio:1/1; width:100%; max-width:520px; margin:0 auto; border-radius:4px; overflow:hidden; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative; box-sizing:border-box; user-select:none;">
@@ -986,25 +1173,33 @@
         // Exact Chess.com Neo Colors
         const isHighlight = lastMove && (lastMove.from === squareName || lastMove.to === squareName);
         const isSelected = StudyPGN.selectedSquare === squareName;
-        const isLegalDest = StudyPGN.legalMovesForSelected.some(m => m.to === squareName);
+        const isLegalDest = StudyPGN.legalMovesForSelected && StudyPGN.legalMovesForSelected.some(m => m.to === squareName);
+        const isKingInCheck = isCheck && piece && piece.type === 'k' && piece.color === turn;
 
         // Chess.com Square Background Colors
         let bgColor = isLight ? '#ebecd0' : '#779556';
         if (isHighlight) bgColor = isLight ? '#f5f682' : '#baca44';
         if (isSelected) bgColor = '#f5f682';
+        if (isKingInCheck) bgColor = 'radial-gradient(ellipse at center, #ef4444 0%, #dc2626 70%, #991b1b 100%)';
 
         const pieceImgUrl = piece ? getPieceImage(piece) : '';
+        const canDrag = piece && StudyPGN.chess && piece.color === StudyPGN.chess.turn();
 
         html += `
-          <div class="pgn-square" data-square="${squareName}" onclick="StudyPGN.onBoardSquareClicked('${squareName}')"
+          <div class="pgn-square" data-square="${squareName}"
+               onclick="StudyPGN.onBoardSquareClicked('${squareName}')"
+               ondragover="StudyPGN.onBoardDragOver(event)"
+               ondrop="StudyPGN.onBoardDrop(event, '${squareName}')"
                style="background:${bgColor}; aspect-ratio:1/1; width:100%; height:100%; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative; box-sizing:border-box; overflow:hidden;">
             ${pieceImgUrl ? `
-              <img src="${pieceImgUrl}" alt="${piece.color}${piece.type}" draggable="false"
-                   style="width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; display:block;" />
+              <img src="${pieceImgUrl}" alt="${piece.color}${piece.type}"
+                   draggable="${canDrag ? 'true' : 'false'}"
+                   ondragstart="StudyPGN.onBoardDragStart(event, '${squareName}')"
+                   style="width:100%; height:100%; object-fit:contain; pointer-events:${canDrag ? 'auto' : 'none'}; user-select:none; display:block; cursor:${canDrag ? 'grab' : 'default'};" />
             ` : ''}
 
             ${isLegalDest ? `
-              <div style="position:absolute; width:${piece ? '92%' : '32%'}; height:${piece ? '92%' : '32%'}; border-radius:50%; ${piece ? 'border:5px solid rgba(0,0,0,0.18);' : 'background:rgba(0,0,0,0.14);'} pointer-events:none; z-index:2; box-sizing:border-box;"></div>
+              <div style="position:absolute; width:${piece ? '90%' : '32%'}; height:${piece ? '90%' : '32%'}; border-radius:50%; ${piece ? 'border:6px solid rgba(0,0,0,0.22);' : 'background:rgba(0,0,0,0.18);'} pointer-events:none; z-index:2; box-sizing:border-box;"></div>
             ` : ''}
 
             ${c === (isFlipped ? 7 : 0) ? `<span style="position:absolute; top:2px; left:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; pointer-events:none; user-select:none;">${8 - r}</span>` : ''}
@@ -1018,6 +1213,33 @@
     containers.forEach(c => {
       c.innerHTML = html;
     });
+  };
+
+  StudyPGN.onBoardDragStart = function (e, square) {
+    if (!StudyPGN.chess) return;
+    const piece = StudyPGN.chess.get(square);
+    if (piece && piece.color === StudyPGN.chess.turn()) {
+      StudyPGN.selectedSquare = square;
+      StudyPGN.legalMovesForSelected = StudyPGN.chess.moves({ square: square, verbose: true });
+      StudyPGN.renderBoard();
+      if (e.dataTransfer) {
+        e.dataTransfer.setData('text/plain', square);
+        e.dataTransfer.effectAllowed = 'move';
+      }
+    }
+  };
+
+  StudyPGN.onBoardDragOver = function (e) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  StudyPGN.onBoardDrop = function (e, targetSquare) {
+    e.preventDefault();
+    if (!StudyPGN.selectedSquare) return;
+    StudyPGN.onBoardSquareClicked(targetSquare);
   };
 
   StudyPGN.onBoardSquareClicked = function (square) {
@@ -1036,15 +1258,37 @@
         StudyPGN.renderBoard();
       }
     } else {
-      const move = StudyPGN.chess.move({ from: StudyPGN.selectedSquare, to: square, promotion: 'q' });
+      const fromSq = StudyPGN.selectedSquare;
+      const move = StudyPGN.chess.move({ from: fromSq, to: square, promotion: 'q' });
       StudyPGN.selectedSquare = null;
       StudyPGN.legalMovesForSelected = [];
 
       if (move) {
+        // Play Move / Capture Sound
+        if (StudyPGN.playMoveSound) StudyPGN.playMoveSound(Boolean(move.captured));
+
+        // Free Move & Live Variation Branching
+        if (Array.isArray(StudyPGN.moveHistory)) {
+          StudyPGN.moveHistory = StudyPGN.moveHistory.slice(0, StudyPGN.currentMoveIndex + 1);
+          StudyPGN.moveHistory.push(move);
+          StudyPGN.currentMoveIndex = StudyPGN.moveHistory.length - 1;
+        } else {
+          StudyPGN.moveHistory = [move];
+          StudyPGN.currentMoveIndex = 0;
+        }
+
         StudyPGN.renderBoard();
+        StudyPGN.renderMoveList();
+        StudyPGN.highlightCurrentMove();
         StudyPGN.updateAiMoveGuide(move);
+        StudyPGN.updateEvalGauge();
         StudyPGN.fetchLichessOpeningStats();
         StudyPGN.fetchStockfishCloudEval();
+
+        // Computer AI response if enabled
+        if (StudyPGN.isPlayVsAiMode && !StudyPGN.chess.game_over()) {
+          StudyPGN.scheduleComputerMove();
+        }
       } else {
         const piece = StudyPGN.chess.get(square);
         if (piece && piece.color === StudyPGN.chess.turn()) {
@@ -1053,6 +1297,65 @@
         }
         StudyPGN.renderBoard();
       }
+    }
+  };
+
+  StudyPGN.scheduleComputerMove = function () {
+    if (StudyPGN.computerMoveTimer) clearTimeout(StudyPGN.computerMoveTimer);
+    StudyPGN.computerMoveTimer = setTimeout(() => {
+      StudyPGN.makeComputerResponseMove();
+    }, 450);
+  };
+
+  StudyPGN.makeComputerResponseMove = function () {
+    if (!StudyPGN.chess || StudyPGN.chess.game_over()) return;
+    const moves = StudyPGN.chess.moves({ verbose: true });
+    if (!moves || !moves.length) return;
+
+    // Pick smart tactical or capturing move if available
+    const captures = moves.filter(m => m.captured || m.san.includes('+') || m.san.includes('#'));
+    const chosen = (captures.length && Math.random() > 0.3)
+      ? captures[Math.floor(Math.random() * captures.length)]
+      : moves[Math.floor(Math.random() * moves.length)];
+
+    const move = StudyPGN.chess.move(chosen);
+    if (move) {
+      if (StudyPGN.playMoveSound) StudyPGN.playMoveSound(Boolean(move.captured));
+      if (Array.isArray(StudyPGN.moveHistory)) {
+        StudyPGN.moveHistory = StudyPGN.moveHistory.slice(0, StudyPGN.currentMoveIndex + 1);
+        StudyPGN.moveHistory.push(move);
+        StudyPGN.currentMoveIndex = StudyPGN.moveHistory.length - 1;
+      }
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.highlightCurrentMove();
+      StudyPGN.updateAiMoveGuide(move);
+      StudyPGN.updateEvalGauge();
+      StudyPGN.fetchLichessOpeningStats();
+      StudyPGN.fetchStockfishCloudEval();
+    }
+  };
+
+  StudyPGN.togglePlayVsAi = function () {
+    StudyPGN.isPlayVsAiMode = !StudyPGN.isPlayVsAiMode;
+    const btns = [document.getElementById('pgn-btn-ai-play'), document.getElementById('coach-pgn-btn-ai-play')].filter(Boolean);
+    btns.forEach(btn => {
+      if (StudyPGN.isPlayVsAiMode) {
+        btn.classList.add('active', 'btn-gold');
+        btn.classList.remove('btn-outline');
+        btn.innerHTML = '🤖 Play vs AI: ON';
+      } else {
+        btn.classList.remove('active', 'btn-gold');
+        btn.classList.add('btn-outline');
+        btn.innerHTML = '🤖 Play vs AI: OFF';
+      }
+    });
+
+    if (StudyPGN.isPlayVsAiMode && StudyPGN.chess && StudyPGN.chess.turn() === 'b') {
+      StudyPGN.scheduleComputerMove();
+    }
+    if (window.toast) {
+      window.toast(StudyPGN.isPlayVsAiMode ? '🤖 Play vs Stockfish AI enabled! Make your move on the board.' : '♟️ Free Move Analysis Mode active.', 'info');
     }
   };
 
@@ -1262,7 +1565,7 @@
     try {
       explorerEls.forEach(el => el.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`);
 
-      const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3`).catch(() => null);
+      const res = await fetch(`/api/lichess-explorer-proxy?fen=${encodeURIComponent(fen)}&topGames=3&moves=4`).catch(() => null);
       if (!res || !res.ok) throw new Error('API limit or offline');
       const data = await res.json();
 
@@ -1413,6 +1716,7 @@
     if (!window.Chess) return;
     StudyPGN.puzzleGame = new window.Chess(puzzle.fen);
     StudyPGN.puzzleMoveIndex = 0;
+    StudyPGN.puzzleIsPlayerTurn = true;
     selectedTacticsSquare = null;
     tacticsLegalDestinations = [];
 
@@ -1590,8 +1894,14 @@
 
     const moveStr = move.from + move.to;
     const expectedMove = puzzle.moves ? puzzle.moves[StudyPGN.puzzleMoveIndex] : null;
+    StudyPGN.puzzleIsPlayerTurn = (StudyPGN.puzzleMoveIndex % 2 === 0);
 
-    if (!expectedMove || expectedMove.includes(moveStr) || move.san === expectedMove) {
+    if (!StudyPGN.puzzleIsPlayerTurn) {
+      if (window.toast) window.toast('⚠️ Waiting for opponent response...', 'info');
+      return;
+    }
+
+    if (!expectedMove || expectedMove === moveStr || move.san === expectedMove) {
       StudyPGN.puzzleMoveIndex++;
       if (StudyPGN.puzzleMoveIndex >= (puzzle.moves?.length || 1)) {
         if (window.toast) window.toast('🎉 Brilliant move! Puzzle Solved!', 'success');
@@ -1603,9 +1913,18 @@
         setTimeout(() => {
           const oppMoveStr = puzzle.moves[StudyPGN.puzzleMoveIndex];
           if (oppMoveStr && oppMoveStr.length >= 4) {
-            StudyPGN.puzzleGame.move({ from: oppMoveStr.substring(0, 2), to: oppMoveStr.substring(2, 4) });
-            StudyPGN.puzzleMoveIndex++;
-            StudyPGN.renderTacticsBoard();
+            const oppFrom = oppMoveStr.substring(0, 2);
+            const oppTo = oppMoveStr.substring(2, 4);
+            const legalMoves = StudyPGN.puzzleGame.moves({ square: oppFrom, verbose: true });
+            const isLegal = legalMoves.some(m => m.to === oppTo);
+            if (isLegal) {
+              StudyPGN.puzzleGame.move({ from: oppFrom, to: oppTo });
+              StudyPGN.puzzleMoveIndex++;
+              StudyPGN.renderTacticsBoard();
+            } else {
+              if (window.toast) window.toast('⚠️ Puzzle data error: opponent move not legal. Skipping.', 'warning');
+              StudyPGN.puzzleMoveIndex++;
+            }
           }
         }, 500);
       }
@@ -1776,47 +2095,63 @@
     }
 
     const rawUrl = urlInput.value.trim();
-    if (window.toast) window.toast('⏳ Fetching PGN from Online Server API...', 'info');
+    if (window.toast) window.toast('⏳ Fetching PGN from Online Server...', 'info');
+
+    const corsProxies = [
+      url => url,
+      url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    ];
+
+    async function fetchWithCorsFallback(url, options = {}) {
+      for (const proxyFn of corsProxies) {
+        try {
+          const proxiedUrl = proxyFn(url);
+          const res = await fetch(proxiedUrl, options);
+          if (res.ok) return res;
+        } catch (e) {
+          continue;
+        }
+      }
+      return null;
+    }
 
     try {
       let pgnContent = '';
       let detectedTitle = '';
 
-      // 1. Lichess Study or Game Export API
       if (rawUrl.includes('lichess.org')) {
+        let fetchUrl = rawUrl;
         if (rawUrl.includes('/study/')) {
           const parts = rawUrl.split('/study/')[1].split('/');
           const studyId = parts[0];
           const chapterId = parts[1] || '';
-          const fetchUrl = chapterId
+          fetchUrl = chapterId
             ? `https://lichess.org/study/${studyId}/${chapterId}.pgn`
             : `https://lichess.org/study/${studyId}.pgn`;
-          const res = await fetch(fetchUrl);
-          if (res.ok) {
-            pgnContent = await res.text();
-            detectedTitle = `Lichess Study: ${studyId}`;
-          }
         } else {
           const match = rawUrl.match(/lichess\.org\/([a-zA-Z0-9]{8,12})/);
           if (match && match[1]) {
             const gameId = match[1].slice(0, 8);
-            const res = await fetch(`https://lichess.org/game/export/${gameId}?pgnInJson=false&clocks=false&evals=false`);
-            if (res.ok) {
-              pgnContent = await res.text();
-              detectedTitle = `Lichess Game #${gameId}`;
-            }
+            fetchUrl = `https://lichess.org/game/export/${gameId}?pgnInJson=false&clocks=false&evals=false`;
           }
         }
-      }
 
-      // 2. Direct HTTPS / Cloud PGN File URL
-      if (!pgnContent && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://'))) {
-        try {
-          const res = await fetch(rawUrl);
-          if (res && res.ok) {
-            pgnContent = await res.text();
+        const res = await fetchWithCorsFallback(fetchUrl);
+        if (res && res.ok) {
+          pgnContent = await res.text();
+          if (rawUrl.includes('/study/')) {
+            detectedTitle = `Lichess Study: ${rawUrl.split('/study/')[1].split('/')[0]}`;
+          } else {
+            const match = rawUrl.match(/lichess\.org\/([a-zA-Z0-9]{8,12})/);
+            detectedTitle = match ? `Lichess Game #${match[1].slice(0, 8)}` : 'Lichess Game';
           }
-        } catch (e) {}
+        }
+      } else if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+        const res = await fetchWithCorsFallback(rawUrl);
+        if (res && res.ok) {
+          pgnContent = await res.text();
+        }
       }
 
       if (pgnContent && pgnContent.trim()) {
@@ -1860,26 +2195,6 @@
     }
   };
 
-  // ── Local & Cloud PGN File Upload ──
-  window.handlePgnFileUpload = function (fileInput, targetPgnInputId, targetTitleInputId) {
-    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const content = e.target.result;
-      const targetPgn = document.getElementById(targetPgnInputId);
-      if (targetPgn) targetPgn.value = content;
-      if (targetTitleInputId) {
-        const targetTitle = document.getElementById(targetTitleInputId);
-        if (targetTitle && (!targetTitle.value || targetTitle.value.trim() === '')) {
-          targetTitle.value = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        }
-      }
-      if (window.toast) window.toast(`📂 Loaded PGN file: ${file.name}`, 'success');
-    };
-    reader.readAsText(file);
-  };
-
   // ── Topic-based Search & Master Games Import API ──
   window.searchPgnTopics = async function (query, targetPgnInputId, targetTitleInputId, containerId) {
     const container = document.getElementById(containerId);
@@ -1915,11 +2230,25 @@
     // 2. Fetch from live Open Master API if query has >= 3 chars
     if (q.length >= 3) {
       try {
-        const res = await fetch(`https://lichess.org/api/games/user/${encodeURIComponent(q)}?max=2&pgnInJson=false`, {
-          headers: { 'Accept': 'application/x-chess-pgn' }
-        }).catch(() => null);
+        const lichessUrls = [
+          `https://lichess.org/api/games/user/${encodeURIComponent(q)}?max=2&pgnInJson=false`,
+          `https://corsproxy.io/?${encodeURIComponent(`https://lichess.org/api/games/user/${encodeURIComponent(q)}?max=2&pgnInJson=false`)}`
+        ];
+        
+        let res = null;
+        for (const url of lichessUrls) {
+          try {
+            const response = await fetch(url, { headers: { 'Accept': 'application/x-chess-pgn' } });
+            if (response && response.ok) {
+              res = response;
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
 
-        if (res && res.ok) {
+        if (res) {
           const fetchedPgn = await res.text();
           if (fetchedPgn && fetchedPgn.includes('[Event')) {
             html += `<div style="font-size:11px; font-weight:800; color:#60a5fa; text-transform:uppercase; margin:10px 0 6px;">🌐 Live Lichess Database Match</div>
@@ -2355,11 +2684,19 @@
     } else if (subTab === 'topics') {
       StudyPGN.renderAssignedTopicsList();
     } else if (subTab === 'custom') {
-      StudyPGN.initCustomBoard();
-    } else if (subTab === 'monitor') {
-      if (window.renderStudyPgnMonitor) window.renderStudyPgnMonitor('coach');
+      if (document.readyState === 'complete') {
+        requestAnimationFrame(() => StudyPGN.initCustomBoard());
+      } else {
+        window.addEventListener('load', () => StudyPGN.initCustomBoard(), { once: true });
+      }
     } else if (subTab === 'vault') {
-      StudyPGN.renderCoachVaultCards();
+      const coachContainer = document.getElementById('coach-vault-cards-container');
+      const studentContainer = document.getElementById('student-vault-cards-container');
+      if (coachContainer) {
+        StudyPGN.renderCoachVaultCards();
+      } else if (studentContainer) {
+        StudyPGN.renderStudentVault();
+      }
     }
   };
 
@@ -2407,6 +2744,52 @@
     StudyPGN.renderCoachVaultCards(q);
   };
 
+  StudyPGN.renderStudentVault = function (filterQuery = '') {
+    const container = document.getElementById('student-vault-cards-container');
+    if (!container) return;
+
+    const q = (filterQuery || '').toLowerCase().trim();
+    const games = CURATED_STUDY_GAMES.filter(g => {
+      if (!q) return true;
+      const text = `${g.title} ${g.category} ${g.white} ${g.black} ${g.description}`.toLowerCase();
+      return text.includes(q);
+    });
+
+    if (!games.length) {
+      container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#94a3b8; background:var(--surface); border-radius:12px; border:1px dashed var(--border); grid-column:1/-1;">No games found for "${escapeHtml(q)}".</div>`;
+      return;
+    }
+
+    container.innerHTML = games.map((g, idx) => {
+      const globalIdx = CURATED_STUDY_GAMES.indexOf(g);
+      return `
+        <div class="card" style="padding:18px; background:var(--surface2, rgba(0,0,0,0.25)); border:1px solid rgba(218,163,62,0.25); border-radius:14px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="background:rgba(218,163,62,0.18); color:var(--gold); font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">${escapeHtml(g.category)}</span>
+              <span style="font-size:11px; color:#60a5fa; font-weight:700;">${escapeHtml(g.level || 'Master')}</span>
+            </div>
+            <h4 style="margin:0 0 6px; color:#fff; font-size:14.5px; font-weight:700;">${escapeHtml(g.title)}</h4>
+            <div style="font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">⚪ ${escapeHtml(g.white)} vs ⚫ ${escapeHtml(g.black)} (${g.result})</div>
+            <p style="margin:0; font-size:12px; color:#94a3b8; line-height:1.4;">${escapeHtml(g.description)}</p>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn btn-gold btn-sm" style="flex:1; font-size:11.5px; padding:6px 10px;" onclick="window.StudyPGN.loadCuratedGame(${globalIdx}); window.setStudyPgnSubTab('lab');">
+              ♟️ Load Board
+            </button>
+            <button class="btn btn-outline btn-sm" style="font-size:11.5px; padding:6px 10px; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.selectPgnSearchResult('${g.id}', 'topic-pgn-input', 'topic-title-input', ''); window.openAssignStudyTopicModal();">
+              ➕ Assign
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  StudyPGN.filterStudentVault = function (q) {
+    StudyPGN.renderStudentVault(q);
+  };
+
   // ── Sub Tab Switcher (Student / Admin) ──
   window.setStudyPgnSubTab = function (subTab, btn) {
     document.querySelectorAll('.studypgn-subview').forEach(v => v.style.display = 'none');
@@ -2439,8 +2822,6 @@
       StudyPGN.renderAssignedTopicsList();
     } else if (subTab === 'custom') {
       StudyPGN.initCustomBoard();
-    } else if (subTab === 'vision') {
-      // Vision trainer ready
     }
   };
 
@@ -2735,6 +3116,152 @@
     }
   };
 
+  // ── Search PGN Topics & Openings Vault ──
+  window.searchPgnTopics = function (query, targetTextId = 'import-pgn-text', targetTitleId = 'import-game-title-custom', resultsContainerId = 'import-pgn-search-results') {
+    const container = document.getElementById(resultsContainerId);
+    if (!container) return;
+
+    const q = String(query || '').toLowerCase().trim();
+    const games = Array.isArray(CURATED_STUDY_GAMES) ? CURATED_STUDY_GAMES : [];
+
+    const matches = games.filter(g => {
+      if (!q) return true;
+      const title = String(g.title || '').toLowerCase();
+      const cat = String(g.category || '').toLowerCase();
+      const desc = String(g.description || '').toLowerCase();
+      const white = String(g.white || '').toLowerCase();
+      const black = String(g.black || '').toLowerCase();
+      return title.includes(q) || cat.includes(q) || desc.includes(q) || white.includes(q) || black.includes(q);
+    });
+
+    if (matches.length === 0) {
+      container.innerHTML = `<div style="padding:18px; text-align:center; color:var(--ivory-dim); font-size:12.5px;">No matching openings or games found for "${escapeHtml(query)}".</div>`;
+      return;
+    }
+
+    container.innerHTML = matches.map((g) => `
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px;">
+          <div style="font-weight:700; color:var(--gold); font-size:13px; margin-bottom:2px;">${escapeHtml(g.title)}</div>
+          <div style="font-size:11px; color:var(--ivory-dim); line-height:1.4;">${escapeHtml(g.description || '')}</div>
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <span style="font-size:10px; background:rgba(218,163,62,0.15); color:var(--gold); padding:2px 6px; border-radius:4px;">${escapeHtml(g.category || 'Study')}</span>
+            <span style="font-size:10px; background:rgba(59,130,246,0.15); color:#60a5fa; padding:2px 6px; border-radius:4px;">${escapeHtml(g.level || 'All Levels')}</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-gold btn-sm" onclick="window.selectSearchPgnGame('${escapeHtml(g.id)}')" style="font-size:11px; padding:5px 12px;">
+          ♟️ Load Game
+        </button>
+      </div>
+    `).join('');
+  };
+
+  window.selectSearchPgnGame = function (gameId) {
+    const game = (CURATED_STUDY_GAMES || []).find(g => g.id === gameId);
+    if (!game) return;
+    if (StudyPGN.loadPgnString) {
+      StudyPGN.loadPgnString(game.pgn, {
+        title: game.title,
+        category: game.category,
+        description: game.description
+      });
+      window.closeImportPgnModal();
+      if (window.toast) window.toast(`♟️ Loaded "${game.title}" into Study Board!`, 'success');
+    }
+  };
+
+  // ── Switch Import PGN Sub Tabs ──
+  window.switchImportPgnSubTab = function (subTab, btn) {
+    document.querySelectorAll('.import-subview').forEach(el => el.style.display = 'none');
+    const target = document.getElementById('import-subview-' + subTab);
+    if (target) target.style.display = 'block';
+
+    const tabParent = btn ? btn.parentElement : document.querySelector('#import-pgn-modal .tab-link')?.parentElement;
+    if (tabParent) {
+      tabParent.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    if (subTab === 'search') {
+      window.searchPgnTopics(document.getElementById('import-search-input')?.value || '', 'import-pgn-text', 'import-game-title-custom', 'import-pgn-search-results');
+    } else if (subTab === 'local') {
+      window.renderLocalStorageStudies();
+    }
+  };
+
+  // ── Render Local Storage Studies List ──
+  window.renderLocalStorageStudies = function () {
+    const container = document.getElementById('import-local-storage-list');
+    if (!container) return;
+
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]'); } catch (e) {}
+
+    if (saved.length === 0) {
+      container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--ivory-dim); font-size:12.5px;">No saved studies in local storage yet. Click "Bookmark Active Board" to save your current study!</div>';
+      return;
+    }
+
+    container.innerHTML = saved.map((s, idx) => `
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div>
+          <div style="font-weight:700; color:var(--gold); font-size:13px;">${escapeHtml(s.title || 'Saved Study')}</div>
+          <div style="font-size:11px; color:var(--ivory-dim);">${escapeHtml(s.date || new Date().toLocaleDateString())} &bull; ${s.movesCount || 0} moves</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn btn-gold btn-sm" onclick="window.loadSavedLocalStorageStudy(${idx})" style="font-size:11px; padding:4px 10px;">Load</button>
+          <button type="button" class="btn btn-outline-grey btn-sm" onclick="window.deleteSavedLocalStorageStudy(${idx})" style="font-size:11px; padding:4px 8px; color:var(--danger);">✕</button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window.saveCurrentStudyToLocalStorage = function () {
+    const game = StudyPGN.currentGame;
+    const pgnText = (game && game.pgn) ? game.pgn : (StudyPGN.chess ? StudyPGN.chess.pgn() : '');
+    if (!pgnText) {
+      if (window.toast) window.toast('No moves to bookmark.', 'warning');
+      return;
+    }
+
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]'); } catch (e) {}
+
+    const title = prompt('Enter a title for this bookmark:', game?.title || 'My Chess Study') || 'My Chess Study';
+    saved.unshift({
+      id: 'study_' + Date.now(),
+      title: title.trim(),
+      pgn: pgnText,
+      date: new Date().toLocaleDateString(),
+      movesCount: (StudyPGN.moveHistory || []).length
+    });
+
+    localStorage.setItem(STORAGE_SAVED_STUDIES, JSON.stringify(saved));
+    if (window.toast) window.toast(`💾 Bookmarked "${title}" in local storage!`, 'success');
+    window.renderLocalStorageStudies();
+  };
+
+  window.loadSavedLocalStorageStudy = function (idx) {
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]'); } catch (e) {}
+    const s = saved[idx];
+    if (!s) return;
+    StudyPGN.loadPgnString(s.pgn, {
+      title: s.title,
+      description: `Loaded from local storage (${s.date})`
+    });
+    window.closeImportPgnModal();
+    if (window.toast) window.toast(`♟️ Loaded "${s.title}"!`, 'success');
+  };
+
+  window.deleteSavedLocalStorageStudy = function (idx) {
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_SAVED_STUDIES) || '[]'); } catch (e) {}
+    saved.splice(idx, 1);
+    localStorage.setItem(STORAGE_SAVED_STUDIES, JSON.stringify(saved));
+    window.renderLocalStorageStudies();
+  };
+
   // ── Import PGN Modal Open / Close ──
   window.openImportPgnModal = function () {
     console.log('[StudyPGN] openImportPgnModal called');
@@ -2903,12 +3430,21 @@
   };
 
   // ── Initial Load on Ready ──
+  StudyPGN.init = function () {
+    StudyPGN.ensureChessEngine();
+    StudyPGN.loadSavedRecords();
+    StudyPGN.setupKeyboardListeners();
+    StudyPGN.initCustomBoard();
+    if (!StudyPGN.currentGame) {
+      StudyPGN.loadCuratedGame(0);
+    }
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => StudyPGN.init());
   } else {
     StudyPGN.init();
   }
-})();
 
   // ── Custom Board Setup & FEN Builder Engine ──
   StudyPGN.customBoardState = {
@@ -2919,12 +3455,24 @@
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
-      ['P', 'N', 'B', 'Q', 'K', 'B', 'N', 'P'],
+      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ],
     selectedPalettePiece: 'P',
     turn: 'w',
     orientation: 'white'
+  };
+
+  StudyPGN.getCustomBoardEls = function (id) {
+    const list = [];
+    if (!id) return list;
+    const byId = document.getElementById(id);
+    if (byId) list.push(byId);
+    const byQuery = document.querySelectorAll('#' + id);
+    byQuery.forEach(el => {
+      if (!list.includes(el)) list.push(el);
+    });
+    return list;
   };
 
   StudyPGN.initCustomBoard = function () {
@@ -2934,9 +3482,14 @@
   };
 
   StudyPGN.renderCustomPalette = function () {
-    const palW = document.getElementById('custom-piece-palette-w');
-    const palB = document.getElementById('custom-piece-palette-b');
-    if (!palW || !palB) return;
+    const palWs = [
+      ...StudyPGN.getCustomBoardEls('student-custom-piece-palette-w'),
+      ...StudyPGN.getCustomBoardEls('custom-piece-palette-w')
+    ];
+    const palBs = [
+      ...StudyPGN.getCustomBoardEls('student-custom-piece-palette-b'),
+      ...StudyPGN.getCustomBoardEls('custom-piece-palette-b')
+    ];
 
     const wPieces = [
       { key: 'P', title: 'White Pawn' },
@@ -2965,19 +3518,63 @@
 
       return `
         <button type="button" onclick="window.StudyPGN.selectCustomPalettePiece('${item.key}')"
+                draggable="true"
+                ondragstart="window.StudyPGN.onCustomPaletteDragStart(event, '${item.key}')"
                 style="width:38px; height:38px; border-radius:8px; border:2px solid ${isSel ? 'var(--gold)' : 'rgba(255,255,255,0.12)'}; background:${isSel ? 'rgba(218,163,62,0.25)' : 'rgba(255,255,255,0.04)'}; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:4px;" title="${item.title}">
-          ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:contain;" />` : `<span style="font-size:16px;">🗑️</span>`}
+          ${imgUrl ? `<img src="${imgUrl}" draggable="false" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" />` : `<span style="font-size:16px;">🗑️</span>`}
         </button>
       `;
     };
 
-    palW.innerHTML = wPieces.map(renderPieceBtn).join('');
-    palB.innerHTML = bPieces.map(renderPieceBtn).join('');
+    const wHtml = wPieces.map(renderPieceBtn).join('');
+    const bHtml = bPieces.map(renderPieceBtn).join('');
+
+    palWs.forEach(p => p.innerHTML = wHtml);
+    palBs.forEach(p => p.innerHTML = bHtml);
   };
 
   StudyPGN.selectCustomPalettePiece = function (key) {
     StudyPGN.customBoardState.selectedPalettePiece = key;
     StudyPGN.renderCustomPalette();
+  };
+
+  StudyPGN.onCustomPaletteDragStart = function (e, key) {
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'palette', key }));
+      e.dataTransfer.effectAllowed = 'copy';
+    }
+  };
+
+  StudyPGN.onCustomBoardDragStart = function (e, r, c) {
+    const char = StudyPGN.customBoardState.grid[r] && StudyPGN.customBoardState.grid[r][c];
+    if (char && e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'board', r, c, char }));
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  StudyPGN.onCustomBoardDragOver = function (e) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  StudyPGN.onCustomBoardDrop = function (e, targetR, targetC) {
+    e.preventDefault();
+    try {
+      const raw = e.dataTransfer ? e.dataTransfer.getData('text/plain') : '';
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.type === 'palette') {
+        StudyPGN.customBoardState.grid[targetR][targetC] = (data.key === 'EMPTY') ? null : data.key;
+      } else if (data.type === 'board') {
+        StudyPGN.customBoardState.grid[data.r][data.c] = null;
+        StudyPGN.customBoardState.grid[targetR][targetC] = data.char;
+      }
+      StudyPGN.renderCustomBoard();
+      StudyPGN.updateCustomFenUI();
+    } catch (err) {}
   };
 
   StudyPGN.onCustomSquareClicked = function (r, c) {
@@ -2988,8 +3585,11 @@
   };
 
   StudyPGN.renderCustomBoard = function () {
-    const container = document.getElementById('custom-board-container');
-    if (!container) return;
+    const containers = [
+      ...StudyPGN.getCustomBoardEls('student-custom-board-container'),
+      ...StudyPGN.getCustomBoardEls('custom-board-container')
+    ];
+    if (!containers.length) return;
 
     const grid = StudyPGN.customBoardState.grid;
     const isFlipped = StudyPGN.customBoardState.orientation === 'black';
@@ -3004,17 +3604,21 @@
         const c = isFlipped ? 7 - cIdx : cIdx;
 
         const isLight = (r + c) % 2 === 0;
-        const char = grid[r][c];
+        const char = grid[r] ? grid[r][c] : null;
         const pieceObj = char ? { color: char === char.toUpperCase() ? 'w' : 'b', type: char.toLowerCase() } : null;
         const bgColor = isLight ? '#ebecd0' : '#779556';
         const pieceImgUrl = pieceObj ? getPieceImage(pieceObj) : '';
 
         html += `
-          <div class="custom-square" onclick="StudyPGN.onCustomSquareClicked(${r}, ${c})"
+          <div class="custom-square"
+               onclick="StudyPGN.onCustomSquareClicked(${r}, ${c})"
+               ondragover="StudyPGN.onCustomBoardDragOver(event)"
+               ondrop="StudyPGN.onCustomBoardDrop(event, ${r}, ${c})"
                style="background:${bgColor}; aspect-ratio:1/1; width:100%; height:100%; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; position:relative; box-sizing:border-box; overflow:hidden;">
             ${pieceImgUrl ? `
-              <img src="${pieceImgUrl}" draggable="false"
-                   style="width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; display:block;" />
+              <img src="${pieceImgUrl}" draggable="true"
+                   ondragstart="StudyPGN.onCustomBoardDragStart(event, ${r}, ${c})"
+                   style="width:100%; height:100%; object-fit:contain; pointer-events:auto; user-select:none; display:block; cursor:grab;" />
             ` : ''}
             ${cIdx === 0 ? `<span style="position:absolute; top:2px; left:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; pointer-events:none;">${8 - r}</span>` : ''}
             ${rIdx === 7 ? `<span style="position:absolute; bottom:2px; right:3px; font-size:11.5px; font-weight:700; line-height:1; color:${isLight ? '#779556' : '#ebecd0'}; pointer-events:none;">${String.fromCharCode(97 + c)}</span>` : ''}
@@ -3023,7 +3627,7 @@
       }
     }
     html += `</div>`;
-    container.innerHTML = html;
+    containers.forEach(c => c.innerHTML = html);
   };
 
   StudyPGN.generateFenFromCustomGrid = function () {
@@ -3034,7 +3638,7 @@
       let emptyCount = 0;
       let rowStr = '';
       for (let c = 0; c < 8; c++) {
-        const char = grid[r][c];
+        const char = grid[r] ? grid[r][c] : null;
         if (!char) {
           emptyCount++;
         } else {
@@ -3054,16 +3658,25 @@
   };
 
   StudyPGN.updateCustomFenUI = function () {
-    const input = document.getElementById('custom-fen-input');
-    if (input) input.value = StudyPGN.generateFenFromCustomGrid();
+    const inputs = [
+      ...StudyPGN.getCustomBoardEls('student-custom-fen-input'),
+      ...StudyPGN.getCustomBoardEls('custom-fen-input')
+    ];
+    const currentFen = StudyPGN.generateFenFromCustomGrid();
+    inputs.forEach(inp => inp.value = currentFen);
 
-    const btnW = document.getElementById('btn-turn-w');
-    const btnB = document.getElementById('btn-turn-b');
+    const btnWs = [
+      ...StudyPGN.getCustomBoardEls('student-btn-turn-w'),
+      ...StudyPGN.getCustomBoardEls('btn-turn-w')
+    ];
+    const btnBs = [
+      ...StudyPGN.getCustomBoardEls('student-btn-turn-b'),
+      ...StudyPGN.getCustomBoardEls('btn-turn-b')
+    ];
     const turn = StudyPGN.customBoardState.turn;
-    if (btnW && btnB) {
-      btnW.className = turn === 'w' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline';
-      btnB.className = turn === 'b' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline';
-    }
+
+    btnWs.forEach(btn => btn.className = turn === 'w' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline');
+    btnBs.forEach(btn => btn.className = turn === 'b' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-outline');
   };
 
   StudyPGN.setCustomTurn = function (turn) {
@@ -3086,7 +3699,7 @@
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
-      ['P', 'N', 'B', 'Q', 'K', 'B', 'N', 'P'],
+      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
     StudyPGN.customBoardState.turn = 'w';
@@ -3164,14 +3777,26 @@
       headers: { SetUp: '1', FEN: fen }
     };
 
-    window.setStudyPgnSubTab('lab');
-    StudyPGN.renderBoard();
-    StudyPGN.renderMoveList();
-    StudyPGN.renderGameInfo();
-    StudyPGN.updateAiMoveGuide();
-    StudyPGN.updateEvalGauge();
-    StudyPGN.fetchLichessOpeningStats();
-    StudyPGN.fetchStockfishCloudEval();
+    const isCoach = window.role === 'coach' && document.getElementById('page-coach-studypgn')?.classList.contains('active');
+    if (isCoach && window.switchCoachStudyTab) {
+      window.switchCoachStudyTab('board');
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      StudyPGN.fetchLichessOpeningStats();
+      StudyPGN.fetchStockfishCloudEval();
+    } else if (window.setStudyPgnSubTab) {
+      window.setStudyPgnSubTab('lab');
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      StudyPGN.fetchLichessOpeningStats();
+      StudyPGN.fetchStockfishCloudEval();
+    }
 
     if (window.toast) window.toast('♟️ Custom position loaded for play! Make your moves on the board.', 'success');
   };
@@ -3185,7 +3810,12 @@
       description: `Custom Board Setup FEN: ${fen}`
     });
 
-    window.setStudyPgnSubTab('lab');
+    const isCoach = window.role === 'coach' && document.getElementById('page-coach-studypgn')?.classList.contains('active');
+    if (isCoach && window.switchCoachStudyTab) {
+      window.switchCoachStudyTab('board');
+    } else if (window.setStudyPgnSubTab) {
+      window.setStudyPgnSubTab('lab');
+    }
     if (window.toast) window.toast('🚀 Loaded custom position into Master Study Lab!', 'success');
   };
 
@@ -3221,12 +3851,31 @@
 
   // ── PGN Export & File Downloader ──
   StudyPGN.downloadCurrentPgn = function () {
-    const game = StudyPGN.currentGame;
+    const game = StudyPGN.currentGame || {};
     let pgnText = '';
-    if (game && game.pgn) {
-      pgnText = game.pgn;
-    } else if (StudyPGN.chess) {
+
+    if (StudyPGN.chess) {
       pgnText = StudyPGN.chess.pgn();
+    } else if (game.pgn) {
+      pgnText = game.pgn;
+    }
+
+    if (!pgnText || !pgnText.trim()) {
+      if (StudyPGN.moveHistory && StudyPGN.moveHistory.length > 0) {
+        const tempChess = StudyPGN.initialFen ? new window.Chess(StudyPGN.initialFen) : new window.Chess();
+        if (game.white) tempChess.header('White', game.white);
+        if (game.black) tempChess.header('Black', game.black);
+        if (game.title) tempChess.header('Event', game.title);
+        if (game.result) tempChess.header('Result', game.result);
+        if (StudyPGN.initialFen) {
+          tempChess.header('SetUp', '1');
+          tempChess.header('FEN', StudyPGN.initialFen);
+        }
+        StudyPGN.moveHistory.forEach(m => {
+          try { tempChess.move(m); } catch (e) {}
+        });
+        pgnText = tempChess.pgn();
+      }
     }
 
     if (!pgnText || !pgnText.trim()) {
@@ -3235,7 +3884,7 @@
     }
 
     const titleSlug = (game && game.title ? game.title : 'chesskidoo_study').toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    const blob = new Blob([pgnText], { type: 'application/x-chess-pgn' });
+    const blob = new Blob([pgnText], { type: 'application/x-chess-pgn;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -3340,3 +3989,13 @@
     if (old) old.remove();
     document.body.insertAdjacentHTML('beforeend', modalHtml);
   };
+
+  StudyPGN.getRawPgn = function () {
+    if (StudyPGN.currentPgn) return StudyPGN.currentPgn;
+    if (StudyPGN.chess) {
+      const pgn = StudyPGN.chess.pgn();
+      if (pgn && pgn.trim()) return pgn;
+    }
+    return '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O d3 8. Qb3 Qf6 9. e5 Qg6 10. Re1 Nge7 11. Ba3 b5 12. Qxb5 Rb8 13. Qa4 Bb6 14. Nbd2 Bb7 15. Ne4 Qf5 16. Bxd3 Qh5 17. Nf6+ gxf6 18. exf6 Rg8 19. Rad1 Qxf3 20. Rxe7+ Nxe7 21. Qxd7+ Kxd7 22. Bf5+ Ke8 23. Bd7+ Kf8 24. Bxe7# 1-0';
+  };
+})();

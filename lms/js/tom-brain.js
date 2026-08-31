@@ -340,6 +340,27 @@
   let activePuzzle = null;
   let puzzleStreak = 0;
 
+  function saveTomPuzzleState() {
+    try {
+      const state = {
+        activePuzzle: activePuzzle ? { id: activePuzzle.id, title: activePuzzle.title, theme: activePuzzle.theme } : null,
+        puzzleStreak: puzzleStreak
+      };
+      localStorage.setItem('ck_tom_ai_puzzle_state', JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadTomPuzzleState() {
+    try {
+      const raw = localStorage.getItem('ck_tom_ai_puzzle_state');
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      if (state && typeof state.puzzleStreak === 'number') {
+        puzzleStreak = state.puzzleStreak;
+      }
+    } catch (e) {}
+  }
+
   // ── 2. Game Analysis Engine ──
   function detectOpening(movesStr) {
     const s = movesStr.toLowerCase().replace(/[^a-z0-9]/g, ' ');
@@ -524,6 +545,7 @@
       a: () => {
         const pz = PUZZLES_DB[Math.floor(Math.random() * PUZZLES_DB.length)];
         activePuzzle = pz;
+        saveTomPuzzleState();
         return `🧩 **TOM AI Tactics Challenge: ${pz.title}**
 **Theme:** *${pz.theme}* | **Side to move:** **${pz.toMove}**
 
@@ -552,6 +574,7 @@ ${pz.diagram}
         if (!activePuzzle) return `No puzzle currently active! Say **"Give me a puzzle"** to start.`;
         const sol = activePuzzle.explanation;
         activePuzzle = null;
+        saveTomPuzzleState();
         return `📖 **Puzzle Solution:**\n${sol}\n\nReady for another? Say **"Give me a puzzle"**!`;
       }
     },
@@ -708,8 +731,10 @@ A classical, hyper-solid weapon. White offers the c4 pawn to deflect Black’s c
 
       if (isCorrect) {
         puzzleStreak++;
+        saveTomPuzzleState();
         const pz = activePuzzle;
         activePuzzle = null;
+        saveTomPuzzleState();
         return `🎉 **BRILLIANT! Correct Move!**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${pz.explanation}\n\n🔥 **Current Puzzle Streak:** **${puzzleStreak}** in a row!\n💬 *Want another challenge? Say **"Give me a puzzle"**!*`;
       }
       if (q.includes('hint') || q.includes('clue')) {
@@ -718,6 +743,7 @@ A classical, hyper-solid weapon. White offers the c4 pawn to deflect Black’s c
       if (q.includes('give up') || q.includes('solution') || q.includes('answer')) {
         const pz = activePuzzle;
         activePuzzle = null;
+        saveTomPuzzleState();
         return `📖 **Puzzle Solution:**\n${pz.explanation}\n\n*Ready for the next one? Say **"Give me a puzzle"**!*`;
       }
       if (/^[a-zA-Z0-9+#=-]{2,6}$/.test(raw.trim())) {
@@ -859,4 +885,6 @@ A classical, hyper-solid weapon. White offers the c4 pawn to deflect Black’s c
     if (!text) return true;
     return SERVER_DEFAULT_MARKERS.some(m => text.includes(m));
   };
+
+  loadTomPuzzleState();
 })();

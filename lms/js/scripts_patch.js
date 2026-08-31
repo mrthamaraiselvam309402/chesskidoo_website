@@ -69,9 +69,10 @@
     };
   }
 
-  /* ── FIX 5: openPay PARAMS ─────────────────────────────────────────
+  /* ── FIX 5: openPay PARAMS + PAYMENT COMING SOON ────────────────────
    * The event card calls openPay('id','title','prize') but prize can be
    * a string like "₹2000" — strip non-numeric chars before using as fee.
+   * Also show "coming soon" message since payment gateway is not yet integrated.
    */
   const _origOpenPay = window.openPay;
   if (typeof _origOpenPay === 'function') {
@@ -82,6 +83,16 @@
       _origOpenPay(id, name, numericFee);
     };
   }
+
+  // Override openPay to show "coming soon" message for tuition fees
+  const __origOpenPay = window.openPay;
+  window.openPay = function (id, name, fee) {
+    if (window.toast) {
+      window.toast('💳 Payment integration is coming soon! Please contact the academy office for fee payment.', 'info');
+    } else {
+      alert('💳 Payment integration is coming soon! Please contact the academy office for fee payment.');
+    }
+  };
 
   /* ── FIX 6: NOTIFICATION BADGE ON LOAD ─────────────────────────────
    * updateNotificationBadge is called before allMessages is populated

@@ -92,8 +92,46 @@
     },
     {
       id: 'elib-5',
-      title: 'World Champion Tactical Masterclass & Game Analysis',
-      description: 'Recorded live masterclass session analyzing world championship games, tournament psychology, and blunder prevention habits.',
+      title: 'Top 7 Opening Traps Every Chess Player Must Know',
+      description: 'Avoid common opening blunders and learn how to trap your opponents with the Legal Mate, Fried Liver, and Blackburne Shilling traps.',
+      category: 'openings',
+      categoryLabel: '♟️ Opening Repertoire',
+      level: 'Beginner',
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=s9vj9zPq974',
+      author: 'Senior Coach Panel',
+      date: '2026-08-18',
+      duration: '24 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
+      tags: ['Traps', 'Openings', 'Gambits']
+    },
+    {
+      id: 'elib-6',
+      title: 'Mastering the Sicilian Defense: Dragon & Najdorf Lines',
+      description: 'Step-by-step masterclass on playing black against 1.e4 with aggressive kingside counter-attacking plans and central pawn breaks.',
+      category: 'openings',
+      categoryLabel: '♟️ Opening Repertoire',
+      level: 'Intermediate',
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=yA_eZ7K99d4',
+      author: 'Coach Gyanasurya',
+      date: '2026-08-14',
+      duration: '40 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
+      tags: ['Sicilian', 'Dragon', 'Najdorf', 'Counterattack']
+    },
+    {
+      id: 'elib-7',
+      title: 'Grandmaster Live Game Analysis & Tournament Psychology',
+      description: 'Recorded live masterclass session analyzing world championship games, tournament psychology, time management, and blunder prevention habits.',
       category: 'recordings',
       categoryLabel: '🎥 Class Recording',
       level: 'All Levels',
@@ -108,6 +146,25 @@
       allowed_student_ids: [],
       allowed_student_names: [],
       tags: ['Recording', 'Live Session', 'Tournament', 'Psychology']
+    },
+    {
+      id: 'elib-8',
+      title: 'King & Pawn Endgames: Key Squares, Opposition & Trebuchet',
+      description: 'Fundamental endgame theory: the rule of the square, direct opposition, diagonal opposition, and key square outposts for guaranteed pawn promotion.',
+      category: 'endgames',
+      categoryLabel: '👑 Endgame Mastery',
+      level: 'Intermediate',
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=4pQy1hN007w',
+      author: 'Coach Ranjith A S',
+      date: '2026-08-02',
+      duration: '32 mins',
+      access_type: 'all',
+      allowed_batch_id: '',
+      allowed_batch_name: '',
+      allowed_student_ids: [],
+      allowed_student_names: [],
+      tags: ['Endgames', 'King and Pawn', 'Opposition', 'Promotion']
     }
   ];
 
@@ -461,9 +518,33 @@
       accessBadge = `<span style="background:rgba(234,179,8,0.15); color:#eab308; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;" title="${escapeHtml((item.allowed_student_names || []).join(', '))}">🔒 ${escapeHtml(namesStr || `${count} Students Only`)}</span>`;
     }
 
+    // Video Thumbnail Extraction
+    let thumbnailHtml = '';
+    if (isVideo) {
+      let vidId = '';
+      if (item.url.includes('youtube.com/watch?v=')) {
+        vidId = item.url.split('v=')[1]?.split('&')[0];
+      } else if (item.url.includes('youtu.be/')) {
+        vidId = item.url.split('youtu.be/')[1]?.split('?')[0];
+      }
+
+      if (vidId) {
+        thumbnailHtml = `
+          <div style="position:relative; width:100%; height:160px; background:#0f172a; overflow:hidden; cursor:pointer;" onclick="window.openElibraryVideo('${escapeHtml(item.title)}', '${escapeHtml(item.url)}')">
+            <img src="https://img.youtube.com/vi/${vidId}/hqdefault.jpg" alt="${escapeHtml(item.title)}" style="width:100%; height:100%; object-fit:cover; opacity:0.85; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%); display:flex; align-items:center; justify-content:center;">
+              <div style="width:48px; height:48px; border-radius:50%; background:rgba(218,163,62,0.92); display:flex; align-items:center; justify-content:center; color:#000; font-size:20px; box-shadow:0 4px 15px rgba(0,0,0,0.5); padding-left:3px;">▶</div>
+            </div>
+            ${item.duration ? `<span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:4px; backdrop-filter:blur(4px);">⏱️ ${escapeHtml(item.duration)}</span>` : ''}
+          </div>
+        `;
+      }
+    }
+
     return `
       <div class="elib-card" style="background:var(--surface, #1e293b); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.25); transition:transform 0.25s, border-color 0.25s;">
-        <div style="padding:16px 18px 12px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); gap:8px;">
+        ${thumbnailHtml}
+        <div style="padding:14px 18px 10px; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); gap:8px;">
           <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <span style="background:${badgeColor}22; color:${badgeColor}; border:1px solid ${badgeColor}44; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">
               ${escapeHtml(item.categoryLabel || getCategoryLabel(item.category))}
@@ -481,11 +562,11 @@
           ` : ''}
         </div>
 
-        <div style="padding:18px 20px; flex:1; display:flex; flex-direction:column;">
-          <h3 style="margin:0 0 8px; font-size:1.1rem; font-weight:800; color:#ffffff; line-height:1.4;">
+        <div style="padding:16px 18px; flex:1; display:flex; flex-direction:column;">
+          <h3 style="margin:0 0 8px; font-size:1.05rem; font-weight:800; color:#ffffff; line-height:1.4;">
             ${isVideo ? '🎥 ' : '📄 '} ${escapeHtml(item.title)}
           </h3>
-          <p style="margin:0 0 14px; font-size:0.9rem; color:#94a3b8; line-height:1.5; flex:1;">
+          <p style="margin:0 0 14px; font-size:0.88rem; color:#94a3b8; line-height:1.5; flex:1;">
             ${escapeHtml(item.description || 'No detailed description provided.')}
           </p>
 
@@ -520,7 +601,6 @@
 
   // ── Open in Study PGN Board ──
   window.openStudyPgnFromElibrary = function (title, category) {
-    // If in parent portal, switch to studypgn tab
     if (window.setChildTab) {
       if (window.setPage) window.setPage('child');
       window.setChildTab('studypgn');
@@ -531,9 +611,7 @@
     }
   };
 
-  // ── Open Video Player ──
-  
-  // ── High-Fidelity Mini-Player & Fullscreen Video Player ──
+  // ── High-Fidelity Theater Video Player ──
   window.openElibraryVideo = function (title, url) {
     const modal = document.getElementById('video-player-modal');
     const modalTitle = document.getElementById('video-modal-title');
@@ -550,34 +628,52 @@
       embedUrl = url.replace('/view', '/preview');
     }
 
-    if (!modal) {
-      // Create Floating Mini-Player Container if not present
-      let miniPlayer = document.getElementById('ck-floating-miniplayer');
-      if (!miniPlayer) {
-        miniPlayer = document.createElement('div');
-        miniPlayer.id = 'ck-floating-miniplayer';
-        miniPlayer.style.cssText = 'position:fixed; bottom:20px; right:20px; width:380px; height:240px; background:#000; border:2px solid var(--gold); border-radius:12px; overflow:hidden; z-index:999999; box-shadow:0 10px 30px rgba(0,0,0,0.8); display:flex; flex-direction:column;';
-        miniPlayer.innerHTML = `
-          <div style="background:#1e293b; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1);">
-            <span id="ck-mini-title" style="font-size:12px; font-weight:700; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;">${escapeHtml(title)}</span>
-            <div style="display:flex; gap:6px;">
-              <button onclick="document.getElementById('ck-floating-miniplayer').remove()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:16px;">✕</button>
-            </div>
-          </div>
-          <iframe id="ck-mini-iframe" src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
-        `;
-        document.body.appendChild(miniPlayer);
-      } else {
-        document.getElementById('ck-mini-title').textContent = title;
-        document.getElementById('ck-mini-iframe').src = embedUrl;
-      }
+    if (modal && iframe) {
+      if (modalTitle) modalTitle.textContent = `🎥 ${title}`;
+      iframe.dataset.rawUrl = url;
+      iframe.src = embedUrl;
+      modal.style.display = 'flex';
+      modal.classList.add('active', 'open');
       return;
     }
 
-    if (modalTitle) modalTitle.textContent = `🎥 ${title}`;
-    if (iframe) iframe.src = embedUrl;
-    modal.style.display = 'flex';
-    modal.classList.add('active', 'open');
+    // Floating Mini-Player Fallback
+    let miniPlayer = document.getElementById('ck-floating-miniplayer');
+    if (!miniPlayer) {
+      miniPlayer = document.createElement('div');
+      miniPlayer.id = 'ck-floating-miniplayer';
+      miniPlayer.style.cssText = 'position:fixed; bottom:20px; right:20px; width:380px; height:240px; background:#000; border:2px solid var(--gold); border-radius:12px; overflow:hidden; z-index:999999; box-shadow:0 10px 30px rgba(0,0,0,0.8); display:flex; flex-direction:column;';
+      miniPlayer.innerHTML = `
+        <div style="background:#1e293b; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1);">
+          <span id="ck-mini-title" style="font-size:12px; font-weight:700; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;">${escapeHtml(title)}</span>
+          <div style="display:flex; gap:6px;">
+            <button onclick="document.getElementById('ck-floating-miniplayer').remove()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:16px;">✕</button>
+          </div>
+        </div>
+        <iframe id="ck-mini-iframe" src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+      `;
+      document.body.appendChild(miniPlayer);
+    } else {
+      document.getElementById('ck-mini-title').textContent = title;
+      document.getElementById('ck-mini-iframe').src = embedUrl;
+    }
+  };
+
+  window.closeVideoModal = function () {
+    const modal = document.getElementById('video-player-modal');
+    const iframe = document.getElementById('video-modal-iframe');
+    if (iframe) iframe.src = '';
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active', 'open');
+    }
+  };
+
+  window.openYouTubeExternal = function () {
+    const iframe = document.getElementById('video-modal-iframe');
+    if (iframe && iframe.dataset.rawUrl) {
+      window.open(iframe.dataset.rawUrl, '_blank');
+    }
   };
 
 

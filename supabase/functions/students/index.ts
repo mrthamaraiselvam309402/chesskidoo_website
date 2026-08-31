@@ -191,10 +191,11 @@ Deno.serve(async (req) => {
        monthly_fee: parseInt(String(fee)) || 0,
        due_date: s.due_date || null,
        account_status: s.account_status || 'active',
-       lichess_username: s.lichess_username || '',
-       chesscom_username: s.chesscom_username || '',
-       chessable_username: s.chessable_username || '',
-       credit_balance: s.credit_balance !== undefined ? Number(s.credit_balance) : 0,
+        lichess_username: s.lichess_username || '',
+        chesscom_username: s.chesscom_username || '',
+        chessable_username: s.chessable_username || '',
+        skill_breakdown: s.skill_breakdown || s.skills || null,
+        credit_balance: s.credit_balance !== undefined ? Number(s.credit_balance) : 0,
        outstanding_balance: s.outstanding_balance !== undefined ? Number(s.outstanding_balance) : 0,
        billing_anchor_year: s.billing_anchor_year !== undefined ? Number(s.billing_anchor_year) : null,
        billing_anchor_month: s.billing_anchor_month !== undefined ? Number(s.billing_anchor_month) : null,
@@ -463,11 +464,14 @@ Deno.serve(async (req) => {
        if (rawBody.chesscom_username !== undefined) {
          updateData.chesscom_username = sanitizeString(rawBody.chesscom_username, 100);
        }
-       if (rawBody.chessable_username !== undefined) {
-         updateData.chessable_username = sanitizeString(rawBody.chessable_username, 100);
-       }
-      
-      updateData.updated_at = new Date().toISOString();
+        if (rawBody.chessable_username !== undefined) {
+          updateData.chessable_username = sanitizeString(rawBody.chessable_username, 100);
+        }
+        if (rawBody.skill_breakdown !== undefined) {
+          updateData.skill_breakdown = rawBody.skill_breakdown;
+        }
+       
+       updateData.updated_at = new Date().toISOString();
       
       let { data: updatedStudent, error: updateError } = await supabase
         .from('students')

@@ -12,27 +12,51 @@
     },
     {
       "source": "/api/lichess",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/lichess-sync"
+      "destination": "/api/lichess-proxy"
     },
     {
       "source": "/api/lichess/:match*",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/lichess-sync/:match*"
+      "destination": "/api/lichess-proxy"
+    },
+    {
+      "source": "/api/lichess-proxy",
+      "destination": "/api/lichess-proxy"
+    },
+    {
+      "source": "/api/lichess-games-proxy",
+      "destination": "/api/lichess-proxy?type=games"
+    },
+    {
+      "source": "/api/lichess-extras-proxy",
+      "destination": "/api/lichess-proxy?type=extras"
+    },
+    {
+      "source": "/api/lichess-explorer-proxy",
+      "destination": "/api/lichess-proxy?type=explorer"
+    },
+    {
+      "source": "/api/test-lichess",
+      "destination": "/api/lichess-proxy?type=test"
     },
     {
       "source": "/api/chesscom-proxy",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=profile"
+      "destination": "/api/chesscom-proxy"
     },
     {
       "source": "/api/chesscom-proxy/:match*",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=profile"
+      "destination": "/api/chesscom-proxy"
     },
     {
       "source": "/api/chesscom-clubs-proxy",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=clubs"
+      "destination": "/api/chesscom-proxy?type=clubs"
     },
     {
       "source": "/api/chesscom-games-proxy",
-      "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/chesscom?type=games"
+      "destination": "/api/chesscom-proxy?type=games"
+    },
+    {
+      "source": "/api/homework",
+      "destination": "/api/homework"
     },
     {
       "source": "/api/:path*",

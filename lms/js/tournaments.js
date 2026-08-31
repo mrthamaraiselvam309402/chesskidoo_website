@@ -804,11 +804,593 @@ END:VCALENDAR`;
     return nearestKey;
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // ── IN-HOUSE ACADEMY TOURNAMENTS & SWISS PAIRING ARENA ──
+  // ─────────────────────────────────────────────────────────────────
+  const STORAGE_INHOUSE_TOURNAMENTS = 'ck_inhouse_tournaments';
+
+  function getInHouseTournaments() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_INHOUSE_TOURNAMENTS) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveInHouseTournaments(list) {
+    localStorage.setItem(STORAGE_INHOUSE_TOURNAMENTS, JSON.stringify(list));
+  }
+
+  // Generate Sample In-House Tournament if empty
+  (function seedInitialTournament() {
+    const existing = getInHouseTournaments();
+    if (!existing.length) {
+      const samplePlayers = [
+        { id: 'p1', name: 'Riyazzen S', rating: 1450 },
+        { id: 'p2', name: 'Anuksha M', rating: 1380 },
+        { id: 'p3', name: 'Mukilan K', rating: 1420 },
+        { id: 'p4', name: 'Yadhuveer P', rating: 1290 },
+        { id: 'p5', name: 'Mocsha R', rating: 1340 },
+        { id: 'p6', name: 'Rakshitha S', rating: 1310 }
+      ];
+      const sample = {
+        id: 'ck_tourn_' + Date.now(),
+        title: '🏆 ChessKidoo Super Rapid Arena — Championship',
+        timeControl: '10 min + 5 sec',
+        totalRounds: 3,
+        createdAt: new Date().toISOString(),
+        status: 'in_progress',
+        players: samplePlayers,
+        rounds: [
+          {
+            number: 1,
+            pairings: [
+              { board: 1, white: 'p1', black: 'p4', result: '1-0', whiteName: 'Riyazzen S', blackName: 'Yadhuveer P' },
+              { board: 2, white: 'p2', black: 'p5', result: '0-1', whiteName: 'Anuksha M', blackName: 'Mocsha R' },
+              { board: 3, white: 'p3', black: 'p6', result: '1/2', whiteName: 'Mukilan K', blackName: 'Rakshitha S' }
+            ]
+          },
+          {
+            number: 2,
+            pairings: [
+              { board: 1, white: 'p5', black: 'p1', result: '1/2', whiteName: 'Mocsha R', blackName: 'Riyazzen S' },
+              { board: 2, white: 'p6', black: 'p2', result: '1-0', whiteName: 'Rakshitha S', blackName: 'Anuksha M' },
+              { board: 3, white: 'p4', black: 'p3', result: '0-1', whiteName: 'Yadhuveer P', blackName: 'Mukilan K' }
+            ]
+          }
+        ]
+      };
+      saveInHouseTournaments([sample]);
+    }
+  })();
+
+  // Standings calculation with Buchholz and Sonneborn-Berger
+  function calculateTournamentStandings(tourn) {
+    const agg = {};
+    tourn.players.forEach(p => {
+      agg[p.id] = { id: p.id, name: p.name, rating: p.rating, score: 0, wins: 0, draws: 0, losses: 0, byes: 0, opponents: [] };
+    });
+
+    (tourn.rounds || []).forEach(rnd => {
+      rnd.pairings.forEach(pr => {
+        const w = agg[pr.white];
+        if (pr.black === null) {
+          if (w && pr.result === 'bye') { w.score += 1; w.byes += 1; }
+          return;
+        }
+        const b = agg[pr.black];
+        if (!w || !b) return;
+
+        w.opponents.push(pr.black);
+        b.opponents.push(pr.white);
+
+        if (pr.result === '1-0') { w.score += 1; w.wins++; b.losses++; }
+        else if (pr.result === '0-1') { b.score += 1; b.wins++; w.losses++; }
+        else if (pr.result === '1/2') { w.score += 0.5; w.draws++; b.score += 0.5; b.draws++; }
+      });
+    });
+
+    const scoreOf = id => (agg[id] ? agg[id].score : 0);
+    const rows = tourn.players.map(p => {
+      const a = agg[p.id];
+      const buchholz = a.opponents.reduce((s, oid) => s + scoreOf(oid), 0);
+      let sb = 0;
+      (tourn.rounds || []).forEach(rnd => rnd.pairings.forEach(pr => {
+        if (pr.black === null) return;
+        const me = pr.white === p.id ? 'w' : (pr.black === p.id ? 'b' : null);
+        if (!me) return;
+        const oppId = me === 'w' ? pr.black : pr.white;
+        const won = (me === 'w' && pr.result === '1-0') || (me === 'b' && pr.result === '0-1');
+        const drew = pr.result === '1/2';
+        if (won) sb += scoreOf(oppId);
+        else if (drew) sb += scoreOf(oppId) / 2;
+      }));
+
+      return {
+        id: p.id, name: p.name, rating: p.rating,
+        score: a.score, wins: a.wins, draws: a.draws, losses: a.losses, byes: a.byes,
+        buchholz: +buchholz.toFixed(1), sb: +sb.toFixed(1), played: a.opponents.length
+      };
+    });
+
+    rows.sort((a, b) => (b.score - a.score) || (b.buchholz - a.buchholz) || (b.sb - a.sb) || (b.wins - a.wins) || (b.rating - a.rating));
+    rows.forEach((r, i) => { r.rank = i + 1; });
+    return rows;
+  }
+
+  // Open Full In-House Tournament Arena Modal
+  window.openAcademyTournamentArena = function (tournId) {
+    const list = getInHouseTournaments();
+    const tourn = tournId ? list.find(x => x.id === tournId) : list[0];
+    if (!tourn) {
+      if (window.toast) window.toast('No tournament found.', 'warning');
+      return;
+    }
+
+    const standings = calculateTournamentStandings(tourn);
+    const currRoundNum = (tourn.rounds && tourn.rounds.length) ? tourn.rounds.length : 1;
+    const currRound = tourn.rounds ? tourn.rounds[currRoundNum - 1] : null;
+
+    const modalHtml = `
+      <div id="inhouse-tournament-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:16px;" onclick="document.getElementById('inhouse-tournament-modal').remove()">
+        <div class="card" style="background:#0f172a; border:1.5px solid var(--gold); border-radius:18px; max-width:860px; width:100%; max-height:90vh; overflow-y:auto; padding:26px; box-shadow:0 25px 60px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(218,163,62,0.25); padding-bottom:14px;">
+            <div>
+              <span style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:1px;">🏆 In-House Swiss Arena</span>
+              <h3 style="margin:4px 0 0; color:#fff; font-size:20px; font-weight:800;">${escapeHtml(tourn.title)}</h3>
+              <div style="font-size:12.5px; color:var(--ivory-dim); margin-top:2px;">⏱️ Time Control: ${escapeHtml(tourn.timeControl)} · Round ${currRoundNum} of ${tourn.totalRounds}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-gold btn-sm" onclick="window.generateNextSwissRound('${tourn.id}')">⚡ Pair Next Round</button>
+              <button onclick="document.getElementById('inhouse-tournament-modal').remove()" style="background:none; border:none; color:#94a3b8; font-size:22px; cursor:pointer;">✕</button>
+            </div>
+          </div>
+
+          <!-- Top Podium Section (Top 3) -->
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:24px; text-align:center;">
+            <!-- 2nd Place -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid #94a3b8; border-radius:14px; padding:14px;">
+              <div style="font-size:24px;">🥈</div>
+              <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase;">2nd Place</div>
+              <div style="font-size:14px; font-weight:700; color:#fff; margin:4px 0;">${standings[1] ? escapeHtml(standings[1].name) : '—'}</div>
+              <div style="font-size:12px; color:var(--gold); font-weight:700;">${standings[1] ? standings[1].score + ' pts' : '0 pts'}</div>
+            </div>
+            <!-- 1st Place -->
+            <div style="background:linear-gradient(135deg, rgba(234,179,8,0.15), rgba(30,41,59,0.9)); border:2px solid var(--gold); border-radius:14px; padding:14px; transform:scale(1.04); box-shadow:0 10px 25px rgba(234,179,8,0.2);">
+              <div style="font-size:28px;">🥇</div>
+              <div style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase;">1st Place Champion</div>
+              <div style="font-size:15px; font-weight:800; color:#fff; margin:4px 0;">${standings[0] ? escapeHtml(standings[0].name) : '—'}</div>
+              <div style="font-size:13px; color:var(--gold); font-weight:800;">${standings[0] ? standings[0].score + ' pts' : '0 pts'}</div>
+            </div>
+            <!-- 3rd Place -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid #cd7f32; border-radius:14px; padding:14px;">
+              <div style="font-size:24px;">🥉</div>
+              <div style="font-size:11px; font-weight:800; color:#cd7f32; text-transform:uppercase;">3rd Place</div>
+              <div style="font-size:14px; font-weight:700; color:#fff; margin:4px 0;">${standings[2] ? escapeHtml(standings[2].name) : '—'}</div>
+              <div style="font-size:12px; color:var(--gold); font-weight:700;">${standings[2] ? standings[2].score + ' pts' : '0 pts'}</div>
+            </div>
+          </div>
+
+          <!-- Tabs: Current Round Pairings | Live Standings Leaderboard -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+            <!-- Left: Current Round Pairings & Score Entry -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:13px; font-weight:700; color:var(--gold);">⚔️ Round ${currRoundNum} Pairings</span>
+                <span style="font-size:11px; color:var(--ivory-dim);">Click score to record</span>
+              </div>
+              <div style="display:grid; gap:8px;">
+                ${currRound && currRound.pairings ? currRound.pairings.map(pr => {
+                  return `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                      <div style="font-size:12px; font-weight:700; color:#fff;">
+                        <span style="color:#f8fafc;">⚪ ${escapeHtml(pr.whiteName)}</span> vs <span style="color:#94a3b8;">⚫ ${escapeHtml(pr.blackName)}</span>
+                      </div>
+                      <div style="display:flex; gap:4px;">
+                        <button type="button" class="btn btn-sm ${pr.result === '1-0' ? 'btn-gold' : 'btn-outline-grey'}" style="padding:2px 8px; font-size:11px;" onclick="window.recordInHouseMatchResult('${tourn.id}', ${currRoundNum}, ${pr.board}, '1-0')">1-0</button>
+                        <button type="button" class="btn btn-sm ${pr.result === '1/2' ? 'btn-gold' : 'btn-outline-grey'}" style="padding:2px 8px; font-size:11px;" onclick="window.recordInHouseMatchResult('${tourn.id}', ${currRoundNum}, ${pr.board}, '1/2')">½-½</button>
+                        <button type="button" class="btn btn-sm ${pr.result === '0-1' ? 'btn-gold' : 'btn-outline-grey'}" style="padding:2px 8px; font-size:11px;" onclick="window.recordInHouseMatchResult('${tourn.id}', ${currRoundNum}, ${pr.board}, '0-1')">0-1</button>
+                      </div>
+                    </div>
+                  `;
+                }).join('') : '<div style="color:#94a3b8; font-size:12px;">No active pairings.</div>'}
+              </div>
+            </div>
+
+            <!-- Right: Live Standings Table -->
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:14px; padding:16px;">
+              <div style="font-size:13px; font-weight:700; color:var(--gold); margin-bottom:12px;">
+                📊 FIDE Standings &amp; Tiebreaks
+              </div>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px; color:#fff;">
+                  <thead>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--gold); text-align:left;">
+                      <th style="padding:6px 8px;">#</th>
+                      <th style="padding:6px 8px;">Player</th>
+                      <th style="padding:6px 8px;">Pts</th>
+                      <th style="padding:6px 8px;">Buch</th>
+                      <th style="padding:6px 8px;">S-B</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${standings.map(s => `
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:6px 8px; font-weight:700; color:${s.rank === 1 ? '#eab308' : '#94a3b8'};">${s.rank}</td>
+                        <td style="padding:6px 8px; font-weight:600;">${escapeHtml(s.name)}</td>
+                        <td style="padding:6px 8px; font-weight:800; color:var(--gold);">${s.score}</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${s.buchholz}</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${s.sb}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; flex-wrap:wrap; gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="window.downloadTournamentCertificate('${escapeHtml(standings[0]?.name || 'Champion')}', '${escapeHtml(tourn.title)}', 'Champion (1st Place)')">
+              🎓 Generate Winner Certificate (.pdf)
+            </button>
+            <button class="btn btn-gold btn-sm" onclick="document.getElementById('inhouse-tournament-modal').remove()">
+              Done &amp; Close
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const old = document.getElementById('inhouse-tournament-modal');
+    if (old) old.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  };
+
+  window.recordInHouseMatchResult = function (tournId, roundNum, boardNum, result) {
+    const list = getInHouseTournaments();
+    const tourn = list.find(x => x.id === tournId);
+    if (!tourn) return;
+
+    const round = tourn.rounds.find(r => r.number === roundNum);
+    if (!round) return;
+    const pr = round.pairings.find(p => p.board === boardNum);
+    if (!pr) return;
+
+    pr.result = result;
+    saveInHouseTournaments(list);
+    if (window.toast) window.toast(`Board ${boardNum} result recorded: ${result}`, 'success');
+    window.openAcademyTournamentArena(tournId);
+  };
+
+  window.generateNextSwissRound = function (tournId) {
+    const list = getInHouseTournaments();
+    const tourn = list.find(x => x.id === tournId);
+    if (!tourn) return;
+
+    if (tourn.rounds.length >= tourn.totalRounds) {
+      if (window.toast) window.toast('Tournament has completed all rounds! 🏆', 'info');
+      return;
+    }
+
+    const standings = calculateTournamentStandings(tourn);
+    const pool = [...standings];
+    const newPairings = [];
+    let board = 1;
+
+    for (let i = 0; i < pool.length; i += 2) {
+      if (i + 1 < pool.length) {
+        newPairings.push({
+          board: board++,
+          white: pool[i].id,
+          black: pool[i + 1].id,
+          whiteName: pool[i].name,
+          blackName: pool[i + 1].name,
+          result: null
+        });
+      }
+    }
+
+    tourn.rounds.push({
+      number: tourn.rounds.length + 1,
+      pairings: newPairings
+    });
+
+    saveInHouseTournaments(list);
+    if (window.toast) window.toast(`Generated Round ${tourn.rounds.length} Swiss Pairings!`, 'success');
+    window.openAcademyTournamentArena(tournId);
+  };
+
+  window.downloadTournamentCertificate = function (playerName, tournamentTitle, rankTitle) {
+    const certText = `
+CHESSKIDOO ACADEMY OF CHESS
+────────────────────────────────────────────────────────────
+CERTIFICATE OF EXCELLENCE & ACHIEVEMENT
+
+This certificate is proudly presented to:
+★ ${playerName} ★
+
+For outstanding tactical performance, dedication, and sportsmanship
+in the tournament:
+"${tournamentTitle}"
+
+Achieving the prestigious title of: ${rankTitle}
+
+Awarded on: ${new Date().toLocaleDateString()}
+Grandmaster Panel & Chief Arbiter, ChessKidoo Academy
+────────────────────────────────────────────────────────────
+    `;
+    const blob = new Blob([certText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Certificate_${playerName.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (window.toast) window.toast('📥 Downloaded Certificate of Achievement!', 'success');
+  };
+
+  // ─────────────────────────────────────────────────────────────────
+  // ── IN-HOUSE EVENT MANAGER & TOURNAMENT SECTION RENDERER ──
+  // ─────────────────────────────────────────────────────────────────
+  window.openCreateSwissTournamentModal = function () {
+    const students = window.allStudents || [];
+    const sampleOptions = students.length ? students.slice(0, 16).map(s => {
+      const sName = s.name || s.full_name || 'Student';
+      return `<label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px; cursor:pointer;">
+        <input type="checkbox" class="swiss-player-chk" value="${s.id}" data-name="${escapeHtml(sName)}" checked>
+        <span>${escapeHtml(sName)} (${s.rating || 1200})</span>
+      </label>`;
+    }).join('') : `
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p1" data-name="Riyazzen S" checked> Riyazzen S (1450)</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p2" data-name="Anuksha M" checked> Anuksha M (1380)</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p3" data-name="Mukilan K" checked> Mukilan K (1420)</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p4" data-name="Yadhuveer P" checked> Yadhuveer P (1290)</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p5" data-name="Mocsha R" checked> Mocsha R (1340)</label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#e2e8f0; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px;"><input type="checkbox" class="swiss-player-chk" value="p6" data-name="Rakshitha S" checked> Rakshitha S (1310)</label>
+    `;
+
+    const modalHtml = `
+      <div id="create-swiss-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:16px;" onclick="document.getElementById('create-swiss-modal').remove()">
+        <div class="card" style="background:#0f172a; border:1.5px solid var(--gold); border-radius:18px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto; padding:26px; box-shadow:0 25px 60px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(218,163,62,0.25); padding-bottom:12px;">
+            <div>
+              <span style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:1px;">🏆 In-House Swiss System</span>
+              <h3 style="margin:2px 0 0; color:#fff; font-size:19px; font-weight:800;">Create Tournament Arena</h3>
+            </div>
+            <button onclick="document.getElementById('create-swiss-modal').remove()" style="background:none; border:none; color:#94a3b8; font-size:22px; cursor:pointer;">✕</button>
+          </div>
+
+          <form onsubmit="event.preventDefault(); window.submitCreateSwissTournament();" style="display:grid; gap:14px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:6px;">Tournament Title *</label>
+              <input type="text" id="new-swiss-title" class="input-field" placeholder="e.g., ChessKidoo Super Rapid Arena" required style="width:100%;">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:6px;">Time Control</label>
+                <select id="new-swiss-time" class="input-field" style="width:100%;">
+                  <option value="3 min + 2 sec">⚡ 3+2 Blitz</option>
+                  <option value="5 min + 3 sec" selected>⚔️ 5+3 Blitz / Rapid</option>
+                  <option value="10 min + 5 sec">⏱️ 10+5 Rapid</option>
+                  <option value="15 min + 10 sec">👑 15+10 Classical</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:6px;">Number of Rounds</label>
+                <select id="new-swiss-rounds" class="input-field" style="width:100%;">
+                  <option value="3" selected>3 Rounds (Fast Arena)</option>
+                  <option value="4">4 Rounds</option>
+                  <option value="5">5 Rounds (Standard Swiss)</option>
+                  <option value="6">6 Rounds</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; display:block; margin-bottom:6px;">Participating Students</label>
+              <div id="new-swiss-player-list" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:160px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                ${sampleOptions}
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+              <button type="button" class="btn btn-outline" onclick="document.getElementById('create-swiss-modal').remove()">Cancel</button>
+              <button type="submit" class="btn btn-gold" style="font-weight:800;">🚀 Launch &amp; Pair Round 1</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const old = document.getElementById('create-swiss-modal');
+    if (old) old.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  };
+
+  window.submitCreateSwissTournament = function () {
+    const title = (document.getElementById('new-swiss-title')?.value || '').trim() || 'ChessKidoo Swiss Arena';
+    const timeControl = document.getElementById('new-swiss-time')?.value || '5 min + 3 sec';
+    const totalRounds = parseInt(document.getElementById('new-swiss-rounds')?.value || '3', 10);
+
+    const checkedBoxes = Array.from(document.querySelectorAll('.swiss-player-chk:checked'));
+    if (checkedBoxes.length < 2) {
+      if (window.toast) window.toast('Please select at least 2 players to start a tournament.', 'warning');
+      return;
+    }
+
+    const players = checkedBoxes.map((chk, idx) => ({
+      id: chk.value || ('p_' + idx),
+      name: chk.getAttribute('data-name') || ('Player ' + (idx + 1)),
+      rating: 1200 + Math.floor(Math.random() * 300)
+    }));
+
+    // Generate Round 1 Pairings
+    const round1Pairings = [];
+    let board = 1;
+    for (let i = 0; i < players.length; i += 2) {
+      if (i + 1 < players.length) {
+        round1Pairings.push({
+          board: board++,
+          white: players[i].id,
+          black: players[i + 1].id,
+          whiteName: players[i].name,
+          blackName: players[i + 1].name,
+          result: null
+        });
+      } else {
+        // Odd player bye
+        round1Pairings.push({
+          board: 0,
+          white: players[i].id,
+          black: null,
+          whiteName: players[i].name,
+          blackName: 'BYE',
+          result: 'bye'
+        });
+      }
+    }
+
+    const newTourn = {
+      id: 'ck_tourn_' + Date.now(),
+      title: title,
+      timeControl: timeControl,
+      totalRounds: totalRounds,
+      createdAt: new Date().toISOString(),
+      status: 'in_progress',
+      players: players,
+      rounds: [
+        {
+          number: 1,
+          pairings: round1Pairings
+        }
+      ]
+    };
+
+    const list = getInHouseTournaments();
+    list.unshift(newTourn);
+    saveInHouseTournaments(list);
+
+    const modal = document.getElementById('create-swiss-modal');
+    if (modal) modal.remove();
+
+    if (window.toast) window.toast(`Created "${title}" with Round 1 Pairings!`, 'success');
+    window.openAcademyTournamentArena(newTourn.id);
+  };
+
+  // Main Event Section Renderer for Admin (#page-events) and Coach (#page-coach-events)
+  window.renderEventsPage = function (containerId = 'events-content', isCoachMode = false) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const tournaments = getInHouseTournaments();
+    const activeTourn = tournaments[0];
+    const standings = activeTourn ? calculateTournamentStandings(activeTourn) : [];
+
+    container.innerHTML = `
+      <div class="coach-shell" style="padding:0;">
+        <!-- Top Toolbar Banner -->
+        <div class="coach-section-block" style="margin-bottom:20px; background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px; padding:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(218,163,62,0.15); border:1px solid rgba(218,163,62,0.3); border-radius:99px; padding:4px 12px; font-size:11px; font-weight:700; color:var(--gold); text-transform:uppercase; margin-bottom:8px;">
+                <span>🏆 FIDE Swiss Pairing Arena</span>
+              </div>
+              <h2 style="margin:0 0 6px; color:#fff; font-size:22px; font-weight:800;">Academy Tournaments &amp; Event Management</h2>
+              <p style="margin:0; color:var(--ivory-dim); font-size:13.5px;">Run internal academy Swiss &amp; Round-Robin tournaments with automated Buchholz/Sonneborn-Berger tiebreaks, live pairings, and winner certificates.</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn btn-gold" onclick="window.openCreateSwissTournamentModal()" style="font-weight:700;">
+                ➕ Create Swiss Tournament
+              </button>
+              ${activeTourn ? `
+                <button class="btn btn-outline" onclick="window.openAcademyTournamentArena('${activeTourn.id}')" style="border-color:rgba(218,163,62,0.4); color:var(--gold); font-weight:700;">
+                  ⚔️ Open Live Arena
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- In-House Tournaments Showcase Grid -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:18px; margin-bottom:24px;">
+          ${tournaments.map(t => {
+            const st = calculateTournamentStandings(t);
+            const rCount = t.rounds ? t.rounds.length : 0;
+            return `
+              <div class="card" style="background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; transition:transform 0.2s;" onmouseenter="this.style.borderColor='rgba(218,163,62,0.4)'" onmouseleave="this.style.borderColor='var(--border)'">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:11px; font-weight:800; background:rgba(218,163,62,0.15); color:var(--gold); padding:3px 8px; border-radius:6px; border:1px solid rgba(218,163,62,0.3);">⏱️ ${escapeHtml(t.timeControl)}</span>
+                    <span style="font-size:12px; color:var(--ivory-dim);">Round ${rCount} of ${t.totalRounds}</span>
+                  </div>
+                  <h3 style="margin:0 0 6px; color:#fff; font-size:17px; font-weight:700;">${escapeHtml(t.title)}</h3>
+                  <div style="font-size:13px; color:var(--gold); font-weight:600;">👑 Current Leader: ${st[0] ? escapeHtml(st[0].name) + ' (' + st[0].score + ' pts)' : '—'}</div>
+                </div>
+
+                <div style="display:flex; gap:8px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+                  <button class="btn btn-gold btn-sm" style="flex:1; font-weight:700;" onclick="window.openAcademyTournamentArena('${t.id}')">
+                    ⚔️ Open Arena
+                  </button>
+                  <button class="btn btn-outline btn-sm" style="flex:1; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.downloadTournamentCertificate('${escapeHtml(st[0]?.name || 'Champion')}', '${escapeHtml(t.title)}', 'Champion (1st Place)')">
+                    🎓 Certificate
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Regional & National Upcoming Tournaments -->
+        <div class="card" style="background:var(--surface, #1e293b); border:1px solid var(--border); border-radius:14px; padding:22px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="margin:0 0 4px; color:#fff; font-size:17px; font-weight:700;">🌐 Regional &amp; National FIDE / AICF Tournaments</h3>
+              <p style="margin:0; font-size:12.5px; color:var(--ivory-dim);">Upcoming local tournaments with student eligibility, calendar sync, and WhatsApp broadcasts.</p>
+            </div>
+            <button class="btn btn-outline-grey btn-sm" onclick="window.loadTournaments(true)">🔄 Sync Events</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+            ${LOCAL_TOURNAMENTS_FALLBACK.map(lt => `
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:10.5px; font-weight:800; background:rgba(56,189,248,0.15); color:#38bdf8; padding:2px 6px; border-radius:4px;">${escapeHtml(lt.federation)}</span>
+                    <span style="font-size:11.5px; color:var(--ivory-dim);">📅 ${lt.date}</span>
+                  </div>
+                  <h4 style="margin:0 0 4px; color:#fff; font-size:14.5px; font-weight:700;">${escapeHtml(lt.title)}</h4>
+                  <div style="font-size:12px; color:var(--ivory-dim);">📍 ${escapeHtml(lt.location)} · Fee: ₹${lt.fee}</div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-outline btn-sm" style="flex:1; font-size:11px; padding:4px 8px; border-color:rgba(218,163,62,0.4); color:var(--gold);" onclick="window.syncTournamentCalendar('${lt.id}')">📅 Add to Cal</button>
+                  <button class="btn btn-outline-grey btn-sm" style="flex:1; font-size:11px; padding:4px 8px;" onclick="window.sendTournamentWhatsAppReminder('${lt.id}')">💬 WhatsApp</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // Hook into scripts.js globals
+  window.renderCoachEvents = function () {
+    window.renderEventsPage('coach-events-content', true);
+  };
+  window.renderEvents = function () {
+    window.renderEventsPage('admin-events-content', false);
+  };
+
   function escapeHtml(str) {
     if (!str) return '';
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
   }
-
 })();
+

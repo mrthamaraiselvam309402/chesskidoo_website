@@ -153,10 +153,27 @@ document.addEventListener('DOMContentLoaded', () => {
           <td style="color:var(--ivory-dim)">${idx + 1}</td>
           <td style="font-weight:500; color:var(--ivory)">${window.escapeHtml ? window.escapeHtml(name) : name}</td>
           <td style="font-family:monospace; font-size:12px;">${phone}</td>
-          <td><button class="btn btn-outline btn-sm" onclick="if(window.openStudentDetail)window.openStudentDetail('${s.id}')">View</button></td>
+          <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="if(window.viewStudent)window.viewStudent('${s.id}')">View</button>
+            <button class="btn btn-gold btn-sm" onclick="if(window.openStudentSkillBreakdown)window.openStudentSkillBreakdown('${s.id}')">📊 Skills</button>
+          </td>
         </tr>
       `;
     }).join('');
+  };
+
+  window.openStudentSkillBreakdown = function(studentId) {
+    const s = (window.allStudents || []).find((x) => String(x.id) === String(studentId));
+    if (!s) {
+      toast('Student not found', 'error');
+      return;
+    }
+    if (typeof window.setCurrentStudent === 'function') {
+      window.setCurrentStudent(s);
+    }
+    if (typeof window.openStudentEditPortalModal === 'function') {
+      window.openStudentEditPortalModal();
+    }
   };
 
   window.renderCoachBatches = function () {
@@ -164,36 +181,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
     if (!coachId) return;
 
-    const tbody = document.getElementById('coach-batches-tbody');
-    if (!tbody) return;
+    const grid = document.getElementById('coach-batches-grid');
+    if (!grid) return;
 
-    const myBatches = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, coachId));
+    const searchTerm = (document.getElementById('coach-batch-search-input')?.value || '').toLowerCase();
+    const myBatches = (window.allBatches || [])
+      .filter(b => window.ckSameCoach(b.coach_id, coachId))
+      .filter(b => !searchTerm || (b.name || '').toLowerCase().includes(searchTerm))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     if (myBatches.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="coach-loading-cell">No batches assigned yet.</td></tr>';
+      grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--ivory-dim);">No batches found.</div>';
       return;
     }
 
-    tbody.innerHTML = myBatches.map(b => {
+    grid.innerHTML = myBatches.map(b => {
       const days = b.days || b.schedule_days || 'TBD';
+      const time = b.time_slot || b.time || 'TBD';
       const studentCount = Array.isArray(b.student_ids) ? b.student_ids.length : 0;
       const link = window.getBatchMeetLink ? window.getBatchMeetLink(b) : '';
-      const linkCell = link
-        ? `<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-             <a href="${window.escapeHtml ? window.escapeHtml(link) : link}" target="_blank" rel="noopener" class="btn btn-gold btn-sm">🎥 Join</a>
-             <button class="btn btn-outline btn-sm" onclick="window.coachShareBatchLink('${b.id}')" title="Share class link with students via WhatsApp">📲 Share</button>
-             <button class="btn btn-outline btn-sm" onclick="window.coachSetBatchLink('${b.id}')" title="Edit Google Meet link">✏️ Edit</button>
-             <button class="btn btn-outline-danger btn-sm" onclick="window.coachDeleteBatchLink('${b.id}')" title="Delete Google Meet link">🗑️</button>
-           </div>`
-        : `<button class="btn btn-outline btn-sm" onclick="window.coachSetBatchLink('${b.id}')">🔗 Set GMeet Link</button>`;
+      const esc = window.escapeHtml || function(x){return x};
+
       return `
-        <tr>
-          <td style="font-weight:500; color:var(--ivory)">${window.escapeHtml ? window.escapeHtml(b.name) : b.name}</td>
-          <td><span class="badge badge-info">${b.level || 'Beginner'}</span></td>
-          <td>${studentCount}</td>
-          <td style="font-size:12px; color:var(--ivory-dim)">${days}</td>
-          <td>${linkCell}</td>
-        </tr>
+        <div class="card" style="padding: 24px; position: relative; display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <h3 style="color: var(--gold); font-size: 18px; margin: 0 0 6px 0; max-width: 85%;">${esc(b.name)}</h3>
+            <span class="badge badge-info">${esc(b.level || 'Beginner')}</span>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ico" style="opacity: 0.6">🕒</span>
+              <span style="color: var(--ivory-dim)">${esc(days)} • ${esc(time)}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ico" style="opacity: 0.6">👥</span>
+              <span style="color: var(--ivory-dim)">${studentCount} Students enrolled</span>
+            </div>
+            ${link ? `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ico" style="opacity: 0.6">🎥</span>
+              <a href="${esc(link)}" target="_blank" rel="noopener" style="color: var(--gold); text-decoration: none; font-size: 13px;">Join Class</a>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" onclick="window.openViewBatchModal('${b.id}')">👥 View</button>
+            <button class="btn btn-outline btn-sm" onclick="window.openCoachCreateBatchModal('${b.id}')">✏️ Edit</button>
+            ${link ? `
+              <button class="btn btn-outline btn-sm" onclick="window.coachShareBatchLink('${b.id}')" title="Share class link with students via WhatsApp">📲 Share</button>
+              <button class="btn btn-outline btn-sm" onclick="window.coachSetBatchLink('${b.id}')">✏️ Link</button>
+              <button class="btn btn-outline btn-sm" onclick="window.coachDeleteBatchLink('${b.id}')">🗑️</button>
+            ` : `
+              <button class="btn btn-outline btn-sm" onclick="window.coachSetBatchLink('${b.id}')">🔗 Set Link</button>
+            `}
+          </div>
+        </div>
       `;
     }).join('');
   };
@@ -727,8 +771,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.parseAttendanceNotes = function(raw) {
-    let cw = '', hw = '', general = '';
-    if (!raw) return { cw, hw, general };
+    let cw = '', hw = '', general = '', understanding = '';
+    if (!raw) return { cw, hw, general, understanding };
     const lines = String(raw).split('\n');
     let mode = 'general';
     for (const line of lines) {
@@ -744,6 +788,12 @@ document.addEventListener('DOMContentLoaded', () => {
         hw += (hw ? '\n' : '') + val;
         continue;
       }
+      if (line.startsWith('UNDERSTANDING:')) {
+        mode = 'understanding';
+        const val = line.slice(14);
+        understanding += (understanding ? '\n' : '') + val;
+        continue;
+      }
       if (line.startsWith('GENERAL:')) {
         mode = 'general';
         const val = line.slice(8);
@@ -756,15 +806,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (mode === 'cw') cw += (cw ? '\n' : '') + line;
       else if (mode === 'hw') hw += (hw ? '\n' : '') + line;
+      else if (mode === 'understanding') understanding += (understanding ? '\n' : '') + line;
       else general += (general ? '\n' : '') + line;
     }
-    return { cw, hw, general };
+    return { cw, hw, general, understanding };
   };
 
-  window.formatAttendanceNotesForSave = function(cw, hw, general) {
+  window.formatAttendanceNotesForSave = function(cw, hw, general, understanding) {
     const parts = [];
     if (cw && cw.trim()) parts.push('CW:' + cw.trim());
     if (hw && hw.trim()) parts.push('HW:' + hw.trim());
+    if (understanding && understanding.trim()) parts.push('UNDERSTANDING:' + understanding.trim());
     if (general && general.trim()) parts.push('GENERAL:' + general.trim());
     return parts.join('\n');
   };
@@ -1031,11 +1083,19 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = '<tr><td colspan="5" class="coach-loading-cell">No assignments on this page.</td></tr>';
     } else {
       tbody.innerHTML = pageItems.map(h => {
-        const target = h.target_type === 'student'
-          ? (myStudents.find(s => String(s.id) === String(h.student_id)) ? (window.getStudentName ? window.getStudentName(myStudents.find(s => String(s.id) === String(h.student_id))) : myStudents.find(s => String(s.id) === String(h.student_id)).name) : 'Unknown')
-          : h.target_type === 'batch'
-          ? ((window.allBatches || []).find(b => String(b.id) === String(h.batch_id))?.name || 'Batch')
-          : 'All Students';
+        const studentTarget = h.target_type === 'student'
+          ? myStudents.find(s => String(s.id) === String(h.student_id))
+          : null;
+        const batchTarget = h.target_type === 'batch'
+          ? (window.allBatches || []).find(b => String(b.id) === String(h.batch_id))
+          : null;
+        const target = studentTarget
+          ? (window.getStudentName ? window.getStudentName(studentTarget) : studentTarget.name)
+          : batchTarget?.name
+          ? batchTarget.name
+          : h.target_type === 'all'
+          ? 'All Students'
+          : 'Batch';
         const due = h.due_date ? new Date(h.due_date).toLocaleDateString() : 'No due date';
         const status = h.status ? h.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Active';
         const statusClass = h.status === 'completed' ? 'badge badge-success' : h.status === 'archived' ? 'badge badge-grey' : 'badge badge-warning';
@@ -1190,64 +1250,349 @@ if (typeof window.setPage === 'function') {
   const origSetPage = window.setPage;
   window.setPage = function(p, btn) {
     origSetPage(p, btn);
-    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-chess') {
+    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-studypgn') {
       setTimeout(renderCoachDashboard, 100);
     }
   };
 } else {
   window.setPage = function(p, btn) {
-    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-chess') {
+    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-studypgn') {
       setTimeout(renderCoachDashboard, 100);
     }
   };
 }
 
-window.renderCoachChess = function () {
-  const container = document.getElementById('coach-chess-summary');
-  if (!container) return;
-
-  const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
-  if (!coachId) {
-    container.innerHTML = '<div class="coach-loading-cell">Coach ID not found.</div>';
-    return;
-  }
-
-    const myStudents = (window.allStudents || [])
-      .filter(s => window.ckSameCoach(s.coach_id, coachId))
-      .sort((a, b) => (window.getStudentName ? window.getStudentName(a) : a.name).localeCompare(window.getStudentName ? window.getStudentName(b) : b.name));
-    if (myStudents.length === 0) {
-      container.innerHTML = '<div class="coach-loading-cell">No students assigned yet.</div>';
+  // ── Coach Batch CRUD ──────────────────────────────────────────────────────
+  window.openCoachCreateBatchModal = function (id = null) {
+    if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
+    const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+    if (!coachId) {
+      toast('Coach ID not found', 'error');
       return;
     }
 
-  const rows = myStudents.map((s) => {
-    const name = window.getStudentName ? window.getStudentName(s) : s.name;
-    const lichess = s.lichess_username ? `♘ <a href="https://lichess.org/@/${esc(s.lichess_username)}" target="_blank" style="color:var(--gold);text-decoration:none;">${esc(s.lichess_username)}</a>` : '♘ Not linked';
-    const chesscom = s.chesscom_username ? `♟️ <a href="https://www.chess.com/member/${esc(s.chesscom_username)}" target="_blank" style="color:#7FA650;text-decoration:none;">${esc(s.chesscom_username)}</a>` : '♟️ Not linked';
-    const internal = getStudentRating(s) || '—';
-    return `
-      <tr>
-        <td style="font-weight:500; color:var(--ivory);">${window.escapeHtml ? window.escapeHtml(name) : name}</td>
-        <td style="font-size:12px; color:var(--ivory-dim);">${lichess}</td>
-        <td style="font-size:12px; color:var(--ivory-dim);">${chesscom}</td>
-        <td style="font-size:12px; color:var(--ivory);">${internal}</td>
-      </tr>
-    `;
-  }).join('');
+    $('eb-id').value = id || '';
 
-  container.innerHTML = `
-    <div class="coach-table-wrap">
-      <table class="coach-mini-table">
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Lichess</th>
-            <th>Chess.com</th>
-            <th>Academy ELO</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+    const coachSel = $('eb-coach');
+    if (coachSel) {
+      const coachName = (window.allCoaches || []).find(c => String(c.id) === String(coachId))?.name || 'Me';
+      coachSel.innerHTML = `<option value="${coachId}">${window.escapeHtml ? window.escapeHtml(coachName) : coachName}</option>`;
+      coachSel.style.display = 'none';
+    }
+
+    const editingBatch = id ? (window.allBatches || []).find((x) => String(x.id) === String(id)) : null;
+    const myStudentIds = new Set((window.allStudents || [])
+      .filter(s => window.ckSameCoach(s.coach_id, coachId))
+      .map(s => String(s.id)));
+
+    const otherAssignedIds = new Set(
+      (window.allBatches || [])
+        .filter((b) => !editingBatch || String(b.id) !== String(editingBatch.id))
+        .flatMap((b) => (Array.isArray(b.student_ids) ? b.student_ids.map(String) : []))
+        .filter((sid) => sid)
+    );
+
+    const candidateStudents = (window.allStudents || [])
+      .filter((s) => {
+        if (s.status === 'archived') return false;
+        if (!myStudentIds.has(String(s.id))) return false;
+        if (!editingBatch) return !otherAssignedIds.has(String(s.id));
+        return true;
+      })
+      .sort((a, b) => (window.getStudentName ? window.getStudentName(a) : a.name).localeCompare(window.getStudentName ? window.getStudentName(b) : b.name));
+
+    let existingStudentIds = [];
+    if (editingBatch) {
+      $('eb-name').value = editingBatch.name || '';
+      $('eb-level').value = editingBatch.level || 'Beginner';
+      $('eb-status').value = editingBatch.status || 'active';
+      $('eb-days').value = editingBatch.days || '';
+      $('eb-time').value = editingBatch.time_slot || '';
+      $('eb-notes').value = editingBatch.notes || '';
+      if ($('eb-chessable')) $('eb-chessable').value = editingBatch.chessable_url || '';
+      $('eb-modal-title').textContent = 'Edit Batch';
+      existingStudentIds = Array.isArray(editingBatch.student_ids) ? editingBatch.student_ids.map(String) : [];
+    } else {
+      $('eb-name').value = '';
+      $('eb-level').value = 'Beginner';
+      $('eb-status').value = 'active';
+      $('eb-days').value = '';
+      $('eb-time').value = '';
+      $('eb-notes').value = '';
+      if ($('eb-chessable')) $('eb-chessable').value = '';
+      $('eb-modal-title').textContent = 'Create New Batch';
+    }
+
+    const stList = $('eb-student-list');
+    stList.innerHTML = candidateStudents
+      .map((s) => {
+        const isChecked = existingStudentIds.includes(String(s.id)) ? 'checked' : '';
+        const displayName = window.getStudentName ? window.getStudentName(s) : s.name;
+        return `
+          <label style="display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer">
+            <input type="checkbox" class="batch-st-cb" value="${s.id}" ${isChecked} onchange="window.updateBatchStudentCount()">
+            <span>${window.escapeHtml ? window.escapeHtml(displayName) : displayName} <span style="opacity:0.5;font-size:10px">(${s.level || 'Beginner'})</span></span>
+          </label>
+        `;
+      })
+      .join('');
+
+    window.updateBatchStudentCount();
+    openModal('edit-batch-modal');
+  };
+
+  window.deleteCoachBatch = async function (id) {
+    if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
+    const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+    if (!coachId) {
+      toast('Coach ID not found', 'error');
+      return;
+    }
+    const batch = (window.allBatches || []).find((b) => String(b.id) === String(id));
+    if (!batch || !window.ckSameCoach(batch.coach_id, coachId)) {
+      toast('Access denied: You can only delete your own batches.', 'error');
+      return;
+    }
+    if (!confirm(`Delete batch "${batch.name || 'this batch'}"? This cannot be undone.`)) return;
+
+    try {
+      let saved = false;
+      const res = await window.apiCall(`/api/batches?id=${id}`, { method: 'DELETE' });
+      if (res && res.ok) {
+        saved = true;
+      } else if (window.supabaseClient) {
+        const { error: sbErr } = await window.supabaseClient
+          .from('batches')
+          .delete()
+          .eq('id', id);
+        if (!sbErr) saved = true;
+      }
+
+      if (saved) {
+        toast('Batch deleted', 'success');
+        window.allBatches = (window.allBatches || []).filter((b) => String(b.id) !== String(id));
+        if (typeof window.loadAllData === 'function') window.loadAllData(true);
+        window.renderCoachBatches();
+        window.renderCoachDashboard();
+      } else {
+        toast('Delete failed', 'error');
+      }
+    } catch (e) {
+      toast('Error: ' + (e.message || 'connection error'), 'error');
+    }
+  };
+
+  // ── Coach Study Lab Renderer ──────────────────────────────────────────────
+  window.renderCoachStudyLab = function () {
+    if (window.role !== 'coach' && !window.__adminImpersonatingCoach) return;
+    const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+    if (!coachId) return;
+
+    const repertoireKey = 'ck_coach_repertoire_' + coachId;
+    let repertoire = [];
+    try {
+      repertoire = JSON.parse(localStorage.getItem(repertoireKey) || '[]');
+    } catch (e) {}
+
+    const container = document.getElementById('coach-studypgn-subview-custom');
+    if (!container) return;
+
+    const fenInput = document.getElementById('custom-fen-input');
+    const saveBtn = document.getElementById('btn-save-coach-repertoire');
+    const listContainer = document.getElementById('coach-repertoire-list');
+
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        const fen = fenInput ? fenInput.value : '';
+        if (!fen) {
+          toast('Please set up a position on the board first', 'warning');
+          return;
+        }
+        const title = prompt('Enter a title for this repertoire position:');
+        if (!title) return;
+        repertoire.push({ id: Date.now().toString(), title: title, fen: fen, coach_id: coachId });
+        try {
+          localStorage.setItem(repertoireKey, JSON.stringify(repertoire));
+        } catch (e) {}
+        toast('Position saved to Coach Repertoire!', 'success');
+        window.renderCoachStudyLab();
+      };
+    }
+
+    if (listContainer) {
+      listContainer.innerHTML = repertoire.length === 0
+        ? '<div style="color:var(--ivory-dim); font-size:12px;">No saved repertoire positions yet.</div>'
+        : repertoire.map((r, idx) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600; color:var(--ivory); font-size:13px;">${window.escapeHtml ? window.escapeHtml(r.title) : r.title}</div>
+              <div style="font-size:11px; color:var(--ivory-dim); font-family:monospace;">${window.escapeHtml ? window.escapeHtml(r.fen) : r.fen}</div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.loadFenToCustomBoard('${r.fen.replace(/'/g, "\\'")}')">Load</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="window.deleteCoachRepertoireItem('${r.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+    }
+  };
+
+  window.deleteCoachRepertoireItem = function (itemId) {
+    const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+    if (!coachId) return;
+    const repertoireKey = 'ck_coach_repertoire_' + coachId;
+    let repertoire = [];
+    try {
+      repertoire = JSON.parse(localStorage.getItem(repertoireKey) || '[]');
+    } catch (e) {}
+    repertoire = repertoire.filter(r => String(r.id) !== String(itemId));
+    try {
+      localStorage.setItem(repertoireKey, JSON.stringify(repertoire));
+    } catch (e) {}
+    toast('Repertoire item deleted', 'info');
+    window.renderCoachStudyLab();
+  };
+
+  // ── Navigation hook ────────────────────────────────────────────────────────
+if (typeof window.setPage === 'function') {
+  const origSetPage = window.setPage;
+  window.setPage = function(p, btn) {
+    origSetPage(p, btn);
+    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-studypgn') {
+      setTimeout(renderCoachDashboard, 100);
+    }
+  };
+} else {
+  window.setPage = function(p, btn) {
+    if (p === 'coach-dash' || p === 'coach-students' || p === 'coach-batches' || p === 'coach-schedule' || p === 'coach-events' || p === 'coach-attendance' || p === 'coach-homework' || p === 'coach-studypgn') {
+      setTimeout(renderCoachDashboard, 100);
+    }
+  };
+}
+
+
+// ============================================================================
+// COACH SESSIONS & DATA SHEET MODAL (Google Sheet Tracker)
+// ============================================================================
+
+window.openCoachDataSheetModal = function(coachId, batchId, studentId) {
+  const cId = coachId || window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+  
+  // Remove any existing modal
+  const old = document.getElementById('coach-datasheet-modal');
+  if (old) old.remove();
+
+  const coaches = window.allCoaches || [];
+  const batches = (window.allBatches || []).filter(b => !cId || window.ckSameCoach(b.coach_id, cId));
+  const students = (window.allStudents || []).filter(s => !cId || window.ckSameCoach(s.coach_id, cId));
+
+  const modalHtml = `
+    <div class="modal active" id="coach-datasheet-modal" style="z-index:9999;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);padding:16px;">
+      <div class="modal-card" style="max-width:1100px;width:100%;max-height:92vh;display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+        
+        <!-- Header & Close -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+          <div>
+            <h2 style="margin:0;color:var(--gold);font-family:var(--font-head);font-size:22px;display:flex;align-items:center;gap:8px;">
+              <span>📊</span> Coach Attendance &amp; Lesson Data Sheet
+            </h2>
+            <p style="margin:4px 0 0 0;color:var(--ivory-dim);font-size:12px;">Comprehensive multi-batch attendance and curriculum tracking sheet</p>
+          </div>
+          <button onclick="document.getElementById('coach-datasheet-modal').remove()" style="background:none;border:none;color:var(--ivory);font-size:24px;cursor:pointer;">✕</button>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;background:var(--bg3);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <label style="font-size:12px;color:var(--ivory-dim);margin:0;">Coach:</label>
+            <select id="cd-coach-select" style="background:var(--bg2);color:var(--ivory);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;" onchange="window.filterCoachDataSheet()">
+              <option value="">All Coaches</option>
+              ${coaches.map(c => `<option value="${c.id}" ${String(c.id) === String(cId) ? 'selected' : ''}>${window.escapeHtml ? window.escapeHtml(c.name) : c.name}</option>`).join('')}
+            </select>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:6px;">
+            <label style="font-size:12px;color:var(--ivory-dim);margin:0;">Student:</label>
+            <select id="cd-student-select" style="background:var(--bg2);color:var(--ivory);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;" onchange="window.filterCoachDataSheet()">
+              <option value="">All Students</option>
+              ${students.map(st => `<option value="${st.id}" ${String(st.id) === String(studentId) ? 'selected' : ''}>${window.escapeHtml ? window.escapeHtml(window.getStudentName ? window.getStudentName(st) : st.name) : st.name}</option>`).join('')}
+            </select>
+          </div>
+
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <a href="https://docs.google.com/spreadsheets/d/1Z2IUrgRZ89omzS_Jpl72aMQYur_kt9wFkyYnd58UTUM/edit?usp=sharing" target="_blank" class="btn btn-sm" style="background:#ffffff; color:#0f172a; text-decoration:none; font-weight:700; border-radius:6px; font-size:11px; padding:5px 12px; display:inline-flex; align-items:center; gap:4px;">
+              📊 Live Google Sheet ↗
+            </a>
+            <button class="btn btn-outline btn-sm" onclick="window.exportDataSheetCSV()">📥 Export CSV</button>
+            <button class="btn btn-gold btn-sm" onclick="window.print()">🖨️ Print</button>
+          </div>
+        </div>
+
+        <!-- Sheet Container (Scrollable) -->
+        <div id="coach-datasheet-content" style="flex:1;overflow-y:auto;min-height:350px;">
+          <!-- Rendered by window.filterCoachDataSheet -->
+        </div>
+      </div>
     </div>
   `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  window.filterCoachDataSheet();
+};
+
+window.filterCoachDataSheet = function() {
+  const coachId = document.getElementById('cd-coach-select')?.value;
+  const studentId = document.getElementById('cd-student-select')?.value;
+  const container = document.getElementById('coach-datasheet-content');
+  if (!container) return;
+
+  if (studentId) {
+    window.renderSessionSheet(studentId, container);
+  } else {
+    // Show all students for this coach
+    const students = (window.allStudents || []).filter(s => !coachId || window.ckSameCoach(s.coach_id, coachId));
+    if (students.length === 0) {
+      container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ivory-dim);">No students assigned to this coach.</div>';
+      return;
+    }
+    // Render first student or consolidated list
+    window.renderSessionSheet(students[0].id, container);
+  }
+};
+
+window.exportDataSheetCSV = function(targetStudentId) {
+  const studentId = targetStudentId || document.getElementById('cd-student-select')?.value;
+  const s = (window.allStudents || []).find(st => String(st.id) === String(studentId)) || window.currentStudent || (window.allStudents || [])[0];
+  if (!s) return;
+
+  const attList = (window.allAttendance || []).filter(a => String(a.student_id) === String(s.id));
+  const hwList = window.allHomework || [];
+  let csv = "DATE,DAY,CLASSWORK / TOPIC,HOMEWORK NOTES,GENERAL NOTES,SESSION COMPLETED,ATTENDEE NAME,TOTAL PRESENT,TIME DURATION\n";
+
+  attList.forEach(rec => {
+    const d = new Date(rec.date);
+    const dStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    const dayStr = d.toLocaleDateString('en-US', { weekday: 'long' });
+    const p = window.parseAttendanceNotes ? window.parseAttendanceNotes(rec.notes || rec.note || '') : { topic: 'Chess Training', cw: 'Chess Training', hw: '', general: '', subject: 'Chess (Core)', duration: 'One Hour' };
+    const sName = window.getStudentName ? window.getStudentName(s) : s.name;
+    const isPres = (rec.status || '').toLowerCase() === 'present' ? '1/1' : '0/1';
+    
+    // Check matching homework on date
+    const dIso = rec.date ? rec.date.slice(0, 10) : '';
+    const hwOnDate = hwList.filter(h => (h.due_date || h.created_at || '').slice(0, 10) === dIso);
+    const hwDisplay = p.hw || (hwOnDate.length > 0 ? hwOnDate.map(h => h.title).join('; ') : 'None');
+
+    csv += `"${dStr}","${dayStr}","${p.cw || p.topic}","${hwDisplay}","${p.general || 'Class completed'}","${p.subject}","${sName}","${isPres}","${p.duration}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chesskidoo_attendance_homework_${(s.name || 'student').toLowerCase().replace(/[^a-z0-9]/g, '_')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  if (window.toast) window.toast('📊 Sheet exported! Ready to import/upload into Google Sheets.', 'success');
 };

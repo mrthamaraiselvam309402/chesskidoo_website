@@ -1285,7 +1285,7 @@
     if (cfg.useBook && fullMoves <= cfg.bookUntilMove) {
       updateStatus('🤖 Checking Master Openings…');
       try {
-        const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&moves=4`).catch(() => null);
+         const res = await fetch(`/api/lichess-explorer-proxy?fen=${encodeURIComponent(fen)}&moves=4`).catch(() => null);
         if (res && res.ok) {
           const data = await res.json();
           if (data.moves && data.moves.length > 0) {
