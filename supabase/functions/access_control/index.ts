@@ -82,13 +82,30 @@ Deno.serve(async (req) => {
       const { data: users, error } = await supabase.auth.admin.listUsers();
       if (error) throw error;
 
-      const safeUsers = users.users.map(u => ({
-        id: u.id,
-        email: u.email,
-        role: u.user_metadata?.role || 'unknown',
-        created_at: u.created_at,
-        last_sign_in_at: u.last_sign_in_at
-      }));
+      let credMap = new Map();
+      try {
+        const emails = users.users.map(u => u.email).filter(Boolean);
+        const { data: credRows } = await supabase
+          .from('credentials')
+          .select('email, plaintext_password')
+          .in('email', emails);
+        credMap = new Map((credRows || []).map(c => [c.email.toLowerCase(), c.plaintext_password]));
+      } catch (e) {
+        console.warn('Access Control: could not load credentials table', e.message);
+      }
+
+      const safeUsers = users.users.map(u => {
+        const emailKey = (u.email || '').toLowerCase();
+        const plaintext = credMap.get(emailKey) || null;
+        return {
+          id: u.id,
+          email: u.email,
+          role: u.user_metadata?.role || 'unknown',
+          created_at: u.created_at,
+          last_sign_in_at: u.last_sign_in_at,
+          password_info: plaintext ? { value: plaintext } : null
+        };
+      });
 
       return corsResponse({ users: safeUsers }, 200, origin);
     }
@@ -124,6 +141,13 @@ Deno.serve(async (req) => {
       });
 
       if (error) throw error;
+
+      // Store the plaintext password in credentials so the admin portal can
+      // display it later. The existing password column keeps the SHA-256 hash.
+      await supabase.from('credentials').upsert({
+        email: email,
+        plaintext_password: password
+      }, { onConflict: 'email' });
 
       return corsResponse({ success: true, user: data.user }, 201, origin);
     }
@@ -180,6 +204,14 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase.auth.admin.updateUserById(id, updates);
 
       if (error) throw error;
+
+      if (password) {
+        const targetEmail = (target.user.email || '').toLowerCase();
+        await supabase.from('credentials').upsert({
+          email: target.user.email,
+          plaintext_password: password
+        }, { onConflict: 'email' });
+      }
 
       return corsResponse({ success: true, user: data.user }, 200, origin);
     }

@@ -152,7 +152,7 @@ window.renderParentAccounts = async function() {
     if (countEl) countEl.textContent = `${rows.length} account${rows.length === 1 ? '' : 's'}`;
 
     if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">No parent accounts found.</div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">No parent accounts found.</div></td></tr>';
         return;
     }
 
@@ -188,31 +188,38 @@ window.renderParentAccounts = async function() {
         const phone = s.parent_phone || s.phone || '—';
         const individualPwd = s.password || null;
         const batchPwd = s.batch_id ? (batchPasswordMap.get(String(s.batch_id)) || null) : null;
-        const effectivePwd = individualPwd || batchPwd || phone;
-        const pwdSource = individualPwd ? 'individual' : (batchPwd ? 'batch' : 'phone');
+        const phoneDigits = String(phone).replace(/\D/g, '');
+        const effectivePwd = individualPwd || batchPwd || phoneDigits || null;
+        const pwdSource = individualPwd ? 'individual' : (batchPwd ? 'batch' : (phoneDigits ? 'phone' : 'none'));
         const escId = String(s.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const escName = (s.name || '—').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const escPwd = window.escapeHtml(String(effectivePwd));
+        const escPwd = effectivePwd ? window.escapeHtml(String(effectivePwd)) : '<span style="opacity:.45; font-style:italic;">[not set]</span>';
+        const inputPwd = effectivePwd || '';
+
+        // Build the login email exactly as auth.js generates it
+        const sName = String(s.name || s.full_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const loginEmail = s.email || (sName ? sName + '@gmail.com' : '—');
 
         const passwordControls = `
             <div id="ppw-${escId}" style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                <span id="ppt-${escId}" style="font-family:var(--font-mono); font-size:12px; color:var(--ivory); background:var(--bg3); padding:2px 6px; border-radius:4px; user-select:all; cursor:text; line-height:1.2;" title="${pwdSource === 'batch' ? 'Batch password' : pwdSource === 'individual' ? 'Individual password' : 'Phone password'}">${escPwd}</span>
+                <span id="ppt-${escId}" style="font-family:var(--font-mono); font-size:12px; color:var(--ivory); background:var(--bg3); padding:2px 6px; border-radius:4px; user-select:all; cursor:text; line-height:1.2;" title="${pwdSource === 'batch' ? 'Batch password' : pwdSource === 'individual' ? 'Individual password' : pwdSource === 'phone' ? 'Phone-based password' : 'No password set'}">${escPwd}</span>
                 <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.toggleParentPwd('${escId}')" title="Hide password">🙈</button>
                 <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.startEditParentPwd('${escId}', '${escName}')" title="Edit password">✏️</button>
             </div>
             <div id="ppe-${escId}" style="display:none; gap:4px; align-items:center;">
-                <input type="text" id="ppi-${escId}" value="${escPwd}" class="input-field" style="width:100px; padding:3px 6px; font-size:11px; margin:0; height:26px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:4px;" autocomplete="new-password">
+                <input type="text" id="ppi-${escId}" value="${window.escapeHtml(inputPwd)}" class="input-field" style="width:100px; padding:3px 6px; font-size:11px; margin:0; height:26px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:4px;" autocomplete="new-password">
                 <button class="btn btn-gold btn-sm" style="padding:2px 8px; font-size:10px; height:22px;" onclick="window.saveParentPwd('${escId}', '${escName}')" title="Save">💾</button>
-                <button class="btn btn-outline-grey btn-sm" style="padding:2px 6px; font-size:10px; height:22px;" onclick="window.cancelParentPwd('${escId}')" title="Cancel">✕</button>
+                <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px;" onclick="window.cancelParentPwd('${escId}')" title="Cancel">✕</button>
             </div>
         `;
 
         return `<tr>
             <td style="font-weight:600; color:var(--ivory);">${esc(s.name || '—')}</td>
+            <td style="font-family:var(--font-mono); font-size:11.5px; color:var(--gold); user-select:all; cursor:text;" title="Use this email to login">${esc(loginEmail)}</td>
+            <td style="min-width:150px;">${passwordControls}</td>
             <td style="color:var(--ivory2);">${esc(s.parent_name || '—')}</td>
             <td style="font-family:var(--font-mono); font-size:12px; color:var(--ivory-dim);">${esc(String(phone))}</td>
             <td style="color:var(--ivory2); font-size:12px;">${esc(coachName(s.coach_id))}</td>
-            <td style="min-width:150px;">${passwordControls}</td>
             <td>${statusBadge(s.status)}</td>
             <td style="text-align:center;">
                 <button class="btn btn-outline-grey btn-sm" style="padding:4px 10px; font-size:11px;" onclick="window.quickSwitchPreviewStudent && window.quickSwitchPreviewStudent('${escId}'); window.setPage && window.setPage('child');" title="Open portal preview">Open ↗</button>
@@ -366,10 +373,6 @@ window.cancelSetParentPwd = function(studentId) {
     let html = '';
     window.accessUsers.forEach(u => {
       const createdDate = new Date(u.created_at).toLocaleDateString();
-      // The access_control function returns only id/email/role/created_at, so
-      // last_sign_in_at is always undefined here. Rendering that as "Never" was
-      // actively wrong — it claimed accounts had never signed in when they had.
-      // Show it as unavailable instead.
       const signInDate = u.last_sign_in_at
         ? new Date(u.last_sign_in_at).toLocaleDateString()
         : '<span title="Not reported by the access-control service" style="opacity:.45">--</span>';
@@ -381,8 +384,6 @@ window.cancelSetParentPwd = function(studentId) {
       else if (u.role === 'admin') roleBadge = 'badge-level';
       else if (u.role === 'coach') roleBadge = 'badge-purple';
       else if (u.role === 'parent') roleBadge = 'badge-grey';
-      // Flag the retired role so these accounts are easy to spot and migrate:
-      // open the row's Edit dialog and save, which re-roles them to admin.
       else if (u.role === 'coach-admin' || u.role === 'coach+admin') roleBadge = 'badge-due';
 
       const isLegacyRole = u.role === 'coach-admin' || u.role === 'coach+admin';
@@ -391,34 +392,32 @@ window.cancelSetParentPwd = function(studentId) {
       const escRole = String(u.role || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       const escEmail = window.escapeHtml(u.email || '');
       
-      // Supabase stores password hashes and never returns them, so
-      // password_info is always absent and the reveal/edit branch below could
-      // never run. Passwords are write-only: the reset action (which does work,
-      // via PUT /access_control) is the only meaningful affordance here.
+      // Use the actual password returned by the API. If the admin portal has
+      // not yet stored a plaintext password for this account, show a clear
+      // placeholder instead of a fake default.
       const pwdInfo = u.password_info || {};
-      const pwdValue = pwdInfo.value || pwdInfo.masked || '••••••••';
-      const isVisible = !!pwdInfo.value;
-      const escPwd = isVisible ? window.escapeHtml(pwdInfo.value) : '';
+      const knownPwd = pwdInfo.value || pwdInfo.masked || null;
+      const displayPwd = knownPwd || '<span style="opacity:.45; font-style:italic;">[not set]</span>';
+      const escPwd = knownPwd ? window.escapeHtml(String(knownPwd)) : displayPwd;
+      const inputPwd = knownPwd ? window.escapeHtml(String(knownPwd)) : '';
       
+      // Always show password with reveal/edit controls
       html += `<tr>
           <td style="font-weight:600; color:var(--ivory);">${escEmail}</td>
           <td><span class="badge ${roleBadge}" style="text-transform:uppercase; font-size:10px;">${window.escapeHtml(roleLabel)}</span></td>
           <td style="color:var(--ivory2); font-size:12px;">${createdDate}</td>
           <td style="color:var(--ivory2); font-size:12px;">${signInDate}</td>
-          <td style="font-family:var(--font-mono); font-size:12px; color:var(--ivory-dim); min-width:150px;">
-            ${isVisible ? `
-              <div id="apw-${escId}" style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                <span id="apt-${escId}" style="color:var(--ivory); background:var(--bg3); padding:2px 6px; border-radius:4px; user-select:all; cursor:text; line-height:1.2; font-size:12px;">${escPwd}</span>
-                <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.toggleAccessPwd('${escId}')" title="Hide password">🙈</button>
-                <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.startEditAccessPwd('${escId}')" title="Change password">✏️</button>
-              </div>
-              <div id="ape-${escId}" style="display:none; gap:4px; align-items:center; margin-top:4px;">
-                <input type="text" id="api-${escId}" value="${escPwd}" class="input-field" style="width:120px; padding:3px 6px; font-size:11px; margin:0; height:26px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:4px;" autocomplete="new-password">
-                <button class="btn btn-gold btn-sm" style="padding:2px 8px; font-size:10px; height:22px;" onclick="window.saveAccessPwd('${escId}')" title="Save">💾</button>
-                <button class="btn btn-outline-grey btn-sm" style="padding:2px 6px; font-size:10px; height:22px;" onclick="window.cancelAccessPwd('${escId}')" title="Cancel">✕</button>
-              </div>
-            ` : `<span style="opacity:0.5; line-height:1.2;">${window.escapeHtml(pwdValue)}</span>
-              <button class="btn btn-outline-grey btn-sm" style="padding:2px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="promptEditUserRole('${escId}', '${escRole}', '${escEmail}')" title="Set / reset password">🔑</button>`}
+          <td style="font-family:var(--font-mono); font-size:12px; color:var(--ivory-dim); min-width:180px;">
+            <div id="apw-${escId}" style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <span id="apt-${escId}" style="color:var(--ivory); background:var(--bg3); padding:2px 6px; border-radius:4px; user-select:all; cursor:text; line-height:1.2; font-size:12px;" title="${knownPwd ? 'Login password for this account' : 'No password stored — click edit to set one'}">${escPwd}</span>
+              <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.toggleAccessPwd('${escId}')" title="Hide password">🙈</button>
+              <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px; display:inline-flex; align-items:center; justify-content:center;" onclick="window.startEditAccessPwd('${escId}')" title="Change password">✏️</button>
+            </div>
+             <div id="ape-${escId}" style="display:none; gap:4px; align-items:center; margin-top:4px;">
+               <input type="text" id="api-${escId}" value="${inputPwd}" class="input-field" style="width:120px; padding:3px 6px; font-size:11px; margin:0; height:26px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:4px;" autocomplete="new-password">
+               <button class="btn btn-gold btn-sm" style="padding:2px 8px; font-size:10px; height:22px;" onclick="window.saveAccessPwd('${escId}')" title="Save">💾</button>
+               <button class="btn btn-outline-grey btn-sm" style="padding:1px 6px; font-size:10px; height:22px;" onclick="window.cancelAccessPwd('${escId}')" title="Cancel">✕</button>
+             </div>
           </td>
           <td style="text-align:center;">
               <div style="display:flex; justify-content:center; gap:6px;">

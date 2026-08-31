@@ -237,93 +237,6 @@
     { title: 'Night International Blitz & Prep', days: 'Sat & Sun', timeIST: '08:30 PM', category: 'Master / FIDE' }
   ];
 
-  let selectedTimezoneCode = 'IST';
-
-  function convertTimeFromIST(timeStr, targetTzCode) {
-    const targetTz = TIMEZONES.find(t => t.code === targetTzCode) || TIMEZONES[0];
-    const diffHours = targetTz.offset - 5.5; // Difference from IST
-
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!match) return timeStr;
-
-    let h = parseInt(match[1], 10);
-    const m = parseInt(match[2], 10);
-    const isPM = match[3].toUpperCase() === 'PM';
-    if (isPM && h !== 12) h += 12;
-    if (!isPM && h === 12) h = 0;
-
-    let totalMinutes = h * 60 + m + (diffHours * 60);
-    totalMinutes = ((totalMinutes % 1440) + 1440) % 1440;
-
-    const outH = Math.floor(totalMinutes / 60);
-    const outM = Math.floor(totalMinutes % 60);
-    const ampm = outH >= 12 ? 'PM' : 'AM';
-    const displayH = outH % 12 === 0 ? 12 : outH % 12;
-    const displayM = String(outM).padStart(2, '0');
-
-    return `${displayH}:${displayM} ${ampm} ${targetTz.code}`;
-  }
-
-  window.setTimezone = function (tzCode) {
-    selectedTimezoneCode = tzCode;
-    playBeep(480, 'sine', 0.08);
-    window.renderScheduleMatrix();
-  };
-
-  window.renderScheduleMatrix = function () {
-    const container = document.getElementById('ck-live-schedule-container');
-    if (!container) return;
-
-    const tzPills = TIMEZONES.map(t => {
-      const active = t.code === selectedTimezoneCode;
-      return `
-        <button type="button" onclick="window.setTimezone('${t.code}')"
-                style="padding:6px 14px; border-radius:99px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; border:1px solid ${active ? 'var(--gold)' : 'rgba(255,255,255,0.15)'}; background:${active ? 'var(--gold)' : 'rgba(255,255,255,0.04)'}; color:${active ? '#0f172a' : '#cbd5e1'};">
-          ${t.name}
-        </button>
-      `;
-    }).join('');
-
-    const cardsHtml = BATCH_SLOTS_IST.map(slot => {
-      const localTime = convertTimeFromIST(slot.timeIST, selectedTimezoneCode);
-      return `
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; transition:transform 0.2s;" onmouseenter="this.style.borderColor='rgba(218,163,62,0.4)'; this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='none'">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:800; background:rgba(218,163,62,0.15); color:var(--gold); padding:3px 8px; border-radius:6px; border:1px solid rgba(218,163,62,0.3);">${slot.category}</span>
-            <span style="font-size:12px; color:#94a3b8; font-weight:600;">📅 ${slot.days}</span>
-          </div>
-          <h4 style="margin:0; color:#fff; font-size:15px; font-weight:700;">${slot.title}</h4>
-          <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:14px;">⏰</span>
-            <span style="font-size:14px; font-weight:800; color:var(--gold);">${localTime}</span>
-            <span style="font-size:11px; color:#64748b; margin-left:auto;">(IST: ${slot.timeIST})</span>
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="if(window.CK && window.CK.openDemoModal) window.CK.openDemoModal();" style="width:100%; font-size:12px; padding:6px; border-color:rgba(218,163,62,0.4); color:var(--gold);">
-            Book This Slot
-          </button>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = `
-      <div style="background:linear-gradient(135deg, #0b1329, #111c38); border:1px solid var(--border); border-radius:20px; padding:28px; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
-          <div>
-            <span style="font-size:11px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:1px;">🌐 Global Live Timings</span>
-            <h3 style="color:#fff; font-size:20px; font-weight:800; margin:4px 0 0;">Live Weekly Batch Schedules</h3>
-          </div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap; max-width:600px;">
-            ${tzPills}
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:16px;">
-          ${cardsHtml}
-        </div>
-      </div>
-    `;
-  };
-
   // ─────────────────────────────────────────────────────────────────
   // 3. 3D CHESS PIECE SHOWCASE & TILT HOVER FX
   // ─────────────────────────────────────────────────────────────────
@@ -350,7 +263,6 @@
   // Auto-initialize on DOM load
   document.addEventListener('DOMContentLoaded', () => {
     window.initLevelQuiz();
-    window.renderScheduleMatrix();
     setTimeout(() => window.init3dPieceShowcase(), 200);
   });
 })();

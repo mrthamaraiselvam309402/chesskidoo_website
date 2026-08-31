@@ -441,45 +441,45 @@ window.openStudentChangePasswordModal = function(studentId) {
   if (old) old.remove();
 
   const modalHtml = `
-    <div class="modal active" id="student-change-pwd-modal" style="z-index:99999;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);padding:16px;">
-      <div class="modal-card" style="max-width:440px;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,0.6);">
-        <button onclick="document.getElementById('student-change-pwd-modal').remove()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--ivory);font-size:20px;cursor:pointer;">✕</button>
+    <div class="modal active" id="student-change-pwd-modal" style="z-index:99999;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);padding:16px;">
+      <div class="modal-card" style="max-width:460px;width:100%;background:#0f172a;border:1.5px solid var(--gold);border-radius:18px;padding:26px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,0.7);">
+        <button type="button" onclick="document.getElementById('student-change-pwd-modal').remove()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.06);border:none;color:var(--ivory);width:32px;height:32px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;">✕</button>
         
-        <h3 style="color:var(--gold);margin:0 0 6px 0;font-family:var(--font-head);font-size:18px;display:flex;align-items:center;gap:8px;">
+        <h3 style="color:var(--gold);margin:0 0 6px 0;font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px;">
           <span>🔑</span> Change Portal Password
         </h3>
-        <p style="margin:0 0 16px 0;color:var(--ivory-dim);font-size:12px;">
-          Account: <strong style="color:var(--ivory);">${window.escapeHtml(sName)}</strong> (${window.escapeHtml(sEmail)})
+        <p style="margin:0 0 16px 0;color:var(--ivory-dim);font-size:13px;">
+          Account: <strong style="color:#fff;">${window.escapeHtml(sName)}</strong> <span style="color:var(--gold);">${sEmail ? `(${window.escapeHtml(sEmail)})` : ''}</span>
         </p>
 
-        <div style="background:rgba(232,168,48,0.08);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--ivory);">
+        <div style="background:rgba(218,163,62,0.1);border:1px solid rgba(218,163,62,0.3);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12.5px;color:#fef08a;line-height:1.4;">
           💡 <em>Default initial password is <strong>123456</strong>. You can change it anytime to your own secure password.</em>
         </div>
 
         <form id="student-change-pwd-form" onsubmit="window.submitStudentPasswordChange(event, '${sId || ''}')">
-          <div class="form-group" style="margin-bottom:12px;">
-            <label style="display:block;font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">Current Password</label>
-            <input type="password" id="sp-curr-pass" placeholder="Enter current password (default: 123456)" required
-                   style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--ivory);border-radius:6px;box-sizing:border-box;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="display:block;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;">Current Password</label>
+            <input type="password" id="sp-curr-pass" placeholder="Enter current password (default: 123456)" autocomplete="current-password" required
+                   style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;box-sizing:border-box;font-size:14px;outline:none;" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
           </div>
 
-          <div class="form-group" style="margin-bottom:12px;">
-            <label style="display:block;font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">New Password</label>
-            <input type="password" id="sp-new-pass" placeholder="Enter new password (min 4 characters)" minlength="4" required
-                   style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--ivory);border-radius:6px;box-sizing:border-box;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="display:block;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;">New Password</label>
+            <input type="password" id="sp-new-pass" placeholder="Enter new password (min 4 characters)" minlength="4" autocomplete="new-password" required
+                   style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;box-sizing:border-box;font-size:14px;outline:none;" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
           </div>
 
-          <div class="form-group" style="margin-bottom:16px;">
-            <label style="display:block;font-size:12px;color:var(--ivory-dim);margin-bottom:4px;">Confirm New Password</label>
-            <input type="password" id="sp-conf-pass" placeholder="Confirm new password" minlength="4" required
-                   style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--ivory);border-radius:6px;box-sizing:border-box;">
+          <div class="form-group" style="margin-bottom:18px;">
+            <label style="display:block;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;">Confirm New Password</label>
+            <input type="password" id="sp-conf-pass" placeholder="Confirm new password" minlength="4" autocomplete="new-password" required
+                   style="width:100%;padding:12px 14px;background:#1e293b;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;box-sizing:border-box;font-size:14px;outline:none;" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
           </div>
 
-          <div id="sp-error-msg" style="color:#ff7675;font-size:12px;margin-bottom:12px;display:none;"></div>
+          <div id="sp-error-msg" style="color:#f87171;font-size:13px;font-weight:600;margin-bottom:14px;display:none;"></div>
 
           <div style="display:flex;gap:10px;justify-content:flex-end;">
-            <button type="button" class="btn btn-outline" onclick="document.getElementById('student-change-pwd-modal').remove()">Cancel</button>
-            <button type="submit" class="btn btn-gold" id="sp-submit-btn">Save New Password</button>
+            <button type="button" class="btn btn-outline" style="border-color:rgba(255,255,255,0.2);color:#cbd5e1;padding:10px 18px;" onclick="document.getElementById('student-change-pwd-modal').remove()">Cancel</button>
+            <button type="submit" class="btn btn-gold" id="sp-submit-btn" style="padding:10px 20px;font-weight:700;">Save New Password</button>
           </div>
         </form>
       </div>

@@ -162,47 +162,48 @@ Deno.serve(async (req) => {
      const originalPhone = String(s.parent_phone || s.phone || '');
      const parsed = parseStoredPhone(originalPhone);
 
-     return {
-       id: s.id,
-       name: s.name || '',
-       full_name: s.name || '',
-       email: s.email || '',
-       phone: parsed.localNumber || originalPhone,
-       parent_phone: parsed.localNumber || originalPhone,
-       parent_name: s.parent_name || '',
-       age: s.age || null,
-       grade: s.grade || null,
-       level: s.grade || 'Beginner',
-       enrollment_date: s.enrollment_date || '',
-       join_date: s.enrollment_date || '',
-       address: s.address || '',
-       country_code: (parsed.countryCode && parsed.countryCode !== 'IN') ? parsed.countryCode : (s.country_code || 'IN'),
-       status: status,
-       payment_status: s.payment_status || (status === 'active' ? 'Paid' : (['pending', 'waitlist', 'upcoming'].includes(status) ? 'Pending' : 'Due')),
-       coach_id: s.coach_id || null,
-       rating: s.rating || 800,
-       current_rating: s.rating || 800,
-       notes: (typeof s.notes === 'string' ? s.notes.replace(/\[LM:(online|offline)\]/g, '').trim() : ''),
-       learning_mode: (typeof s.notes === 'string' && s.notes.includes('[LM:offline]')) ? 'offline' : 'online',
-       session_mode: s.session_mode || null,
-       session_time: s.session_time || null,
-       batch_type: s.session_mode || null,
-       batch_time: s.session_time || null,
-       monthly_fee: parseInt(String(fee)) || 0,
-       due_date: s.due_date || null,
-       account_status: s.account_status || 'active',
-        lichess_username: s.lichess_username || '',
-        chesscom_username: s.chesscom_username || '',
-        chessable_username: s.chessable_username || '',
-        skill_breakdown: s.skill_breakdown || s.skills || null,
-        credit_balance: s.credit_balance !== undefined ? Number(s.credit_balance) : 0,
-       outstanding_balance: s.outstanding_balance !== undefined ? Number(s.outstanding_balance) : 0,
-       billing_anchor_year: s.billing_anchor_year !== undefined ? Number(s.billing_anchor_year) : null,
-       billing_anchor_month: s.billing_anchor_month !== undefined ? Number(s.billing_anchor_month) : null,
-       last_payment_applied_month: s.last_payment_applied_month || null,
-       created_at: s.created_at,
-       updated_at: s.updated_at
-     }
+      return {
+        id: s.id,
+        name: s.name || '',
+        full_name: s.name || '',
+        email: s.email || '',
+        phone: parsed.localNumber || originalPhone,
+        parent_phone: parsed.localNumber || originalPhone,
+        parent_name: s.parent_name || '',
+        age: s.age || null,
+        grade: s.grade || null,
+        level: s.grade || 'Beginner',
+        enrollment_date: s.enrollment_date || '',
+        join_date: s.enrollment_date || '',
+        address: s.address || '',
+        country_code: (parsed.countryCode && parsed.countryCode !== 'IN') ? parsed.countryCode : (s.country_code || 'IN'),
+        status: status,
+        payment_status: s.payment_status || (status === 'active' ? 'Paid' : (['pending', 'waitlist', 'upcoming'].includes(status) ? 'Pending' : 'Due')),
+        coach_id: s.coach_id || null,
+        rating: s.rating || 800,
+        current_rating: s.rating || 800,
+        notes: (typeof s.notes === 'string' ? s.notes.replace(/\[LM:(online|offline)\]/g, '').trim() : ''),
+        learning_mode: (typeof s.notes === 'string' && s.notes.includes('[LM:offline]')) ? 'offline' : 'online',
+        session_mode: s.session_mode || null,
+        session_time: s.session_time || null,
+        batch_type: s.session_mode || null,
+        batch_time: s.session_time || null,
+        monthly_fee: parseInt(String(fee)) || 0,
+        due_date: s.due_date || null,
+        account_status: s.account_status || 'active',
+         lichess_username: s.lichess_username || '',
+         chesscom_username: s.chesscom_username || '',
+         chessable_username: s.chessable_username || '',
+         skill_breakdown: s.skill_breakdown || s.skills || null,
+         credit_balance: s.credit_balance !== undefined ? Number(s.credit_balance) : 0,
+        outstanding_balance: s.outstanding_balance !== undefined ? Number(s.outstanding_balance) : 0,
+        billing_anchor_year: s.billing_anchor_year !== undefined ? Number(s.billing_anchor_year) : null,
+        billing_anchor_month: s.billing_anchor_month !== undefined ? Number(s.billing_anchor_month) : null,
+        last_payment_applied_month: s.last_payment_applied_month || null,
+        created_at: s.created_at,
+        updated_at: s.updated_at,
+        password: s.password || null
+      }
    }
 
   try {
@@ -467,11 +468,14 @@ Deno.serve(async (req) => {
         if (rawBody.chessable_username !== undefined) {
           updateData.chessable_username = sanitizeString(rawBody.chessable_username, 100);
         }
-        if (rawBody.skill_breakdown !== undefined) {
-          updateData.skill_breakdown = rawBody.skill_breakdown;
-        }
-       
-       updateData.updated_at = new Date().toISOString();
+         if (rawBody.skill_breakdown !== undefined) {
+           updateData.skill_breakdown = rawBody.skill_breakdown;
+         }
+         if (rawBody.password !== undefined) {
+           updateData.password = sanitizeString(rawBody.password, 100);
+         }
+        
+        updateData.updated_at = new Date().toISOString();
       
       let { data: updatedStudent, error: updateError } = await supabase
         .from('students')

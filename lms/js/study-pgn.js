@@ -1565,7 +1565,10 @@
     try {
       explorerEls.forEach(el => el.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:8px;"><span class="spinner" style="display:inline-block; width:12px; height:12px; margin-right:4px;"></span> Fetching Lichess Masters statistics...</div>`);
 
-      const res = await fetch(`/api/lichess-explorer-proxy?fen=${encodeURIComponent(fen)}&topGames=3&moves=4`).catch(() => null);
+      let res = await fetch(`/api/lichess-explorer-proxy?fen=${encodeURIComponent(fen)}&topGames=3&moves=4`).catch(() => null);
+      if (!res || !res.ok) {
+        res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(fen)}&topGames=3&moves=4`).catch(() => null);
+      }
       if (!res || !res.ok) throw new Error('API limit or offline');
       const data = await res.json();
 
@@ -1806,7 +1809,11 @@
 
   StudyPGN.renderTacticsBoard = function () {
     const container = document.getElementById('tactics-board-container');
-    if (!container || !StudyPGN.puzzleGame) return;
+    if (!container) return;
+    if (!StudyPGN.puzzleGame || !StudyPGN.currentPuzzle) {
+      StudyPGN.loadNextPuzzle();
+      return;
+    }
 
     const board = StudyPGN.puzzleGame.board();
     const isWhiteTurn = StudyPGN.puzzleGame.turn() === 'w';
