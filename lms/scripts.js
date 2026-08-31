@@ -10278,7 +10278,7 @@ due_date: (function () {
         if (res.ok) {
           toast("Coach updated successfully!", "success");
           if (coachEmail) {
-            const defaultPassword = "Coach@123";
+            const defaultPassword = "coach123";
             try {
               await apiCall("/api/access_control", {
                 method: "POST",
@@ -10304,7 +10304,7 @@ due_date: (function () {
         if (res.ok) {
           toast("Coach added successfully!", "success");
           if (coachEmail) {
-            const defaultPassword = "Coach@123";
+            const defaultPassword = "coach123";
             try {
               const accessRes = await apiCall("/api/access_control", {
                 method: "POST",

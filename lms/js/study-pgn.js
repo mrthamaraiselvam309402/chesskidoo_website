@@ -1489,14 +1489,158 @@
     guideEls.forEach(el => el.innerHTML = html);
   };
 
-  window.askTomAiAboutPosition = function () {
+  window.askTomAiAboutPosition = async function () {
     if (!StudyPGN.chess) return;
     const fen = StudyPGN.chess.fen();
     const move = StudyPGN.moveHistory && StudyPGN.currentMoveIndex >= 0 ? StudyPGN.moveHistory[StudyPGN.currentMoveIndex] : null;
     const moveText = move ? move.san : 'Start position';
 
-    if (window.toast) {
-      window.toast(`🤖 TOM AI: Analyzing position after ${moveText}... FEN: ${fen.substring(0, 25)}...`, 'info');
+    const guideEls = [
+      document.getElementById('pgn-tom-ai-guide'),
+      document.getElementById('coach-pgn-tom-ai-guide')
+    ].filter(Boolean);
+
+    if (!guideEls.length) {
+      if (window.toast) window.toast(`🤖 TOM AI: Analyzing position after ${moveText}...`, 'info');
+      return;
+    }
+
+    const loadingHtml = `
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="font-size:24px;">🤖</div>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase;">TOM AI Guidance • Analyzing...</span>
+            <span style="font-size:11px; color:#94a3b8;">FEN: ${fen.substring(0, 20)}...</span>
+          </div>
+          <p style="margin:0; font-size:13px; color:#94a3b8; line-height:1.5;">Fetching live engine evaluation and pedagogical breakdown...</p>
+        </div>
+      </div>
+    `;
+    guideEls.forEach(el => el.innerHTML = loadingHtml);
+
+    try {
+      let analysis = null;
+      try {
+        const cloudRes = await fetch(`https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(fen)}`);
+        if (cloudRes.ok) {
+          const cloudData = await cloudRes.json();
+          if (cloudData && cloudData.pvs && cloudData.pvs[0]) {
+            analysis = cloudData.pvs[0];
+          }
+        }
+      } catch (e) {
+        console.warn('[StudyPGN] Lichess cloud-eval failed, using local analysis:', e);
+      }
+
+      const board = StudyPGN.chess ? StudyPGN.chess.board() : [];
+      const pieceVals = { p: 1, n: 3.2, b: 3.3, r: 5, q: 9.5, k: 0 };
+      let evalScore = 0;
+      board.forEach(row => {
+        row.forEach(piece => {
+          if (piece) {
+            const val = pieceVals[piece.type] || 0;
+            evalScore += (piece.color === 'w' ? val : -val);
+          }
+        });
+      });
+
+      let displayEval = evalScore;
+      let evalText = '';
+      let bestMove = null;
+      let pedagogical = '';
+
+      if (analysis) {
+        if (analysis.mate !== undefined && analysis.mate !== null) {
+          displayEval = analysis.mate * 100;
+          evalText = `Mate in ${Math.abs(analysis.mate)} ${analysis.mate > 0 ? 'for White' : 'for Black'}`;
+        } else if (analysis.cp !== undefined && analysis.cp !== null) {
+          displayEval = analysis.cp / 100;
+          evalText = `${displayEval >= 0 ? '+' : ''}${displayEval.toFixed(2)}`;
+        }
+        if (analysis.pv && analysis.pv[0]) {
+          bestMove = analysis.pv.split(' ')[0];
+        }
+      } else {
+        evalText = `${displayEval >= 0 ? '+' : ''}${displayEval.toFixed(1)}`;
+      }
+
+      if (analysis && analysis.pv) {
+        const isWhiteToMove = fen.split(' ')[1] === 'w';
+        if (bestMove) {
+          if (bestMove.includes('#')) {
+            pedagogical = isWhiteToMove
+              ? `💥 Checkmate threat! ${bestMove} delivers mate — a decisive tactical blow.`
+              : `💥 Checkmate threat! ${bestMove} delivers mate — a decisive tactical blow.`;
+          } else if (bestMove.includes('+')) {
+            pedagogical = `⚔️ Tactical sharpness: ${bestMove} gives check, forcing the opponent into a defensive posture and gaining tempo.`;
+          } else if (bestMove.includes('x')) {
+            pedagogical = `🎯 Material alert: ${bestMove} is a capture that wins or equalizes material. Verify the tactical sequence before committing.`;
+          } else if (bestMove.startsWith('N') || bestMove.startsWith('N')) {
+            pedagogical = `🐎 Piece development: ${bestMove} develops a knight toward the center, improving piece coordination and control of key squares.`;
+          } else if (bestMove.startsWith('B')) {
+            pedagogical = `📐 Positional concept: ${bestMove} develops the bishop to an active diagonal, potentially pinning an enemy piece or controlling key weak squares.`;
+          } else if (bestMove.startsWith('R') && bestMove !== 'O-O' && bestMove !== 'O-O-O') {
+            pedagogical = `🏰 Rook activation: ${bestMove} connects the rooks and improves central control — a key endgame principle.`;
+          } else if (bestMove === 'O-O') {
+            pedagogical = `🛡️ King safety: Castling secures the king behind a protective pawn shield and activates the rook onto the central file.`;
+          } else if (bestMove.startsWith('d') || bestMove.startsWith('e') || bestMove.startsWith('c') || bestMove.startsWith('f')) {
+            pedagogical = `⚡ Central break: ${bestMove} challenges central control, opening lines for piece activity and creating space advantage.`;
+          } else {
+            pedagogical = `🧠 Engine recommendation: ${bestMove} — this move optimizes piece placement and improves the overall position.`;
+          }
+        }
+      } else {
+        if (Math.abs(displayEval) > 1.5) {
+          pedagogical = `⚖️ Material imbalance: The position is ${displayEval > 0 ? 'favorable for White' : 'favorable for Black'} (≈${Math.abs(displayEval).toFixed(1)}). Focus on the imbalance and seek simplifying trades.`;
+        } else if (Math.abs(displayEval) <= 0.5) {
+          pedagogical = `🔍 Balanced position: Evaluation is roughly even. Look for slow improvements and piece repositioning rather than forcing tactics.`;
+        } else {
+          pedagogical = `📊 Positional edge: A slight advantage exists (${displayEval >= 0 ? 'White' : 'Black'}). Convert by improving piece coordination and controlling key squares.`;
+        }
+      }
+
+      const aiHtml = `
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div style="font-size:24px;">🤖</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase;">TOM AI Guidance • Move ${move ? escapeHtml(move.san) : 'Start'}</span>
+              ${analysis ? `<span style="font-size:10px; color:#60a5fa; background:rgba(96,165,250,0.1); padding:2px 8px; border-radius:4px;">📡 Live Engine</span>` : `<span style="font-size:10px; color:#94a3b8; background:rgba(148,165,189,0.1); padding:2px 8px; border-radius:4px;">📊 Local Analysis</span>`}
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-bottom:6px; line-height:1.4;">
+              After ${move ? escapeHtml(move.san) : 'Opening'} · FEN: <code style="font-family:monospace; background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:2px;">${fen.substring(0, 30)}</code>
+            </div>
+            <div style="font-size:13px; color:#e2e8f0; line-height:1.6; margin-bottom:8px;">
+              <strong style="color:#38bdf8;">Evaluation:</strong> ${evalText} · <strong style="color:#38bdf8;">Best move:</strong> ${bestMove ? `<span style="color:#4ade80; font-family:monospace; font-weight:700;">${escapeHtml(bestMove)}</span>` : 'N/A'}
+            </div>
+            <div style="font-size:13px; color:#cbd5e1; line-height:1.5; background:rgba(15,23,42,0.4); padding:10px 12px; border-radius:8px; border:1px solid rgba(218,163,62,0.15);">
+              ${pedagogical}
+            </div>
+            ${analysis && analysis.pv ? `<div style="font-size:11px; color:#64748b; margin-top:6px; font-family:monospace;">PV: ${escapeHtml(analysis.pv)}</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      guideEls.forEach(el => el.innerHTML = aiHtml);
+      if (window.toast) {
+        window.toast(`🤖 TOM AI: Position analyzed. Evaluation: ${evalText}, Best move: ${bestMove || 'N/A'}`, 'success');
+      }
+    } catch (err) {
+      console.error('[StudyPGN] TOM AI analysis failed:', err);
+      const errorHtml = `
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div style="font-size:24px;">⚠️</div>
+          <div>
+            <div style="font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase; margin-bottom:4px;">TOM AI — Temporary Service Unavailability</div>
+            <p style="margin:0; font-size:13px; color:#94a3b8; line-height:1.5;">Live engine analysis is temporarily unavailable. The local evaluation gauge above still reflects the current material balance.</p>
+          </div>
+        </div>
+      `;
+      guideEls.forEach(el => el.innerHTML = errorHtml);
+      if (window.toast) {
+        window.toast('🤖 TOM AI: Analysis service unavailable, showing local evaluation.', 'warning');
+      }
     }
   };
 
@@ -2503,31 +2647,39 @@
       topics = JSON.parse(localStorage.getItem(STORAGE_ASSIGNED_TOPICS) || '[]');
     } catch (e) {}
 
-    // Default template topics if none
-    if (!topics.length) {
-      topics = [
-        {
-          id: 'topic-evans-gambit',
-          title: 'Italian Game: Evans Gambit Master Repertoire',
-          category: 'Openings',
-          batch_id: 'all',
-          student_id: 'all',
-          assigned_by: 'Head Coach',
-          assigned_date: '2026-08-15',
-          pgn: `1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O Nge7 8. Ng5 d5 9. exd5 Ne5 10. Bb3 O-O 11. Qxd4 N7g6`
-        },
-        {
-          id: 'topic-lucena-bridge',
-          title: 'Rook Endgames: The Lucena Bridge Winning Method',
-          category: 'Endgames',
-          batch_id: 'all',
-          student_id: 'all',
-          assigned_by: 'Head Coach',
-          assigned_date: '2026-08-16',
-          pgn: `[FEN "1K1R4/1P1k4/8/8/8/8/8/2r5 w - - 0 1"] 1. Rd4! Rh1 2. Ka7 Ra1+ 3. Kb6 Rb1+ 4. Ka6 Ra1+ 5. Kb5 Rb1+ 6. Rb4!`
+    // Fetch assigned topics from server if localStorage is empty
+    if (!topics.length && window.apiCall) {
+      try {
+        const res = await window.apiCall('/api/homework', { silent: true });
+        if (res.ok) {
+          const data = await res.json();
+          const hwList = data.data || data || [];
+          const pgnTopics = hwList
+            .filter(h => h && h.title && String(h.title).includes('[PGN Study]'))
+            .map(h => {
+              const title = String(h.title).replace(/^\[PGN Study\]\s*/, '');
+              const desc = h.description || '';
+              const pgnMatch = desc.match(/PGN Moves:\s*([\s\S]+)/i);
+              const catMatch = desc.match(/Category:\s*([^\n]+)/i);
+              return {
+                id: h.id || 'topic-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+                title: title,
+                pgn: pgnMatch ? pgnMatch[1].trim() : '',
+                category: catMatch ? catMatch[1].trim() : 'Study',
+                batch_id: h.batch_id || 'all',
+                student_id: h.student_id || h.student_id ? String(h.student_id) : 'all',
+                assigned_by: h.coach_id ? ('Coach ' + h.coach_id) : 'Academy Admin',
+                assigned_date: (h.due_date || h.created_at || new Date().toISOString()).slice(0, 10)
+              };
+            });
+          topics = pgnTopics;
+          if (topics.length) {
+            try { localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics)); } catch (e) {}
+          }
         }
-      ];
-      try { localStorage.setItem(STORAGE_ASSIGNED_TOPICS, JSON.stringify(topics)); } catch (e) {}
+      } catch (err) {
+        console.warn('[StudyPGN] Server topic fetch fallback:', err);
+      }
     }
 
     const currentStudent = window.currentStudent;

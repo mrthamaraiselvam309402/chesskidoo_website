@@ -794,109 +794,97 @@ window.renderSessionSheet = function(studentId, containerEl, filterMonth) {
   const attList = window.allAttendance || [];
   let myAtt = s ? attList.filter(a => String(a.student_id) === String(s.id)) : attList;
 
-  // Default Sample Sessions to make the sheet look live immediately if no attendance exists yet
-  if (!myAtt || myAtt.length === 0) {
-    const today = new Date();
-    const curYear = today.getFullYear();
-    const curMonth = String(today.getMonth() + 1).padStart(2, '0');
-    myAtt = [
-      {
-        date: `${curYear}-${curMonth}-08`,
-        status: 'present',
-        notes: 'Topic: Mate in three | HW: Solve Puzzles 1-5 | Duration: One Hour | Subject: Tactics & Calculation | General: Excellent tactical vision'
-      },
-      {
-        date: `${curYear}-${curMonth}-15`,
-        status: 'present',
-        notes: 'Topic: Sicilian Defense (Dragon Variation) | HW: Review opening lines | Duration: One Hour | Subject: Openings | General: Understood key ideas quickly'
-      },
-      {
-        date: `${curYear}-${curMonth}-22`,
-        status: 'present',
-        notes: 'Topic: King & Pawn Endgames (Opposition) | HW: Practice Endgame Drill #3 | Duration: One Hour | Subject: Endgames | General: Mastered distant opposition'
-      },
-      {
-        date: `${curYear}-${curMonth}-29`,
-        status: 'present',
-        notes: 'Topic: Double Attack & Tactical Skewers | HW: 10 Tactical Exercises | Duration: One Hour | Subject: Chess (Core) | General: Active participation & great calculations'
-      }
-    ];
-  }
+   // Ensure myAtt is an array
+   if (!myAtt || myAtt.length === 0) {
+     myAtt = [];
+   }
 
-  // Group by Month e.g. "January, 2026", "August, 2026"
-  const monthGroups = {};
-  myAtt.forEach(a => {
-    if (!a.date) return;
-    const d = new Date(a.date);
-    if (isNaN(d.getTime())) return;
-    const mKey = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-    if (!monthGroups[mKey]) monthGroups[mKey] = [];
-    monthGroups[mKey].push(a);
-  });
+   // Group by Month e.g. "January, 2026", "August, 2026"
+   const monthGroups = {};
+   myAtt.forEach(a => {
+     if (!a.date) return;
+     const d = new Date(a.date);
+     if (isNaN(d.getTime())) return;
+     const mKey = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+     if (!monthGroups[mKey]) monthGroups[mKey] = [];
+     monthGroups[mKey].push(a);
+   });
 
-  // Sort each month's records by date
-  Object.keys(monthGroups).forEach(k => {
-    monthGroups[k].sort((a, b) => new Date(a.date) - new Date(b.date));
-  });
+   // Sort each month's records by date
+   Object.keys(monthGroups).forEach(k => {
+     monthGroups[k].sort((a, b) => new Date(a.date) - new Date(b.date));
+   });
 
-  const levelName = (s && (s.level || s.skill_level || s.batch_name)) ? String(s.level || s.skill_level || s.batch_name).toUpperCase() : 'BEGINNER LEVEL';
-  const studentNameStr = s ? (window.getStudentName ? window.getStudentName(s) : s.name) : 'Student';
+   const levelName = (s && (s.level || s.skill_level || s.batch_name)) ? String(s.level || s.skill_level || s.batch_name).toUpperCase() : 'BEGINNER LEVEL';
+   const studentNameStr = s ? (window.getStudentName ? window.getStudentName(s) : s.name) : 'Student';
 
-  // Get matching homework for this student
-  const hwList = window.allHomework || [];
-  const myHomework = hwList.filter(h => {
-    if (!s) return true;
-    const sId = String(s.id);
-    if (h.student_id && String(h.student_id) === sId) return true;
-    if (h.batch_id && s.batch_id && String(h.batch_id) === String(s.batch_id)) return true;
-    if (h.target_type === 'all') return true;
-    return false;
-  });
+   // Get matching homework for this student
+   const hwList = window.allHomework || [];
+   const myHomework = hwList.filter(h => {
+     if (!s) return true;
+     const sId = String(s.id);
+     if (h.student_id && String(h.student_id) === sId) return true;
+     if (h.batch_id && s.batch_id && String(h.batch_id) === String(s.batch_id)) return true;
+     if (h.target_type === 'all') return true;
+     return false;
+   });
 
-  let rowsHtml = '';
-  const monthKeys = Object.keys(monthGroups);
+   let rowsHtml = '';
+   const monthKeys = Object.keys(monthGroups);
 
-  monthKeys.forEach(mKey => {
-    // Month Section Header Row (matching Google Sheet pink bar)
-    rowsHtml += `
-      <tr style="background:#f7c8c8; color:#111; font-weight:800; text-align:center; font-size:12px; letter-spacing:0.5px;">
-        <td colspan="9" style="padding:8px 12px; border:1px solid #d99; text-transform:uppercase;">SESSIONS OF ${mKey}</td>
-      </tr>
-    `;
-
-    monthGroups[mKey].forEach((record, idx) => {
-      const d = new Date(record.date);
-      const dateFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-      const dayFormatted = d.toLocaleDateString('en-US', { weekday: 'long' });
-      const parsed = window.parseAttendanceNotes(record.notes || record.note || '');
-      const status = (record.status || '').toLowerCase();
-      const isPresent = status === 'present' || status === 'late';
-      const presentCount = isPresent ? '1/1' : '0/1';
-
-      // Check if there is explicit homework on this date
-      const dStr = record.date ? record.date.slice(0, 10) : '';
-      const hwOnDate = myHomework.filter(h => (h.due_date || h.created_at || '').slice(0, 10) === dStr);
-      const hwNotesDisplay = parsed.hw || (hwOnDate.length > 0 ? hwOnDate.map(h => h.title).join('; ') : 'None assigned');
-      const cwNotesDisplay = parsed.cw || parsed.topic || 'Class Training';
-      const generalNotesDisplay = parsed.general || 'Class completed smoothly';
-
-      const rowBg = idx % 2 === 0 ? 'background:rgba(255,255,255,0.02);' : 'background:rgba(255,255,255,0.05);';
-
-      rowsHtml += `
-        <tr style="${rowBg} border-bottom:1px solid var(--border); font-size:12px; color:var(--ivory);">
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-family:monospace; font-weight:600;">${dateFormatted}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${dayFormatted}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); font-weight:600; color:var(--gold);">${window.escapeHtml ? window.escapeHtml(cwNotesDisplay) : cwNotesDisplay}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); color:var(--emerald); font-weight:500;">${window.escapeHtml ? window.escapeHtml(hwNotesDisplay) : hwNotesDisplay}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); color:var(--ivory-dim); font-size:11px;">${window.escapeHtml ? window.escapeHtml(generalNotesDisplay) : generalNotesDisplay}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.subject) : parsed.subject}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:500;">${window.escapeHtml ? window.escapeHtml(studentNameStr) : studentNameStr}</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:700; color:${isPresent ? '#2ecc71' : '#ff7675'};">${presentCount} (${status})</td>
-          <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.duration) : parsed.duration}</td>
+    if (monthKeys.length === 0) {
+      rowsHtml = `
+        <tr>
+          <td colspan="9" style="padding:40px; text-align:center; color:var(--ivory-dim); font-size:13px;">
+            <div style="font-size:32px; margin-bottom:8px;">📋</div>
+            <div style="font-weight:600; color:var(--ivory); margin-bottom:4px;">No session records yet</div>
+            <div>Your coach will add attendance and topic notes after each class.</div>
+          </td>
         </tr>
       `;
-    });
-  });
+    } else {
+      monthKeys.forEach(mKey => {
+       // Month Section Header Row (matching Google Sheet pink bar)
+       rowsHtml += `
+         <tr style="background:#f7c8c8; color:#111; font-weight:800; text-align:center; font-size:12px; letter-spacing:0.5px;">
+           <td colspan="9" style="padding:8px 12px; border:1px solid #d99; text-transform:uppercase;">SESSIONS OF ${mKey}</td>
+         </tr>
+       `;
+
+       monthGroups[mKey].forEach((record, idx) => {
+         const d = new Date(record.date);
+         const dateFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+         const dayFormatted = d.toLocaleDateString('en-US', { weekday: 'long' });
+         const parsed = window.parseAttendanceNotes(record.notes || record.note || '');
+         const status = (record.status || '').toLowerCase();
+         const isPresent = status === 'present' || status === 'late';
+         const presentCount = isPresent ? '1/1' : '0/1';
+
+         // Check if there is explicit homework on this date
+         const dStr = record.date ? record.date.slice(0, 10) : '';
+         const hwOnDate = myHomework.filter(h => (h.due_date || h.created_at || '').slice(0, 10) === dStr);
+       const hwNotesDisplay = parsed.hw || (hwOnDate.length > 0 ? hwOnDate.map(h => h.title).join('; ') : '—');
+       const cwNotesDisplay = parsed.cw || parsed.topic || '—';
+       const generalNotesDisplay = parsed.general || '—';
+
+         const rowBg = idx % 2 === 0 ? 'background:rgba(255,255,255,0.02);' : 'background:rgba(255,255,255,0.05);';
+
+         rowsHtml += `
+           <tr style="${rowBg} border-bottom:1px solid var(--border); font-size:12px; color:var(--ivory);">
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-family:monospace; font-weight:600;">${dateFormatted}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${dayFormatted}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); font-weight:600; color:var(--gold);">${window.escapeHtml ? window.escapeHtml(cwNotesDisplay) : cwNotesDisplay}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); color:var(--emerald); font-weight:500;">${window.escapeHtml ? window.escapeHtml(hwNotesDisplay) : hwNotesDisplay}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); color:var(--ivory-dim); font-size:11px;">${window.escapeHtml ? window.escapeHtml(generalNotesDisplay) : generalNotesDisplay}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.subject) : parsed.subject}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:500;">${window.escapeHtml ? window.escapeHtml(studentNameStr) : studentNameStr}</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center; font-weight:700; color:${isPresent ? '#2ecc71' : '#ff7675'};">${presentCount} (${status})</td>
+             <td style="padding:9px 10px; border:1px solid var(--border); text-align:center;">${window.escapeHtml ? window.escapeHtml(parsed.duration) : parsed.duration}</td>
+           </tr>
+         `;
+       });
+     });
+   }
 
   const sheetHtml = `
     <div class="session-sheet-wrapper" style="box-shadow:var(--shadow); border-radius:12px; overflow:hidden; border:1px solid var(--border); background:var(--surface);">
