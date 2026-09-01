@@ -233,19 +233,10 @@ Deno.serve(async (req) => {
           .single();
         if (!batchExists) return jsonResponse({ error: 'Invalid batch selected' }, 400);
       } else if (targetType === 'all') {
-        // For "all students", get the first batch to satisfy the constraint
-        // The frontend filters by checking if student is in the batch
-        const { data: firstBatch } = await supabase
-          .from('batches')
-          .select('id')
-          .limit(1)
-          .single();
-        if (firstBatch) {
-          targetBatchId = firstBatch.id;
-          targetType = 'batch';
-        } else {
-          return jsonResponse({ error: 'No batches available. Please create a batch first.' }, 400);
-        }
+        // For "all students", batch_id remains null and target_type stays 'all'
+        // This makes the homework visible to all students regardless of batch
+        targetBatchId = null;
+        targetType = 'all';
       }
 
       const fileList = body.questions_files || body.attachment_urls || null;

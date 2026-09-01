@@ -55,10 +55,6 @@
       "destination": "/api/chesscom-proxy?type=games"
     },
     {
-      "source": "/api/homework",
-      "destination": "/api/homework"
-    },
-    {
       "source": "/api/:path*",
       "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/:path*"
     },

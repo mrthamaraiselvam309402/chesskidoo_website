@@ -110,11 +110,20 @@ Deno.serve(async (req) => {
     // DELETE - Delete attendance record
     if (method === 'DELETE') {
       const id = url.searchParams.get('id');
+      const deleteStudentId = url.searchParams.get('student_id') || url.searchParams.get('studentId');
+      const deleteDate = url.searchParams.get('date');
+      
       let query = supabase.from('attendance').delete();
       if (id) {
         query = query.eq('id', id);
+      } else if (deleteStudentId && deleteDate) {
+        query = query.eq('studentId', deleteStudentId).eq('date', deleteDate);
+      } else if (deleteStudentId) {
+        query = query.eq('studentId', deleteStudentId);
+      } else if (deleteDate) {
+        query = query.eq('date', deleteDate);
       } else {
-        return jsonResponse({ error: 'ID required' }, 400);
+        return jsonResponse({ error: 'ID or student_id+date required' }, 400);
       }
 
       const { error } = await query;

@@ -867,7 +867,7 @@ let homeworkSubmissionCache = [];
       if (hw && cId && window.ckSameCoach) {
         const myBatchIds = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, cId)).map(b => String(b.id));
         const myStudentIds = (window.allStudents || []).filter(s => window.ckSameCoach(s.coach_id, cId)).map(s => String(s.id));
-        const isOwner = hw.target_type === 'all'
+        const isOwner = (hw.target_type === 'all' && hw.created_by && window.ckSameCoach(hw.created_by, cId))
           || (hw.target_type === 'batch' && myBatchIds.includes(String(hw.batch_id)))
           || (hw.target_type === 'student' && myStudentIds.includes(String(hw.student_id)));
         if (!isOwner) return window.toast ? window.toast('You can only delete your own assignments.', 'error') : null;
@@ -877,8 +877,21 @@ let homeworkSubmissionCache = [];
 
     let deleted = false;
 
-    // Route 1: Direct Supabase client delete
-    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+    // Route 1: API call to Supabase Edge Function
+    try {
+      const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, { method: 'DELETE', silent: true });
+      if (res && res.ok) {
+        deleted = true;
+      } else {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Delete failed with status ${res.status}`);
+      }
+    } catch (apiErr) {
+      console.warn('[Homework] apiCall DELETE error:', apiErr);
+    }
+
+    // Route 2: Direct Supabase client delete (fallback)
+    if (!deleted && window.supabaseClient && typeof window.supabaseClient.from === 'function') {
       try {
         const { error } = await window.supabaseClient
           .from('homework_assignments')
@@ -886,29 +899,17 @@ let homeworkSubmissionCache = [];
           .eq('id', id);
         if (!error) {
           deleted = true;
-        } else {
-          const { error: altErr } = await window.supabaseClient
-            .from('homework')
-            .delete()
-            .eq('id', id);
-          if (!altErr) deleted = true;
         }
       } catch (e) {
         console.warn('[Homework] Direct Supabase delete error:', e);
       }
     }
 
-    // Route 2: apiCall fallback
     if (!deleted) {
-      try {
-        const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, { method: 'DELETE', silent: true });
-        if (res && res.ok) deleted = true;
-      } catch (apiErr) {
-        console.warn('[Homework] apiCall DELETE error:', apiErr);
-      }
+      return window.toast ? window.toast('Failed to delete homework. Please try again.', 'error') : null;
     }
 
-    // Route 3: Update local storage persistence & memory state
+    // Update local storage persistence & memory state
     try {
       const stored = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
       const filtered = stored.filter(h => String(h.id) !== String(id));
@@ -943,8 +944,29 @@ let homeworkSubmissionCache = [];
 
     let updated = false;
 
-    // Route 1: Direct Supabase update
-    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+    // Route 1: API call to Supabase Edge Function
+    try {
+      const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          title: updatedPayload.title,
+          description: updatedPayload.description,
+          updated_at: updatedPayload.updated_at
+        }),
+        silent: true
+      });
+      if (res && res.ok) {
+        updated = true;
+      } else {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Update failed with status ${res.status}`);
+      }
+    } catch (apiErr) {
+      console.warn('[Homework] apiCall PATCH error:', apiErr);
+    }
+
+    // Route 2: Direct Supabase update (fallback)
+    if (!updated && window.supabaseClient && typeof window.supabaseClient.from === 'function') {
       try {
         const { error } = await window.supabaseClient
           .from('homework_assignments')
@@ -956,41 +978,17 @@ let homeworkSubmissionCache = [];
           .eq('id', id);
         if (!error) {
           updated = true;
-        } else {
-          const { error: altErr } = await window.supabaseClient
-            .from('homework')
-            .update({
-              title: updatedPayload.title,
-              description: updatedPayload.description,
-              updated_at: updatedPayload.updated_at
-            })
-            .eq('id', id);
-          if (!altErr) updated = true;
         }
       } catch (e) {
         console.warn('[Homework] Direct Supabase update error:', e);
       }
     }
 
-    // Route 2: apiCall fallback
     if (!updated) {
-      try {
-        const res = await window.apiCall(`/api/homework?id=${encodeURIComponent(id)}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            title: updatedPayload.title,
-            description: updatedPayload.description,
-            updated_at: updatedPayload.updated_at
-          }),
-          silent: true
-        });
-        if (res && res.ok) updated = true;
-      } catch (apiErr) {
-        console.warn('[Homework] apiCall PATCH error:', apiErr);
-      }
+      return window.toast ? window.toast('Failed to update homework. Please try again.', 'error') : null;
     }
 
-    // Route 3: Update local storage persistence & memory state
+    // Update local storage persistence & memory state
     try {
       const stored = JSON.parse(localStorage.getItem('ck_homework_assignments') || '[]');
       const fIdx = stored.findIndex(h => String(h.id) === String(id));

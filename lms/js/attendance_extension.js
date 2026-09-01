@@ -106,6 +106,18 @@ window.toggleCellAttendance = async function(studentId, date, currentStatus) {
            await window.supabaseClient.from('attendance').upsert(payload).catch(() => {});
          }
        });
+   } else {
+     // Delete the attendance record when status is cleared
+     apiCall(`/api/attendance?student_id=${encodeURIComponent(studentId)}&date=${encodeURIComponent(date)}`, { method: 'DELETE' })
+       .catch(async () => {
+         if (window.supabaseClient) {
+           await window.supabaseClient.from('attendance')
+             .delete()
+             .eq('student_id', studentId)
+             .eq('date', date)
+             .catch(() => {});
+         }
+       });
    }
  };
 

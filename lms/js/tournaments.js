@@ -823,45 +823,7 @@ END:VCALENDAR`;
 
   // Generate Sample In-House Tournament if empty
   (function seedInitialTournament() {
-    const existing = getInHouseTournaments();
-    if (!existing.length) {
-      const samplePlayers = [
-        { id: 'p1', name: 'Riyazzen S', rating: 1450 },
-        { id: 'p2', name: 'Anuksha M', rating: 1380 },
-        { id: 'p3', name: 'Mukilan K', rating: 1420 },
-        { id: 'p4', name: 'Yadhuveer P', rating: 1290 },
-        { id: 'p5', name: 'Mocsha R', rating: 1340 },
-        { id: 'p6', name: 'Rakshitha S', rating: 1310 }
-      ];
-      const sample = {
-        id: 'ck_tourn_' + Date.now(),
-        title: '🏆 ChessKidoo Super Rapid Arena — Championship',
-        timeControl: '10 min + 5 sec',
-        totalRounds: 3,
-        createdAt: new Date().toISOString(),
-        status: 'in_progress',
-        players: samplePlayers,
-        rounds: [
-          {
-            number: 1,
-            pairings: [
-              { board: 1, white: 'p1', black: 'p4', result: '1-0', whiteName: 'Riyazzen S', blackName: 'Yadhuveer P' },
-              { board: 2, white: 'p2', black: 'p5', result: '0-1', whiteName: 'Anuksha M', blackName: 'Mocsha R' },
-              { board: 3, white: 'p3', black: 'p6', result: '1/2', whiteName: 'Mukilan K', blackName: 'Rakshitha S' }
-            ]
-          },
-          {
-            number: 2,
-            pairings: [
-              { board: 1, white: 'p5', black: 'p1', result: '1/2', whiteName: 'Mocsha R', blackName: 'Riyazzen S' },
-              { board: 2, white: 'p6', black: 'p2', result: '1-0', whiteName: 'Rakshitha S', blackName: 'Anuksha M' },
-              { board: 3, white: 'p4', black: 'p3', result: '0-1', whiteName: 'Yadhuveer P', blackName: 'Mukilan K' }
-            ]
-          }
-        ]
-      };
-      saveInHouseTournaments([sample]);
-    }
+    // Sample tournament seeding removed - no test data should be auto-generated
   })();
 
   // Standings calculation with Buchholz and Sonneborn-Berger
