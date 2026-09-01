@@ -81,19 +81,20 @@ Deno.serve(async (req) => {
       let body: any = {};
       try { body = await req.json(); } catch (_e) {}
 
-      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      const updateData: Record<string, unknown> = {};
       if (body.status !== undefined) updateData.status = String(body.status);
-      if (body.notes !== undefined) updateData.notes = String(body.notes || '');
+      if (body.date !== undefined) updateData.date = String(body.date);
+
+      if (Object.keys(updateData).length === 0) {
+        return jsonResponse({ error: 'No valid fields to update' }, 400);
+      }
 
       const id = url.searchParams.get('id');
       let query = supabase.from('attendance').update(updateData);
       if (id) {
         query = query.eq('id', id);
-      } else if (studentId) {
-        query = query.eq('student_id', studentId);
-        if (date) query = query.eq('date', date);
       } else {
-        return jsonResponse({ error: 'ID or student_id required' }, 400);
+        return jsonResponse({ error: 'ID required' }, 400);
       }
 
       const { data, error } = await query.select();
@@ -107,11 +108,8 @@ Deno.serve(async (req) => {
       let query = supabase.from('attendance').delete();
       if (id) {
         query = query.eq('id', id);
-      } else if (studentId) {
-        query = query.eq('student_id', studentId);
-        if (date) query = query.eq('date', date);
       } else {
-        return jsonResponse({ error: 'ID or student_id required' }, 400);
+        return jsonResponse({ error: 'ID required' }, 400);
       }
 
       const { error } = await query;
