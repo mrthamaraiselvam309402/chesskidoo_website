@@ -188,6 +188,16 @@
     return 'All Students';
   }
 
+  function coachNameForHomework(assignment) {
+    if (!assignment.created_by) return 'Unknown';
+    const coaches = window.allCoaches || [];
+    const coach = coaches.find(c => 
+      String(c.id) === String(assignment.created_by) || 
+      String(c.name).toLowerCase() === String(assignment.created_by).toLowerCase()
+    );
+    return coach ? (coach.name || coach.full_name || 'Unknown') : (assignment.created_by || 'Unknown');
+  }
+
   // recipient_count is computed server-side; when it is absent (cached rows,
   // older responses) derive it locally instead of rendering a misleading 0.
   function recipientCount(assignment) {
@@ -208,13 +218,14 @@
     const [year, monthNumber] = (month || monthKey(homeworkCalendarMonth)).split('-').map(Number);
     const query = ($('homework-search') ? $('homework-search').value : '').toLowerCase().trim();
     const coachSelect = $('homework-coach-filter');
+    let selectedCoachId = '';
     if (coachSelect) {
-      const curCoach = coachSelect.value;
+      selectedCoachId = coachSelect.value;
       const coaches = window.allCoaches || [];
       coachSelect.innerHTML = '<option value="">All Coaches</option>' + coaches
-        .map(c => `<option value="${escapeValue(c.id)}">Coach: ${escapeValue(c.name || c.full_name || 'Coach #' + c.id)}</option>`)
+        .map(c => `<option value="${escapeValue(c.id)}" ${selectedCoachId === c.id ? 'selected' : ''}>Coach: ${escapeValue(c.name || c.full_name || 'Coach #' + c.id)}</option>`)
         .join('');
-      if (curCoach) coachSelect.value = curCoach;
+      if (selectedCoachId) coachSelect.value = selectedCoachId;
     }
 
     const coachFilter = getCoachFilterPredicate();
@@ -230,9 +241,16 @@
         const hay = (
           (assignment.title || '') + ' ' +
           (assignment.description || '') + ' ' +
-          (Array.isArray(assignment.attachment_urls) ? assignment.attachment_urls.join(' ') : '')
+          (Array.isArray(assignment.attachment_urls) ? assignment.attachment_urls.join(' ') : '') + ' ' +
+          (coachNameForHomework(assignment) || '') + ' ' +
+          (assigneeLabel(assignment) || '')
         ).toLowerCase();
         if (!hay.includes(query)) return false;
+      }
+      // Filter by selected coach
+      if (selectedCoachId) {
+        const assignmentCoachId = assignment.created_by || assignment.coach_id || '';
+        if (String(assignmentCoachId) !== String(selectedCoachId)) return false;
       }
       if (coachStudentIds || coachBatchIds) {
         const appliesToStudent = assignment.target_type === 'student' && coachStudentIds && coachStudentIds.has(String(assignment.student_id));
@@ -1252,6 +1270,7 @@ let homeworkSubmissionCache = [];
     const selected = homeworkSelectedIds.has(assignment.id);
     const dueClass = assignment.due_date && new Date(`${assignment.due_date}T23:59:59`) < new Date() && assignment.status !== 'completed' ? 'var(--danger)' : 'var(--ivory-dim)';
     const checkbox = selectable ? `<input type="checkbox" data-homework-id="${assignment.id}" ${selected ? 'checked' : ''} onchange="toggleHomeworkSelection('${assignment.id}', this.checked)" style="accent-color:var(--gold);">` : '';
+    const coachName = coachNameForHomework(assignment);
 
     return `<div class="card" style="padding:16px; border-left: 4px solid ${assignment.status === 'completed' ? 'var(--emerald)' : 'var(--gold)'};">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -1263,7 +1282,7 @@ let homeworkSubmissionCache = [];
               ${statusBadge(assignment.status)}
             </div>
             <div style="font-size:12px; color:${dueClass}; line-height:1.6;">
-              <strong>Due:</strong> ${formatDate(assignment.due_date)} · <strong>Assignee:</strong> ${escapeValue(assigneeLabel(assignment))} · <strong>Recipients:</strong> ${recipientCount(assignment)}
+              <strong>Due:</strong> ${formatDate(assignment.due_date)} · <strong>Coach:</strong> ${escapeValue(coachName)} · <strong>Assignee:</strong> ${escapeValue(assigneeLabel(assignment))} · <strong>Recipients:</strong> ${recipientCount(assignment)}
             </div>
           </div>
         </div>
@@ -1376,20 +1395,27 @@ let homeworkSubmissionCache = [];
 
     let html = dayNames.map((name) => `<div style="text-align:center;font-size:11px;color:var(--gold);font-weight:700;padding:6px;">${name}</div>`).join('');
     for (let i = 0; i < offset; i += 1) {
-      html += `<div style="min-height:110px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.02);"></div>`;
+      html += `<div style="min-height:120px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.02);"></div>`;
     }
 
     for (let day = 1; day <= daysInMonth; day += 1) {
       const key = `${year}-${pad(monthNumber)}-${pad(day)}`;
       const dayItems = byDate.get(key) || [];
-      html += `<div style="min-height:110px;border:1px solid var(--border);border-radius:10px;background:${dayItems.length ? 'rgba(218,163,62,0.06)' : 'rgba(255,255,255,0.02)'};padding:8px;">
-        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:6px;">
+      html += `<div style="min-height:120px;border:1px solid var(--border);border-radius:10px;background:${dayItems.length ? 'rgba(218,163,62,0.06)' : 'rgba(255,255,255,0.02)'};padding:6px;">
+        <div style="display:flex;justify-content:space-between;gap:4px;align-items:center;margin-bottom:4px;">
           <strong style="font-size:12px;color:var(--ivory);">${day}</strong>
-          ${dayItems.length ? `<span class="badge badge-level">${dayItems.length}</span>` : ''}
+          ${dayItems.length ? `<span class="badge badge-level" style="font-size:9px;padding:2px 6px;">${dayItems.length}</span>` : ''}
         </div>
-        <div style="display:grid;gap:4px;">
-          ${dayItems.slice(0, 3).map((item) => `<div title="${escapeValue(assigneeLabel(item))}" style="font-size:10px;color:var(--ivory-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeValue(item.title)}</div>`).join('')}
-          ${dayItems.length > 3 ? `<div style="font-size:10px;color:var(--gold);">+${dayItems.length - 3} more</div>` : ''}
+        <div style="display:grid;gap:3px;">
+          ${dayItems.slice(0, 3).map((item) => {
+            const coachName = coachNameForHomework(item);
+            const assignee = assigneeLabel(item);
+            return `<div title="${escapeValue(item.title)} | Coach: ${escapeValue(coachName)} | ${escapeValue(assignee)}" style="font-size:9px;color:var(--ivory-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 4px;background:rgba(0,0,0,0.2);border-radius:4px;">
+              <div style="color:var(--gold);font-weight:600;">${escapeValue(item.title)}</div>
+              <div style="color:var(--ivory3);font-size:8px;">👤 ${escapeValue(coachName)} · ${escapeValue(assignee)}</div>
+            </div>`;
+          }).join('')}
+          ${dayItems.length > 3 ? `<div style="font-size:9px;color:var(--gold);text-align:center;">+${dayItems.length - 3} more</div>` : ''}
         </div>
       </div>`;
     }
