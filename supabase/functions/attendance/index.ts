@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
       if (body.status !== undefined) updateData.status = String(body.status);
       if (body.notes !== undefined) updateData.notes = String(body.notes || '');
 
+      const id = url.searchParams.get('id');
       let query = supabase.from('attendance').update(updateData);
       if (id) {
         query = query.eq('id', id);
@@ -109,6 +110,7 @@ Deno.serve(async (req) => {
 
     // DELETE - Delete attendance record
     if (method === 'DELETE') {
+      const id = url.searchParams.get('id');
       let query = supabase.from('attendance').delete();
       if (id) {
         query = query.eq('id', id);
