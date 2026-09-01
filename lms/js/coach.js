@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     weekAgo.setDate(today.getDate() - 14);
 
     const recent = (window.allAttendance || [])
-      .filter(a => myStudentIds.includes(String(a.student_id)))
+      .filter(a => myStudentIds.includes(String(a.studentId || a.student_id)))
       .filter(a => {
         const d = new Date(a.date);
         return d >= weekAgo && d <= today;
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     container.innerHTML = '<div class="coach-attendance-summary" style="margin-bottom:14px;"><div class="coach-attendance-item present"><span class="attendance-count">' + presentCount + '</span><span class="attendance-label">Present</span></div><div class="coach-attendance-item absent"><span class="attendance-count">' + absentCount + '</span><span class="attendance-label">Absent</span></div></div><div class="coach-table-wrap"><table class="coach-mini-table"><thead><tr><th>Date</th><th>Student</th><th>Status</th></tr></thead><tbody>' + recent.map(a => {
-      const student = myStudents.find(s => String(s.id) === String(a.student_id));
+      const student = myStudents.find(s => String(s.id) === String(a.studentId || a.student_id));
       const name = student ? (window.getStudentName ? window.getStudentName(student) : student.name) : 'Unknown';
       const sc = (a.status || '').toLowerCase() === 'present' ? 'badge badge-success' : 'badge badge-danger';
       return '<tr><td style="color:var(--ivory-dim)">' + (a.date ? new Date(a.date).toLocaleDateString() : 'TBD') + '</td><td style="color:var(--ivory)">' + (window.escapeHtml ? window.escapeHtml(name) : name) + '</td><td><span class="' + sc + '">' + (a.status || '—') + '</span></td></tr>';
@@ -728,10 +728,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const myIds = new Set(myStudents.map(s => String(s.id)));
     const dayRecords = (window.allAttendance || [])
-      .filter(a => a.date === date && myIds.has(String(a.student_id)));
+      .filter(a => a.date === date && myIds.has(String(a.studentId || a.student_id)));
 
     container.innerHTML = myStudents.map(s => {
-      const existing = dayRecords.find(a => String(a.student_id) === String(s.id));
+      const existing = dayRecords.find(a => String(a.studentId || a.student_id) === String(s.id));
       const parsed = existing ? parseAttendanceNotes(existing.notes || '') : { cw: '', hw: '', general: '' };
       const status = existing ? (existing.status || '') : '';
       const name = window.getStudentName ? window.getStudentName(s) : s.name;
@@ -877,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hw = hwInput ? hwInput.value : '';
         const general = notesInput ? notesInput.value : '';
         return {
-          student_id: studentId,
+          studentId: studentId,
           status: select.value,
           date: date,
           notes: window.formatAttendanceNotesForSave ? window.formatAttendanceNotesForSave(cw, hw, general) : general,
@@ -904,7 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const storedAtt = JSON.parse(localStorage.getItem('ck_attendance_records') || '[]');
       records.forEach(rec => {
-        const idx = storedAtt.findIndex(a => String(a.student_id) === String(rec.student_id) && a.date === rec.date);
+        const idx = storedAtt.findIndex(a => String(a.studentId || a.student_id) === String(rec.studentId || rec.student_id) && a.date === rec.date);
         if (idx !== -1) storedAtt[idx] = { ...storedAtt[idx], ...rec };
         else storedAtt.unshift(rec);
       });
@@ -915,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!window.allAttendance) window.allAttendance = [];
     records.forEach((rec) => {
       const idx = window.allAttendance.findIndex(
-        (a) => String(a.student_id) === String(rec.student_id) && a.date === rec.date
+        (a) => String(a.studentId || a.student_id) === String(rec.studentId || rec.student_id) && a.date === rec.date
       );
       if (idx !== -1) {
         window.allAttendance[idx] = { ...window.allAttendance[idx], ...rec };

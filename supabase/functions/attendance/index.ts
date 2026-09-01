@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (method === 'GET') {
       let query = supabase.from('attendance').select('*').order('date', { ascending: false });
       if (date) query = query.eq('date', date);
-      if (studentId) query = query.eq('student_id', studentId);
+      if (studentId) query = query.eq('studentId', studentId);
 
       const { data, error } = await query;
       if (error) return jsonResponse({ data: [], error: error.message }, 200);
@@ -58,6 +58,11 @@ Deno.serve(async (req) => {
         id: r.id || crypto.randomUUID(),
         date: String(r.date || new Date().toISOString().split('T')[0]),
         status: String(r.status || 'present'),
+        studentId: r.studentId || r.student_id || null,
+        studentName: r.studentName || r.student_name || null,
+        coachId: r.coachId || r.coach_id || null,
+        coachName: r.coachName || r.coach_name || null,
+        markedAt: r.markedAt || r.marked_at || new Date().toISOString(),
         created_at: String(r.created_at || new Date().toISOString())
       })).filter(r => r.date && r.status);
 
