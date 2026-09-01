@@ -416,9 +416,10 @@
                  <select id="coach-att-batch-filter" style="padding:10px 14px; background:var(--bg3); border:1px solid var(--border); color:var(--ivory); border-radius:8px" onchange="renderCoachAttendanceMarking()">
                    <option value="">All Batches</option>
                  </select>
-                 <button class="btn btn-outline-grey" onclick="markAllCoachPresent()">✅ Mark All Present</button>
-                 <button class="btn btn-outline-grey" onclick="markAllCoachAbsent()">❌ Mark All Absent</button>
-                 <button class="btn btn-gold" onclick="saveCoachAttendance()" style="padding: 10px 24px; font-weight:700">💾 Save Attendance</button>
+<button class="btn btn-outline-grey" onclick="markAllCoachPresent()">✅ Mark All Present</button>
+                  <button class="btn btn-outline-grey" onclick="markAllCoachAbsent()">❌ Mark All Absent</button>
+                  <button class="btn btn-outline" onclick="clearAllCoachAttendance()">🔄 Clear All</button>
+                  <button class="btn btn-gold" onclick="saveCoachAttendance()" style="padding: 10px 24px; font-weight:700">💾 Save Attendance</button>
                </div>
              </div>
              <div id="coach-attendance-summary" style="margin-bottom:16px;"></div>
@@ -791,10 +792,11 @@
            </div>
            
            <div style="display:flex;gap:12px;margin-bottom:16px;justify-content:space-between;flex-wrap:wrap">
-             <div style="display:flex;gap:8px;flex-wrap:wrap">
-               <button class="btn btn-outline-grey" onclick="markAllPresent()">✅ Mark All Present</button>
-               <button class="btn btn-outline-grey" onclick="markAllAbsent()">❌ Mark All Absent</button>
-             </div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-outline-grey" onclick="markAllPresent()">✅ Mark All Present</button>
+                <button class="btn btn-outline-grey" onclick="markAllAbsent()">❌ Mark All Absent</button>
+                <button class="btn btn-outline" onclick="clearAllAttendance()">🔄 Clear All</button>
+              </div>
              <button class="btn btn-gold" onclick="saveBatchAttendance()" style="padding: 10px 24px; font-weight:700">💾 Save Attendance</button>
            </div>
            
@@ -845,25 +847,31 @@
                   <h3 style="color:var(--gold); margin:0 0 6px 0; font-family:var(--font-head); font-size:18px;">Calendar Review</h3>
                   <p style="margin:0; color:var(--ivory-dim); font-size:12px;">Review homework by due date, assignee, and status.</p>
                 </div>
-              <div class="coach-header-actions" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-                  <input id="homework-month-filter" type="month" min="2026-01" class="input-field" onchange="renderHomeworkCalendar()">
-                  <select id="homework-coach-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:160px;">
-                    <option value="">All Coaches</option>
-                  </select>
-                  <select id="homework-assignee-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:180px;">
-                    <option value="">All Assignees</option>
-                  </select>
-                  <select id="homework-status-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:140px;">
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                  <input id="homework-search" type="text" class="input-field" placeholder="Search topic, title or file…" oninput="renderHomeworkCalendar()" style="min-width:200px;">
+              <div class="coach-header-actions" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center; width:100%;">
+                  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input id="homework-month-filter" type="month" min="2026-01" class="input-field" onchange="renderHomeworkCalendar()">
+                    <select id="homework-coach-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:160px;">
+                      <option value="">All Coaches</option>
+                    </select>
+                    <select id="homework-assignee-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:180px;">
+                      <option value="">All Assignees</option>
+                    </select>
+                    <select id="homework-status-filter" class="input-field" onchange="renderHomeworkCalendar()" style="min-width:140px;">
+                      <option value="">All Statuses</option>
+                      <option value="active">Active</option>
+                      <option value="completed">Completed</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                    <input id="homework-search" type="text" class="input-field" placeholder="Search topic, title or file…" oninput="renderHomeworkCalendar()" style="min-width:200px;">
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <button class="btn btn-outline-grey btn-sm" id="hw-view-calendar" onclick="setHomeworkView('calendar')" title="Calendar view">📅</button>
+                    <button class="btn btn-outline-grey btn-sm" id="hw-view-list" onclick="setHomeworkView('list')" title="List view">📋</button>
+                  </div>
                 </div>
               </div>
               <div id="homework-calendar-grid" style="display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:8px;"></div>
-              <div id="homework-calendar-list" style="display:grid; gap:12px; margin-top:18px;"></div>
+              <div id="homework-calendar-list" style="display:none; gap:12px; margin-top:18px;"></div>
             </div>
 
             <div class="coach-section-block">

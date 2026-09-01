@@ -542,9 +542,18 @@ document.addEventListener('DOMContentLoaded', () => {
               <a href="${sess.meetLink}" target="_blank" class="btn btn-gold btn-sm" style="flex:1; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12px;">
                 📹 Join Class
               </a>
-              <button class="btn btn-outline-grey btn-sm" onclick="if(window.renderCoachAttendanceMarking){ window.renderCoachAttendanceMarking(); if(window.showPage) window.showPage('page-coach-attendance'); }" style="font-size:12px;">
-                📋 Attendance
-              </button>
+              ${sess.type === 'batch' ? `
+                <button class="btn btn-outline btn-sm" onclick="window.openCoachCreateBatchModal('${sess.batchId}')" style="font-size:12px;" title="Edit batch schedule">
+                  ✏️
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteCoachBatch('${sess.batchId}')" style="font-size:12px;" title="Delete batch">
+                  🗑️
+                </button>
+              ` : `
+                <button class="btn btn-outline-grey btn-sm" onclick="if(window.renderCoachAttendanceMarking){ window.renderCoachAttendanceMarking(); if(window.showPage) window.showPage('page-coach-attendance'); }" style="font-size:12px;">
+                  📋 Attendance
+                </button>
+              `}
             </div>
           </div>
         `).join('') + `</div>`;
@@ -558,19 +567,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     container.innerHTML = `
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px;">
-        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
-          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Active Batches</div>
-          <div style="font-size:24px; font-weight:800; color:var(--gold); margin-top:4px;">${myBatches.length}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:14px; flex:1;">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+            <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Active Batches</div>
+            <div style="font-size:24px; font-weight:800; color:var(--gold); margin-top:4px;">${myBatches.length}</div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+            <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Enrolled Students</div>
+            <div style="font-size:24px; font-weight:800; color:var(--blue); margin-top:4px;">${myStudents.length}</div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
+            <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Weekly Sessions</div>
+            <div style="font-size:24px; font-weight:800; color:#10b981; margin-top:4px;">${totalWeeklySessions}</div>
+          </div>
         </div>
-        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
-          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Enrolled Students</div>
-          <div style="font-size:24px; font-weight:800; color:var(--blue); margin-top:4px;">${myStudents.length}</div>
-        </div>
-        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center;">
-          <div style="font-size:11px; color:var(--ivory-dim); text-transform:uppercase;">Weekly Sessions</div>
-          <div style="font-size:24px; font-weight:800; color:#10b981; margin-top:4px;">${totalWeeklySessions}</div>
-        </div>
+        <button class="btn btn-gold btn-sm" onclick="window.openCoachCreateBatchModal()" style="white-space:nowrap;">
+          ➕ Add Batch
+        </button>
       </div>
       ${filterPillsHtml}
       ${scheduleGridHtml}
@@ -1010,6 +1024,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (select) select.value = 'absent';
     });
     updateCoachAttStats();
+  };
+
+  window.clearAllCoachAttendance = function () {
+    const rows = document.querySelectorAll('#coach-att-marking-body tr');
+    rows.forEach((row) => {
+      const select = row.querySelector('.att-status');
+      if (select) select.value = '';
+      const cw = row.querySelector('.att-cw');
+      if (cw) cw.value = '';
+      const hw = row.querySelector('.att-hw');
+      if (hw) hw.value = '';
+      const notes = row.querySelector('.att-notes');
+      if (notes) notes.value = '';
+    });
+    updateCoachAttStats();
+    if (window.toast) window.toast('All attendance cleared', 'info');
   };
 
   window.openCoachHomeworkModal = function () {

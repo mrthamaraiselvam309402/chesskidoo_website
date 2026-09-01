@@ -950,6 +950,20 @@ let homeworkSubmissionCache = [];
     const hw = (window.allHomework || []).find(h => String(h.id) === String(id));
     if (!hw) return;
 
+    // Check if coach is the owner of the homework
+    const role = (window.role || window.userRole || 'student').toLowerCase();
+    if (role === 'coach') {
+      const cId = window.currentCoachId || window.userId;
+      if (hw && cId && window.ckSameCoach) {
+        const myBatchIds = (window.allBatches || []).filter(b => window.ckSameCoach(b.coach_id, cId)).map(b => String(b.id));
+        const myStudentIds = (window.allStudents || []).filter(s => window.ckSameCoach(s.coach_id, cId)).map(s => String(s.id));
+        const isOwner = (hw.target_type === 'all' && hw.created_by && window.ckSameCoach(hw.created_by, cId))
+          || (hw.target_type === 'batch' && myBatchIds.includes(String(hw.batch_id)))
+          || (hw.target_type === 'student' && myStudentIds.includes(String(hw.student_id)));
+        if (!isOwner) return window.toast ? window.toast('You can only edit your own assignments.', 'error') : null;
+      }
+    }
+
     // Store current editing ID
     window.currentEditingHomeworkId = id;
 
@@ -1506,7 +1520,43 @@ let homeworkSubmissionCache = [];
     renderHomeworkCalendarGrid(items);
     renderHomeworkCalendarList(items);
     renderSelectedHomeworkList();
+    // Update view visibility based on current view mode
+    const grid = $('homework-calendar-grid');
+    const list = $('homework-calendar-list');
+    if (grid && list) {
+      const viewMode = window.homeworkViewMode || 'calendar';
+      if (viewMode === 'calendar') {
+        grid.style.display = 'grid';
+        list.style.display = 'none';
+      } else {
+        grid.style.display = 'none';
+        list.style.display = 'grid';
+      }
+    }
   }
+
+  window.setHomeworkView = function (mode) {
+    window.homeworkViewMode = mode;
+    const grid = $('homework-calendar-grid');
+    const list = $('homework-calendar-list');
+    const calBtn = $('hw-view-calendar');
+    const listBtn = $('hw-view-list');
+    if (mode === 'calendar') {
+      if (grid) grid.style.display = 'grid';
+      if (list) list.style.display = 'none';
+      if (calBtn) calBtn.style.background = 'var(--gold)';
+      if (calBtn) calBtn.style.color = '#111';
+      if (listBtn) listBtn.style.background = 'transparent';
+      if (listBtn) listBtn.style.color = 'var(--ivory)';
+    } else {
+      if (grid) grid.style.display = 'none';
+      if (list) list.style.display = 'grid';
+      if (calBtn) calBtn.style.background = 'transparent';
+      if (calBtn) calBtn.style.color = 'var(--ivory)';
+      if (listBtn) listBtn.style.background = 'var(--gold)';
+      if (listBtn) listBtn.style.color = '#111';
+    }
+  };
 
   function renderAdminHomeworkSummary() {
     const container = $('admin-homework-summary');
@@ -1817,4 +1867,5 @@ let homeworkSubmissionCache = [];
   window.renderChildHomework = renderChildHomework;
   window.renderStudentHomeworkProgress = renderStudentHomeworkProgress;
   window.saveHomeworkEdit = saveHomeworkEdit;
+  window.setHomeworkView = setHomeworkView;
 })();

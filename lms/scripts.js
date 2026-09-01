@@ -2658,6 +2658,17 @@
     updateAttStats();
   };
 
+  window.clearAllAttendance = function () {
+    document
+      .querySelectorAll(".att-status")
+      .forEach((s) => (s.value = ""));
+    document
+      .querySelectorAll(".att-cw, .att-hw, .att-notes")
+      .forEach((s) => (s.value = ""));
+    updateAttStats();
+    if (window.toast) window.toast('All attendance cleared', 'info');
+  };
+
   async function saveBatchAttendance() {
     const date = $("att-date").value;
     if (!date) {
