@@ -129,6 +129,22 @@ Deno.serve(async (req) => {
   if (isDefaultPass) {
     const normUser = cleanUser.toLowerCase().trim().replace(/[^a-z0-9]/g, '')
 
+    // --- Admin Login Support ---
+    if (normUser === 'admin' || normUser === 'administrator' || normUser === 'superadmin') {
+      const token = `admin-auth-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      return new Response(JSON.stringify({
+        success: true,
+        role: 'admin',
+        user: 'Admin',
+        student_id: null,
+        coach_id: null,
+        token: token
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     let coach = null
     try {
       const { data } = await supabase

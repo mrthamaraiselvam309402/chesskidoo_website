@@ -56,26 +56,19 @@ Deno.serve(async (req) => {
       const records = Array.isArray(body) ? body : [body];
       const validRecords = records.map(r => ({
         id: r.id || crypto.randomUUID(),
-        student_id: String(r.student_id || ''),
         date: String(r.date || new Date().toISOString().split('T')[0]),
-        status: String(r.status || 'Present'),
-        notes: String(r.notes || ''),
+        status: String(r.status || 'present'),
         created_at: String(r.created_at || new Date().toISOString())
-      })).filter(r => r.student_id && r.date && r.status);
+      })).filter(r => r.date && r.status);
 
       if (validRecords.length === 0) {
-        return jsonResponse({ error: 'No valid attendance records provided. Required fields: student_id, date, status' }, 400);
+        return jsonResponse({ error: 'No valid attendance records provided. Required fields: date, status' }, 400);
       }
 
-      // Try upsert first, fall back to insert if upsert fails
+      // Try insert
       try {
-        const { data: upserted, error } = await supabase.from('attendance').upsert(validRecords, { onConflict: 'student_id,date' }).select();
-        if (!error && upserted) {
-          return jsonResponse({ success: true, count: upserted.length, data: upserted });
-        }
-        // If upsert fails, try insert
-        const { data: inserted, error: insertError } = await supabase.from('attendance').insert(validRecords).select();
-        if (insertError) throw insertError;
+        const { data: inserted, error } = await supabase.from('attendance').insert(validRecords).select();
+        if (error) throw error;
         return jsonResponse({ success: true, count: inserted.length, data: inserted });
       } catch (dbError: any) {
         console.error('[Attendance] Database error:', dbError.message);
