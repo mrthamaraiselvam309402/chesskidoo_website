@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const today = new Date();
     const weekAgo = new Date();
-    weekAgo.setDate(today.getDate() - 14);
+    weekAgo.setDate(today.getDate() - 30); // Show last 30 days instead of 14
 
     const recent = (window.allAttendance || [])
       .filter(a => myStudentIds.includes(String(a.studentId || a.student_id)))
@@ -645,16 +645,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const absentCount = recent.filter(a => (a.status || '').toLowerCase() === 'absent').length;
 
     if (recent.length === 0) {
-      container.innerHTML = '<div class="coach-loading-cell">No attendance records found.</div>';
+      container.innerHTML = '<div class="coach-loading-cell">No attendance records found. <button class="btn btn-outline-grey btn-sm" onclick="refreshCoachAttendance()">Refresh</button></div>';
       return;
     }
 
-    container.innerHTML = '<div class="coach-attendance-summary" style="margin-bottom:14px;"><div class="coach-attendance-item present"><span class="attendance-count">' + presentCount + '</span><span class="attendance-label">Present</span></div><div class="coach-attendance-item absent"><span class="attendance-count">' + absentCount + '</span><span class="attendance-label">Absent</span></div></div><div class="coach-table-wrap"><table class="coach-mini-table"><thead><tr><th>Date</th><th>Student</th><th>Status</th></tr></thead><tbody>' + recent.map(a => {
+    container.innerHTML = '<div class="coach-attendance-summary" style="margin-bottom:14px;"><div class="coach-attendance-item present"><span class="attendance-count">' + presentCount + '</span><span class="attendance-label">Present</span></div><div class="coach-attendance-item absent"><span class="attendance-count">' + absentCount + '</span><span class="attendance-label">Absent</span></div></div><div class="coach-table-wrap"><table class="coach-mini-table"><thead><tr><th>Date</th><th>Student</th><th>Status</th><th>Marked By</th></tr></thead><tbody>' + recent.map(a => {
       const student = myStudents.find(s => String(s.id) === String(a.studentId || a.student_id));
       const name = student ? (window.getStudentName ? window.getStudentName(student) : student.name) : 'Unknown';
-      const sc = (a.status || '').toLowerCase() === 'present' ? 'badge badge-success' : 'badge badge-danger';
-      return '<tr><td style="color:var(--ivory-dim)">' + (a.date ? new Date(a.date).toLocaleDateString() : 'TBD') + '</td><td style="color:var(--ivory)">' + (window.escapeHtml ? window.escapeHtml(name) : name) + '</td><td><span class="' + sc + '">' + (a.status || '—') + '</span></td></tr>';
+      const sc = (a.status || '').toLowerCase() === 'present' ? 'badge badge-success' : (a.status || '').toLowerCase() === 'absent' ? 'badge badge-danger' : 'badge badge-level';
+      const markedBy = a.coachName || a.coach_name || a.coachId || a.coach_id || 'Unknown';
+      return '<tr><td style="color:var(--ivory-dim)">' + (a.date ? new Date(a.date).toLocaleDateString() : 'TBD') + '</td><td style="color:var(--ivory)">' + (window.escapeHtml ? window.escapeHtml(name) : name) + '</td><td><span class="' + sc + '">' + (a.status || '—') + '</span></td><td style="color:var(--ivory-dim);font-size:11px;">' + (window.escapeHtml ? window.escapeHtml(markedBy) : markedBy) + '</td></tr>';
     }).join('') + '</tbody></table></div>';
+  };
+
+  window.refreshCoachAttendance = async function() {
+    try {
+      const res = await apiCall('/api/attendance');
+      if (res.ok) {
+        const d = await res.json();
+        window.allAttendance = d.data || d;
+        renderCoachAttendance();
+      }
+    } catch (e) {
+      console.warn('Failed to refresh attendance:', e);
+    }
   };
 
   window.renderCoachAttendanceMarking = function () {

@@ -3605,6 +3605,32 @@
   </div>
 </div>
 
+<!-- Homework Edit Modal -->
+<div class="modal" id="homework-edit-modal">
+  <div class="modal-box" style="max-width:600px; width:95%">
+    <div class="modal-title" id="homework-edit-modal-title">Edit Homework</div>
+    <div class="modal-sub">Update homework title and instructions</div>
+    <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+      <div>
+        <label style="display:block; font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">Title</label>
+        <input type="text" id="homework-edit-title" class="input-field" style="width:100%;" placeholder="Homework title...">
+      </div>
+      <div>
+        <label style="display:block; font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">Instructions / Description</label>
+        <textarea id="homework-edit-description" class="input-field" style="width:100%; min-height:150px; resize:vertical;" placeholder="Detailed instructions for the homework..."></textarea>
+      </div>
+      <div>
+        <label style="display:block; font-size:12px; color:var(--ivory-dim); margin-bottom:6px;">Due Date</label>
+        <input type="date" id="homework-edit-due-date" class="input-field" style="width:100%;">
+      </div>
+    </div>
+    <div style="margin-top:24px; display:flex; gap:10px;">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-gold" style="flex:1" id="homework-edit-save-btn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- Coach Schedule Modal -->
 <div class="modal" id="coach-schedule-modal">
   <div class="modal-box" style="max-width:1100px; width:95%">

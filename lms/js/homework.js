@@ -755,6 +755,7 @@ let homeworkSubmissionCache = [];
             student_id: payload.student_id,
             batch_id: payload.batch_id,
             coach_id: payload.coach_id,
+            created_by: payload.created_by,
             questions_files: payload.questions_files,
             status: payload.status,
             created_at: payload.created_at,
@@ -944,19 +945,66 @@ let homeworkSubmissionCache = [];
     if (window.renderCoachAssignments) window.renderCoachAssignments(window.coachAssignPage || 1);
   }
 
-  window.editHomeworkAssignment = async function (id) {
+  window.editHomeworkAssignment = function (id) {
     if (!canEditOrDeleteHomework()) return window.toast ? window.toast('Only coaches and administrators can edit homework.', 'error') : null;
     const hw = (window.allHomework || []).find(h => String(h.id) === String(id));
     if (!hw) return;
-    const newTitle = prompt('Edit Homework Title:', hw.title || '');
-    if (newTitle === null) return;
-    const newDesc = prompt('Edit Instructions / Description:', hw.description || '');
-    if (newDesc === null) return;
+
+    // Store current editing ID
+    window.currentEditingHomeworkId = id;
+
+    // Populate modal fields
+    const titleEl = document.getElementById('homework-edit-title');
+    const descEl = document.getElementById('homework-edit-description');
+    const dueDateEl = document.getElementById('homework-edit-due-date');
+    const modalTitle = document.getElementById('homework-edit-modal-title');
+
+    if (titleEl) titleEl.value = hw.title || '';
+    if (descEl) descEl.value = hw.description || '';
+    if (dueDateEl) dueDateEl.value = hw.due_date || '';
+    if (modalTitle) modalTitle.textContent = 'Edit Homework';
+
+    // Set up save button handler
+    const saveBtn = document.getElementById('homework-edit-save-btn');
+    if (saveBtn) {
+      // Remove old event listeners by cloning
+      const newSaveBtn = saveBtn.cloneNode(true);
+      saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+      newSaveBtn.addEventListener('click', () => {
+        saveHomeworkEdit(id);
+      });
+    }
+
+    // Open modal
+    if (typeof window.openModal === 'function') {
+      window.openModal('homework-edit-modal');
+    } else {
+      const modal = document.getElementById('homework-edit-modal');
+      if (modal) modal.classList.add('open');
+    }
+  };
+
+  async function saveHomeworkEdit(id) {
+    const hw = (window.allHomework || []).find(h => String(h.id) === String(id));
+    if (!hw) return;
+
+    const titleEl = document.getElementById('homework-edit-title');
+    const descEl = document.getElementById('homework-edit-description');
+    const dueDateEl = document.getElementById('homework-edit-due-date');
+
+    const newTitle = titleEl ? titleEl.value.trim() : '';
+    const newDesc = descEl ? descEl.value.trim() : '';
+    const newDueDate = dueDateEl ? dueDateEl.value : '';
+
+    if (!newTitle) {
+      return window.toast ? window.toast('Title is required.', 'error') : null;
+    }
 
     const updatedPayload = {
       ...hw,
-      title: newTitle.trim() || hw.title,
-      description: newDesc.trim(),
+      title: newTitle,
+      description: newDesc,
+      due_date: newDueDate || hw.due_date,
       updated_at: new Date().toISOString()
     };
 
@@ -969,6 +1017,7 @@ let homeworkSubmissionCache = [];
         body: JSON.stringify({
           title: updatedPayload.title,
           description: updatedPayload.description,
+          due_date: updatedPayload.due_date,
           updated_at: updatedPayload.updated_at
         }),
         silent: true
@@ -991,6 +1040,7 @@ let homeworkSubmissionCache = [];
           .update({
             title: updatedPayload.title,
             description: updatedPayload.description,
+            due_date: updatedPayload.due_date,
             updated_at: updatedPayload.updated_at
           })
           .eq('id', id);
@@ -1018,6 +1068,7 @@ let homeworkSubmissionCache = [];
     if (idx !== -1) window.allHomework[idx] = updatedPayload;
 
     if (window.toast) window.toast('Homework updated successfully', 'success');
+    if (typeof window.closeModal === 'function') window.closeModal('homework-edit-modal');
     if (window.loadHomeworkData) await window.loadHomeworkData(true).catch(() => {});
     else if (window.loadAllData) await window.loadAllData(true).catch(() => {});
     refreshHomeworkViews();
@@ -1765,4 +1816,5 @@ let homeworkSubmissionCache = [];
   window.renderAdminHomeworkBatchPreview = renderAdminHomeworkBatchPreview;
   window.renderChildHomework = renderChildHomework;
   window.renderStudentHomeworkProgress = renderStudentHomeworkProgress;
+  window.saveHomeworkEdit = saveHomeworkEdit;
 })();

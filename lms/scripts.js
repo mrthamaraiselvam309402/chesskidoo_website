@@ -17445,6 +17445,10 @@ function switchHomeworkTab(tabId) {
   }
   const btn = document.getElementById('btn-' + tabId);
   if (btn) btn.classList.add('active');
+  // Render homework calendar when switching to Assign & Review tab
+  if (tabId === 'hw-assign' && typeof window.renderHomeworkCalendar === 'function') {
+    window.renderHomeworkCalendar();
+  }
 }
 
 window.setParentAISuggestion = function (text) {
