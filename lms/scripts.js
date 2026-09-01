@@ -9777,13 +9777,9 @@ due_date: (function () {
       if ($("m-name")) $("m-name").focus();
       return;
     }
-    if (!data.parent_name) {
-      toast("Father's / Guardian's name is required", "error");
-      if ($("m-parent-name")) $("m-parent-name").focus();
-      return;
-    }
+    // Parent name is optional - no longer required
     if (!rawPhone) {
-      toast("Father's / Parent phone number is required", "error");
+      toast("Phone number is required", "error");
       if ($("m-phone")) $("m-phone").focus();
       return;
     }
