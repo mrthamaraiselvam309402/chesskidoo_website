@@ -16,22 +16,22 @@
   const DEFAULT_LIBRARY_ITEMS = [
     {
       id: 'elib-1',
-      title: 'Grandmaster Opening Masterclass: Every Chess Opening Explained',
-      description: 'Comprehensive video lecture on dominating the center, piece harmony, and the sharp Italian Game / Sicilian / Ruy Lopez lines.',
+      title: 'GothamChess: How to Play Chess for Beginners | Complete Guide',
+      description: 'Learn the complete basics of chess - from how pieces move to fundamental strategies. Perfect for absolute beginners starting their chess journey.',
       category: 'openings',
       categoryLabel: '♟️ Opening Repertoire',
-      level: 'All Levels',
+      level: 'Beginner',
       type: 'video',
       url: 'https://www.youtube.com/watch?v=OCSbzArwB10',
-      author: 'Coach Gyanasurya',
-      date: '2026-08-15',
-      duration: '45 mins',
+      author: 'GothamChess',
+      date: '2026-07-20',
+      duration: '55 mins',
       access_type: 'all',
       allowed_batch_id: '',
       allowed_batch_name: '',
       allowed_student_ids: [],
       allowed_student_names: [],
-      tags: ['Opening', 'Italian', 'e4-e5', 'Tactics']
+      tags: ['Beginner', 'Basics', 'Strategy', 'Fundamentals']
     },
     {
       id: 'elib-2',
