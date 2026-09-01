@@ -1112,6 +1112,60 @@
     StudyPGN.renderBoard();
   };
 
+  StudyPGN.clearBoard = function () {
+    if (window.Chess) {
+      StudyPGN.chess = new window.Chess();
+      StudyPGN.moveHistory = [];
+      StudyPGN.currentMoveIndex = -1;
+      StudyPGN.currentGame = null;
+      StudyPGN.initialFen = null;
+      StudyPGN.selectedSquare = null;
+      StudyPGN.legalMovesForSelected = [];
+      if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
+      StudyPGN.isAutoplaying = false;
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      if (window.toast) window.toast('Board cleared!', 'info');
+    }
+  };
+
+  StudyPGN.loadFenString = function (fenText) {
+    if (!window.Chess) return;
+    try {
+      const fen = fenText.trim();
+      const chess = new window.Chess(fen);
+      StudyPGN.chess = chess;
+      StudyPGN.initialFen = fen;
+      StudyPGN.moveHistory = [];
+      StudyPGN.currentMoveIndex = -1;
+      StudyPGN.currentGame = {
+        title: 'FEN Position',
+        description: 'Custom position loaded from FEN',
+        white: 'White',
+        black: 'Black',
+        result: '*'
+      };
+      StudyPGN.selectedSquare = null;
+      StudyPGN.legalMovesForSelected = [];
+      if (StudyPGN.autoplayTimer) clearInterval(StudyPGN.autoplayTimer);
+      StudyPGN.isAutoplaying = false;
+      StudyPGN.renderBoard();
+      StudyPGN.renderMoveList();
+      StudyPGN.renderGameInfo();
+      StudyPGN.updateAiMoveGuide();
+      StudyPGN.updateEvalGauge();
+      if (window.toast) window.toast('FEN position loaded!', 'success');
+    } catch (e) {
+      if (window.toast) window.toast('Invalid FEN notation: ' + e.message, 'error');
+    }
+  };
+
+  window.clearStudyBoard = StudyPGN.clearBoard;
+  window.loadFenPosition = StudyPGN.loadFenString;
+
   StudyPGN.toggleAutoplay = function () {
     StudyPGN.isAutoplaying = !StudyPGN.isAutoplaying;
     const btn1 = document.getElementById('pgn-btn-autoplay');
@@ -1400,10 +1454,10 @@
   };
 
   StudyPGN.highlightCurrentMove = function () {
-    const btns = document.querySelectorAll('.pgn-move-btn');
-    btns.forEach((btn, idx) => {
-      // Each pair is 2 buttons, find matched move index
-      if (idx === StudyPGN.currentMoveIndex) {
+    const moveBtns = document.querySelectorAll('.pgn-move-btn');
+    moveBtns.forEach((btn) => {
+      const moveIdx = parseInt(btn.dataset.moveIdx);
+      if (!isNaN(moveIdx) && moveIdx === StudyPGN.currentMoveIndex) {
         btn.classList.add('active');
         btn.style.background = 'var(--gold, #daa33e)';
         btn.style.color = '#000';

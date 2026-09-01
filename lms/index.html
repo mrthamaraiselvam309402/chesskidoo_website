@@ -1255,6 +1255,7 @@
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move">▶</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move">⏭</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board">🔄 Flip</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.clearStudyBoard()" title="Clear Board" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">🗑️ Clear</button>
                   <button class="btn btn-outline btn-sm" id="coach-pgn-btn-ai-play" onclick="window.StudyPGN.togglePlayVsAi()" title="Play vs Stockfish AI" style="font-weight:700; border-color:rgba(218,163,62,0.4);">🤖 Play vs AI: OFF</button>
                   <button class="btn btn-gold btn-sm" onclick="window.openGameReviewModal(window.StudyPGN ? window.StudyPGN.getRawPgn() : '')" title="AI Game Review & Accuracy" style="font-weight:800;">🤖 Game Review</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.showHotkeysModal()" title="Keyboard Shortcuts (?)">⌨️</button>
@@ -2029,6 +2030,7 @@
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.nextMove()" title="Next Move (→)">▶</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.lastMove()" title="Last Move (↓)">⏭</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.flipBoard()" title="Flip Board (F)">🔄 Flip</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.clearStudyBoard()" title="Clear Board" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">🗑️ Clear</button>
                   <button class="btn btn-outline btn-sm" id="pgn-btn-ai-play" onclick="window.StudyPGN.togglePlayVsAi()" title="Play vs Stockfish AI" style="font-weight:700; border-color:rgba(218,163,62,0.4);">🤖 Play vs AI: OFF</button>
                   <button class="btn btn-outline btn-sm" onclick="window.StudyPGN.showHotkeysModal()" title="Keyboard Shortcuts (?)">⌨️</button>
                   <span id="pgn-eval-text" style="align-self:center; font-size:12px; font-weight:700; color:var(--gold); margin-left:8px;">+0.0</span>
@@ -5578,6 +5580,13 @@
                 <div style="display:flex; gap:10px;">
                   <button type="button" class="btn btn-gold" style="flex:1;" onclick="window.submitImportPgn()">♟️ Load into Study Board</button>
                   <button type="button" class="btn btn-outline-grey" style="white-space:nowrap;" onclick="window.saveCurrentStudyToLocalStorage(document.getElementById('import-game-title-custom').value, document.getElementById('import-pgn-text').value)">💾 Save to Local Storage</button>
+                </div>
+                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:8px;">
+                  <label class="label" style="font-size:11px; color:var(--gold);">📋 Or Load FEN Position</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="text" id="import-fen-input" class="input-field" style="flex:1; font-size:11px;" placeholder="Paste FEN here... e.g. rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="var fen=document.getElementById('import-fen-input').value; if(fen.trim()){window.loadFenPosition(fen); window.closeImportPgnModal();} else {alert('Please enter FEN notation');}">Load FEN</button>
+                  </div>
                 </div>
               </div>
             </div>
