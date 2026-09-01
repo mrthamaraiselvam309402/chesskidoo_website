@@ -64,13 +64,64 @@ Deno.serve(async (req) => {
       })).filter(r => r.student_id && r.date && r.status);
 
       if (validRecords.length === 0) {
-        return jsonResponse({ error: 'No valid attendance records provided' }, 400);
+        return jsonResponse({ error: 'No valid attendance records provided. Required fields: student_id, date, status' }, 400);
       }
 
-      const { data: upserted, error } = await supabase.from('attendance').upsert(validRecords).select();
-      if (error) throw error;
+      // Try upsert first, fall back to insert if upsert fails
+      try {
+        const { data: upserted, error } = await supabase.from('attendance').upsert(validRecords, { onConflict: 'student_id,date' }).select();
+        if (!error && upserted) {
+          return jsonResponse({ success: true, count: upserted.length, data: upserted });
+        }
+        // If upsert fails, try insert
+        const { data: inserted, error: insertError } = await supabase.from('attendance').insert(validRecords).select();
+        if (insertError) throw insertError;
+        return jsonResponse({ success: true, count: inserted.length, data: inserted });
+      } catch (dbError: any) {
+        console.error('[Attendance] Database error:', dbError.message);
+        return jsonResponse({ error: 'Failed to save attendance: ' + dbError.message }, 500);
+      }
+    }
 
-      return jsonResponse({ success: true, count: (upserted || []).length, data: upserted });
+    // PUT/PATCH - Update attendance record
+    if (method === 'PUT' || method === 'PATCH') {
+      let body: any = {};
+      try { body = await req.json(); } catch (_e) {}
+
+      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (body.status !== undefined) updateData.status = String(body.status);
+      if (body.notes !== undefined) updateData.notes = String(body.notes || '');
+
+      let query = supabase.from('attendance').update(updateData);
+      if (id) {
+        query = query.eq('id', id);
+      } else if (studentId) {
+        query = query.eq('student_id', studentId);
+        if (date) query = query.eq('date', date);
+      } else {
+        return jsonResponse({ error: 'ID or student_id required' }, 400);
+      }
+
+      const { data, error } = await query.select();
+      if (error) throw error;
+      return jsonResponse({ success: true, data: data || [] });
+    }
+
+    // DELETE - Delete attendance record
+    if (method === 'DELETE') {
+      let query = supabase.from('attendance').delete();
+      if (id) {
+        query = query.eq('id', id);
+      } else if (studentId) {
+        query = query.eq('student_id', studentId);
+        if (date) query = query.eq('date', date);
+      } else {
+        return jsonResponse({ error: 'ID or student_id required' }, 400);
+      }
+
+      const { error } = await query;
+      if (error) throw error;
+      return jsonResponse({ success: true });
     }
 
     return jsonResponse({ error: 'Method not allowed' }, 405);

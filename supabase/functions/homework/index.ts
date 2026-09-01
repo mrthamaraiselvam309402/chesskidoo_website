@@ -252,8 +252,24 @@ Deno.serve(async (req) => {
       const supabase = getSupabaseClient();
 
       if (action === 'review') {
-        if (!id || !isUuid(id)) {
-          return jsonResponse({ error: 'Submission ID is required for review' }, 400);
+        // Support both submission ID and assignment_id for review
+        let reviewId = id;
+        
+        // If no direct ID but assignment_id provided, find submissions for that assignment
+        if (!reviewId && batchId) {
+          // batchId is used as assignment_id in this context
+          const { data: submissions } = await supabase
+            .from('homework_submissions')
+            .select('id')
+            .eq('assignment_id', batchId)
+            .limit(1);
+          if (submissions && submissions.length > 0) {
+            reviewId = submissions[0].id;
+          }
+        }
+        
+        if (!reviewId || !isUuid(reviewId)) {
+          return jsonResponse({ error: 'Valid Submission ID is required for review. Use ?id=SUBMISSION_ID or ?action=review&batch_id=ASSIGNMENT_ID' }, 400);
         }
 
         const { data, error } = await supabase
@@ -265,7 +281,7 @@ Deno.serve(async (req) => {
             reviewed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('id', id)
+          .eq('id', reviewId)
           .select()
           .single();
 
