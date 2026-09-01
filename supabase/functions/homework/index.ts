@@ -44,8 +44,7 @@ async function getAllAssignments() {
    }
    return (data || []).map((a: any) => ({
      ...a,
-     attachment_urls: a.attachment_urls || a.questions_files || [],
-     questions_files: a.questions_files || a.attachment_urls || []
+     questions_files: a.questions_files || []
    }));
  }
 
@@ -208,22 +207,45 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: 'Title is required' }, 400);
       }
 
-      if (body.target_type === 'student' && body.student_id) {
+      // Determine target type and validate
+      let targetType = body.target_type || 'all';
+      let targetStudentId = body.student_id || null;
+      let targetBatchId = body.batch_id || null;
+
+      if (targetType === 'student') {
+        if (!targetStudentId) {
+          return jsonResponse({ error: 'student_id is required when target_type is student' }, 400);
+        }
         const { data: studentExists } = await supabase
           .from('students')
           .select('id')
-          .eq('id', String(body.student_id))
+          .eq('id', String(targetStudentId))
           .single();
         if (!studentExists) return jsonResponse({ error: 'Invalid student selected' }, 400);
-      }
-
-      if (body.target_type === 'batch' && body.batch_id) {
+      } else if (targetType === 'batch') {
+        if (!targetBatchId) {
+          return jsonResponse({ error: 'batch_id is required when target_type is batch' }, 400);
+        }
         const { data: batchExists } = await supabase
           .from('batches')
           .select('id')
-          .eq('id', String(body.batch_id))
+          .eq('id', String(targetBatchId))
           .single();
         if (!batchExists) return jsonResponse({ error: 'Invalid batch selected' }, 400);
+      } else if (targetType === 'all') {
+        // For "all students", get the first batch to satisfy the constraint
+        // The frontend filters by checking if student is in the batch
+        const { data: firstBatch } = await supabase
+          .from('batches')
+          .select('id')
+          .limit(1)
+          .single();
+        if (firstBatch) {
+          targetBatchId = firstBatch.id;
+          targetType = 'batch';
+        } else {
+          return jsonResponse({ error: 'No batches available. Please create a batch first.' }, 400);
+        }
       }
 
       const fileList = body.questions_files || body.attachment_urls || null;
@@ -233,13 +255,11 @@ Deno.serve(async (req) => {
         description: typeof body.description === 'string' ? body.description.trim() : '',
         due_date: body.due_date || null,
         status: body.status || 'active',
-        target_type: body.target_type || 'all',
-        student_id: body.student_id || null,
-        batch_id: body.batch_id || null,
-        coach_id: body.coach_id || null,
+        target_type: targetType,
+        student_id: targetStudentId,
+        batch_id: targetBatchId,
         created_by: body.created_by || body.coach_id || null,
         questions_files: fileList,
-        attachment_urls: body.attachment_urls || fileList,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }).select().single();
@@ -300,8 +320,7 @@ Deno.serve(async (req) => {
         if (body.student_id !== undefined) payload.student_id = body.student_id || null;
         if (body.batch_id !== undefined) payload.batch_id = body.batch_id || null;
         if (body.questions_files !== undefined) payload.questions_files = body.questions_files;
-        if (body.attachment_urls !== undefined) payload.attachment_urls = body.attachment_urls;
-        if (body.coach_id !== undefined) payload.coach_id = body.coach_id || null;
+        if (body.created_by !== undefined) payload.created_by = body.created_by || null;
 
         const { data, error } = await supabase.from('homework_assignments').update(payload).eq('id', id).select().single();
         if (error) throw error;

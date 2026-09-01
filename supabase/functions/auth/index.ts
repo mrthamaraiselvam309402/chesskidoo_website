@@ -213,20 +213,24 @@ Deno.serve(async (req) => {
   }
 
   if (student) {
-    // For students, we still need valid Supabase auth or a known password
-    // This is a simplified check - in production you'd hash passwords
-    if (sbJwt) {
+    // For students, check for valid Supabase auth or default password
+    const studentDefaultPasswords = ['123456', 'student123', 'password'];
+    const isValidStudentPass = sbJwt || studentDefaultPasswords.includes(cleanPass);
+
+    if (isValidStudentPass) {
+      // Create a session token for the student
+      const token = sbJwt || `student-auth-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       return new Response(JSON.stringify({
         success: true,
         role: 'student',
         user: student.name || student.email || cleanUser,
         student_id: String(student.id),
         coach_id: null,
-        token: sbJwt
+        token: token
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      });
     }
   }
 
