@@ -9762,7 +9762,6 @@ due_date: (function () {
       // Personal / guardian details — previously collected by the form but
       // never sent, so they silently vanished. Now persisted.
       parent_name: $("m-parent-name") ? $("m-parent-name").value.trim() : "",
-      dob: $("m-dob") && $("m-dob").value ? $("m-dob").value : null,
       special_notes: null,
       school_name: null,
       address: $("m-address") ? ($("m-address").value.trim() || null) : null,
@@ -9772,22 +9771,8 @@ due_date: (function () {
 
     // Due date is handled by the backend if not provided.
 
-    if (!data.full_name) {
-      toast("Student name is required", "error");
-      if ($("m-name")) $("m-name").focus();
-      return;
-    }
-    // Parent name is optional - no longer required
-    if (!rawPhone) {
-      toast("Phone number is required", "error");
-      if ($("m-phone")) $("m-phone").focus();
-      return;
-    }
-    if (!validation.valid) {
-      toast(validation.error, "error");
-      if ($("m-phone")) $("m-phone").focus();
-      return;
-    }
+    // All fields are optional - no mandatory validation
+    // Student can be enrolled with just a name or even empty fields
     // Due-date sanity: must not be before the enrollment date.
     const _mEnroll = $("m-join") ? $("m-join").value : "";
     const _mDue = $("m-due-date") ? $("m-due-date").value : "";
