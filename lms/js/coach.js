@@ -1027,7 +1027,47 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.clearAllCoachAttendance = function () {
+    if (!window.confirm('Clear all attendance for today? This will delete all attendance records for this date.')) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const dateEl = document.getElementById('coach-att-date');
+    const date = dateEl ? (dateEl.value || today) : today;
+
+    const coachId = window.currentCoachId || window.userId || getCurrentCoachIdFromStorage();
+    if (!coachId) {
+      toast('Coach ID not found', 'error');
+      return;
+    }
+
+    // Get all student IDs from the table
     const rows = document.querySelectorAll('#coach-att-marking-body tr');
+    const studentIds = [];
+    rows.forEach((row) => {
+      const select = row.querySelector('.att-status');
+      if (select && select.dataset.sid) {
+        studentIds.push(select.dataset.sid);
+      }
+    });
+
+    if (studentIds.length === 0) {
+      if (window.toast) window.toast('No students to clear', 'info');
+      return;
+    }
+
+    // Delete attendance records from local state
+    const myStudentIds = new Set(studentIds);
+    window.allAttendance = (window.allAttendance || []).filter(a => {
+      const isMyStudent = myStudentIds.has(String(a.studentId || a.student_id));
+      const isMyDate = a.date === date;
+      return !(isMyStudent && isMyDate);
+    });
+
+    // Update local storage
+    try {
+      localStorage.setItem('ck_attendance_records', JSON.stringify(window.allAttendance || []));
+    } catch (_) {}
+
+    // Clear UI fields
     rows.forEach((row) => {
       const select = row.querySelector('.att-status');
       if (select) select.value = '';
@@ -1038,8 +1078,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const notes = row.querySelector('.att-notes');
       if (notes) notes.value = '';
     });
+
     updateCoachAttStats();
-    if (window.toast) window.toast('All attendance cleared', 'info');
+
+    // Delete from database
+    const deletePromises = studentIds.map(studentId => {
+      return window.apiCall(`/api/attendance?student_id=${encodeURIComponent(studentId)}&date=${encodeURIComponent(date)}`, { method: 'DELETE', silent: true })
+        .catch(async () => {
+          if (window.supabaseClient) {
+            await window.supabaseClient.from('attendance')
+              .delete()
+              .eq('student_id', studentId)
+              .eq('date', date)
+              .catch(() => {});
+          }
+        });
+    });
+
+    Promise.all(deletePromises).then(() => {
+      if (window.toast) window.toast('All attendance cleared and saved', 'success');
+    }).catch(() => {
+      if (window.toast) window.toast('Attendance cleared locally, but failed to sync with server', 'warning');
+    });
   };
 
   window.openCoachHomeworkModal = function () {
