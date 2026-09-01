@@ -59,10 +59,6 @@
       "destination": "/api/homework"
     },
     {
-      "source": "/api/attendance",
-      "destination": "/api/attendance"
-    },
-    {
       "source": "/api/:path*",
       "destination": "https://vseombfkrvpffnpgbsnk.supabase.co/functions/v1/:path*"
     },

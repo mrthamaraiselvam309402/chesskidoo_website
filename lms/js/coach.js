@@ -933,10 +933,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res && res.ok) {
         saved = true;
       } else if (window.supabaseClient) {
+        // Fallback: Use Supabase client directly with insert (not upsert)
         const { error: sbErr } = await window.supabaseClient
           .from('attendance')
-          .upsert(records);
-        if (!sbErr) saved = true;
+          .insert(records);
+        if (!sbErr) {
+          saved = true;
+        } else {
+          console.warn('[Attendance] Supabase insert failed:', sbErr.message);
+        }
       }
 
       toast('Attendance saved for ' + records.length + ' students!', 'success');
@@ -952,18 +957,23 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCoachAttendanceMarking();
       setTimeout(renderCoachDashboard, 100);
     } catch (e) {
+      console.warn('[Attendance] API call failed, trying Supabase direct:', e);
       if (window.supabaseClient) {
         try {
           const { error: sbErr } = await window.supabaseClient
             .from('attendance')
-            .upsert(records);
+            .insert(records);
           if (!sbErr) {
             toast('Attendance saved for ' + records.length + ' students!', 'success');
             if (typeof window.loadAllData === 'function') window.loadAllData(true);
             renderCoachAttendanceMarking();
             return;
+          } else {
+            console.warn('[Attendance] Supabase insert failed:', sbErr.message);
           }
-        } catch (_) {}
+        } catch (sbEx) {
+          console.warn('[Attendance] Supabase exception:', sbEx);
+        }
       }
       toast('Attendance saved locally for ' + records.length + ' students.', 'info');
       renderCoachAttendanceMarking();
